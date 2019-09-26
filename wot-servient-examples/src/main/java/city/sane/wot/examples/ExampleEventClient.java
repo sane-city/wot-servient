@@ -1,0 +1,50 @@
+package city.sane.wot.examples;
+
+import city.sane.wot.DefaultWot;
+import city.sane.wot.Wot;
+import city.sane.wot.thing.ConsumedThing;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+
+/**
+ * Fetch thing description exposes by {@link ExampleEvent} and then subscribe to the event.
+ */
+public class ExampleEventClient {
+    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, IOException {
+        // create wot
+        Wot wot = DefaultWot.clientOnly();
+
+        URI url = new URI("coap://localhost:5683/EventSource");
+        wot.fetch(url).whenComplete((thing, e) -> {
+            try {
+                if (e != null) {
+                    throw e;
+                }
+
+                System.out.println("=== TD ===");
+                String json = thing.toJson(true);
+                System.out.println(json);
+                System.out.println("==========");
+
+                ConsumedThing consumedThing = wot.consume(thing);
+
+                consumedThing.getEvent("onchange").subscribe(
+                        next -> System.out.println("ExampleDynamicClient: next = " + next),
+                        ex -> System.out.println("ExampleDynamicClient: error = " + ex.toString()),
+                        () -> System.out.println("ExampleDynamicClient: completed!")
+                );
+                System.out.println("ExampleDynamicClient: Subscribed");
+
+            }
+            catch (Throwable ex) {
+                throw new RuntimeException(ex);
+            }
+        }).join();
+
+        System.out.println("Press ENTER to exit the client");
+        System.in.read();
+    }
+}

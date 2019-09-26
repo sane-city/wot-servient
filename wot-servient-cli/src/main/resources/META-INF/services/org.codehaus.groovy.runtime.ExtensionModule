@@ -1,0 +1,3 @@
+moduleName=Groovy Extensions
+moduleVersion=1.0.0
+extensionClasses=city.sane.wot.WotExtensions city.sane.wot.thing.ExposedThingExtensions

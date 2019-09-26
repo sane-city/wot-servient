@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>parent</artifactId>
+        <groupId>city.sane.wot-servient</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>wot-servient-binding-jadex</artifactId>
+
+    <properties>
+        <jadex.version>4.0.170</jadex.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>jadex-nightlies</id>
+            <url>https://nexus.actoron.com/content/repositories/oss-nightlies/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>city.sane.wot-servient</groupId>
+            <artifactId>wot-servient</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- JADEX -->
+        <dependency>
+            <groupId>org.activecomponents.jadex</groupId>
+            <artifactId>jadex-platform-base</artifactId>
+            <version>${jadex.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.activecomponents.jadex</groupId>
+            <artifactId>jadex-kernel-micro</artifactId>
+            <version>${jadex.version}</version>
+        </dependency>
+
+        <!-- we need the UriComponentsBuilder to build sanitized URIs from any Strings -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.1.8.RELEASE</version>
+        </dependency>
+    </dependencies>
+</project>
