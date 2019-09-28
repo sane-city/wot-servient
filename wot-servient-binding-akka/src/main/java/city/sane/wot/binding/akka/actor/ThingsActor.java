@@ -8,11 +8,11 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.Pair;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentCodecException;
-import city.sane.wot.thing.content.ContentManager;
 import city.sane.wot.thing.filter.ThingFilter;
 
 import java.io.Serializable;

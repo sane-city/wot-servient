@@ -1,14 +1,13 @@
 package city.sane.wot.binding.jsonpathhttp;
 
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentCodecException;
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.schema.NumberSchema;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import spark.Service;

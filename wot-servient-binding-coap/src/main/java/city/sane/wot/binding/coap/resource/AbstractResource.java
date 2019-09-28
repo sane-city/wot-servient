@@ -1,6 +1,6 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.ContentManager;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;

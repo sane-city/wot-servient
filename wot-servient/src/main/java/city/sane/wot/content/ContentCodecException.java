@@ -1,4 +1,4 @@
-package city.sane.wot.thing.content;
+package city.sane.wot.content;
 
 /**
  * If errors occur during (de)serialization, this exception is thrown.

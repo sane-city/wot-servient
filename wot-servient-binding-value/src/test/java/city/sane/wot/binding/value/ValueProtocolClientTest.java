@@ -1,8 +1,7 @@
 package city.sane.wot.binding.value;
 
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
 package city.sane.wot.binding.http.route;
 
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.ContentManager;
 import spark.Request;
 import spark.Route;
 

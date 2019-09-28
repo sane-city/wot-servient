@@ -1,7 +1,7 @@
 package city.sane.wot.binding.value;
 
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

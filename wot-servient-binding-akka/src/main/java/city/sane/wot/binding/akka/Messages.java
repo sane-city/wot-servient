@@ -1,6 +1,6 @@
 package city.sane.wot.binding.akka;
 
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 
 import java.io.Serializable;
 
