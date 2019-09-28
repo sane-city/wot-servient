@@ -14,6 +14,7 @@ ADD ./wot-servient-binding-mqtt/pom.xml ./wot-servient-binding-mqtt/pom.xml
 ADD ./wot-servient-binding-value/pom.xml ./wot-servient-binding-value/pom.xml
 ADD ./wot-servient-cli/pom.xml ./wot-servient-cli/pom.xml
 ADD ./wot-servient-examples/pom.xml ./wot-servient-examples/pom.xml
+ADD ./wot-servient-scripting-groovy/pom.xml ./wot-servient-scripting-groovy/pom.xml
 
 RUN mvn -DskipTests --batch-mode -pl wot-servient-cli -am install dependency:copy-dependencies
 

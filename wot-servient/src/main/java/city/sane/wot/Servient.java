@@ -3,6 +3,8 @@ package city.sane.wot;
 import city.sane.wot.binding.*;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
+import city.sane.wot.scripting.ScriptingManager;
+import city.sane.wot.scripting.ScriptingManagerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ExposedThingAction;
@@ -17,6 +19,7 @@ import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -536,6 +539,23 @@ public class Servient {
     public Object getCredentials(String id) {
         log.debug("Servient looking up credentials for '{}'", id);
         return credentialStore.get(id);
+    }
+
+    /**
+     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT object.<br>
+     * Only the script languages known to the {@link ScriptingManager} are supported.
+     *
+     * @param file
+     * @param wot
+     * @throws ServientException
+     */
+    public void runScript(File file, Wot wot) throws ServientException {
+        try {
+            ScriptingManager.runScript(file, wot);
+        }
+        catch (ScriptingManagerException e) {
+            throw new ServientException(e);
+        }
     }
 
     /**

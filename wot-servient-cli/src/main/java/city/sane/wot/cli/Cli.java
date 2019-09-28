@@ -3,11 +3,13 @@ package city.sane.wot.cli;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import city.sane.wot.DefaultWot;
+import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.Wot;
+import city.sane.wot.scripting.GroovyEngine;
+import city.sane.wot.scripting.ScriptingManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ public class Cli {
     private final String CONF = "wot-servient.conf";
     private final String LOGLEVEL = "warn";
 
-    public Cli(String[] args) throws ParseException, IOException {
+    public Cli(String[] args) throws ParseException {
         Options options = getOptions();
 
         CommandLineParser parser = new DefaultParser();
@@ -61,7 +63,7 @@ public class Cli {
         System.out.println(version);
     }
 
-    private void runScripts(CommandLine cmd) throws IOException {
+    private void runScripts(CommandLine cmd) {
         List<File> scripts = cmd.getArgList().stream().map(File::new).collect(Collectors.toList());
         if (!scripts.isEmpty()) {
             log.info("Servient is loading {} command line script(s)", scripts.size());
@@ -73,17 +75,23 @@ public class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
-        Binding binding = new Binding();
-        binding.setVariable("wot", getWot(cmd));
+        Servient servient = getServient(cmd);
+        servient.start().join();
+        Wot wot = new DefaultWot(servient);
 
         for (File script : scripts) {
             log.info("Servient is running script '{}'", script);
-            GroovyShell shell = new GroovyShell(binding);
-            shell.evaluate(script);
+            try {
+                servient.runScript(script, wot);
+            }
+            catch (ServientException e) {
+                log.error("Servient experienced error while reading script", e);
+                e.printStackTrace();
+            }
         }
     }
 
-    private Wot getWot(CommandLine cmd) {
+    private Servient getServient(CommandLine cmd) {
         Config config;
         if (!cmd.hasOption("f")) {
             File defaultFile = new File(CONF);
@@ -102,14 +110,14 @@ public class Cli {
             log.info("Servient is using configuration file '{}'", file);
         }
 
-        Wot wot;
+        Servient servient;
         if (!cmd.hasOption("c")) {
-            wot = new DefaultWot(config);
+            servient = new Servient(config);
         }
         else {
-            wot = DefaultWot.clientOnly(config);
+            servient = Servient.clientOnly(config);
         }
-        return wot;
+        return servient;
     }
 
     private void printHelp(Options options) {
@@ -176,7 +184,9 @@ public class Cli {
         return options;
     }
 
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws ParseException {
+        ScriptingManager.addEngine(new GroovyEngine());
+
         new Cli(args);
     }
 }
