@@ -587,4 +587,17 @@ public class Servient {
             return new HashSet<>(Arrays.asList("127.0.0.1"));
         }
     }
+
+    /**
+     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start any servers and can therefore only consume things
+     * and not expose any things.
+     *
+     * @param config
+     */
+    public static Servient clientOnly(Config config) {
+        Config clientOnlyConfig = ConfigFactory
+                .parseString("wot.servient.servers = []")
+                .withFallback(config);
+        return new Servient(clientOnlyConfig);
+    }
 }
