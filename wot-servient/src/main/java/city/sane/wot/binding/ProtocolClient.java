@@ -1,7 +1,7 @@
 package city.sane.wot.binding;
 
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.content.Content;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;

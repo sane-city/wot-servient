@@ -1,4 +1,4 @@
-package city.sane.wot.thing.content;
+package city.sane.wot.content;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;

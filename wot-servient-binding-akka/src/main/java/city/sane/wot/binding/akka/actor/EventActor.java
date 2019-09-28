@@ -4,7 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;

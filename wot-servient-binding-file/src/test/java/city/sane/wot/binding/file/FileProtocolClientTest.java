@@ -1,6 +1,6 @@
 package city.sane.wot.binding.file;
 
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.junit.Before;
 import org.junit.Rule;
@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 
 public class FileProtocolClientTest {
     @Rule

@@ -2,9 +2,9 @@ package city.sane.wot.binding.jsonpathhttp;
 
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.http.HttpProtocolClient;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentCodecException;
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;

@@ -1,6 +1,6 @@
 package city.sane.wot.binding.http;
 
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 import spark.ResponseTransformer;
 
 /**

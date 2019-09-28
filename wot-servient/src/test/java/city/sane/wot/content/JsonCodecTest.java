@@ -1,4 +1,4 @@
-package city.sane.wot.thing.content;
+package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.ObjectSchema;
 import org.junit.Before;

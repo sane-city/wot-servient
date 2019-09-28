@@ -1,8 +1,8 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentManager;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

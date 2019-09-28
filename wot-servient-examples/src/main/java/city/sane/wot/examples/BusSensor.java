@@ -2,12 +2,12 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentCodecException;
-import city.sane.wot.thing.content.ContentManager;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.schema.ArraySchema;

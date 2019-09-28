@@ -2,7 +2,7 @@ package city.sane.wot.binding.http;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;

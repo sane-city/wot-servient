@@ -1,6 +1,6 @@
 package city.sane.wot.binding.jadex;
 
-import city.sane.wot.thing.content.Content;
+import city.sane.wot.content.Content;
 
 /**
  * This class is needed so that Jadex can correctly (de)serialize {@link Content} objects and send them to other Jadex platforms.

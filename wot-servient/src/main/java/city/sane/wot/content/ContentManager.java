@@ -1,4 +1,4 @@
-package city.sane.wot.thing.content;
+package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.DataSchema;
 import org.slf4j.Logger;
@@ -46,6 +46,16 @@ public class ContentManager {
      */
     public static void addCodec(ContentCodec codec) {
         addCodec(codec, false);
+    }
+
+    /**
+     * Removes support for media type specified in codec.
+     *
+     * @param mediaType
+     */
+    public static void removeCodec(String mediaType) {
+        CODECS.remove(mediaType);
+        OFFERED.remove(mediaType);
     }
 
     /**

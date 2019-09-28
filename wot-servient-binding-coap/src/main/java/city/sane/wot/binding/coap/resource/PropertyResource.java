@@ -1,9 +1,9 @@
 package city.sane.wot.binding.coap.resource;
 
 import city.sane.wot.binding.coap.CoapServer;
-import city.sane.wot.thing.content.Content;
-import city.sane.wot.thing.content.ContentCodecException;
-import city.sane.wot.thing.content.ContentManager;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
