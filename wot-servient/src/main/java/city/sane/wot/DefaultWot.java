@@ -98,9 +98,8 @@ public class DefaultWot implements Wot {
      * @param config
      */
     public static Wot clientOnly(Config config) {
-        Config clientOnlyConfig = ConfigFactory
-                .parseString("wot.servient.servers = []")
-                .withFallback(config);
-        return new DefaultWot(clientOnlyConfig);
+        Servient servient = Servient.clientOnly(config);
+        servient.start().join();
+        return new DefaultWot(servient);
     }
 }
