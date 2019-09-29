@@ -22,7 +22,7 @@ public class ScriptingManager {
      * @param engine
      */
     public static void addEngine(ScriptingEngine engine) {
-        ENGINES.put(engine.getFileExtension(), engine);
+        ENGINES.put(engine.getMediaType(), engine);
     }
 
     /**
