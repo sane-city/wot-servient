@@ -64,7 +64,7 @@ public class Luftdaten {
                         Thing thing = new Thing.Builder()
                                 .setId("luftdaten.info:" + sensorId)
                                 .setTitle("luftdaten.info:" + sensorId)
-                                .setObjectContexts(new Context("http://www.w3.org/ns/td")
+                                .setObjectContext(new Context("http://www.w3.org/ns/td")
                                         .addContext("om", "http://www.wurvoc.org/vocabularies/om-1.8/")
                                         .addContext("saref", "https://w3id.org/saref#")
                                         .addContext("sch", "http://schema.org/")

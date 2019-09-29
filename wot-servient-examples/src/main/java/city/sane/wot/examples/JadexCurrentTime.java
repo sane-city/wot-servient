@@ -22,7 +22,7 @@ public class JadexCurrentTime {
 
         // create & expose thing
         Thing thing = new Thing.Builder()
-                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
                 .setObjectType("Thing")
                 .setId("JadexCurrentTime")
                 .setTitle("Aktuelle Uhrzeit")

@@ -11,7 +11,7 @@ public class ThingTest {
                 .setId("Foo")
                 .setDescription("Bar")
                 .setObjectType("Thing")
-                .setObjectContexts(new Context("http://www.w3.org/ns/td"))
+                .setObjectContext(new Context("http://www.w3.org/ns/td"))
                 .build();
 
         assertEquals(

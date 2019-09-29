@@ -24,7 +24,7 @@ public class SparqlThingQueryTest {
         List<Thing> things = new ArrayList<>();
         things.add(
                 new Thing.Builder()
-                        .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                        .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
                         .setObjectType("Type")
                         .setId("KlimabotschafterWetterstationen:Stellingen")
                         .build()
@@ -32,7 +32,7 @@ public class SparqlThingQueryTest {
         for (int i = 0; i < 10; i++) {
             things.add(
                     new Thing.Builder()
-                            .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                            .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
                             .setObjectType("Type").setId("luftdaten.info:" + i)
                             .build()
             );

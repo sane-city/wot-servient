@@ -28,7 +28,7 @@ public class AkkaDiscoveryClient {
                 .setId("HelloClient")
                 .setTitle("HelloClient")
                 .setObjectType("Thing")
-                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1")
+                .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1")
                         .addContext("saref", "https://w3id.org/saref#")
                 )
                 .build();

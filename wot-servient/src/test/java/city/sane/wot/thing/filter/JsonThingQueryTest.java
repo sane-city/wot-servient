@@ -15,13 +15,13 @@ public class JsonThingQueryTest {
     public void filterType() throws ThingQueryException {
         List<Thing> things = new ArrayList<>();
         things.add(new Thing.Builder()
-                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
                 .setObjectType("Thing")
                 .setId("KlimabotschafterWetterstationen:Stellingen")
                 .build());
         for (int i = 0; i < 10; i++) {
             things.add(new Thing.Builder()
-                    .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                    .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
                     .setId("luftdaten.info:" + i)
                     .build());
         }

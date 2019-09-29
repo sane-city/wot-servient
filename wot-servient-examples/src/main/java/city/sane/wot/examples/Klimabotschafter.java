@@ -54,7 +54,7 @@ public class Klimabotschafter {
                         Thing thing = new Thing.Builder()
                                 .setId("KlimabotschafterWetterstationen:" + st_name)
                                 .setTitle("KlimabotschafterWetterstationen:" + st_name)
-                                .setObjectContexts(new Context("http://www.w3.org/ns/td")
+                                .setObjectContext(new Context("http://www.w3.org/ns/td")
                                         .addContext("om", "http://www.wurvoc.org/vocabularies/om-1.8/")
                                         .addContext("saref", "https://w3id.org/saref#")
                                         .addContext("sch", "http://schema.org/")

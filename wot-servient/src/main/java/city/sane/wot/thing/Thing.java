@@ -287,8 +287,8 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
-        public Builder setObjectContexts(Context objectContexts) {
-            this.objectContext = objectContexts;
+        public Builder setObjectContext(Context objectContext) {
+            this.objectContext = objectContext;
             return this;
         }
 
