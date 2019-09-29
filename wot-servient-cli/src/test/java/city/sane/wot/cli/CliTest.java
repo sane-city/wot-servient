@@ -9,17 +9,17 @@ import java.io.IOException;
 @Ignore
 public class CliTest {
     @Test
-    public void help() throws ParseException, IOException {
+    public void help() throws ParseException {
         new Cli(new String[]{ "--help" });
     }
 
     @Test
-    public void version() throws ParseException, IOException {
+    public void version() throws ParseException {
         new Cli(new String[]{ "--version" });
     }
 
     @Test
-    public void runGivenScript() throws ParseException, IOException {
+    public void runGivenScript() throws ParseException {
         new Cli(new String[]{
                 "examples/scripts/example-dynamic.groovy"
         });
