@@ -9,6 +9,11 @@ import java.util.Map;
  * A ContentCodec is responsible for (de)serializing data in certain encoding (e.g. JSON, CBOR).
  */
 public interface ContentCodec {
+    /**
+     * Returns the media type supported by the codec (e.g. application/json).
+     *
+     * @return
+     */
     String getMediaType();
 
     /**

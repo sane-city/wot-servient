@@ -62,6 +62,7 @@
         <module>wot-servient-cli</module>
         <module>wot-servient-all</module>
         <module>wot-servient-examples</module>
+        <module>wot-servient-scripting-groovy</module>
     </modules>
 
     <dependencies>
