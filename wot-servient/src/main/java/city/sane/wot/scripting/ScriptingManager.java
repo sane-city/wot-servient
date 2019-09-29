@@ -48,6 +48,10 @@ public class ScriptingManager {
             String extension = pathToExtension(path);
             String mediaType = extensionToMediaType(extension);
 
+            if (mediaType == null) {
+                throw new ScriptingManagerException("No scripting engine available for extension '" + extension + "'");
+            }
+
             runScript(script, mediaType, wot);
         }
         catch (IOException e) {
