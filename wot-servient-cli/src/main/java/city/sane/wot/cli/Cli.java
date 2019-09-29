@@ -27,6 +27,8 @@ public class Cli {
     private final String LOGLEVEL = "warn";
 
     public Cli(String[] args) throws ParseException {
+        ScriptingManager.addEngine(new GroovyEngine());
+
         Options options = getOptions();
 
         CommandLineParser parser = new DefaultParser();
@@ -185,8 +187,6 @@ public class Cli {
     }
 
     public static void main(String[] args) throws ParseException {
-        ScriptingManager.addEngine(new GroovyEngine());
-
         new Cli(args);
     }
 }
