@@ -51,6 +51,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             forms = thing.getForms();
             security = thing.getSecurity();
             securityDefinitions = thing.getSecurityDefinitions();
+            base = thing.getBase();
 
             Map<String, ThingProperty> properties = thing.getProperties();
             properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty(name, property, this)));
