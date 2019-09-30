@@ -32,7 +32,7 @@ public interface Wot {
     CompletableFuture<Collection<Thing>> discover();
 
     /**
-     * Accepts a <code>thing</code> argument of type {@link Thing} and returns an {@link ExposedThing} object.
+     * Accepts a <code>thing</code> argument of type {@link Thing} and returns an {@link ExposedThing} object.<br>
      * The result can be used to start exposing interfaces for thing interaction.
      *
      * @param thing
@@ -42,7 +42,7 @@ public interface Wot {
     ExposedThing produce(Thing thing);
 
     /**
-     * Accepts a <code>thing</code> argument of type {@link Thing} and returns a {@link ConsumedThing} object.
+     * Accepts a <code>thing</code> argument of type {@link Thing} and returns a {@link ConsumedThing} object.<br>
      * The result can be used to interact with a thing.
      *
      * @param thing
@@ -50,6 +50,17 @@ public interface Wot {
      * @return
      */
     ConsumedThing consume(Thing thing);
+
+    /**
+     * Accepts the <a href="https://www.w3.org/TR/wot-thing-description/">Thing Description</a> in <code>thing</code> and returns a {@link ConsumedThing}
+     * object.<br>
+     * The result can be used to interact with a thing.
+     *
+     * @param thing
+     *
+     * @return
+     */
+    ConsumedThing consume(String thing);
 
     /**
      * Accepts an {@link java.net.URL} (e.g. "file:..." or "http://...") to a resource that serves a thing description and returns

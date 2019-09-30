@@ -1,6 +1,4 @@
-import city.sane.wot.thing.Thing
-
-def td = Thing.fromJson('''{
+def td = '''{
     "@context": "https://www.w3.org/2019/td/v1",
     "title": "MQTT Counter",
     "id": "urn:dev:wot:mqtt:counter",
@@ -22,10 +20,10 @@ def td = Thing.fromJson('''{
         }
     }
 }
-''')
+'''
 
 println('=== TD ===')
-println(td.toJson(true))
+println(td)
 println('==========')
 
 def source = wot.consume(td)

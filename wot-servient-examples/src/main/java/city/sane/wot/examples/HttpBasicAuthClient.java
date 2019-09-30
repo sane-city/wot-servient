@@ -14,7 +14,7 @@ public class HttpBasicAuthClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         Wot wot = DefaultWot.clientOnly();
 
-        Thing thing = Thing.fromJson("{\n" +
+        String thing = "{\n" +
                 "    \"@context\": \"https://www.w3.org/2019/td/v1\",\n" +
                 "    \"title\": \"HTTP Basic Auth\",\n" +
                 "    \"id\": \"urn:dev:wot:http:auth:basic\",\n" +
@@ -32,7 +32,7 @@ public class HttpBasicAuthClient {
                 "            ]\n" +
                 "        }\n" +
                 "    } \n" +
-                "}");
+                "}";
 
         ConsumedThing consumedThing = wot.consume(thing);
 

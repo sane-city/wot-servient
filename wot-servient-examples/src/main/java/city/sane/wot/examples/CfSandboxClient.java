@@ -15,7 +15,7 @@ public class CfSandboxClient {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
-        Thing thing = Thing.fromJson("{\n" +
+        String thing = "{\n" +
                 "    \"@context \": \"https://www.w3.org/2019/td/v1\",\n" +
                 "    \"id\": \"urn:dev:wot:org:eclipse:cf-sandbox\",\n" +
                 "    \"title\": \"Cf-Sandbox\",\n" +
@@ -35,7 +35,7 @@ public class CfSandboxClient {
                 "            ]\n" +
                 "        }\n" +
                 "    }\n" +
-                "}");
+                "}";
 
         ConsumedThing consumedThing = wot.consume(thing);
 

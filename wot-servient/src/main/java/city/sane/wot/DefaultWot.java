@@ -69,6 +69,11 @@ public class DefaultWot implements Wot {
     }
 
     @Override
+    public ConsumedThing consume(String thing) {
+        return consume(Thing.fromJson(thing));
+    }
+
+    @Override
     public CompletableFuture<Thing> fetch(URI url) {
         return servient.fetch(url);
     }
