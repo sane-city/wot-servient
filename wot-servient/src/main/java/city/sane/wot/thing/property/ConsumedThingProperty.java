@@ -15,9 +15,11 @@ import city.sane.wot.thing.observer.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
@@ -37,11 +39,25 @@ public class ConsumedThingProperty extends ThingProperty {
         this.observable = property.isObservable();
         this.readOnly = property.isReadOnly();
         this.writeOnly = property.isWriteOnly();
-        this.forms = property.getForms();
+        this.forms = normalizeHrefs(property.getForms(), thing);
         this.uriVariables = property.getUriVariables();
         this.optionalProperties = property.getOptionalProperties();
 
         this.thing = thing;
+    }
+    private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
+        return forms.stream().map(f -> normalizeHref(f, thing)).collect(Collectors.toList());
+    }
+
+    private Form normalizeHref(Form form, ConsumedThing thing) {
+        String base = thing.getBase();
+        if (base == null || base.isEmpty()) {
+            return form;
+        }
+        else {
+            String normalizedHref = base + form.getHref();
+            return new Form.Builder(form).setHref(normalizedHref).build();
+        }
     }
 
     public CompletableFuture<Object> read() {

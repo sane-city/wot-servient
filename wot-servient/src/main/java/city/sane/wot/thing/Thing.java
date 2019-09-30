@@ -71,6 +71,9 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected String base;
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [id=" + getId() + ", title=" + getTitle() + "]";
@@ -139,6 +142,8 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
     public Map<String, SecurityScheme> getSecurityDefinitions() {
         return securityDefinitions;
     }
+
+    public String getBase() { return base; }
 
     @Override
     public int hashCode() {
@@ -281,6 +286,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         private List<Form> forms = new ArrayList<>();
         private List<String> security = new ArrayList<>();
         private Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
+        private String base;
 
         public Builder setObjectType(String objectType) {
             this.objectType = objectType;
@@ -367,6 +373,11 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
+        public Builder setBase(String base) {
+            this.base = base;
+            return this;
+        }
+
         @Override
         public Thing build() {
             Thing thing = new Thing();
@@ -383,6 +394,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             thing.forms = forms;
             thing.security = security;
             thing.securityDefinitions = securityDefinitions;
+            thing.base = base;
             return thing;
         }
     }

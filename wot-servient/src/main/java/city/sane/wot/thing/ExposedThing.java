@@ -57,6 +57,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         setForms(thing.getForms());
         setSecurity(thing.getSecurity());
         setSecurityDefinitions(thing.getSecurityDefinitions());
+        setBase(thing.getBase());
         ((Map<String, ThingProperty>) thing.getProperties()).forEach((n, p) -> addProperty(n, p));
         ((Map<String, ThingAction>) thing.getActions()).forEach((n, a) -> addAction(n, a));
         ((Map<String, ThingEvent>) thing.getEvents()).forEach((n, e) -> addEvent(n, e));
@@ -144,6 +145,18 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      */
     public ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
         this.securityDefinitions = securityDefinitions;
+        return this;
+    }
+
+    /**
+     * Defines a base URL. This allows the use of relative URLs in the forms (see {@link Form#getHref()}). Since most URLs are only different in the path, this
+     * can shorten the Thing Description.
+     *
+     * @param base
+     * @return
+     */
+    private ExposedThing setBase(String base) {
+        this.base = base;
         return this;
     }
 
