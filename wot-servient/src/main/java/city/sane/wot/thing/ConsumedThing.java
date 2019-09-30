@@ -35,6 +35,9 @@ import java.util.stream.Stream;
 public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
     final static Logger log = LoggerFactory.getLogger(ConsumedThing.class);
 
+    public static final String DEFAULT_OBJECT_TYPE = "Thing";
+    public static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
+
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();
 
@@ -42,7 +45,13 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         this.servient = servient;
         if (thing != null) {
             objectType = thing.getObjectType();
+            if (objectType == null) {
+                objectType = DEFAULT_OBJECT_TYPE;
+            }
             objectContext = thing.getObjectContext();
+            if (objectContext == null) {
+                objectContext = DEFAULT_OBJECT_CONTEXT;
+            }
             id = thing.getId();
             title = thing.getTitle();
             titles = thing.getTitles();
