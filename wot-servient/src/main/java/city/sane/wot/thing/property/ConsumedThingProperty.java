@@ -51,12 +51,12 @@ public class ConsumedThingProperty extends ThingProperty {
 
     private Form normalizeHref(Form form, ConsumedThing thing) {
         String base = thing.getBase();
-        if (base == null || base.isEmpty()) {
-            return form;
-        }
-        else {
+        if(base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
             String normalizedHref = base + form.getHref();
             return new Form.Builder(form).setHref(normalizedHref).build();
+        }
+        else {
+            return form;
         }
     }
 
