@@ -1,5 +1,6 @@
 package city.sane.wot.thing.schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -13,5 +14,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public interface DataSchema<T> {
     String getType();
 
+    @JsonIgnore
     Class<T> getClassType();
 }
