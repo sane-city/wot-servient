@@ -2,7 +2,7 @@
 
 ### Builds
 
-The current version of the CLI can be downloaded from the following address: https://git.informatik.uni-hamburg.de/sane/wot-servient/-/jobs/artifacts/master/download?job=build-dist
+The current version of the CLI can be downloaded from the following address: https://git.informatik.uni-hamburg.de/sane-public/wot-servient/-/jobs/artifacts/master/download?job=build-dist
 
 Show help:
 ```bash
@@ -18,15 +18,10 @@ bin/wot-servient
 
 Show help:
 ```bash
-docker run --rm -ti git.informatik.uni-hamburg.de:4567/sane/wot-servient:latest -h
+docker run --rm -ti git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest -h
 ```
 
 Execute all WoT scripts from the directory `./wot-scripts`
 ```bash
-docker run --rm -ti -v ./wot-scripts:/wot-servient/ git.informatik.uni-hamburg.de:4567/sane/wot-servient:latest
+docker run --rm -ti -v ./wot-scripts:/wot-servient/ git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest
 ```
-
-
-## Usage
-
-TODO
