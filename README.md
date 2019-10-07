@@ -43,25 +43,6 @@ Add GitLab Maven Repository to `pom.xml`:
 </repositories>
 ```
 
-Add [Personal Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token) to `settings.xml`:
-```xml
-<settings>
-    <servers>
-        <server>
-            <id>gitlab-maven</id>
-            <configuration>
-                <httpHeaders>
-                    <property>
-                        <name>Private-Token</name>
-                        <value>REPLACE_WITH_YOUR_PERSONAL_ACCESS_TOKEN</value>
-                    </property>
-                </httpHeaders>
-            </configuration>
-        </server>
-    </servers>
-</settings>
-```
-
 Add SANE WoT as dependency to your `pom.xml`:
 ```xml
 <dependency>
@@ -159,4 +140,4 @@ Existing implementations can be found in the `wot-servient-binding-*` package.
 
 ## License
 
-TODO
+This project is licensed under the [GNU Lesser General Public License v3.0](LICENSE).
