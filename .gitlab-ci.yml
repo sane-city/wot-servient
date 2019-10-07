@@ -8,6 +8,7 @@ include:
   - template: Docker.gitlab-ci.yml
   - local: /.gitlab-ci/Docker-Testing.gitlab-ci.yml
   - template: License-Management.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
 
 license_management:
   variables:
