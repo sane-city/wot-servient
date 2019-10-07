@@ -140,4 +140,4 @@ Existing implementations can be found in the `wot-servient-binding-*` package.
 
 ## License
 
-TODO
+This project is licensed under the [GNU Lesser General Public License v3.0](LICENSE).
