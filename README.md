@@ -38,7 +38,7 @@ Add GitLab Maven Repository to `pom.xml`:
 <repositories>
     <repository>
         <id>gitlab-maven</id>
-        <url>https://git.informatik.uni-hamburg.de/api/v4/groups/sane/-/packages/maven</url>
+        <url>https://git.informatik.uni-hamburg.de/api/v4/groups/sane-public/-/packages/maven</url>
     </repository>
 </repositories>
 ```
