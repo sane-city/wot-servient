@@ -6,6 +6,7 @@ include:
   - template: Dependency-Scanning.gitlab-ci.yml
   - template: Code-Quality.gitlab-ci.yml
   - template: Docker.gitlab-ci.yml
+  - local: /.gitlab-ci/Docker-Testing.gitlab-ci.yml
   - template: License-Management.gitlab-ci.yml
 
 license_management:
