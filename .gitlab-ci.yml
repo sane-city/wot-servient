@@ -11,4 +11,5 @@ include:
 
 license_management:
   variables:
+    MAVEN_CLI_OPTS: -DskipTests
     LM_JAVA_VERSION: 11
