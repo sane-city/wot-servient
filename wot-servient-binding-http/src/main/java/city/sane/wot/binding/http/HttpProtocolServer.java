@@ -42,7 +42,7 @@ public class HttpProtocolServer implements ProtocolServer {
             addresses = config.getStringList("wot.servient.http.addresses");
         }
         else {
-            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort).collect(Collectors.toList());
+            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
@@ -62,19 +62,21 @@ public class HttpProtocolServer implements ProtocolServer {
             server.init();
             server.awaitInitialization();
 
-            server.get("/", new ThingsRoute(things));
-            server.path("/:id", () -> {
-                server.path("/properties/:name", () -> {
-                    server.get("/observable", new ObservePropertyRoute(things));
-                    server.get("", new ReadPropertyRoute(things));
-                    server.put("", new WritePropertyRoute(things));
+            server.path("/things", () -> {
+                server.get("", new ThingsRoute(things));
+                server.path("/:id", () -> {
+                    server.path("/properties/:name", () -> {
+                        server.get("/observable", new ObservePropertyRoute(things));
+                        server.get("", new ReadPropertyRoute(things));
+                        server.put("", new WritePropertyRoute(things));
+                    });
+                    server.post("/actions/:name", new InvokeActionRoute(things));
+                    server.get("/events/:name", new SubscribeEventRoute(things));
+                    server.path("/all", () -> {
+                        server.get("/properties", new ReadAllPropertiesRoute(things));
+                    });
+                    server.get("", new ThingRoute(things));
                 });
-                server.post("/actions/:name", new InvokeActionRoute(things));
-                server.get("/events/:name", new SubscribeEventRoute(things));
-                server.path("/all", () -> {
-                    server.get("/properties", new ReadAllPropertiesRoute(things));
-                });
-                server.get("", new ThingRoute(things));
             });
         });
     }
@@ -91,7 +93,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getTitle(),
                 bindHost, bindPort, thing.getId());
         things.put(thing.getId(), thing);
 
@@ -226,5 +228,9 @@ public class HttpProtocolServer implements ProtocolServer {
 
         String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
         return href;
+    }
+
+    public Service getHTTPServer () {
+        return this.server;
     }
 }
