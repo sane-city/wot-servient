@@ -97,9 +97,15 @@ public class InvokeActionRoute extends AbstractRoute {
             if (uriVariable != null) {
                 Object type = uriVariable.get("type");
 
-                if (type != null && (type.equals("integer") || type.equals("number"))) {
-                    Object value = Integer.valueOf(urlValue[0]);
-                    params.put(name, value);
+                if (type != null) {
+                    if (type.equals("integer") || type.equals("number")) {
+                        Integer value = Integer.valueOf(urlValue[0]);
+                        params.put(name, value);
+                    }
+                    else if (type.equals("string")) {
+                        String value = urlValue[0];
+                        params.put(name, value);
+                    }
                 }
             }
             else {

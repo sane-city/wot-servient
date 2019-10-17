@@ -18,6 +18,7 @@ import city.sane.wot.thing.property.ConsumedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
+import city.sane.wot.thing.schema.StringSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
@@ -208,6 +209,21 @@ public class ConsumedThingTest {
         assertEquals(45, future.get());
     }
 
+    @Test
+    public void invokeActionWithStringParameter() throws ExecutionException, InterruptedException {
+        ExposedThing exposedThing = getExposedCounterThing();
+        servient.addThing(exposedThing);
+        exposedThing.expose().join();
+
+        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
+
+        ConsumedThingAction increment = thing.getAction("uppercase");
+        CompletableFuture future = increment.invoke(new HashMap<>() {{
+            put("value", "Hallo Welt");
+        }});
+        assertEquals("HALLO WELT", future.get());
+    }
+
     @Test(timeout = 20 * 1000)
     public void emitEvent() throws ConsumedThingException, InterruptedException, ExecutionException {
         ExposedThing exposedThing = getExposedCounterThing();
@@ -320,6 +336,27 @@ public class ConsumedThingTest {
                 return 0;
             });
         });
+
+        thing.addAction("uppercase",
+                new ThingAction.Builder()
+                        .setDescription("Converts all of the characters in this {@code String} to upper case.")
+                        .setUriVariables(new HashMap<>() {{
+                            put("value", new HashMap<>() {{
+                                put("type", "string");
+                            }});
+                        }})
+                        .setInput(new ObjectSchema())
+                        .setOutput(new StringSchema())
+                        .build(),
+                (input, options) -> {
+                    if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("value")) {
+                        String value = (String) ((Map) options.get("uriVariables")).get("value");
+                        return CompletableFuture.completedFuture(value.toUpperCase());
+                    }
+                    else {
+                        return CompletableFuture.completedFuture("");
+                    }
+                });
 
         thing.addEvent("change", new ThingEvent());
 
