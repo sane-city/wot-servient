@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -175,15 +176,57 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     }
 
     /**
-     * Adds the given <code>property</code> with the given <code>name</code> to the Thing. <code>init</code> is used as the initial value of the property.
+     * Adds the given <code>property</code> with the given <code>name</code> to the Thing.<br>
+     * <code>readHandler</code> is invoked when the property is read. It returns a future with the value of the property. Set to <code>null</code> if not
+     * needed.<br>
+     * <code>writeHandler</code> is invoked when the property is written to. It consumes the new property value and returns the output of the write operation.
+     * Set to <code>null</code> if not needed.<br>
+     *
+     * @param name
+     * @param property
+     * @param readHandler
+     * @param writeHandler
+     *
+     * @return
+     */
+    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler) {
+        log.info("'{}' adding Property '{}'", getId(), name);
+
+        ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);
+        exposedProperty.getState().setReadHandler(readHandler);
+        exposedProperty.getState().setWriteHandler(writeHandler);
+        properties.put(name, exposedProperty);
+
+        return this;
+    }
+
+    /**
+     * Adds the given <code>property</code> with the given <code>name</code> to the Thing.
      *
      * @param name
      * @param property
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Object init) {
-        addProperty(name, property);
+    public ExposedThing addProperty(String name, ThingProperty property) {
+        return addProperty(name, property, null, null);
+    }
+
+    /**
+     * Adds the given <code>property</code> with the given <code>name</code> to the Thing. <code>init</code> is used as the initial value of the property.
+     * <code>readHandler</code> is invoked when the property is read. It returns a future with the value of the property. Set to <code>null</code> if not
+     * needed.<br>
+     * <code>writeHandler</code> is invoked when the property is written to. It consumes the new property value and returns the output of the write operation.
+     * Set to <code>null</code> if not needed.<br>
+     *
+     * @param name
+     * @param property
+     * @param init
+     *
+     * @return
+     */
+    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler, Object init) {
+        addProperty(name, property, readHandler, writeHandler);
 
         ExposedThingProperty exposedProperty = properties.get(name);
         try {
@@ -199,20 +242,16 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     }
 
     /**
-     * Adds the given <code>property</code> with the given <code>name</code> to the Thing.
+     * Adds the given <code>property</code> with the given <code>name</code> to the Thing. <code>init</code> is used as the initial value of the property.
      *
      * @param name
      * @param property
+     * @param init
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property) {
-        log.info("'{}' adding Property '{}'", getId(), name);
-
-        ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);
-        properties.put(name, exposedProperty);
-
-        return this;
+    public ExposedThing addProperty(String name, ThingProperty property, Object init) {
+        return addProperty(name, property, null, null, init);
     }
 
     /**
