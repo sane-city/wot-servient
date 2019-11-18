@@ -1,3 +1,5 @@
+package city.sane.wot.binding.websocket;
+
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import com.typesafe.config.Config;

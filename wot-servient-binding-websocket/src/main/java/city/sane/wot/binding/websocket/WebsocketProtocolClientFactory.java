@@ -1,9 +1,9 @@
+package city.sane.wot.binding.websocket;
+
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
 import com.typesafe.config.Config;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Creates new {@link WebsocketProtocolClient} instances.

@@ -1,3 +1,5 @@
+package city.sane.wot.binding.websocket;
+
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
