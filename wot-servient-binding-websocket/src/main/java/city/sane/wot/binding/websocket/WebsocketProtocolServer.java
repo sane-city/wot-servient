@@ -28,14 +28,4 @@ public class WebsocketProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         return null;
     }
-
-    @Override
-    public URI getDirectoryUrl() throws ProtocolServerException {
-        return null;
-    }
-
-    @Override
-    public URI getThingUrl(String id) throws ProtocolServerException {
-        return null;
-    }
 }
