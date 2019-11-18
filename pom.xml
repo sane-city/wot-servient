@@ -111,6 +111,7 @@
         <module>wot-servient-all</module>
         <module>wot-servient-examples</module>
         <module>wot-servient-scripting-groovy</module>
+        <module>wot-servient-binding-websocket</module>
     </modules>
 
     <dependencies>
