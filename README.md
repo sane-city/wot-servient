@@ -1,13 +1,12 @@
 # SANE Web of Things Servient
 
-This projects contains an implementation of the [W3C Web of Things (WoT)](https://www.w3.org/TR/wot-architecture/)
+This project contains an implementation of the [W3C Web of Things (WoT)](https://www.w3.org/TR/wot-architecture/)
 architecture written in Java.
 
 The WoT was created to enable interoperability across IoT platforms and application domains.
 
 WoT provides mechanisms to formally describe IoT interfaces to allow IoT devices and services to communicate with each
-other, independent of their underlying implementation, and across multiple networking protocols. In addition WoT offers 
-a standardized way to define and program IoT behavior.
+other, independent of their underlying implementation, and across multiple networking protocols. In addition, WoT offers a standardized way to define and program IoT behavior.
 
 See also:
 https://www.w3.org/TR/wot-architecture/

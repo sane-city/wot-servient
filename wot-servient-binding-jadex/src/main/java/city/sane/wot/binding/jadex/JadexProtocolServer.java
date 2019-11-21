@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Allows exposing Things via Jadex Micro Agents.<br>
- * Starts a Jadex Platform and a {@links ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically finds all other platforms
+ * Starts a Jadex Platform and a {@link ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically finds all other platforms
  * and thus enables interaction with their Things.
  * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.server".
  */

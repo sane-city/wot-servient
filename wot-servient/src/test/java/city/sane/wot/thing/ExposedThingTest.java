@@ -6,6 +6,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
+import com.github.jsonldjava.shaded.com.google.common.base.Supplier;
 import org.junit.Test;
 
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 
@@ -100,6 +102,20 @@ public class ExposedThingTest {
 
         System.out.println(json);
 //        assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"description\":\"counter example Thing\",\"properties\":{\"lastChange\":{\"description\":\"last change of counter value\",\"type\":\"string\",\"observable\":true,\"readOnly\":true},\"counter\":{\"description\":\"current counter value\",\"type\":\"integer\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{},\"reset\":{}},\"events\":{\"change\":{}}}", json);
+    }
+
+    @Test
+    public void propertyWithHandlers() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+
+        Supplier<CompletableFuture<Object>> readHandler = () -> CompletableFuture.completedFuture(1337);
+        Function<Object, CompletableFuture<Object>> writeHandler = (value) -> CompletableFuture.completedFuture(((int) value) / 2);
+
+        thing.addProperty("withHandlers", new ThingProperty(), readHandler, writeHandler);
+        ExposedThingProperty property = thing.getProperty("withHandlers");
+
+        assertEquals(1337, property.read().get());
+        assertEquals(2, property.write(4).get());
     }
 
     private ExposedThing getCounterThing() {

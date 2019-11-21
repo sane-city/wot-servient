@@ -18,10 +18,10 @@ bin/wot-servient
 
 Show help:
 ```bash
-docker run --rm -ti git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest -h
+docker run --rm -ti sanecity/wot-servient -h
 ```
 
 Execute all WoT scripts from the directory `./wot-scripts`
 ```bash
-docker run --rm -ti -v ./wot-scripts:/wot-servient/ git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest
+docker run --rm -ti -v ./wot-scripts:/wot-servient/ sanecity/wot-servient
 ```

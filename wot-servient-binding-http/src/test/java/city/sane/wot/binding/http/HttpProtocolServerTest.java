@@ -65,7 +65,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/things");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -82,7 +82,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -99,7 +99,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/lastChange");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -113,7 +113,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/lastChange");
         request.addHeader("Content-Type", "text/plain");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -128,7 +128,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/count");
+        HttpPut request = new HttpPut("http://localhost:8080/things/counter/properties/count");
         request.setEntity(new StringEntity("1337"));
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -145,7 +145,7 @@ public class HttpProtocolServerTest {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/count/observable");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
@@ -178,7 +178,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/all/properties");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/all/properties");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -195,7 +195,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment");
+        HttpUriRequest request = new HttpPost("http://localhost:8080/things/counter/actions/increment");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -209,7 +209,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment?step=3");
+        HttpUriRequest request = new HttpPost("http://localhost:8080/things/counter/actions/increment?step=3");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -228,7 +228,7 @@ public class HttpProtocolServerTest {
         }};
         Content content = ContentManager.valueToContent(parameters, "application/json");
 
-        HttpPost request = new HttpPost("http://localhost:8080/counter/actions/increment");
+        HttpPost request = new HttpPost("http://localhost:8080/things/counter/actions/increment");
         request.setHeader("Content-Type", content.getType());
         request.setEntity(new ByteArrayEntity(content.getBody()));
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
@@ -247,7 +247,7 @@ public class HttpProtocolServerTest {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/events/change");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
@@ -278,7 +278,7 @@ public class HttpProtocolServerTest {
 
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/events/change");
                 HttpClientBuilder.create().build().execute(request);
             }
             catch (IOException e) {
