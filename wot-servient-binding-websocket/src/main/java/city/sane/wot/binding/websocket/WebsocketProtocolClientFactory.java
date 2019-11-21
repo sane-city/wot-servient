@@ -17,7 +17,7 @@ public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public String getScheme() {
-        return "websocket";
+        return "ws";
     }
 
     @Override
