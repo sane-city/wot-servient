@@ -16,7 +16,7 @@ import java.util.Map;
  * The class {@link Builder} can be used to build new thing property models.
  * Used in combination with {@link city.sane.wot.thing.Thing}
  */
-public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema, Serializable {
+public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema {
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String objectType;
