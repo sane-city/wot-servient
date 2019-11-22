@@ -73,7 +73,13 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> destroy() {
         log.debug("Terminate Actor System");
-        CompletableFuture<Terminated> result = FutureConverters.toJava(system.terminate()).toCompletableFuture();
-        return result.thenApply(terminated -> null);
+
+        if (system != null) {
+            CompletableFuture<Terminated> result = FutureConverters.toJava(system.terminate()).toCompletableFuture();
+            return result.thenApply(terminated -> null);
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 }

@@ -60,7 +60,13 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> stop() {
         log.info("Stop AkkaServer");
-        return FutureConverters.toJava(system.terminate()).toCompletableFuture().thenApply(r -> null);
+
+        if (system != null) {
+            return FutureConverters.toJava(system.terminate()).toCompletableFuture().thenApply(r -> null);
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override
