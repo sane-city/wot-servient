@@ -15,7 +15,6 @@
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.java-websocket</groupId>
