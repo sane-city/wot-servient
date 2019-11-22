@@ -40,7 +40,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public String getScheme() {
-        return "akka.tcp";
+        return "akka";
     }
 
     @Override
