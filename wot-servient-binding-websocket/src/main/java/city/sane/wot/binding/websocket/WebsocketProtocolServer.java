@@ -10,6 +10,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import com.typesafe.config.Config;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -30,9 +31,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private final MyServer server;
     private final List<String> addresses;
 
-    public WebsocketProtocolServer() {
+    public WebsocketProtocolServer(Config config) {
         server = new MyServer(new InetSocketAddress(8080));
-        addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":8080/things").collect(Collectors.toList());
+        addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":8080").collect(Collectors.toList());
 
     }
 
@@ -64,7 +65,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 // properties
 
-                String hrefA = address + "/" + thing.getId() + "/all/properties";
+                String hrefA = address;
                 Form formA = new Form.Builder()
                         .setHref(hrefA)
                         .setContentType(contentType)
@@ -75,7 +76,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 Map<String, ExposedThingProperty> properties = thing.getProperties();
                 properties.forEach((name, property) -> {
-                    String hrefP = getHrefWithVariablePattern(address, thing, "properties", name, property);
+                    String hrefP = address;
                     Form.Builder formP = new Form.Builder();
                     formP.setHref(hrefP);
                     formP.setContentType(contentType);
@@ -96,12 +97,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                     // if property is observable add an additional form with a observable href
                     if (property.isObservable()) {
-                        String observableHref = hrefP + "/observable";
+                        String observableHref = hrefP;
                         Form.Builder observableForm = new Form.Builder();
                         observableForm.setHref(observableHref);
                         observableForm.setContentType(contentType);
                         observableForm.setOp(Operation.observeproperty);
-                        observableForm.setSubprotocol("longpoll");
 
                         property.addForm(observableForm.build());
                         log.info("Assign '{}' to observable Property '{}'", observableHref, name);
@@ -112,7 +112,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 Map<String, ExposedThingAction> actions = thing.getActions();
                 actions.forEach((name, action) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
+                    String href = address;
                     Form.Builder form = new Form.Builder();
                     form.setHref(href);
                     form.setContentType(contentType);
@@ -182,7 +182,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         @Override
         public void onMessage(WebSocket webSocket, String s) {
             // TODO: implementieren
-            System.out.println("NAchricht erhalten: " + s);
+            System.out.println("Nachricht erhalten: " + s);
         }
 
         @Override

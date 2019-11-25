@@ -8,11 +8,15 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +28,7 @@ public class ProtocolServerTest {
     @Parameterized.Parameter
     public Class<? extends ProtocolServer> protocolServerClass;
     private Servient servient;
+    private WebSocketClient cc;
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Class<? extends ProtocolServer>> data() {
@@ -52,6 +57,36 @@ public class ProtocolServerTest {
             thing.expose().join();
 
             // TODO:
+            cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+
+                @Override
+                public void onMessage(String message) {
+                    System.out.println("test");
+                }
+
+                @Override
+                public void onOpen(ServerHandshake handshake) {
+
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+
+                }
+
+                @Override
+                public void onError(Exception ex) {
+
+                }
+            };
+            cc.connect();
+            Thread.sleep(1000);
+            cc.send("test");
+
+
+            System.out.println();
+        } catch (URISyntaxException | InterruptedException e) {
+            e.printStackTrace();
         } finally {
             servient.shutdown().join();
         }
