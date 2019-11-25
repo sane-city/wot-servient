@@ -1,7 +1,11 @@
 package city.sane.wot.binding.websocket;
 
+import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.form.Form;
+import city.sane.wot.thing.form.Operation;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -10,19 +14,25 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
+    private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
 
     private final MyServer server;
+    private final List<String> addresses;
 
     public WebsocketProtocolServer() {
-        server = new MyServer( new InetSocketAddress( 8080 ));
+        server = new MyServer(new InetSocketAddress(8080));
+        addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":8080/things").collect(Collectors.toList());
+
     }
 
     @Override
@@ -46,7 +56,17 @@ public class WebsocketProtocolServer implements ProtocolServer {
         log.info("WebsocketServer exposes '{}'", thing.getTitle());
         things.put(thing.getId(), thing);
 
+
         // TODO: add websocket forms to thing description
+        for (String address : addresses) {
+            String href = address + "/" + thing.getId() + "/all/properties";
+            Form form = new Form.Builder()
+                    .setHref(href)
+                    .setContentType(ContentManager.DEFAULT)
+                    .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties))
+                    .build();
+            thing.addForm(form);
+        }
 
         return CompletableFuture.completedFuture(null);
     }
