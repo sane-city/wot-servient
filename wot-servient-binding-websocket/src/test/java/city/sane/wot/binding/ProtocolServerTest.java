@@ -1,7 +1,6 @@
 package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
-import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -26,6 +25,13 @@ public class ProtocolServerTest {
     public Class<? extends ProtocolServer> protocolServerClass;
     private Servient servient;
 
+    @Parameterized.Parameters(name = "{0}")
+    public static List<Class<? extends ProtocolServer>> data() {
+        return Arrays.asList(
+                WebsocketProtocolServer.class
+        );
+    }
+
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -46,8 +52,7 @@ public class ProtocolServerTest {
             thing.expose().join();
 
             // TODO:
-        }
-        finally {
+        } finally {
             servient.shutdown().join();
         }
     }
@@ -65,8 +70,7 @@ public class ProtocolServerTest {
             assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
             assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
             assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
-        }
-        finally {
+        } finally {
             servient.shutdown().join();
         }
     }
@@ -125,12 +129,5 @@ public class ProtocolServerTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static List<Class<? extends ProtocolServer>> data() {
-        return Arrays.asList(
-                WebsocketProtocolServer.class
-        );
     }
 }
