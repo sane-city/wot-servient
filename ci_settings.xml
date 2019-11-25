@@ -28,7 +28,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <sonar.host.url>http://134.100.11.115:9000</sonar.host.url>
+                <sonar.host.url>https://sonarqube.cadeia.org</sonar.host.url>
                 <sonar.login>${SONAR_LOGIN_TOKEN}</sonar.login>
                 <sonar.projectName>Web of Things Servient</sonar.projectName>
             </properties>
