@@ -42,7 +42,7 @@ public class HttpProtocolServer implements ProtocolServer {
             addresses = config.getStringList("wot.servient.http.addresses");
         }
         else {
-            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
+            addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
