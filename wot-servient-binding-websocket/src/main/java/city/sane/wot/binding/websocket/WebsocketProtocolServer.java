@@ -4,8 +4,10 @@ import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.ThingInteraction;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
+import city.sane.wot.thing.property.ExposedThingProperty;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -14,10 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -59,13 +58,49 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         // TODO: add websocket forms to thing description
         for (String address : addresses) {
-            String href = address + "/" + thing.getId() + "/all/properties";
-            Form form = new Form.Builder()
-                    .setHref(href)
-                    .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties))
-                    .build();
-            thing.addForm(form);
+            for (String contentType : ContentManager.getOfferedMediaTypes()) {
+                String hrefA = address + "/" + thing.getId() + "/all/properties";
+                Form formA = new Form.Builder()
+                        .setHref(hrefA)
+                        .setContentType(contentType)
+                        .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties))
+                        .build();
+                thing.addForm(formA);
+                log.info("Assign '{}' for reading all properties", hrefA);
+
+                Map<String, ExposedThingProperty> properties = thing.getProperties();
+                properties.forEach((name, property) -> {
+                    String hrefP = getHrefWithVariablePattern(address, thing, "properties", name, property);
+                    Form.Builder formP = new Form.Builder();
+                    formP.setHref(hrefP);
+                    formP.setContentType(contentType);
+                    if (property.isReadOnly()) {
+                        formP.setOp(Operation.readproperty);
+                        formP.setOptional("htv:methodName", "GET");
+                    } else if (property.isWriteOnly()) {
+                        formP.setOp(Operation.writeproperty);
+                        formP.setOptional("htv:methodName", "PUT");
+                    } else {
+                        formP.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+                    }
+
+                    property.addForm(formP.build());
+                    log.info("Assign '{}' to Property '{}'", hrefP, name);
+
+                    // if property is observable add an additional form with a observable href
+                    if (property.isObservable()) {
+                        String observableHref = hrefP + "/observable";
+                        Form.Builder observableForm = new Form.Builder();
+                        observableForm.setHref(observableHref);
+                        observableForm.setContentType(contentType);
+                        observableForm.setOp(Operation.observeproperty);
+                        observableForm.setSubprotocol("longpoll");
+
+                        property.addForm(observableForm.build());
+                        log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+                    }
+                });
+            }
         }
 
         return CompletableFuture.completedFuture(null);
@@ -79,6 +114,17 @@ public class WebsocketProtocolServer implements ProtocolServer {
         // TODO: remove websocket forms from thing description
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    private String getHrefWithVariablePattern(String address, ExposedThing thing, String type, String interactionName, ThingInteraction interaction) {
+        String variables = "";
+        Set<String> uriVariables = interaction.getUriVariables().keySet();
+        if (!uriVariables.isEmpty()) {
+            variables = "{?" + String.join(",", uriVariables) + "}";
+        }
+
+        String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
+        return href;
     }
 
     class MyServer extends WebSocketServer {

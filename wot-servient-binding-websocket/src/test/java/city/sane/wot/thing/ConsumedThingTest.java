@@ -35,6 +35,13 @@ public class ConsumedThingTest {
     public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
 
+    @Parameters(name = "{0}")
+    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
+        return Arrays.asList(
+                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
+        );
+    }
+
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -44,11 +51,6 @@ public class ConsumedThingTest {
 
         servient = new Servient(config);
         servient.start().join();
-    }
-
-    @After
-    public void teardown() {
-        servient.shutdown().join();
     }
 
 //    @Test
@@ -75,6 +77,11 @@ public class ConsumedThingTest {
 //        counter.write(1337).join();
 //        assertEquals(1337, counter.read().get());
 //    }
+
+    @After
+    public void teardown() {
+        servient.shutdown().join();
+    }
 
     @Test(timeout = 20 * 1000)
     public void observeProperty() throws ConsumedThingException, InterruptedException, ExecutionException {
@@ -212,11 +219,9 @@ public class ConsumedThingTest {
                         int step;
                         if (input != null && ((Map) input).containsKey("step")) {
                             step = (Integer) ((Map) input).get("step");
-                        }
-                        else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                        } else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
                             step = (int) ((Map) options.get("uriVariables")).get("step");
-                        }
-                        else {
+                        } else {
                             step = 1;
                         }
                         int newValue = ((Integer) value) + step;
@@ -248,12 +253,5 @@ public class ConsumedThingTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
-                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
-        );
     }
 }
