@@ -6,10 +6,6 @@ import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
-import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.ConsumedThingException;
-import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.NoFormForInteractionConsumedThingException;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -43,6 +39,13 @@ public class ConsumedThingTest {
     public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
 
+    @Parameters(name = "{0}")
+    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
+        return Arrays.asList(
+                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
+        );
+    }
+
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -71,8 +74,7 @@ public class ConsumedThingTest {
 
         try {
             assertEquals(42, counter.read().get());
-        }
-        catch (CompletionException e) {
+        } catch (CompletionException e) {
             if (!(e.getCause() instanceof NoFormForInteractionConsumedThingException)) {
                 throw e;
             }
@@ -92,8 +94,7 @@ public class ConsumedThingTest {
         try {
             Object o = counter.write(1337).get();
             assertEquals(1337, counter.read().get());
-        }
-        catch (CompletionException e) {
+        } catch (CompletionException e) {
             if (!(e.getCause() instanceof NoFormForInteractionConsumedThingException)) {
                 throw e;
             }
@@ -153,8 +154,7 @@ public class ConsumedThingTest {
             Map values = thing.readProperties().get();
             assertEquals(2, values.size());
             assertEquals(42, values.get("count"));
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             if (!(e.getCause() instanceof NoFormForInteractionConsumedThingException)) {
                 throw e;
             }
@@ -173,8 +173,7 @@ public class ConsumedThingTest {
             Map values = thing.readProperties(Arrays.asList("count")).get();
             assertEquals(1, values.size());
             assertEquals(42, values.get("count"));
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             if (!(e.getCause() instanceof NoFormForInteractionConsumedThingException)) {
                 throw e;
             }
@@ -304,11 +303,9 @@ public class ConsumedThingTest {
                         int step;
                         if (input != null && ((Map) input).containsKey("step")) {
                             step = (Integer) ((Map) input).get("step");
-                        }
-                        else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                        } else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
                             step = (int) ((Map) options.get("uriVariables")).get("step");
-                        }
-                        else {
+                        } else {
                             step = 1;
                         }
                         int newValue = ((Integer) value) + step;
@@ -352,8 +349,7 @@ public class ConsumedThingTest {
                     if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("value")) {
                         String value = (String) ((Map) options.get("uriVariables")).get("value");
                         return CompletableFuture.completedFuture(value.toUpperCase());
-                    }
-                    else {
+                    } else {
                         return CompletableFuture.completedFuture("");
                     }
                 });
@@ -361,12 +357,5 @@ public class ConsumedThingTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
-                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
-        );
     }
 }

@@ -32,6 +32,13 @@ public class ProtocolClientTest {
     public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
 
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
+        return Arrays.asList(
+                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
+        );
+    }
+
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -93,6 +100,18 @@ public class ProtocolClientTest {
         assertEquals(1, things.size());
     }
 
+//    @Test
+//    public void discoverAny() throws ExecutionException, InterruptedException {
+//        // expose a thing so that something can be discovered
+//        ExposedThing thing = new ExposedThing(servient).setTitle("huhu");
+//        servient.addThing(thing);
+//        thing.expose().join();
+//
+//        // discover
+//        Collection<Thing> things = servient.discover().get();
+//        assertEquals(3, things.size());
+//    }
+
     @Test
     public void discoverDirectory() throws ExecutionException, InterruptedException, ProtocolServerException {
         // expose a thing so that something can be discovered
@@ -106,24 +125,5 @@ public class ProtocolClientTest {
 
         Collection<Thing> things = servient.discover(filter).get();
         assertEquals(1, things.size());
-    }
-
-//    @Test
-//    public void discoverAny() throws ExecutionException, InterruptedException {
-//        // expose a thing so that something can be discovered
-//        ExposedThing thing = new ExposedThing(servient).setTitle("huhu");
-//        servient.addThing(thing);
-//        thing.expose().join();
-//
-//        // discover
-//        Collection<Thing> things = servient.discover().get();
-//        assertEquals(3, things.size());
-//    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
-                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
-        );
     }
 }

@@ -43,13 +43,11 @@ public class ThingRoute extends AbstractRoute {
                 Content content = ContentManager.valueToContent(thing, requestContentType);
                 response.type(content.getType());
                 return content;
-            }
-            catch (ContentCodecException e) {
+            } catch (ContentCodecException e) {
                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                 return e;
             }
-        }
-        else {
+        } else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }

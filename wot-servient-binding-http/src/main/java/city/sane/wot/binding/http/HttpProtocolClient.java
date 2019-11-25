@@ -48,8 +48,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 return checkResponse(response);
 
-            }
-            catch (IOException | ProtocolClientException e) {
+            } catch (IOException | ProtocolClientException e) {
                 e.printStackTrace();
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
@@ -66,8 +65,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 return checkResponse(response);
 
-            }
-            catch (IOException | ProtocolClientException e) {
+            } catch (IOException | ProtocolClientException e) {
                 e.printStackTrace();
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
@@ -84,8 +82,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 return checkResponse(response);
 
-            }
-            catch (IOException | ProtocolClientException e) {
+            } catch (IOException | ProtocolClientException e) {
                 e.printStackTrace();
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
@@ -109,8 +106,7 @@ public class HttpProtocolClient implements ProtocolClient {
             log.debug("Cancel subscription for '{}' to '{}'", request.getMethod(), request.getURI());
             try {
                 client.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // ignore
             }
         });
@@ -126,8 +122,7 @@ public class HttpProtocolClient implements ProtocolClient {
                         log.debug("Next data received for Event connection");
                         observer.next(content);
                     }
-                }
-                catch (IOException | ProtocolClientException e) {
+                } catch (IOException | ProtocolClientException e) {
                     if (!subscription.isClosed()) {
                         log.debug("Error received for Event connection");
                         e.printStackTrace();
@@ -159,12 +154,10 @@ public class HttpProtocolClient implements ProtocolClient {
             String password = (String) ((ConfigValue) credentialsMap.get("password")).unwrapped();
             authorization = "Basic " + new String(Base64.encodeBase64((username + ":" + password).getBytes()));
             return true;
-        }
-        else if (scheme.equals("nosec")) {
+        } else if (scheme.equals("nosec")) {
             // nothing to do
             return true;
-        }
-        else {
+        } else {
             log.error("HttpClient cannot set security scheme '{}'", scheme);
             return false;
         }
@@ -208,8 +201,7 @@ public class HttpProtocolClient implements ProtocolClient {
 
         if (statusCode < 200) {
             throw new ProtocolClientException("Received '" + statusCode + "' and cannot continue (not implemented)");
-        }
-        else if (statusCode < 300) {
+        } else if (statusCode < 300) {
             HttpEntity entity = response.getEntity();
 
             ContentType contentType = ContentType.get(entity);
@@ -223,26 +215,21 @@ public class HttpProtocolClient implements ProtocolClient {
                 if (entity != null) {
                     InputStream inputStream = entity.getContent();
                     body = inputStream.readAllBytes();
-                }
-                else {
+                } else {
                     body = new byte[0];
                 }
                 Content content = new Content(type, body);
                 return content;
 
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 throw new ProtocolClientException("Error during http request: " + e.toString());
             }
-        }
-        else if (statusCode < 400) {
+        } else if (statusCode < 400) {
             throw new ProtocolClientException("Received '" + statusCode + "' and cannot continue (not implemented)");
-        }
-        else if (statusCode < 500) {
+        } else if (statusCode < 500) {
             throw new ProtocolClientException("Client error: " + statusLine.toString());
-        }
-        else {
+        } else {
 //            String body = EntityUtils.toString(response.getEntity());
             throw new ProtocolClientException("Server error: " + statusLine.toString());
         }

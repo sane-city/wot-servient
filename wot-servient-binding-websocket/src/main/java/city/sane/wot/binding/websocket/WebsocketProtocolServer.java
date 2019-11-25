@@ -161,8 +161,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
             variables = "{?" + String.join(",", uriVariables) + "}";
         }
 
-        String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
-        return href;
+        return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
     }
 
     class MyServer extends WebSocketServer {

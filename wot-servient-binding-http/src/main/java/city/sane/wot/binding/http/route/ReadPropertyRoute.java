@@ -51,23 +51,19 @@ public class ReadPropertyRoute extends AbstractRoute {
                         Content content = ContentManager.valueToContent(value, requestContentType);
                         response.type(content.getType());
                         return content;
-                    }
-                    catch (ContentCodecException e) {
+                    } catch (ContentCodecException e) {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                         return e;
                     }
-                }
-                else {
+                } else {
                     response.status(HttpStatus.BAD_REQUEST_400);
                     return "Property writeOnly";
                 }
-            }
-            else {
+            } else {
                 response.status(HttpStatus.NOT_FOUND_404);
                 return "Property not found";
             }
-        }
-        else {
+        } else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }

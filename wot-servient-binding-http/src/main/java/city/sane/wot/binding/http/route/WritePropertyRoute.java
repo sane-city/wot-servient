@@ -52,28 +52,23 @@ public class WritePropertyRoute extends AbstractRoute {
                         if (output != null) {
                             response.status(HttpStatus.OK_200);
                             return output;
-                        }
-                        else {
+                        } else {
                             response.status(HttpStatus.NO_CONTENT_204);
                             return "";
                         }
-                    }
-                    catch (ContentCodecException e) {
+                    } catch (ContentCodecException e) {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                         return e;
                     }
-                }
-                else {
+                } else {
                     response.status(HttpStatus.BAD_REQUEST_400);
                     return "Property readOnly";
                 }
-            }
-            else {
+            } else {
                 response.status(HttpStatus.NOT_FOUND_404);
                 return "Property not found";
             }
-        }
-        else {
+        } else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }
