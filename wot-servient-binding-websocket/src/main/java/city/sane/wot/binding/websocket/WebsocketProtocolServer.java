@@ -5,6 +5,8 @@ import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
+import city.sane.wot.thing.action.ExposedThingAction;
+import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
@@ -59,6 +61,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
         // TODO: add websocket forms to thing description
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
+
+                // properties
+
                 String hrefA = address + "/" + thing.getId() + "/all/properties";
                 Form formA = new Form.Builder()
                         .setHref(hrefA)
@@ -76,10 +81,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     formP.setContentType(contentType);
                     if (property.isReadOnly()) {
                         formP.setOp(Operation.readproperty);
-                        formP.setOptional("htv:methodName", "GET");
+                        // TODO
+                        //formP.setOptional("htv:methodName", "GET");
                     } else if (property.isWriteOnly()) {
                         formP.setOp(Operation.writeproperty);
-                        formP.setOptional("htv:methodName", "PUT");
+                        // TODO
+                        //formP.setOptional("htv:methodName", "PUT");
                     } else {
                         formP.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
                     }
@@ -99,6 +106,37 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         property.addForm(observableForm.build());
                         log.info("Assign '{}' to observable Property '{}'", observableHref, name);
                     }
+                });
+
+                // actions
+
+                Map<String, ExposedThingAction> actions = thing.getActions();
+                actions.forEach((name, action) -> {
+                    String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
+                    Form.Builder form = new Form.Builder();
+                    form.setHref(href);
+                    form.setContentType(contentType);
+                    form.setOp(Operation.invokeaction);
+                    // TODO
+                    // form.setOptional("htv:methodName", "POST");
+
+                    action.addForm(form.build());
+                    log.info("Assign '{}' to Action '{}'", href, name);
+                });
+
+                // events
+
+                Map<String, ExposedThingEvent> events = thing.getEvents();
+                events.forEach((name, event) -> {
+                    String href = getHrefWithVariablePattern(address, thing, "events", name, event);
+                    Form.Builder form = new Form.Builder();
+                    form.setHref(href);
+                    form.setContentType(contentType);
+                    form.setSubprotocol("longpoll");
+                    form.setOp(Operation.subscribeevent);
+
+                    event.addForm(form.build());
+                    log.info("Assign '{}' to Event '{}'", href, name);
                 });
             }
         }
