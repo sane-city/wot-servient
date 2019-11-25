@@ -31,7 +31,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     public WebsocketProtocolServer() {
         server = new MyServer(new InetSocketAddress(8080));
-        addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":8080/things").collect(Collectors.toList());
+        addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":8080/things").collect(Collectors.toList());
 
     }
 
