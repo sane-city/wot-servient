@@ -150,8 +150,7 @@ public class HttpProtocolServerTest {
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
                 result.complete(content);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 result.completeExceptionally(e);
             }
         });
@@ -252,8 +251,7 @@ public class HttpProtocolServerTest {
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
                 result.complete(content);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 result.completeExceptionally(e);
             }
         });
@@ -280,8 +278,7 @@ public class HttpProtocolServerTest {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/events/change");
                 HttpClientBuilder.create().build().execute(request);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -338,11 +335,9 @@ public class HttpProtocolServerTest {
                 int step;
                 if (input != null && ((Map) input).containsKey("step")) {
                     step = (Integer) ((Map) input).get("step");
-                }
-                else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                } else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
                     step = (int) ((Map) options.get("uriVariables")).get("step");
-                }
-                else {
+                } else {
                     step = 1;
                 }
 

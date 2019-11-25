@@ -11,8 +11,7 @@ public abstract class AbstractRoute implements Route {
     protected String getOrDefaultRequestContentType(Request request) {
         if (request.contentType() != null) {
             return request.contentType();
-        }
-        else {
+        } else {
             return ContentManager.DEFAULT;
         }
     }
