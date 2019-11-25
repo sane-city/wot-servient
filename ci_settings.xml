@@ -18,4 +18,20 @@
             <password>${env.MAVEN_REPO_PASS}</password>
         </server>
     </servers>
+    <pluginGroups>
+        <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+    </pluginGroups>
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.host.url>http://134.100.11.115:9000</sonar.host.url>
+                <sonar.login>${SONAR_LOGIN_TOKEN}</sonar.login>
+                <sonar.projectName>Web of Things Servient</sonar.projectName>
+            </properties>
+        </profile>
+    </profiles>
 </settings>
