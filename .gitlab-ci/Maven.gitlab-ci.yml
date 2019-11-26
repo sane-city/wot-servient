@@ -53,6 +53,14 @@ check-code:
   stage: test
   script:
       - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
+      - /bin/bash coverage-jacoco.sh
+  coverage: '/\d+.\d+ \% covered/'
+  artifacts:
+    reports:
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
+        - "*/target/failsafe-reports/TEST-*.xml"
+
 
 # Verify merge requests using JDK11
 verify:jdk11:
