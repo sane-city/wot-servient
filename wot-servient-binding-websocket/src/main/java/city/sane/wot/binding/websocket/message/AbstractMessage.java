@@ -10,7 +10,8 @@ import java.util.UUID;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ReadProperty.class, name = "readProperty"),
-        @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty")
+        @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty"),
+        @JsonSubTypes.Type(value = SubscribeProperty.class, name = "subscribeProperty")
 
 })
 public abstract class AbstractMessage {

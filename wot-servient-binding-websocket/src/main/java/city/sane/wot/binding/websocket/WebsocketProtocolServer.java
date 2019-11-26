@@ -65,20 +65,18 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 // properties
 
-                String hrefA = address;
                 Form formA = new Form.Builder()
-                        .setHref(hrefA)
+                        .setHref(address)
                         .setContentType(contentType)
                         .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties))
                         .build();
                 thing.addForm(formA);
-                log.info("Assign '{}' for reading all properties", hrefA);
+                log.info("Assign '{}' for reading all properties", address);
 
                 Map<String, ExposedThingProperty> properties = thing.getProperties();
                 properties.forEach((name, property) -> {
-                    String hrefP = address;
                     Form.Builder formP = new Form.Builder();
-                    formP.setHref(hrefP);
+                    formP.setHref(address);
                     formP.setContentType(contentType);
                     if (property.isReadOnly()) {
                         formP.setOp(Operation.readproperty);
@@ -93,18 +91,17 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     }
 
                     property.addForm(formP.build());
-                    log.info("Assign '{}' to Property '{}'", hrefP, name);
+                    log.info("Assign '{}' to Property '{}'", address, name);
 
                     // if property is observable add an additional form with a observable href
                     if (property.isObservable()) {
-                        String observableHref = hrefP;
                         Form.Builder observableForm = new Form.Builder();
-                        observableForm.setHref(observableHref);
+                        observableForm.setHref(address);
                         observableForm.setContentType(contentType);
                         observableForm.setOp(Operation.observeproperty);
 
                         property.addForm(observableForm.build());
-                        log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+                        log.info("Assign '{}' to observable Property '{}'", address, name);
                     }
                 });
 
@@ -112,16 +109,15 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 Map<String, ExposedThingAction> actions = thing.getActions();
                 actions.forEach((name, action) -> {
-                    String href = address;
                     Form.Builder form = new Form.Builder();
-                    form.setHref(href);
+                    form.setHref(address);
                     form.setContentType(contentType);
                     form.setOp(Operation.invokeaction);
                     // TODO
                     // form.setOptional("htv:methodName", "POST");
 
                     action.addForm(form.build());
-                    log.info("Assign '{}' to Action '{}'", href, name);
+                    log.info("Assign '{}' to Action '{}'", address, name);
                 });
 
                 // events
@@ -164,7 +160,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
     }
 
-    class MyServer extends WebSocketServer {
+    static class MyServer extends WebSocketServer {
         public MyServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
         }
