@@ -4,6 +4,6 @@ public class ReadProperty extends AbstractMessage {
 
     @Override
     public String getType() {
-        return null;
+        return "readProperty";
     }
 }
