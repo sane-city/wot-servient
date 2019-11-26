@@ -44,7 +44,7 @@ public class ThingResource extends AbstractResource {
             exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
         }
         catch (ContentCodecException e) {
-            e.printStackTrace();
+            log.warn("Exception: {}", e);
             exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
         }
     }

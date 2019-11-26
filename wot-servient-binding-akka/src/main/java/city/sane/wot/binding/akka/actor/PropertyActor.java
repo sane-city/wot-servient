@@ -76,15 +76,16 @@ public class PropertyActor extends AbstractActor {
 
         property.read().whenComplete((value, e) -> {
             if (e != null) {
-                e.printStackTrace();
+                log.warning("Unable to read property: {}", e.getMessage());
             }
-
-            try {
-                Content content = ContentManager.valueToContent(value);
-                sender.tell(new RespondRead(content), getSelf());
-            }
-            catch (ContentCodecException ex) {
-                ex.printStackTrace();
+            else {
+                try {
+                    Content content = ContentManager.valueToContent(value);
+                    sender.tell(new RespondRead(content), getSelf());
+                }
+                catch (ContentCodecException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
     }
@@ -97,16 +98,17 @@ public class PropertyActor extends AbstractActor {
 
             property.write(input).whenComplete((output, e) -> {
                 if (e != null) {
-                    e.printStackTrace(); // TODO: better exception handling?
+                    log.warning("Unable to write property: {}", e.getMessage());
                 }
-
-                // TODO: return output if available
-                sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                else {
+                    // TODO: return output if available
+                    sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                }
             });
 
         }
         catch (ContentCodecException e) {
-            e.printStackTrace(); // TODO: better exception handling?
+            log.warning("Unable to write property: {}", e.getMessage());
         }
     }
 

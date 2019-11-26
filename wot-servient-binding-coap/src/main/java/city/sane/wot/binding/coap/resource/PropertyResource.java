@@ -41,12 +41,12 @@ public class PropertyResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        e.printStackTrace();
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+                        log.warn("Exception: {}", ex);
+                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    e.printStackTrace();
+                    log.warn("Exception: {}", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
@@ -91,14 +91,14 @@ public class PropertyResource extends AbstractResource {
                         }
                     }
                     else {
-                        e.printStackTrace();
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+                        log.warn("Exception: {}", e);
+                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
                     }
                 });
             }
             catch (ContentCodecException ex) {
                 ex.printStackTrace();
-                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
+                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
             }
         }
         else {

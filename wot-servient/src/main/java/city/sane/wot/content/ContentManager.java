@@ -125,7 +125,6 @@ public class ContentManager {
                 return (T) objectStream.readObject();
             }
             catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
                 throw new ContentCodecException("Unable to deserialize content: " + e.getMessage());
             }
         }
@@ -167,7 +166,6 @@ public class ContentManager {
                 bytes = byteStream.toByteArray();
             }
             catch (IOException e) {
-                e.printStackTrace();
                 throw new ContentCodecException("Unable to serialize content: " + e.getMessage());
             }
         }

@@ -65,7 +65,7 @@ public class AkkaDiscoveryClient {
                     Thread.currentThread().interrupt();
                 }
                 catch (ExecutionException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("==========");

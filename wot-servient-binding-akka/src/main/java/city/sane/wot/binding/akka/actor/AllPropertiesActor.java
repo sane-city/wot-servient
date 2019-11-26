@@ -62,7 +62,7 @@ public class AllPropertiesActor extends AbstractActor {
 
         thing.readProperties().whenComplete((value, e) -> {
             if (e != null) {
-                e.printStackTrace();
+                log.warning("Unable to read properties: {}", e.getMessage());
             }
 
             try {

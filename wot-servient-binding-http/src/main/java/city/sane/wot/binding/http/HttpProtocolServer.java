@@ -203,7 +203,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }
@@ -214,7 +214,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0) + "/" + id);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to thing url: {}", e);
             return null;
         }
     }

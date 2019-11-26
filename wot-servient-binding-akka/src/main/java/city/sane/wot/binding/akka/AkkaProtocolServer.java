@@ -110,7 +110,7 @@ public class AkkaProtocolServer implements ProtocolServer {
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }

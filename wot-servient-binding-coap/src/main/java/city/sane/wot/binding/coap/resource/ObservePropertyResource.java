@@ -76,14 +76,12 @@ public class ObservePropertyResource extends AbstractResource {
                         }
                     }
                     catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Property '{}': {}", name, e.toString());
-                        e.printStackTrace();
+                        log.warn("Cannot process data for Property '{}': {}", name, e.getMessage());
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                     }
                 }
                 else {
-                    log.warn("Cannot process data for Property '{}': {}", name, e.toString());
-                    e.printStackTrace();
+                    log.warn("Cannot process data for Property '{}': {}", name, e.getMessage());
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                 }
             }

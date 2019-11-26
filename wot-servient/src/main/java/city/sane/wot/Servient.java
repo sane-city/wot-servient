@@ -279,7 +279,6 @@ public class Servient {
                         return thing;
                     }
                     catch (ContentCodecException e) {
-                        e.printStackTrace();
                         throw new CompletionException(new ServientException("Error while fetching TD: " + e.toString()));
                     }
                 });

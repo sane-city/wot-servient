@@ -41,8 +41,8 @@ public class RootResource extends AbstractResource {
             exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
         }
         catch (ContentCodecException e) {
-            e.printStackTrace();
-            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+            log.warn("Exception: {}", e);
+            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
 }

@@ -123,7 +123,6 @@ public class BusSensor {
         }
         catch (ContentCodecException e) {
             System.err.println("Unable to extract received content: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }

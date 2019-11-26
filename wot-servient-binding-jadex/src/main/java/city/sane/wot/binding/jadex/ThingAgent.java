@@ -147,7 +147,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                e.printStackTrace();
+                log.warn("Unable to read properties: {}", e.getMessage());
                 return null;
             }
         });
@@ -164,7 +164,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                e.printStackTrace();
+                log.warn("Unable to read property: {}", e.getMessage());
                 return null;
             }
         });
@@ -185,7 +185,7 @@ public class ThingAgent implements ThingService {
                     return new JadexContent(outputContent);
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
+                    log.warn("Unable to write property: {}", e.getMessage());
                     return null;
                 }
             });

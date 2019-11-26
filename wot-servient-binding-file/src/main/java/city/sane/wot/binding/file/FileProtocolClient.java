@@ -47,8 +47,7 @@ public class FileProtocolClient implements ProtocolClient {
                 return content;
             }
             catch (IOException e) {
-                e.printStackTrace();
-                throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e));
+                throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e.getMessage()));
             }
         });
     }

@@ -41,7 +41,6 @@ public class JsonpathHttpProtocolClient extends HttpProtocolClient {
                 }
                 catch (ContentCodecException e) {
                     log.warn("Unable apply JSONPath: " + e.getMessage());
-                    e.printStackTrace();
                     return content;
                 }
             }
