@@ -77,14 +77,12 @@ public class EventResource extends AbstractResource {
                         }
                     }
                     catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                        e.printStackTrace();
+                        log.warn("Cannot process data for Event '{}': {}", name, e.getMessage());
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                     }
                 }
                 else {
-                    log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                    e.printStackTrace();
+                    log.warn("Cannot process data for Event '{}': {}", name, e.getMessage());
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                 }
             }

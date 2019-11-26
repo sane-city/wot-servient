@@ -86,7 +86,6 @@ public class MqttProtocolClient implements ProtocolClient {
         }
         catch (MqttException e) {
             log.error("MqttClient could not connect to broker at '{}': {}", broker, e.getMessage());
-            e.printStackTrace();
         }
         finally {
             if (persistence != null) {
@@ -122,14 +121,12 @@ public class MqttProtocolClient implements ProtocolClient {
                 future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
             }
             catch (MqttException e) {
-                e.printStackTrace();
                 future.completeExceptionally(new ProtocolClientException(
                         "MqttClient at '" + broker + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
                 ));
             }
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
             future.completeExceptionally(
                     new ProtocolClientException("Unable to extract topic from href '" + form.getHref() + "'"));
         }
@@ -149,7 +146,7 @@ public class MqttProtocolClient implements ProtocolClient {
             topic = new URI(form.getHref()).getPath().substring(1);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to subscribe resource: {}", e.getMessage());
             return null;
         }
 
@@ -172,7 +169,6 @@ public class MqttProtocolClient implements ProtocolClient {
                 }
                 catch (MqttException e) {
                     log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
-                    e.printStackTrace();
                     newSubject.error(e);
                 }
             }).thenApply(done -> result.complete(subscription));
@@ -198,7 +194,6 @@ public class MqttProtocolClient implements ProtocolClient {
                     }
                     catch (MqttException e) {
                         log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
-                        e.printStackTrace();
                     }
                 }
             });

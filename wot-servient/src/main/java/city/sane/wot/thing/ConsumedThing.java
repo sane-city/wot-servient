@@ -189,7 +189,6 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                     return values;
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });

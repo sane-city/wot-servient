@@ -38,7 +38,6 @@ public class Observer<T> {
      */
     public Observer(Consumer<T> next) {
         this(next, e -> {
-            e.printStackTrace();
         }, () -> {
         });
     }

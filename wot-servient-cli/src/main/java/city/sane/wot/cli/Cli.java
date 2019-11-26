@@ -88,7 +88,6 @@ public class Cli {
             }
             catch (ServientException e) {
                 log.error("Servient experienced error while reading script", e);
-                e.printStackTrace();
             }
         }
     }

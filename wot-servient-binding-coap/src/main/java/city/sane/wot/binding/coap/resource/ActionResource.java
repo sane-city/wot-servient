@@ -52,18 +52,15 @@ public class ActionResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        e.printStackTrace();
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    e.printStackTrace();
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
         }
         catch (ContentCodecException e) {
-            e.printStackTrace();
             exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
         }
     }

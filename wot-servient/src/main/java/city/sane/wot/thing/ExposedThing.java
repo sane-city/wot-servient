@@ -237,8 +237,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
-            log.warn("'{}' unable to write initial value for Property '{}'", getId(), name);
-            e.printStackTrace();
+            log.warn("'{}' unable to write initial value for Property '{}': {}", getId(), name, e.getMessage());
         }
 
         return this;

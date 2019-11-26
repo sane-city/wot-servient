@@ -119,7 +119,6 @@ public class CoapProtocolClient implements ProtocolClient {
                         }
                         catch (ContentCodecException e) {
                             log.debug("Error received for subcription '{}': ", url, e.getMessage());
-                            e.printStackTrace();
                         }
                     }
                 }
@@ -181,7 +180,6 @@ public class CoapProtocolClient implements ProtocolClient {
                 }
                 catch (ContentCodecException e) {
                     future.completeExceptionally(new ProtocolClientException("Response was not successful: " + e.getMessage()));
-                    e.printStackTrace();
                 }
             }
         }

@@ -197,7 +197,7 @@ public class Luftdaten {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                // ignore
             }
 
             Thread.sleep(60 * 1000L);
