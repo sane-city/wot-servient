@@ -93,7 +93,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     property.addForm(formP.build());
                     log.info("Assign '{}' to Property '{}'", address, name);
 
-                    // if property is observable add an additional form with a observable href
+                    // if property is observable add a form with an observable href
                     if (property.isObservable()) {
                         Form.Builder observableForm = new Form.Builder();
                         observableForm.setHref(address);
