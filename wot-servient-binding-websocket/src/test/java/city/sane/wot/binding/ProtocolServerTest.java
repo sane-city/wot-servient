@@ -61,7 +61,7 @@ public class ProtocolServerTest {
 
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("test");
+                    System.out.println("test2");
                 }
 
                 @Override
@@ -81,7 +81,7 @@ public class ProtocolServerTest {
             };
             cc.connect();
             Thread.sleep(1000);
-            cc.send("test");
+            cc.send("test1");
 
 
             System.out.println();

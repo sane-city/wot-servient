@@ -16,7 +16,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
     final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
 
     public WebsocketProtocolClient(Config config) throws ProtocolClientException {
-
     }
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
