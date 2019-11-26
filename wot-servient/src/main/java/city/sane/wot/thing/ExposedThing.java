@@ -233,7 +233,10 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
             // wait until init value has been written
             exposedProperty.write(init).get();
         }
-        catch (InterruptedException | ExecutionException e) {
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
             log.warn("'{}' unable to write initial value for Property '{}'", getId(), name);
             e.printStackTrace();
         }

@@ -39,7 +39,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
         log.debug("CoapClient sending {} to {}", "GET", url);
 
         Request request = generateRequest(form, CoAP.Code.GET);
@@ -55,7 +55,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
         log.debug("Sending '{}' to '{}'", request.getCode(), url);
@@ -75,7 +75,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.POST);
         log.debug("Sending '{}' to '{}'", request.getCode(), url);
