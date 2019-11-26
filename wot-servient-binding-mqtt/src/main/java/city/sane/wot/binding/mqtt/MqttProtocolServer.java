@@ -26,7 +26,7 @@ import java.util.concurrent.CompletionException;
  * Allows exposing Things via MQTT.
  */
 public class MqttProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 
     private final String broker;
     private final String clientId;

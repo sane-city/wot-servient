@@ -54,7 +54,7 @@ public class AllActor extends AbstractActor {
         getContext().getParent().tell(new CrudMessages.Created<>(getSelf()), getSelf());
     }
 
-    static public Props props(ExposedThing thing) {
+    public static Props props(ExposedThing thing) {
         return Props.create(AllActor.class, () -> new AllActor(thing));
     }
 }

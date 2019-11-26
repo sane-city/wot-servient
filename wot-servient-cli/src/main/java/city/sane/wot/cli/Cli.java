@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Cli {
-    final static Logger log = LoggerFactory.getLogger(Cli.class);
+    static final Logger log = LoggerFactory.getLogger(Cli.class);
 
     private final String CONF = "wot-servient.conf";
     private final String LOGLEVEL = "warn";

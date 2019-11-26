@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
  * Allows consuming Things via MQTT.
  */
 public class MqttProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
 
     private final String broker;
     private final String clientId;

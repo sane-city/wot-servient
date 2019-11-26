@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via HTTP.
  */
 public class HttpProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
 
     private final String bindHost;
     private final int bindPort;

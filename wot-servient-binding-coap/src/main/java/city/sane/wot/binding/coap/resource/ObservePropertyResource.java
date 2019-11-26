@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ObservePropertyResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(ObservePropertyResource.class);
+    static final Logger log = LoggerFactory.getLogger(ObservePropertyResource.class);
     private final CoapServer server;
     private final String name;
     private final ExposedThingProperty property;
@@ -92,7 +92,7 @@ public class ObservePropertyResource extends AbstractResource {
         }
     }
 
-    synchronized private void ensureSubcription() {
+    private synchronized void ensureSubcription() {
         if (subscription == null) {
             subscription = property.subscribe(
                     data -> changeResource(data, null),
@@ -103,7 +103,7 @@ public class ObservePropertyResource extends AbstractResource {
         }
     }
 
-    synchronized private void changeResource(Object data, Throwable e) {
+    private synchronized void changeResource(Object data, Throwable e) {
         this.data = data;
         this.e = e;
         changed();

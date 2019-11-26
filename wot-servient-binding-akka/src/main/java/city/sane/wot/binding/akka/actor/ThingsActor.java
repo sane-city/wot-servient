@@ -134,12 +134,12 @@ public class ThingsActor extends AbstractActor {
         requester.tell(new Deleted<>(getSender()), getSelf());
     }
 
-    static public Props props(Map<String, ExposedThing> things) {
+    public static Props props(Map<String, ExposedThing> things) {
         return Props.create(ThingsActor.class, () -> new ThingsActor(things));
     }
 
     // CrudMessages
-    static public class Discover implements Serializable {
+    public static class Discover implements Serializable {
         final ThingFilter filter;
 
         public Discover(ThingFilter filter) {

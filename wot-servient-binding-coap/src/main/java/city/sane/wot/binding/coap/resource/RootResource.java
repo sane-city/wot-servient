@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for listing all Things from the {@link city.sane.wot.Servient}.
  */
 public class RootResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(RootResource.class);
+    static final Logger log = LoggerFactory.getLogger(RootResource.class);
 
     private final CoapServer server;
 

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
 public class ConsumedThingProperty extends ThingProperty {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
+    static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
 
     private final String name;
     private final ConsumedThing thing;

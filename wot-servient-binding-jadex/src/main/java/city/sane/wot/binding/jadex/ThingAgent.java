@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
         @ProvidedService(type = ThingService.class, scope = ServiceScope.GLOBAL)
 })
 public class ThingAgent implements ThingService {
-    final static Logger log = LoggerFactory.getLogger(ThingAgent.class);
+    static final Logger log = LoggerFactory.getLogger(ThingAgent.class);
 
     @Agent
     private IInternalAccess agent;

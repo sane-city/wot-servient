@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  * Endpoint for interaction with a {@link city.sane.wot.thing.event.ThingEvent}.
  */
 public class SubscribeEventRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
+    static final Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
 
     private final Map<String, ExposedThing> things;
 

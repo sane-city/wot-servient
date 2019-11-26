@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for displaying a Thing Description.
  */
 public class ThingResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(ThingResource.class);
+    static final Logger log = LoggerFactory.getLogger(ThingResource.class);
 
     private final CoapServer server;
     private final ExposedThing thing;

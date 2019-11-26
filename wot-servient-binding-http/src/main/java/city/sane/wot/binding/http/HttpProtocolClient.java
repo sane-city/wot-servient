@@ -34,7 +34,7 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via HTTP.
  */
 public class HttpProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
 
     private String authorizationHeader = HttpHeaders.AUTHORIZATION;
     private String authorization = null;

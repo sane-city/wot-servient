@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolClientFactory implements ProtocolClientFactory {
-    final static Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
+    static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
 
     private final Config config;
 
