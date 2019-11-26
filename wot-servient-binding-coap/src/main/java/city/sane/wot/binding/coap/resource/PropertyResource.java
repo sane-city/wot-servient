@@ -82,8 +82,7 @@ public class PropertyResource extends AbstractResource {
                                 exchange.respond(CoAP.ResponseCode.CHANGED, outputContent.getBody(), outputContentFormat);
                             }
                             catch (ContentCodecException ex) {
-                                ex.printStackTrace();
-                                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
+                                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
                             }
                         }
                         else {
@@ -97,7 +96,6 @@ public class PropertyResource extends AbstractResource {
                 });
             }
             catch (ContentCodecException ex) {
-                ex.printStackTrace();
                 exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
             }
         }
