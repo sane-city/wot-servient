@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for reading all properties from a Thing
  */
 public class AllPropertiesResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(AllPropertiesResource.class);
+    static final Logger log = LoggerFactory.getLogger(AllPropertiesResource.class);
     private final CoapServer server;
     private final ExposedThing thing;
 

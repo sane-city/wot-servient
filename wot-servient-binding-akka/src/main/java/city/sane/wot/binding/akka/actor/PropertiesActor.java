@@ -63,7 +63,7 @@ public class PropertiesActor extends AbstractActor {
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    static public Props props(Map<String, ExposedThingProperty> properties) {
+    public static Props props(Map<String, ExposedThingProperty> properties) {
         return Props.create(PropertiesActor.class, () -> new PropertiesActor(properties));
     }
 }

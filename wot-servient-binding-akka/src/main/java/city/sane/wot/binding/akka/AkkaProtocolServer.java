@@ -29,7 +29,7 @@ import static city.sane.wot.binding.akka.CrudMessages.*;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;

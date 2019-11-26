@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class PropertyResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(PropertyResource.class);
+    static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
 
     private final CoapServer server;
     private final ExposedThingProperty property;

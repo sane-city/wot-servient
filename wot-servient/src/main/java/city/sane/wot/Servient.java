@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * should contain a map which uses the thing ids as key.
  */
 public class Servient {
-    final static Logger log = LoggerFactory.getLogger(Servient.class);
+    static final Logger log = LoggerFactory.getLogger(Servient.class);
 
     private final Config config;
     private final List<ProtocolServer> servers = new ArrayList<>();

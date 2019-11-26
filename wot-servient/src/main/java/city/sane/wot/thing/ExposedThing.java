@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
 public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
-    final static Logger log = LoggerFactory.getLogger(ExposedThing.class);
+    static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
 
     private final Servient servient;
 

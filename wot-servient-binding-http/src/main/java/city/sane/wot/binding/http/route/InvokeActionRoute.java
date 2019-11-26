@@ -18,7 +18,7 @@ import java.util.Map;
  * Endpoint for invoking a {@link city.sane.wot.thing.action.ThingAction}.
  */
 public class InvokeActionRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
+    static final Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
 
     private final Map<String, ExposedThing> things;
 

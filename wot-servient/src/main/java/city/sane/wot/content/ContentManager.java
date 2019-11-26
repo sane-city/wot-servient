@@ -14,8 +14,8 @@ import java.util.Set;
  * Is responsible for the (de)serialization of arbitrary data structures.
  */
 public class ContentManager {
-    public final static String DEFAULT = "application/json";
-    final static Logger log = LoggerFactory.getLogger(ContentManager.class);
+    public static final String DEFAULT = "application/json";
+    static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
     private static final Map<String, ContentCodec> CODECS = new HashMap();
     private static final Set<String> OFFERED = new HashSet<>();

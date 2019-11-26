@@ -116,11 +116,11 @@ public class PropertyActor extends AbstractActor {
         // FIXME: Implement
     }
 
-    static public Props props(String name, ExposedThingProperty property) {
+    public static Props props(String name, ExposedThingProperty property) {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
     }
 
-    static public class Subscribe implements Serializable {
+    public static class Subscribe implements Serializable {
         // FIXME: Implement
     }
 }

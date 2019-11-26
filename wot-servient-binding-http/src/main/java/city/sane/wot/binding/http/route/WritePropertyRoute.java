@@ -17,7 +17,7 @@ import java.util.Map;
  * Endpoint for writing values to a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class WritePropertyRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(WritePropertyRoute.class);
+    static final Logger log = LoggerFactory.getLogger(WritePropertyRoute.class);
 
     private final Map<String, ExposedThing> things;
 

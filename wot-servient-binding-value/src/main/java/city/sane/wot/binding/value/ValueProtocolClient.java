@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * Allows consuming Things via values stored in Thing Descriptions.
  */
 public class ValueProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(ValueProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(ValueProtocolClient.class);
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {

@@ -16,7 +16,7 @@ import java.util.Map;
  * Endpoint for reading all properties from a Thing
  */
 public class ReadAllPropertiesRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(ReadAllPropertiesRoute.class);
+    static final Logger log = LoggerFactory.getLogger(ReadAllPropertiesRoute.class);
 
     private final Map<String, ExposedThing> things;
 

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via CoAP.
  */
 public class CoapProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
 
     static {
         // Californium uses java.util.logging. We need to redirect all log messages to logback

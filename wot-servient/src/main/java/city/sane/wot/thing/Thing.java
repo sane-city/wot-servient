@@ -30,7 +30,7 @@ import java.util.*;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
-    final static Logger log = LoggerFactory.getLogger(Thing.class);
+    static final Logger log = LoggerFactory.getLogger(Thing.class);
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 

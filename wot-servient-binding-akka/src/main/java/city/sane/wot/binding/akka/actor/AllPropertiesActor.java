@@ -75,7 +75,7 @@ public class AllPropertiesActor extends AbstractActor {
         });
     }
 
-    static public Props props(ExposedThing thing) {
+    public static Props props(ExposedThing thing) {
         return Props.create(AllPropertiesActor.class, () -> new AllPropertiesActor(thing));
     }
 }

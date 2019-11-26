@@ -8,7 +8,7 @@ import city.sane.wot.thing.Thing
 import com.fasterxml.jackson.databind.ObjectMapper
 
 class WotExtensions {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
 
     static ExposedThing produce(Wot self, Map map) {
         def thing = JSON_MAPPER.convertValue(map, Thing.class)

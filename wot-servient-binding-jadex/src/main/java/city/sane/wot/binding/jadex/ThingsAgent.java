@@ -23,7 +23,7 @@ import java.util.Map;
         @ProvidedService(type = ThingsService.class, scope = ServiceScope.PLATFORM)
 })
 public class ThingsAgent implements ThingsService {
-    final static Logger log = LoggerFactory.getLogger(ThingsAgent.class);
+    static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
     private final Map<String, IExternalAccess> children = new HashMap<>();
     @Agent
     private IInternalAccess agent;
