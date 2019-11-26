@@ -96,19 +96,19 @@ public class ConsumedThingTest {
 
         // wait until client establish subcription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         exposedThing.getProperty("count").write(1337).join();
 
         // wait until client fires next subscribe-request to server
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         exposedThing.getProperty("count").write(1338).join();
 
         // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
         // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         subscription1.unsubscribe();
         subscription2.unsubscribe();
@@ -152,19 +152,19 @@ public class ConsumedThingTest {
 
         // wait until client establish subcription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         exposedThing.getEvent("change").emit();
 
         // wait until client fires next subscribe-request to server
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         exposedThing.getEvent("change").emit();
 
         // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
         // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         subscription1.unsubscribe();
         subscription2.unsubscribe();

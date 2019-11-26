@@ -65,7 +65,7 @@ public class ExposedThingTest {
 
         // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
         // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(1 * 1000);
+        Thread.sleep(1 * 1000L);
 
         assertEquals(2, counter1.get());
         assertEquals(2, counter2.get());

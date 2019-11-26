@@ -62,7 +62,7 @@ public class AkkaDiscoveryClient {
                     });
                 }
                 catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
                 catch (ExecutionException e) {
                     e.printStackTrace();

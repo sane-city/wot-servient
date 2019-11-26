@@ -83,10 +83,10 @@ public class CoapProtocolServer implements ProtocolServer {
             //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
             //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
             try {
-                Thread.sleep(1 * 1000);
+                Thread.sleep(1 * 1000L);
             }
             catch (InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
 
             log.debug("Server stopped");

@@ -46,7 +46,10 @@ public class JadexCurrentTimeClient {
                     Object currentTime = consumedThing.getProperty("value").read().get();
                     System.out.println("Current time is: " + currentTime);
                 }
-                catch (InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                catch (ExecutionException e) {
                     throw new RuntimeException(e);
                 }
             }
