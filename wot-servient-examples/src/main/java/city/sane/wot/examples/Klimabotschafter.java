@@ -277,7 +277,7 @@ public class Klimabotschafter {
                 e.printStackTrace();
             }
 
-            Thread.sleep(60 * 1000);
+            Thread.sleep(60 * 1000L);
         }
     }
 

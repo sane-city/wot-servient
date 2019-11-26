@@ -60,10 +60,10 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         return CompletableFuture.runAsync(() -> {
             // wait a bit for the cluster to form
             try {
-                Thread.sleep(3 * 1000);
+                Thread.sleep(3 * 1000L);
             }
             catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
 
             discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher");

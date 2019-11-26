@@ -25,7 +25,7 @@ public class RetainableSubject<T> extends Subject<T> {
     }
 
     @Override
-    public Subscription subscribe(Observer observer) {
+    public synchronized Subscription subscribe(Observer observer) {
         Subscription subscribe = super.subscribe(observer);
         log.debug("Inform new observer about {} retained value(s)", storedValues.size());
         storedValues.forEach(observer::next);
