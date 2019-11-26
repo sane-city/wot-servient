@@ -107,7 +107,7 @@ public class MqttProtocolClient implements ProtocolClient {
                 }
                 client.publish(topic, new MqttMessage(payload));
 
-                // MQTT does not support the request-response pattern. return empty message
+                // MQTT does not support the request-response pattern. return empty message.
                 future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
             }
             catch (MqttException e) {
@@ -146,7 +146,7 @@ public class MqttProtocolClient implements ProtocolClient {
         Subject<Content> existingSubject = topicSubjects.putIfAbsent(topic, newSubject);
         CompletableFuture<Subscription> result = new CompletableFuture<>();
         if (existingSubject == null) {
-            // first subscription for this mqtt topic. create new subject and create subscription
+            // first subscription for this mqtt topic. create new subject and create subscription.
             Subscription subscription = newSubject.subscribe(observer);
 
             CompletableFuture.runAsync(() -> {
@@ -154,13 +154,13 @@ public class MqttProtocolClient implements ProtocolClient {
 
                 try {
                     client.subscribe(topic, (receivedTopic, message) -> {
-                        log.info("MqttClient received message from broker '{}' for topic '{}'", broker, receivedTopic);
+                        log.info("MqttClient received message from the broker '{}' for topic '{}'", broker, receivedTopic);
                         Content content = new Content(form.getContentType(), message.getPayload());
                         newSubject.next(content);
                     });
                 }
                 catch (MqttException e) {
-                    log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
+                    log.warn("Exception occurred while trying to subscribe to broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
                     e.printStackTrace();
                     newSubject.error(e);
                 }
@@ -179,14 +179,14 @@ public class MqttProtocolClient implements ProtocolClient {
         result.thenApply(subscription -> {
             subscription.add(() -> {
                 if (subject.getObservers().isEmpty()) {
-                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.");
+                    log.debug("MqttClient subscriptions of broker and topic has no more observers. Remove subscription.");
                     topicSubjects.remove(topic);
                     subject.complete();
                     try {
                         client.unsubscribe(topic);
                     }
                     catch (MqttException e) {
-                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
+                        log.warn("Exception occurred while trying to unsubscribe from the broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
                         e.printStackTrace();
                     }
                 }
