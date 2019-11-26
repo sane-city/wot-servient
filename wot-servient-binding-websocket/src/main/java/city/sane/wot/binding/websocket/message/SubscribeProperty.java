@@ -1,6 +1,6 @@
 package city.sane.wot.binding.websocket.message;
 
-public class WriteProperty extends AbstractMessage {
+public class SubscribeProperty extends AbstractMessage {
     @Override
     public String getType() {
         return null;
