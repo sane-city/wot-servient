@@ -70,7 +70,7 @@ public class AllPropertiesActor extends AbstractActor {
                 sender.tell(new RespondRead(content), getSelf());
             }
             catch (ContentCodecException ex) {
-                ex.printStackTrace();
+                log.warning("Unable to read property: {}", ex.getMessage());
             }
         });
     }
