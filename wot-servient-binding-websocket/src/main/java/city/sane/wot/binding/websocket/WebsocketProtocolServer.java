@@ -2,6 +2,7 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -10,6 +11,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -161,6 +163,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     static class MyServer extends WebSocketServer {
+        private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
         public MyServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
         }
@@ -179,6 +183,16 @@ public class WebsocketProtocolServer implements ProtocolServer {
         public void onMessage(WebSocket webSocket, String s) {
             // TODO: implementieren
             System.out.println("Nachricht erhalten: " + s);
+            try {
+                AbstractMessage message = JSON_MAPPER.readValue(s, AbstractMessage.class);
+
+                // TODO how to handle incoming messages.
+                if (true){
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
