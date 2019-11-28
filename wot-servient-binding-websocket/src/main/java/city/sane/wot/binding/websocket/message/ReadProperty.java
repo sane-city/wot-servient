@@ -1,18 +1,31 @@
 package city.sane.wot.binding.websocket.message;
 
-import city.sane.wot.thing.ExposedThing;
-
-import java.util.Map;
+import java.io.Reader;
 
 public class ReadProperty extends AbstractMessage {
-    private final Map<String, ExposedThing> things;
+    private final String thingId;
+    private final String name;
 
-    public ReadProperty(Map<String, ExposedThing> things) {
-        this.things = things;
+    public ReadProperty() {
+        this.thingId = null;
+        this.name = null;
+    }
+
+    public ReadProperty(String thingId, String name) {
+        this.thingId = thingId;
+        this.name = name;
     }
 
     @Override
     public String getType() {
         return "readProperty";
+    }
+
+    public String getThingId() {
+        return thingId;
+    }
+
+    public String getName() {
+        return name;
     }
 }

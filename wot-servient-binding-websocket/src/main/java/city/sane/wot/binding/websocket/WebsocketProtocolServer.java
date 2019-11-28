@@ -4,6 +4,7 @@ import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadProperty;
+import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -12,6 +13,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import org.java_websocket.WebSocket;
@@ -157,8 +159,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
     }
 
-    static class MyServer extends WebSocketServer {
-        private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    class MyServer extends WebSocketServer {
+        private final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
         public MyServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
@@ -182,6 +184,30 @@ public class WebsocketProtocolServer implements ProtocolServer {
             AbstractMessage message = null;
             try {
                 message = JSON_MAPPER.readValue(s, AbstractMessage.class);
+
+                if (message instanceof ReadProperty) {
+                    String id = ((ReadProperty) message).getThingId();
+                    String name = ((ReadProperty) message).getName();
+
+                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
+                    thing.getProperty(name).read().whenComplete((value, e) -> {
+                        if (e != null) {
+                            // implement
+                        }
+                        else {
+                            ReadPropertyResponse response = new ReadPropertyResponse(value);
+
+                            String outputJson = null;
+                            try {
+                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                                webSocket.send(outputJson);
+                            } catch (JsonProcessingException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
