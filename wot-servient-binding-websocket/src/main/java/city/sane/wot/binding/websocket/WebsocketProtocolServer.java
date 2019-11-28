@@ -2,6 +2,8 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.websocket.message.AbstractMessage;
+import city.sane.wot.binding.websocket.message.ReadProperty;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -174,12 +176,17 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         @Override
         public void onMessage(WebSocket webSocket, String s) {
+
             // TODO: implementieren
             System.out.println("Nachricht erhalten: " + s);
-            //AbstractMessage message = JSON_MAPPER.readValue(s, AbstractMessage.class);
-
+            AbstractMessage message = null;
+            try {
+                message = JSON_MAPPER.readValue(s, AbstractMessage.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             // TODO how to handle incoming messages.
-            webSocket.send("Nachricht zurück");
+
         }
 
         @Override
