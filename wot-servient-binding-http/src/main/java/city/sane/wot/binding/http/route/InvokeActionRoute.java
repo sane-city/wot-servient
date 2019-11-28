@@ -106,6 +106,9 @@ public class InvokeActionRoute extends AbstractRoute {
                         String value = urlValue[0];
                         params.put(name, value);
                     }
+                    else {
+                        log.warn("Not able to read variable '{}' because variable type '{}' is unknown", name, type);
+                    }
                 }
             }
             else {
