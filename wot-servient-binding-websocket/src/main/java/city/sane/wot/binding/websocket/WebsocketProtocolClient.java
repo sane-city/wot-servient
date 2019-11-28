@@ -6,6 +6,8 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -18,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class WebsocketProtocolClient implements ProtocolClient {
     final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final WebSocketClient cc;
 
     public WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
@@ -49,7 +52,12 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> readResource(Form form) {
         // TODO
         return CompletableFuture.supplyAsync(() -> {
-            cc.send("test read");
+            try {
+                String json = JSON_MAPPER.writeValueAsString(form);
+                cc.send(json);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return null;
         });
     }
