@@ -2,6 +2,8 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.binding.websocket.message.AbstractMessage;
+import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
@@ -14,6 +16,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
@@ -32,8 +35,16 @@ public class WebsocketProtocolClient implements ProtocolClient {
             }
 
             @Override
-            public void onMessage(String s) {
-                log.info("onMessage message= " + s);
+            public void onMessage(String json) {
+                log.info("onMessage message= " + json);
+                try {
+                    AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
+                    if (message instanceof ReadPropertyResponse) {
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
