@@ -30,7 +30,6 @@
             <properties>
                 <sonar.host.url>https://sonarqube.cadeia.org</sonar.host.url>
                 <sonar.login>${SONAR_LOGIN_TOKEN}</sonar.login>
-                <sonar.projectName>Web of Things Servient</sonar.projectName>
             </properties>
         </profile>
     </profiles>
