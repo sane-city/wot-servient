@@ -18,6 +18,16 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public WebsocketProtocolClient(Config config) throws ProtocolClientException {
     }
 
+    @Override
+    public CompletableFuture<Content> readResource(Form form) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Content> writeResource(Form form, Content content) {
+        return null;
+    }
+
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
         return null;
