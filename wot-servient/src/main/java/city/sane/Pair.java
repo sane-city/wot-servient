@@ -1,9 +1,11 @@
 package city.sane;
 
+import java.io.Serializable;
+
 /**
  * A tuple of two elements.
  */
-public class Pair<A, B> {
+public class Pair<A, B> implements Serializable {
     private final A first;
     private final B second;
 
