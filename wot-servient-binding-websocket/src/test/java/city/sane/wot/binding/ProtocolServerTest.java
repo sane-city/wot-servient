@@ -61,7 +61,7 @@ public class ProtocolServerTest {
 
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("test2");
+                    System.out.println("message");
                 }
 
                 @Override
@@ -71,7 +71,7 @@ public class ProtocolServerTest {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-
+                    System.out.println("Tschüss");
                 }
 
                 @Override
