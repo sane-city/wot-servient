@@ -29,6 +29,9 @@ public class InvokeActionRoute extends AbstractRoute {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        if (!request.raw().getQueryString().isEmpty()) {
+            log.info("Request parameters: {}", request.raw().getQueryString());
+        }
 
         String requestContentType = getOrDefaultRequestContentType(request);
         if (!ContentManager.isSupportedMediaType(requestContentType)) {
