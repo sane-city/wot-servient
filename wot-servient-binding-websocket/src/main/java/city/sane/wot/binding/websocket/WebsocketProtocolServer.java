@@ -2,7 +2,6 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
-import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -82,12 +81,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     formP.setContentType(contentType);
                     if (property.isReadOnly()) {
                         formP.setOp(Operation.readproperty);
-                        // TODO
-                        //formP.setOptional("htv:methodName", "GET");
                     } else if (property.isWriteOnly()) {
                         formP.setOp(Operation.writeproperty);
-                        // TODO
-                        //formP.setOptional("htv:methodName", "PUT");
                     } else {
                         formP.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
                     }
@@ -115,8 +110,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     form.setHref(address);
                     form.setContentType(contentType);
                     form.setOp(Operation.invokeaction);
-                    // TODO
-                    // form.setOptional("htv:methodName", "POST");
 
                     action.addForm(form.build());
                     log.info("Assign '{}' to Action '{}'", address, name);
@@ -183,16 +176,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
         public void onMessage(WebSocket webSocket, String s) {
             // TODO: implementieren
             System.out.println("Nachricht erhalten: " + s);
-            try {
-                AbstractMessage message = JSON_MAPPER.readValue(s, AbstractMessage.class);
+            //AbstractMessage message = JSON_MAPPER.readValue(s, AbstractMessage.class);
 
-                // TODO how to handle incoming messages.
-                if (true){
-
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            // TODO how to handle incoming messages.
+            webSocket.send("Nachricht zurück");
         }
 
         @Override

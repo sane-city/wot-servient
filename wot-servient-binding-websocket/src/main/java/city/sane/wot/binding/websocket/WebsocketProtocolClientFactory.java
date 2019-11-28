@@ -5,6 +5,8 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
 import com.typesafe.config.Config;
 
+import java.net.URISyntaxException;
+
 /**
  * Creates new {@link WebsocketProtocolClient} instances.
  */
@@ -22,6 +24,11 @@ public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public ProtocolClient getClient() throws ProtocolClientException {
-        return new WebsocketProtocolClient(config);
+        try {
+            return new WebsocketProtocolClient(config);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
