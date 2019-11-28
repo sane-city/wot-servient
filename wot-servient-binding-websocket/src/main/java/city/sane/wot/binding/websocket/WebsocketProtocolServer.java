@@ -5,6 +5,7 @@ import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadProperty;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
+import city.sane.wot.binding.websocket.message.WriteProperty;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -193,8 +194,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     thing.getProperty(name).read().whenComplete((value, e) -> {
                         if (e != null) {
                             // implement
-                        }
-                        else {
+                        } else {
                             ReadPropertyResponse response = new ReadPropertyResponse(value);
 
                             String outputJson = null;
@@ -204,6 +204,18 @@ public class WebsocketProtocolServer implements ProtocolServer {
                             } catch (JsonProcessingException ex) {
                                 ex.printStackTrace();
                             }
+                        }
+                    });
+                } else if (message instanceof WriteProperty) {
+                    String id = ((WriteProperty) message).getThingId();
+                    String name = ((WriteProperty) message).getName();
+
+                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
+                    thing.getProperty(name).read().whenComplete((value, e) -> {
+                        if (e != null){
+                            // implement
+                        } else {
+                            // TODO wert ändern
                         }
                     });
                 }
