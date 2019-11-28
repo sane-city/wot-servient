@@ -49,7 +49,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'latitude',
                     [
-                            objectType: 'sch:latitude',
+                            '@type'   : 'sch:latitude',
                             type      : 'number',
                             readOnly  : true,
                             observable: true
@@ -59,7 +59,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'longitude',
                     [
-                            objectType: 'sch:longitude',
+                            '@type'   : 'sch:longitude',
                             type      : 'number',
                             readOnly  : true,
                             observable: true
@@ -94,7 +94,7 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'temperature',
                         [
-                                objectType          : 'saref:Temperature',
+                                '@type'             : 'saref:Temperature',
                                 'om:unit_of_measure': 'om:degree_Celsius',
                                 description         : 'Temperatur in C°',
                                 type                : 'number',
@@ -108,7 +108,7 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'humidity',
                         [
-                                objectType          : 'saref:Humidity',
+                                '@type'             : 'saref:Humidity',
                                 description         : 'Luftfeuchtigkeit in %',
                                 type                : 'number',
                                 readOnly            : true,
@@ -121,7 +121,7 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'pressure',
                         [
-                                objectType          : 'saref:Pressure',
+                                '@type'             : 'saref:Pressure',
                                 type                : 'number',
                                 readOnly            : true,
                                 observable          : true
@@ -133,7 +133,7 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'pressure_at_sealevel',
                         [
-                                objectType          : 'saref:Pressure',
+                                '@type'             : 'saref:Pressure',
                                 type                : 'number',
                                 readOnly            : true,
                                 observable          : true

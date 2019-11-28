@@ -32,7 +32,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'Temp_2m',
                     [
-                            objectType          : 'saref:Temperature',
+                            '@type'             : 'saref:Temperature',
                             description         : 'Temperatur in 2m in Grad Celsisus',
                             'om:unit_of_measure': 'om:degree_Celsius',
                             type                : 'number',
@@ -54,7 +54,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'Press_sea',
                     [
-                            objectType          : 'saref:Pressure',
+                            '@type'             : 'saref:Pressure',
                             description         : 'Luftdruck in hPa auf Meeresnivea',
                             type                : 'number',
                             readOnly            : true,
@@ -125,7 +125,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'longitude',
                     [
-                            objectType: 'sch:longitude',
+                            '@type'   : 'sch:longitude',
                             type      : 'number',
                             readOnly  : true,
                             observable: true
@@ -155,7 +155,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'Hum_2m',
                     [
-                            objectType          : 'saref:Humidity',
+                            '@type'             : 'saref:Humidity',
                             description         : 'Relative Luftfeuchtigkeit 2 m in %',
                             type                : 'number',
                             readOnly            : true,
@@ -176,7 +176,7 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'latitude',
                     [
-                            objectType: 'sch:latitude',
+                            '@type'   : 'sch:latitude',
                             type      : 'number',
                             readOnly  : true,
                             observable: true
