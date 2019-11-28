@@ -29,7 +29,7 @@ public class CrudMessages {
     public static class GetAll implements Serializable {
     }
 
-    public static class RespondGetAll<K, E> implements Serializable {
+    public static class RespondGetAll<K extends Serializable, E extends Serializable> implements Serializable {
         public final Map<K, E> entities;
 
         public RespondGetAll(Map<K, E> entities) {
@@ -48,7 +48,7 @@ public class CrudMessages {
     }
 
     // Get
-    public static class Get<K> implements Serializable {
+    public static class Get<K extends Serializable> implements Serializable {
         public final K id;
 
         public Get(K id) {
@@ -56,7 +56,7 @@ public class CrudMessages {
         }
     }
 
-    public static class RespondGet<E> implements Serializable {
+    public static class RespondGet<E extends Serializable> implements Serializable {
         public final E entity;
 
         public RespondGet(E entity) {
@@ -75,7 +75,7 @@ public class CrudMessages {
     }
 
     // Create
-    public static class Create<E> implements Serializable {
+    public static class Create<E extends Serializable> implements Serializable {
         public final E entity;
 
         public Create(E entity) {
@@ -83,7 +83,7 @@ public class CrudMessages {
         }
     }
 
-    public static class Created<E> {
+    public static class Created<E extends Serializable> {
         public final E entity;
 
         public Created(E entity) {
@@ -102,7 +102,7 @@ public class CrudMessages {
     }
 
     // Update
-    public static class Update<K, E> implements Serializable {
+    public static class Update<K extends Serializable, E extends Serializable> implements Serializable {
         public final K id;
         public final E entity;
 
@@ -122,7 +122,7 @@ public class CrudMessages {
         }
     }
 
-    public static class Updated<E> implements Serializable {
+    public static class Updated<E extends Serializable> implements Serializable {
         public final E entity;
 
         public Updated(E entity) {
@@ -131,7 +131,7 @@ public class CrudMessages {
     }
 
     // Delete
-    public static class Delete<K> implements Serializable {
+    public static class Delete<K extends Serializable> implements Serializable {
         public final K id;
 
         public Delete(K id) {
@@ -139,7 +139,7 @@ public class CrudMessages {
         }
     }
 
-    public static class Deleted<K> implements Serializable {
+    public static class Deleted<K extends Serializable> implements Serializable {
         public final K id;
 
         public Deleted(K id) {
