@@ -2,10 +2,15 @@ package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
+import city.sane.wot.binding.websocket.message.AbstractMessage;
+import city.sane.wot.binding.websocket.message.ReadProperty;
+import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.java_websocket.client.WebSocketClient;
@@ -15,12 +20,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -37,6 +46,8 @@ public class ProtocolServerTest {
         );
     }
 
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -48,7 +59,7 @@ public class ProtocolServerTest {
     }
 
     @Test
-    public void test() {
+    public void test() throws ExecutionException {
         try {
             servient.start().join();
 
@@ -56,17 +67,32 @@ public class ProtocolServerTest {
             servient.addThing(thing);
             thing.expose().join();
 
+            CompletableFuture<Object> future = new CompletableFuture<>();
+
             // TODO:
             cc = new WebSocketClient(new URI("ws://localhost:8080")) {
 
                 @Override
-                public void onMessage(String message) {
-                    System.out.println("message");
+                public void onMessage(String json) {
+                    try {
+                        ReadPropertyResponse message = JSON_MAPPER.readValue(json, ReadPropertyResponse.class);
+
+                        future.complete(message.getValue());
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
                 public void onOpen(ServerHandshake handshake) {
-
+                    AbstractMessage message = new ReadProperty("counter", "count");
+                    try {
+                        String json = ProtocolServerTest.JSON_MAPPER.writeValueAsString(message);
+                        cc.send(json);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
@@ -80,11 +106,8 @@ public class ProtocolServerTest {
                 }
             };
             cc.connect();
-            Thread.sleep(1000);
-            cc.send("test1");
 
-
-            System.out.println();
+            assertEquals(42, future.get());
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         } finally {
