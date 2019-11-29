@@ -2,10 +2,7 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
-import city.sane.wot.binding.websocket.message.AbstractMessage;
-import city.sane.wot.binding.websocket.message.ReadProperty;
-import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
-import city.sane.wot.binding.websocket.message.WriteProperty;
+import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -16,6 +13,7 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.eventbus.Subscribe;
 import com.typesafe.config.Config;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -209,15 +207,22 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 } else if (message instanceof WriteProperty) {
                     String id = ((WriteProperty) message).getThingId();
                     String name = ((WriteProperty) message).getName();
+                    Object value = ((WriteProperty) message).getValue();
+                    HashMap<String,Object> writes = new HashMap<>();
+                    writes.put(name,value);
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).read().whenComplete((value, e) -> {
+                    thing.writeProperties(writes).whenComplete((e) -> {
                         if (e != null){
                             // implement
                         } else {
-                            // TODO wert ändern
+
                         }
                     });
+                } else if (message instanceof SubscribeProperty) {
+                    String id = ((SubscribeProperty) message).getThingId();
+                    String name = ((SubscribeProperty) message).getName();
+
                 }
 
             } catch (IOException e) {
