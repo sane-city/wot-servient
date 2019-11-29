@@ -4,6 +4,7 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
+import city.sane.wot.binding.websocket.message.SubscribeProperty;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
@@ -42,6 +43,9 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     if (message instanceof ReadPropertyResponse) {
 
                     }
+                    else if (message instanceof SubscribePropertyResponse) {
+
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -75,7 +79,15 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
-        cc.send("test write");
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = JSON_MAPPER.writeValueAsString(form);
+                cc.send(json);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
         return null;
     }
 
