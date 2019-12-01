@@ -4,13 +4,13 @@ public class WriteProperty extends AbstractMessage {
 
     private final String thingId;
     private final String name;
-    private final Object value;
+    private final byte[] payload;
 
 
-    public WriteProperty(String thingId, String name, Object value) {
+    public WriteProperty(String thingId, String name, byte[] payload) {
         this.thingId = thingId;
         this.name = name;
-        this.value = value;
+        this.payload = payload;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class WriteProperty extends AbstractMessage {
         return name;
     }
 
-    public Object getValue() {
-        return value;
+    public byte[] getPayload() {
+        return payload;
     }
 }

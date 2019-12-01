@@ -81,14 +81,16 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String json = JSON_MAPPER.writeValueAsString(form);
+                Form writeForm = new Form.Builder(form)
+                        .setContentType(content.getType())
+                        .setOptional("payload",content.getBody()).build();
+                String json = JSON_MAPPER.writeValueAsString(writeForm);
                 cc.send(json);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
             return null;
         });
-        return null;
     }
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
