@@ -11,6 +11,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import city.sane.wot.thing.property.ThingProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.Subscribe;
@@ -21,7 +22,10 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -207,7 +211,13 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 } else if (message instanceof WriteProperty) {
                     String id = ((WriteProperty) message).getThingId();
                     String name = ((WriteProperty) message).getName();
-                    Object value = ((WriteProperty) message).getValue();
+                    byte[] payload = ((WriteProperty) message).getPayload();
+
+                    //TODO Payload to Property???
+                    ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+                    ObjectInput in = new ObjectInputStream(bis);
+                    Object value = in.readObject();
+
                     HashMap<String,Object> writes = new HashMap<>();
                     writes.put(name,value);
 
@@ -225,7 +235,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                 }
 
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
             // TODO how to handle incoming messages.
