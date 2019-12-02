@@ -5,6 +5,10 @@ public class SubscribePropertyResponse extends AbstractMessage {
 
     private Object value;
 
+    private SubscribePropertyResponse() {
+        this.value = null;
+    }
+
     public SubscribePropertyResponse(Object value) {
         this.value = value;
     }
