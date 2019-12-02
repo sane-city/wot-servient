@@ -67,7 +67,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        // TODO
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String json = JSON_MAPPER.writeValueAsString(form);
@@ -75,6 +74,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+            // TODO
             return null;
         });
     }
@@ -83,18 +83,20 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                //Form writeForm = new Form.Builder(form).setContentType(content.getType()).setOptional("payload", content).build();
-                String json = JSON_MAPPER.writeValueAsString(form);
+                Form writeForm = new Form.Builder(form).setOptional("payload", content).build();
+                String json = JSON_MAPPER.writeValueAsString(writeForm);
                 cc.send(json);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+            // TODO
             return null;
         });
     }
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+        // TODO
         return null;
     }
 }
