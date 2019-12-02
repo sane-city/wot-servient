@@ -28,4 +28,5 @@ public abstract class AbstractMessage {
     public String getId() {
         return id;
     }
+
 }
