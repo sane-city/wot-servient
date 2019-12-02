@@ -6,7 +6,7 @@ public class ReadProperty extends AbstractMessage {
     private final String thingId;
     private final String name;
 
-    public ReadProperty() {
+    private ReadProperty() {
         this.thingId = null;
         this.name = null;
     }

@@ -8,7 +8,7 @@ public class WriteProperty extends AbstractMessage {
     private final String name;
     private final Content payload;
 
-    public WriteProperty() {
+    private WriteProperty() {
         this.thingId = null;
         this.name = null;
         this.payload = null;
