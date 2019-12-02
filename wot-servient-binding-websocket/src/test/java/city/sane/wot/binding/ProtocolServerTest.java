@@ -198,6 +198,74 @@ public class ProtocolServerTest {
     }
 
     @Test
+    public void test3() throws ExecutionException {
+        try {
+            servient.start().join();
+
+            ExposedThing thing = getCounterThing();
+            servient.addThing(thing);
+            thing.expose().join();
+
+            CompletableFuture<Object> future3 = new CompletableFuture<>();
+
+            // TODO:
+            cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+
+                @Override
+                public void onMessage(String json) {
+                    try {
+                        System.out.println("onMessage");
+                        AbstractMessage message = null;
+                        message = JSON_MAPPER.readValue(json, AbstractMessage.class);
+
+                        if (message instanceof SubscribePropertyResponse) {
+                            System.out.println("SubscribePropertyResponse");
+                            SubscribePropertyResponse sMessage = (SubscribePropertyResponse) message;
+                            future3.complete(sMessage.getValue());
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onOpen(ServerHandshake handshake) {
+                    AbstractMessage message3 = new SubscribeProperty("counter", "count");
+                    System.out.println("let's go message3");
+                    String json = null;
+                    try {
+                        json = ProtocolServerTest.JSON_MAPPER.writeValueAsString(message3);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    cc.send(json);
+
+
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    System.out.println("Tschüss");
+                }
+
+                @Override
+                public void onError(Exception ex) {
+
+                }
+            };
+            cc.connect();
+
+            System.out.println(future3.get());
+        } catch (URISyntaxException | InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            servient.shutdown().join();
+        }
+    }
+
+
+    @Test
     public void destroy() {
         try {
             servient.start().join();
