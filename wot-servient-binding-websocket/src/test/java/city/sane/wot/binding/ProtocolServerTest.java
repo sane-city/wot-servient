@@ -2,9 +2,10 @@ package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
-import city.sane.wot.binding.websocket.message.AbstractMessage;
-import city.sane.wot.binding.websocket.message.ReadProperty;
-import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
+import city.sane.wot.binding.websocket.message.*;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class ProtocolServerTest {
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     @Parameterized.Parameter
     public Class<? extends ProtocolServer> protocolServerClass;
     private Servient servient;
@@ -45,8 +47,6 @@ public class ProtocolServerTest {
                 WebsocketProtocolServer.class
         );
     }
-
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     @Before
     public void setup() {
@@ -68,16 +68,21 @@ public class ProtocolServerTest {
             thing.expose().join();
 
             CompletableFuture<Object> future = new CompletableFuture<>();
+            CompletableFuture<Object> future2 = new CompletableFuture<>();
 
             // TODO:
             cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+
+                private Content payload;
 
                 @Override
                 public void onMessage(String json) {
                     try {
                         ReadPropertyResponse message = JSON_MAPPER.readValue(json, ReadPropertyResponse.class);
+                        WritePropertyResponse message2 = JSON_MAPPER.readValue(json, WritePropertyResponse.class);
 
                         future.complete(message.getValue());
+                        future2.complete(message2.getValue());
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -93,6 +98,22 @@ public class ProtocolServerTest {
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
+                    try {
+                        payload = ContentManager.valueToContent(1337, "none");
+                    } catch (ContentCodecException e) {
+                        e.printStackTrace();
+                    }
+                    AbstractMessage message2 = new WriteProperty("counter", "count", payload);
+
+                    String json = null;
+                    try {
+                        json = ProtocolServerTest.JSON_MAPPER.writeValueAsString(message2);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    cc.send(json);
+
+
                 }
 
                 @Override
@@ -108,6 +129,7 @@ public class ProtocolServerTest {
             cc.connect();
 
             assertEquals(42, future.get());
+            assertEquals(1337, future2.get());
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         } finally {

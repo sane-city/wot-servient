@@ -12,8 +12,9 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = ReadProperty.class, name = "readProperty"),
         @JsonSubTypes.Type(value = ReadPropertyResponse.class, name = "readPropertyResponse"),
         @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty"),
-        @JsonSubTypes.Type(value = SubscribeProperty.class, name = "subscribeProperty")
-
+        @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "writePropertyResponse"),
+        @JsonSubTypes.Type(value = SubscribeProperty.class, name = "subscribeProperty"),
+        @JsonSubTypes.Type(value = SubscribePropertyResponse.class, name = "subscribePropertyResponse")
 })
 public abstract class AbstractMessage {
     private final String id;

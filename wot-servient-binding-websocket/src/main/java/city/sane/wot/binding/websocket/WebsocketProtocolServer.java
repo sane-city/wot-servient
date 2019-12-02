@@ -3,6 +3,7 @@ package city.sane.wot.binding.websocket;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.*;
+import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -209,22 +210,19 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 } else if (message instanceof WriteProperty) {
                     String id = ((WriteProperty) message).getThingId();
                     String name = ((WriteProperty) message).getName();
-                    byte[] payload = ((WriteProperty) message).getPayload();
+                    Content payload = ((WriteProperty) message).getPayload();
 
                     //TODO Payload to Property???
-                    ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+                    ByteArrayInputStream bis = new ByteArrayInputStream(payload.getBody());
                     ObjectInput in = new ObjectInputStream(bis);
                     Object value = in.readObject();
-
-                    HashMap<String, Object> writes = new HashMap<>();
-                    writes.put(name, value);
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
                     thing.getProperty(name).write(value).whenComplete((result, e) -> {
                         if (e != null) {
                         } else {
                             WritePropertyResponse response = new WritePropertyResponse(result);
-                            String outputJson= null;
+                            String outputJson = null;
 
                             try {
                                 outputJson = JSON_MAPPER.writeValueAsString(response);

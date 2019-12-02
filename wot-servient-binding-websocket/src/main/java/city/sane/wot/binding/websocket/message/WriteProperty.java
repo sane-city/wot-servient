@@ -1,10 +1,12 @@
 package city.sane.wot.binding.websocket.message;
 
+import city.sane.wot.content.Content;
+
 public class WriteProperty extends AbstractMessage {
 
     private final String thingId;
     private final String name;
-    private final byte[] payload;
+    private final Content payload;
 
     public WriteProperty() {
         this.thingId = null;
@@ -13,7 +15,7 @@ public class WriteProperty extends AbstractMessage {
     }
 
 
-    public WriteProperty(String thingId, String name, byte[] payload) {
+    public WriteProperty(String thingId, String name, Content payload) {
         this.thingId = thingId;
         this.name = name;
         this.payload = payload;
@@ -32,7 +34,7 @@ public class WriteProperty extends AbstractMessage {
         return name;
     }
 
-    public byte[] getPayload() {
+    public Content getPayload() {
         return payload;
     }
 }
