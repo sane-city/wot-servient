@@ -1,6 +1,6 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapServer;
+import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 public class RootResource extends AbstractResource {
     static final Logger log = LoggerFactory.getLogger(RootResource.class);
 
-    private final CoapServer server;
+    private final WotCoapServer server;
 
-    public RootResource(CoapServer server) {
+    public RootResource(WotCoapServer server) {
         super("");
         this.server = server;
     }

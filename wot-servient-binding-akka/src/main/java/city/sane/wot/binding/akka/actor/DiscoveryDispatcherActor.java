@@ -10,6 +10,7 @@ import city.sane.wot.thing.filter.ThingFilter;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
@@ -20,10 +21,6 @@ import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
  */
 public class DiscoveryDispatcherActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-
-    public DiscoveryDispatcherActor() {
-
-    }
 
     @Override
     public void preStart() {
@@ -51,14 +48,14 @@ public class DiscoveryDispatcherActor extends AbstractActor {
 
     private void finishDiscovery(DiscoverActor.Done m) {
         ActorRef requester = m.requester;
-        Map<String, Thing> things = m.things;
+        HashMap<String, Thing> things = m.things;
 
         log.info("AkkaDiscovery finished. Send result requester '{}'", requester);
         requester.tell(new RespondGetAll<>(things), getSelf());
     }
 
     public static Props props() {
-        return Props.create(DiscoveryDispatcherActor.class, () -> new DiscoveryDispatcherActor());
+        return Props.create(DiscoveryDispatcherActor.class, DiscoveryDispatcherActor::new);
     }
 
     // CrudMessages

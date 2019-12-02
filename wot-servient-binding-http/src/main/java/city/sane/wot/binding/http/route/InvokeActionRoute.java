@@ -114,9 +114,6 @@ public class InvokeActionRoute extends AbstractRoute {
                     }
                 }
             }
-            else {
-                continue;
-            }
         }
         return params;
     }

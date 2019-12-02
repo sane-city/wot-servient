@@ -14,7 +14,6 @@ import jadex.bridge.SFuture;
 import jadex.bridge.service.ServiceScope;
 import jadex.bridge.service.search.ServiceQuery;
 import jadex.commons.TimeoutException;
-import jadex.commons.future.Future;
 import jadex.commons.future.ITerminableIntermediateFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static jadex.commons.future.IFuture.DONE;
 
 /**
  * Allows consuming Things via Jadex Micro Agents.
@@ -54,7 +55,7 @@ public class JadexProtocolClient implements ProtocolClient {
             platform.scheduleStep(ia -> {
                 getThingService(ia, serviceId).whenComplete((service, e) -> {
                     if (e == null) {
-                        log.trace("Found service " + service);
+                        log.trace("Found service {}", service);
 
                         JadexContent content;
                         if (type.equals("all")) {
@@ -73,7 +74,7 @@ public class JadexProtocolClient implements ProtocolClient {
                         result.completeExceptionally(e);
                     }
                 });
-                return Future.DONE;
+                return DONE;
             });
             return result;
         }
@@ -94,7 +95,7 @@ public class JadexProtocolClient implements ProtocolClient {
             platform.scheduleStep(ia -> {
                 getThingService(ia, serviceId).whenComplete((service, e) -> {
                     if (e == null) {
-                        log.trace("Found service " + service);
+                        log.trace("Found service {}", service);
 
                         JadexContent input = new JadexContent(content);
                         JadexContent output = service.writeProperty(name, input).get();
@@ -104,7 +105,7 @@ public class JadexProtocolClient implements ProtocolClient {
                         result.completeExceptionally(e);
                     }
                 });
-                return Future.DONE;
+                return DONE;
             });
             return result;
         }
@@ -153,7 +154,7 @@ public class JadexProtocolClient implements ProtocolClient {
                     }
                 }
             }, result::completeExceptionally);
-            return Future.DONE;
+            return DONE;
         });
 
         return result;

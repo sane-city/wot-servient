@@ -223,9 +223,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 else {
                     body = new byte[0];
                 }
-                Content content = new Content(type, body);
-                return content;
-
+                return new Content(type, body);
             }
             catch (IOException e) {
                 throw new ProtocolClientException("Error during http request: " + e.getMessage());

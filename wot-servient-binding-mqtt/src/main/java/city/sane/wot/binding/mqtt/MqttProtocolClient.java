@@ -146,7 +146,7 @@ public class MqttProtocolClient implements ProtocolClient {
             topic = new URI(form.getHref()).getPath().substring(1);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to subscribe resource: {}", e.getMessage());
+            log.warn("Unable to subscribe resource: {}", e);
             return null;
         }
 

@@ -56,7 +56,7 @@ public class ObservePropertyRoute extends AbstractRoute {
                                     result.complete(content);
                                 }
                                 catch (ContentCodecException e) {
-                                    log.warn("Cannot process data for Property '{}': {}", name, e.toString());
+                                    log.warn("Cannot process data for Property '{}': {}", name, e);
                                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                                     result.complete("Invalid Property Data");
                                 }
@@ -74,9 +74,7 @@ public class ObservePropertyRoute extends AbstractRoute {
                         subscription.unsubscribe();
                     });
 
-                    Object output = result.get();
-
-                    return output;
+                    return result.get();
                 }
                 else {
                     response.status(HttpStatus.BAD_REQUEST_400);

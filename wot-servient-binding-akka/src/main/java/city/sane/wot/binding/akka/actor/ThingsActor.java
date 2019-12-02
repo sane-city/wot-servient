@@ -90,9 +90,9 @@ public class ThingsActor extends AbstractActor {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
-        Map<String, Thing> things = this.things.entrySet()
-                .stream().collect(Collectors.toMap(e -> e.getKey(), e -> Thing.fromJson(e.getValue().toJson())));
-        Content content = ContentManager.valueToContent(things);
+        Map<String, Thing> thingMap = this.things.entrySet()
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> Thing.fromJson(e.getValue().toJson())));
+        Content content = ContentManager.valueToContent(thingMap);
 
         getSender().tell(
                 new RespondRead(content),
@@ -104,13 +104,17 @@ public class ThingsActor extends AbstractActor {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
-        Collection<Thing> things = this.things.values().stream()
+        Collection<Thing> thingCollection = this.things.values().stream()
                 .map(t -> Thing.fromJson(t.toJson())).collect(Collectors.toList());
         if (m.filter.getQuery() != null) {
-            things = m.filter.getQuery().filter(things);
+            thingCollection = m.filter.getQuery().filter(thingCollection);
         }
 
-        Map<String, Thing> thingsMap = things.stream().collect(Collectors.toMap(t -> t.getId(), t -> t));
+        HashMap<String, Thing> thingsMap = new HashMap<>();
+        for (Thing thing : thingCollection) {
+            thingsMap.put(thing.getId(), thing);
+        }
+
         getSender().tell(
                 new RespondGetAll<>(thingsMap),
                 getSelf()

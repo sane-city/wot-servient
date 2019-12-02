@@ -208,7 +208,7 @@ public class MqttProtocolServer implements ProtocolServer {
                                     action.invoke(input);
                                 }
                                 catch (ContentCodecException e) {
-                                    log.info("Unable to parse input: {}", e.getMessage());
+                                    log.warn("Unable to parse input: {}", e);
                                 }
                             }
                             else {
