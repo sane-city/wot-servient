@@ -86,7 +86,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
                 state.getSubject().next(value);
             }
 
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(value);
         }
     }
 
