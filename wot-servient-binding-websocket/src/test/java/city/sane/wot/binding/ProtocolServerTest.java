@@ -141,10 +141,12 @@ public class ProtocolServerTest {
                 @Override
                 public void onMessage(String json) {
                     try {
+                        System.out.println("onMessage");
                         AbstractMessage message = null;
                         message = JSON_MAPPER.readValue(json, AbstractMessage.class);
 
                         if (message instanceof WritePropertyResponse) {
+                            System.out.println("WritePropertyResponse");
                             WritePropertyResponse wMessage = (WritePropertyResponse) message;
                             future2.complete(wMessage.getValue());
                         }
@@ -162,7 +164,7 @@ public class ProtocolServerTest {
                         e.printStackTrace();
                     }
                     AbstractMessage message2 = new WriteProperty("counter", "count", payload);
-
+                    System.out.println("let's go message2");
                     String json = null;
                     try {
                         json = ProtocolServerTest.JSON_MAPPER.writeValueAsString(message2);
