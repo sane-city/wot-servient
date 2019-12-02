@@ -129,7 +129,7 @@ public class MqttProtocolServer implements ProtocolServer {
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
-            property.subscribe((data) -> {
+            property.subscribe(data -> {
                 try {
                     Content content = ContentManager.valueToContent(data);
                     log.info("MqttServer at '{}' publishing new data to Property topic '{}'", broker, topic);

@@ -48,7 +48,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
 
     private void finishDiscovery(DiscoverActor.Done m) {
         ActorRef requester = m.requester;
-        HashMap<String, Thing> things = m.things;
+        Map<String, Thing> things = m.things;
 
         log.info("AkkaDiscovery finished. Send result requester '{}'", requester);
         requester.tell(new RespondGetAll<>(things), getSelf());

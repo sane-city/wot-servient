@@ -110,10 +110,7 @@ public class ThingsActor extends AbstractActor {
             thingCollection = m.filter.getQuery().filter(thingCollection);
         }
 
-        HashMap<String, Thing> thingsMap = new HashMap<>();
-        for (Thing thing : thingCollection) {
-            thingsMap.put(thing.getId(), thing);
-        }
+        Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
 
         getSender().tell(
                 new RespondGetAll<>(thingsMap),

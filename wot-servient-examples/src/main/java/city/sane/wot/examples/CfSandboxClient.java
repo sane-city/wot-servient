@@ -3,7 +3,6 @@ package city.sane.wot.examples;
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.Thing;
 
 import java.util.concurrent.ExecutionException;
 

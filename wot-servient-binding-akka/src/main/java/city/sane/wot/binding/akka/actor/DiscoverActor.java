@@ -26,7 +26,7 @@ public class DiscoverActor extends AbstractActor {
     private final ActorRef requester;
     private final ThingFilter filter;
     private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
-    private final HashMap<String, Thing> things = new HashMap<>();
+    private final Map<String, Thing> things = new HashMap<>();
 
     public DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
@@ -87,9 +87,9 @@ public class DiscoverActor extends AbstractActor {
 
     public static class Done {
         final ActorRef requester;
-        final HashMap<String, Thing> things;
+        final Map<String, Thing> things;
 
-        public Done(ActorRef requester, HashMap<String, Thing> things) {
+        public Done(ActorRef requester, Map<String, Thing> things) {
             this.requester = requester;
             this.things = things;
         }
