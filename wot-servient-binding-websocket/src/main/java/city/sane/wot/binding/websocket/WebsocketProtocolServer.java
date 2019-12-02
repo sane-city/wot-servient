@@ -236,6 +236,22 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     String id = ((SubscribeProperty) message).getThingId();
                     String name = ((SubscribeProperty) message).getName();
 
+                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
+                    thing.getProperty(name).read().whenComplete((value, e) -> {
+                        if (e != null) {
+                            // implement
+                        } else {
+                            SubscribePropertyResponse response = new SubscribePropertyResponse(value);
+
+                            String outputJson = null;
+                            try {
+                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                                webSocket.send(outputJson);
+                            } catch (JsonProcessingException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
                 }
 
             } catch (IOException | ClassNotFoundException e) {
