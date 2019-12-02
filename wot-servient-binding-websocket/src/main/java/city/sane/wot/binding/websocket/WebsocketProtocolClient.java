@@ -5,6 +5,7 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.binding.websocket.message.SubscribePropertyResponse;
+import city.sane.wot.binding.websocket.message.WritePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
@@ -41,9 +42,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 try {
                     AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
                     if (message instanceof ReadPropertyResponse) {
-
+                        System.out.println("ReadPropertyResponse");
+                    } else if (message instanceof WritePropertyResponse) {
+                        System.out.println("WritePropertyResponse");
                     } else if (message instanceof SubscribePropertyResponse) {
-
+                        System.out.println("SubscribePropertyResponse");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
