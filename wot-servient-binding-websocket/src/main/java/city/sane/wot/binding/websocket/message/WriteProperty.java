@@ -6,6 +6,12 @@ public class WriteProperty extends AbstractMessage {
     private final String name;
     private final byte[] payload;
 
+    public WriteProperty() {
+        this.thingId = null;
+        this.name = null;
+        this.payload = null;
+    }
+
 
     public WriteProperty(String thingId, String name, byte[] payload) {
         this.thingId = thingId;
