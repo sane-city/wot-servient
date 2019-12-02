@@ -4,7 +4,6 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
-import city.sane.wot.binding.websocket.message.SubscribeProperty;
 import city.sane.wot.binding.websocket.message.SubscribePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
@@ -43,8 +42,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
                     if (message instanceof ReadPropertyResponse) {
 
-                    }
-                    else if (message instanceof SubscribePropertyResponse) {
+                    } else if (message instanceof SubscribePropertyResponse) {
 
                     }
                 } catch (IOException e) {
@@ -82,10 +80,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Form writeForm = new Form.Builder(form)
-                        .setContentType(content.getType())
-                        .setOptional("payload",content.getBody()).build();
-                String json = JSON_MAPPER.writeValueAsString(writeForm);
+                //Form writeForm = new Form.Builder(form).setContentType(content.getType()).setOptional("payload", content).build();
+                String json = JSON_MAPPER.writeValueAsString(form);
                 cc.send(json);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();

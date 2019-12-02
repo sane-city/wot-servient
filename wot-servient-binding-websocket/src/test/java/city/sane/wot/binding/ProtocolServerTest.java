@@ -78,11 +78,16 @@ public class ProtocolServerTest {
                 @Override
                 public void onMessage(String json) {
                     try {
-                        ReadPropertyResponse message = JSON_MAPPER.readValue(json, ReadPropertyResponse.class);
-                        WritePropertyResponse message2 = JSON_MAPPER.readValue(json, WritePropertyResponse.class);
+                        AbstractMessage message = null;
+                        message = JSON_MAPPER.readValue(json, AbstractMessage.class);
 
-                        future.complete(message.getValue());
-                        future2.complete(message2.getValue());
+                        if (message instanceof ReadPropertyResponse) {
+                            ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
+                            future.complete(rMessage.getValue());
+                        } else if (message instanceof WritePropertyResponse) {
+                            WritePropertyResponse wMessage = (WritePropertyResponse) message;
+                            future2.complete(wMessage.getValue());
+                        }
 
                     } catch (IOException e) {
                         e.printStackTrace();
