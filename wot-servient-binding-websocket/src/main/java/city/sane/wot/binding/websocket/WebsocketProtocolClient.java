@@ -96,7 +96,17 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
-        // TODO
-        return null;
+        // TODO is that a subscription?
+        return CompletableFuture.supplyAsync(() -> {
+            String json = null;
+            try {
+                json = JSON_MAPPER.writeValueAsString(form);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            cc.send(json);
+            // TODO
+            return null;
+        });
     }
 }
