@@ -220,7 +220,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     writes.put(name, value);
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).write(writes).whenComplete((result, e) -> {
+                    thing.getProperty(name).write(value).whenComplete((result, e) -> {
                         if (e != null) {
                         } else {
                             WritePropertyResponse response = new WritePropertyResponse(result);
@@ -232,13 +232,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
                                 ex.printStackTrace();
                             }
                             webSocket.send(outputJson);
-                        }
-                    });
-                    thing.writeProperties(writes).whenComplete((result, e) -> {
-                        if (e != null) {
-                            // implement
-                        } else {
-
                         }
                     });
                 } else if (message instanceof SubscribeProperty) {
