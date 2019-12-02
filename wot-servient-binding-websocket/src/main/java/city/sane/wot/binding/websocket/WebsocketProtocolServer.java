@@ -220,6 +220,20 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     writes.put(name, value);
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
+                    thing.getProperty(name).write(writes).whenComplete((result, e) -> {
+                        if (e != null) {
+                        } else {
+                            WritePropertyResponse response = new WritePropertyResponse(result);
+                            String outputJson= null;
+
+                            try {
+                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                            } catch (JsonProcessingException ex) {
+                                ex.printStackTrace();
+                            }
+                            webSocket.send(outputJson);
+                        }
+                    });
                     thing.writeProperties(writes).whenComplete((result, e) -> {
                         if (e != null) {
                             // implement
@@ -236,8 +250,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            // TODO how to handle incoming messages.
-
         }
 
         @Override
