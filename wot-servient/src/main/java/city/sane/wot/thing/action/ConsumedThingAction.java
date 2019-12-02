@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionException;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingAction}.
  */
 public class ConsumedThingAction extends ThingAction {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
+    static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
 
     private final String name;
     private final ConsumedThing thing;
@@ -56,7 +56,6 @@ public class ConsumedThingAction extends ThingAction {
                     return value;
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });

@@ -158,7 +158,7 @@ public class HttpProtocolServerTest {
 
         // wait until client establish subcription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         // write new value
         ExposedThingProperty property = thing.getProperty("count");
@@ -260,7 +260,7 @@ public class HttpProtocolServerTest {
 
         // wait until client establish subcription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         // emit event
         ExposedThingEvent event = thing.getEvent("change");
@@ -288,7 +288,7 @@ public class HttpProtocolServerTest {
 
         // wait until client establish subcription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         // emit event
         ExposedThingEvent event = thing.getEvent("change");
@@ -296,7 +296,7 @@ public class HttpProtocolServerTest {
 
         // wait until client received answer
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000);
+        Thread.sleep(5 * 1000L);
 
         assertTrue("populated observer should have been removed", thing.getEvent("change").getState().getSubject().getObservers().isEmpty());
     }

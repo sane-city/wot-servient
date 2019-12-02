@@ -20,7 +20,7 @@ import java.util.Map;
  * Is used by Jackson
  */
 public class ContextDeserializer extends JsonDeserializer {
-    final static Logger log = LoggerFactory.getLogger(ContextDeserializer.class);
+    static final Logger log = LoggerFactory.getLogger(ContextDeserializer.class);
 
     @Override
     public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {

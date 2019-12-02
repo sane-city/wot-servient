@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingEvent}.
  */
 public class ExposedThingEvent extends ThingEvent implements Subscribable<Object> {
-    final static Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
+    static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
 
     private final String name;
     private final ExposedThing thing;

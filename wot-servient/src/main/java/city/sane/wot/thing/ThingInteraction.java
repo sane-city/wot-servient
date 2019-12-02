@@ -52,7 +52,7 @@ public abstract class ThingInteraction<T> implements Serializable {
         return (T) this;
     }
 
-    public static abstract class Builder<T extends ObjectBuilder> implements ObjectBuilder {
+    public abstract static class Builder<T extends ObjectBuilder> implements ObjectBuilder {
         protected String description;
         protected Map<String, String> descriptions;
         protected List<Form> forms = new ArrayList<>();

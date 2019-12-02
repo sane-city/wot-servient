@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via CoAP.
  */
 public class CoapProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
 
     static {
         // Californium uses java.util.logging. We need to redirect all log messages to logback
@@ -83,10 +83,10 @@ public class CoapProtocolServer implements ProtocolServer {
             //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
             //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
             try {
-                Thread.sleep(1 * 1000);
+                Thread.sleep(1 * 1000L);
             }
             catch (InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
 
             log.debug("Server stopped");
@@ -247,7 +247,7 @@ public class CoapProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }
@@ -258,7 +258,7 @@ public class CoapProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0) + "/" + id);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to thing url: {}", e);
             return null;
         }
     }

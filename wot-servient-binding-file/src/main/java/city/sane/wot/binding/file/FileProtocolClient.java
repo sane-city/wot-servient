@@ -22,7 +22,7 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via local files.
  */
 public class FileProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
     private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = new HashMap() {{
         put(".json", "application/json");
         put(".jsonld", "application/ld+json");
@@ -47,8 +47,7 @@ public class FileProtocolClient implements ProtocolClient {
                 return content;
             }
             catch (IOException e) {
-                e.printStackTrace();
-                throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e));
+                throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e.getMessage()));
             }
         });
     }

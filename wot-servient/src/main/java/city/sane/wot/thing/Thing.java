@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +30,8 @@ import java.util.*;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
+    static final Logger log = LoggerFactory.getLogger(Thing.class);
+
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     @JsonProperty("@type")
@@ -174,7 +178,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             }
         }
         catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.warn("Unable to create json: {}", e);
             return null;
         }
     }
@@ -250,7 +254,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            log.warn("Unable to read json: {}", e);
             return null;
         }
     }
@@ -260,7 +264,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            log.warn("Unable to read json: {}", e);
             return null;
         }
     }

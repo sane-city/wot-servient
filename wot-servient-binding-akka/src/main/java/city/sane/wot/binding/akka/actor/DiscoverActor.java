@@ -76,16 +76,16 @@ public class DiscoverActor extends AbstractActor {
         getContext().stop(getSelf());
     }
 
-    static public Props props(ActorRef requester, Duration timeout, ThingFilter filter) {
+    public static Props props(ActorRef requester, Duration timeout, ThingFilter filter) {
         return Props.create(DiscoverActor.class, () -> new DiscoverActor(requester, timeout, filter));
     }
 
     // CrudMessages
-    static public class DiscoverTimeout {
+    public static class DiscoverTimeout {
 
     }
 
-    static public class Done {
+    public static class Done {
         final ActorRef requester;
         final Map<String, Thing> things;
 

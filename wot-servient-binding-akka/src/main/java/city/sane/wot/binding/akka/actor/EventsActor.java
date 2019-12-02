@@ -63,7 +63,7 @@ public class EventsActor extends AbstractActor {
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    static public Props props(Map<String, ExposedThingEvent> properties) {
+    public static Props props(Map<String, ExposedThingEvent> properties) {
         return Props.create(EventsActor.class, () -> new EventsActor(properties));
     }
 }

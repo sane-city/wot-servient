@@ -62,7 +62,7 @@ public class AllPropertiesActor extends AbstractActor {
 
         thing.readProperties().whenComplete((value, e) -> {
             if (e != null) {
-                e.printStackTrace();
+                log.warning("Unable to read properties: {}", e.getMessage());
             }
 
             try {
@@ -70,12 +70,12 @@ public class AllPropertiesActor extends AbstractActor {
                 sender.tell(new RespondRead(content), getSelf());
             }
             catch (ContentCodecException ex) {
-                ex.printStackTrace();
+                log.warning("Unable to read property: {}", ex.getMessage());
             }
         });
     }
 
-    static public Props props(ExposedThing thing) {
+    public static Props props(ExposedThing thing) {
         return Props.create(AllPropertiesActor.class, () -> new AllPropertiesActor(thing));
     }
 }

@@ -274,10 +274,10 @@ public class Klimabotschafter {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                // ignore
             }
 
-            Thread.sleep(60 * 1000);
+            Thread.sleep(60 * 1000L);
         }
     }
 

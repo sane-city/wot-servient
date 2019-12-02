@@ -53,7 +53,7 @@ public class EventActor extends AbstractActor {
                 .build();
     }
 
-    static public Props props(String name, ExposedThingEvent event) {
+    public static Props props(String name, ExposedThingEvent event) {
         return Props.create(EventActor.class, () -> new EventActor(name, event));
     }
 }
