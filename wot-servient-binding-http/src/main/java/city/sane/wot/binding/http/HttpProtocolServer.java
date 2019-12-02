@@ -72,9 +72,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     });
                     server.post("/actions/:name", new InvokeActionRoute(things));
                     server.get("/events/:name", new SubscribeEventRoute(things));
-                    server.path("/all", () -> {
-                        server.get("/properties", new ReadAllPropertiesRoute(things));
-                    });
+                    server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
                     server.get("", new ThingRoute(things));
                 });
             });
@@ -226,8 +224,7 @@ public class HttpProtocolServer implements ProtocolServer {
             variables = "{?" + String.join(",", uriVariables) + "}";
         }
 
-        String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
-        return href;
+        return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
     }
 
     public Service getHTTPServer () {

@@ -43,8 +43,7 @@ public class FileProtocolClient implements ProtocolClient {
                 }
 
                 byte[] body = Files.readAllBytes(path);
-                Content content = new Content(contentType, body);
-                return content;
+                return new Content(contentType, body);
             }
             catch (IOException e) {
                 throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e.getMessage()));
@@ -59,7 +58,7 @@ public class FileProtocolClient implements ProtocolClient {
     private String pathToExtension(Path path) {
         String pathStr = path.toString();
         if (pathStr.contains(".")) {
-            return pathStr.substring(pathStr.lastIndexOf("."));
+            return pathStr.substring(pathStr.lastIndexOf('.'));
         }
         else {
             return "";

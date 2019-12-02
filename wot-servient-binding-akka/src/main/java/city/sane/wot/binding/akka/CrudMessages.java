@@ -1,9 +1,7 @@
 package city.sane.wot.binding.akka;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class contains message types for <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD operations</a>.
@@ -14,14 +12,14 @@ public class CrudMessages {
     }
 
     abstract static class Failed implements Serializable {
-        public final List<String> errors;
+        public final ArrayList<String> errors;
 
-        public Failed(List<String> errors) {
+        public Failed(ArrayList<String> errors) {
             this.errors = errors;
         }
 
         public Failed(Throwable e) {
-            this(Arrays.asList(e.toString()));
+            this(new ArrayList(List.of(e.toString())));
         }
     }
 
@@ -30,15 +28,15 @@ public class CrudMessages {
     }
 
     public static class RespondGetAll<K extends Serializable, E extends Serializable> implements Serializable {
-        public final Map<K, E> entities;
+        public final HashMap<K, E> entities;
 
-        public RespondGetAll(Map<K, E> entities) {
+        public RespondGetAll(HashMap<K, E> entities) {
             this.entities = entities;
         }
     }
 
     public static class GetAllFailed extends Failed {
-        public GetAllFailed(List<String> errors) {
+        public GetAllFailed(ArrayList<String> errors) {
             super(errors);
         }
 
@@ -65,7 +63,7 @@ public class CrudMessages {
     }
 
     public static class GetFailed extends Failed {
-        public GetFailed(List<String> errors) {
+        public GetFailed(ArrayList<String> errors) {
             super(errors);
         }
 
@@ -92,7 +90,7 @@ public class CrudMessages {
     }
 
     public static class CreationFailed extends Failed {
-        public CreationFailed(List<String> errors) {
+        public CreationFailed(ArrayList<String> errors) {
             super(errors);
         }
 
@@ -113,7 +111,7 @@ public class CrudMessages {
     }
 
     public static class UpdateFailed extends Failed {
-        public UpdateFailed(List<String> errors) {
+        public UpdateFailed(ArrayList<String> errors) {
             super(errors);
         }
 
@@ -148,7 +146,7 @@ public class CrudMessages {
     }
 
     public static class DeleteFailed extends Failed {
-        public DeleteFailed(List<String> errors) {
+        public DeleteFailed(ArrayList<String> errors) {
             super(errors);
         }
 

@@ -29,9 +29,7 @@ public class JadexProtocolClientFactory implements ProtocolClientFactory {
     public JadexProtocolClientFactory(Config config) {
         platformConfig = PlatformConfigurationHandler.getDefault();
         ConfigObject objects = config.getObject("wot.servient.jadex.client");
-        objects.forEach((key, value) -> {
-            platformConfig.setValue(key, value.unwrapped());
-        });
+        objects.forEach((key, value) -> platformConfig.setValue(key, value.unwrapped()));
     }
 
     @Override

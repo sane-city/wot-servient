@@ -115,10 +115,10 @@ public class CoapProtocolClient implements ProtocolClient {
                         subscription.unsubscribe();
                         try {
                             String error = ContentManager.contentToValue(output, new StringSchema());
-                            log.debug("Error received for subcription '{}': ", url, error);
+                            log.debug("Error received for subcription '{}': {}", url, error);
                         }
                         catch (ContentCodecException e) {
-                            log.debug("Error received for subcription '{}': ", url, e.getMessage());
+                            log.debug("Error received for subcription '{}': {}", url, e.getMessage());
                         }
                     }
                 }

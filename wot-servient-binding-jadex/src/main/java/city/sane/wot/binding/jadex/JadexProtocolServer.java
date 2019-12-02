@@ -37,9 +37,7 @@ public class JadexProtocolServer implements ProtocolServer {
     public JadexProtocolServer(Config config) {
         platformConfig = PlatformConfigurationHandler.getDefault();
         ConfigObject objects = config.getObject("wot.servient.jadex.server");
-        objects.forEach((key, value) -> {
-            platformConfig.setValue(key, value.unwrapped());
-        });
+        objects.forEach((key, value) -> platformConfig.setValue(key, value.unwrapped()));
     }
 
     @Override
@@ -93,9 +91,7 @@ public class JadexProtocolServer implements ProtocolServer {
         log.info("JadexServer stop exposing '{}' at {}", thing.getId(), buildJadexURI(serviceInteractionId, thing.getId()));
         things.remove(thing.getId());
 
-        CompletableFuture<Void> destroy = FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
-
-        return destroy;
+        return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
     }
 
     public Map<String, ExposedThing> getThings() {

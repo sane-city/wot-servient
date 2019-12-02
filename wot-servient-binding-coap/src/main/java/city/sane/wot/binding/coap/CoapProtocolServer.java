@@ -42,8 +42,8 @@ public class CoapProtocolServer implements ProtocolServer {
     private final List<String> addresses;
 
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final Map<String, CoapResource> resources = new HashMap<String, CoapResource>();
-    private CoapServer server;
+    private final Map<String, CoapResource> resources = new HashMap<>();
+    private WotCoapServer server;
 
     public CoapProtocolServer(Config config) {
         bindPort = config.getInt("wot.servient.coap.bind-port");
@@ -57,7 +57,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public String toString() {
-        return "CoapServer";
+        return "WotCoapServer";
     }
 
     @Override
@@ -65,7 +65,7 @@ public class CoapProtocolServer implements ProtocolServer {
         log.info("Starting on port '{}'", bindPort);
 
         return CompletableFuture.runAsync(() -> {
-            server = new CoapServer(this);
+            server = new WotCoapServer(this);
             server.start();
         });
     }
@@ -95,7 +95,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("CoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("WotCoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
         things.put(thing.getId(), thing);
 
@@ -104,7 +104,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
         Resource root = server.getRoot();
         if (root == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before CoapServer has been started"));
+            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before WotCoapServer has been started"));
         }
         root.add(thingResource);
 
@@ -229,7 +229,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("CoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
         things.remove(thing.getId());
 

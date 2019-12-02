@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static jadex.commons.future.IFuture.DONE;
+
 /**
  * This Agent is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
  * should no longer be exposed.
@@ -120,14 +122,14 @@ public class ThingAgent implements ThingService {
             log.info("Assign '{}' to Event '{}'", href, name);
         });
 
-        return Future.DONE;
+        return DONE;
     }
 
     @AgentKilled
     public IFuture<Void> killed() {
         log.debug("Kill Agent with ThingService with id '{}'", thingServiceId);
 
-        return Future.DONE;
+        return DONE;
     }
 
     private URI buildAllPropertiesURI(String serviceInteractionId) {
@@ -147,7 +149,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read properties: {}", e.getMessage());
+                log.warn("Unable to read properties: {}", e);
                 return null;
             }
         });
@@ -164,7 +166,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read property: {}", e.getMessage());
+                log.warn("Unable to read property: {}", e);
                 return null;
             }
         });
@@ -185,7 +187,7 @@ public class ThingAgent implements ThingService {
                     return new JadexContent(outputContent);
                 }
                 catch (ContentCodecException e) {
-                    log.warn("Unable to write property: {}", e.getMessage());
+                    log.warn("Unable to write property: {}", e);
                     return null;
                 }
             });
