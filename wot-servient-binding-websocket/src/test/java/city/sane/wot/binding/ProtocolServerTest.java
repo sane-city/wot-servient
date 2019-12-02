@@ -59,7 +59,7 @@ public class ProtocolServerTest {
     }
 
     @Test
-    public void test() throws ExecutionException {
+    public void test1() throws ExecutionException {
         try {
             servient.start().join();
 
@@ -68,7 +68,6 @@ public class ProtocolServerTest {
             thing.expose().join();
 
             CompletableFuture<Object> future = new CompletableFuture<>();
-            CompletableFuture<Object> future2 = new CompletableFuture<>();
 
             // TODO:
             cc = new WebSocketClient(new URI("ws://localhost:8080")) {
@@ -84,9 +83,6 @@ public class ProtocolServerTest {
                         if (message instanceof ReadPropertyResponse) {
                             ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
                             future.complete(rMessage.getValue());
-                        } else if (message instanceof WritePropertyResponse) {
-                            WritePropertyResponse wMessage = (WritePropertyResponse) message;
-                            future2.complete(wMessage.getValue());
                         }
 
                     } catch (IOException e) {
@@ -103,6 +99,63 @@ public class ProtocolServerTest {
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    System.out.println("Tschüss");
+                }
+
+                @Override
+                public void onError(Exception ex) {
+
+                }
+            };
+            cc.connect();
+
+            assertEquals(42, future.get());
+            System.out.println(future.get());
+        } catch (URISyntaxException | InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            servient.shutdown().join();
+        }
+    }
+
+    @Test
+    public void test2() throws ExecutionException {
+        try {
+            servient.start().join();
+
+            ExposedThing thing = getCounterThing();
+            servient.addThing(thing);
+            thing.expose().join();
+
+            CompletableFuture<Object> future2 = new CompletableFuture<>();
+
+            // TODO:
+            cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+
+                private Content payload;
+
+                @Override
+                public void onMessage(String json) {
+                    try {
+                        AbstractMessage message = null;
+                        message = JSON_MAPPER.readValue(json, AbstractMessage.class);
+
+                        if (message instanceof WritePropertyResponse) {
+                            WritePropertyResponse wMessage = (WritePropertyResponse) message;
+                            future2.complete(wMessage.getValue());
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onOpen(ServerHandshake handshake) {
                     try {
                         payload = ContentManager.valueToContent(1337, "none");
                     } catch (ContentCodecException e) {
@@ -133,8 +186,8 @@ public class ProtocolServerTest {
             };
             cc.connect();
 
-            assertEquals(42, future.get());
             assertEquals(1337, future2.get());
+            System.out.println(future2.get());
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         } finally {
