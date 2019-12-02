@@ -9,7 +9,7 @@ public class WritePropertyResponse extends AbstractMessage {
 
     @Override
     public String getType() {
-        return null;
+        return "writePropertyResponse";
     }
 
     public Object getValue() {
