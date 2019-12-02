@@ -5,6 +5,7 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.message.AbstractMessage;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.binding.websocket.message.SubscribeProperty;
+import city.sane.wot.binding.websocket.message.SubscribePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;

@@ -11,10 +11,8 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import city.sane.wot.thing.property.ThingProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.eventbus.Subscribe;
 import com.typesafe.config.Config;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -218,12 +216,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     ObjectInput in = new ObjectInputStream(bis);
                     Object value = in.readObject();
 
-                    HashMap<String,Object> writes = new HashMap<>();
-                    writes.put(name,value);
+                    HashMap<String, Object> writes = new HashMap<>();
+                    writes.put(name, value);
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.writeProperties(writes).whenComplete((e) -> {
-                        if (e != null){
+                    thing.writeProperties(writes).whenComplete((result, e) -> {
+                        if (e != null) {
                             // implement
                         } else {
 
