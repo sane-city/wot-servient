@@ -69,15 +69,13 @@ public class ProtocolServerTest {
 
             CompletableFuture<Object> future = new CompletableFuture<>();
 
-            // TODO:
             cc = new WebSocketClient(new URI("ws://localhost:8080")) {
 
-                private Content payload;
 
                 @Override
                 public void onMessage(String json) {
                     try {
-                        AbstractMessage message = null;
+                        AbstractMessage message;
                         message = JSON_MAPPER.readValue(json, AbstractMessage.class);
 
                         if (message instanceof ReadPropertyResponse) {
@@ -133,7 +131,6 @@ public class ProtocolServerTest {
 
             CompletableFuture<Object> future2 = new CompletableFuture<>();
 
-            // TODO:
             cc = new WebSocketClient(new URI("ws://localhost:8080")) {
 
                 private Content payload;
@@ -142,7 +139,7 @@ public class ProtocolServerTest {
                 public void onMessage(String json) {
                     try {
                         System.out.println("onMessage");
-                        AbstractMessage message = null;
+                        AbstractMessage message;
                         message = JSON_MAPPER.readValue(json, AbstractMessage.class);
 
                         if (message instanceof WritePropertyResponse) {
@@ -215,7 +212,7 @@ public class ProtocolServerTest {
                 public void onMessage(String json) {
                     try {
                         System.out.println("onMessage");
-                        AbstractMessage message = null;
+                        AbstractMessage message;
                         message = JSON_MAPPER.readValue(json, AbstractMessage.class);
 
                         if (message instanceof SubscribePropertyResponse) {

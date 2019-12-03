@@ -24,11 +24,11 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 
 public class WebsocketProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
+    private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final WebSocketClient cc;
 
-    public WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
+    WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
         cc = new WebSocketClient(new URI("ws://localhost:8080")) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
@@ -98,13 +98,13 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
         // TODO is that a subscription?
         return CompletableFuture.supplyAsync(() -> {
-            String json = null;
             try {
-                json = JSON_MAPPER.writeValueAsString(form);
+                Form subscribeForm = new Form.Builder(form).setOptional("observer", observer).build();
+                String json = JSON_MAPPER.writeValueAsString(subscribeForm);
+                cc.send(json);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            cc.send(json);
             // TODO
             return null;
         });
