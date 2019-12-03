@@ -10,7 +10,6 @@ import city.sane.wot.thing.filter.ThingFilter;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 
 import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
