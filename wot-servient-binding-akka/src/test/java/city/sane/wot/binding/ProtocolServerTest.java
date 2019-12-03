@@ -1,7 +1,6 @@
 package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
-import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -14,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -131,6 +130,6 @@ public class ProtocolServerTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Class<? extends ProtocolServer>> data() {
-        return Arrays.asList(AkkaProtocolServer.class);
+        return Collections.singletonList(AkkaProtocolServer.class);
     }
 }

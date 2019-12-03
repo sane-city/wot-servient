@@ -70,7 +70,7 @@ public class Context implements Serializable {
 
     public Map<String, String> getPrefixedUrls() {
         return urls.entrySet().stream().filter(e -> e.getKey() != null)
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<String, String> getUrls() {

@@ -10,13 +10,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
  */
 public class KlimabotschafterClient {
-    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, IOException {
+    public static void main(String[] args) throws URISyntaxException, IOException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

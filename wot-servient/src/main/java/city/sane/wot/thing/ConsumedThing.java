@@ -134,7 +134,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             if (!security.isEmpty()) {
                 log.debug("'{}' setting credentials for '{}'", getTitle(), client);
                 Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
-                List<SecurityScheme> metadata = security.stream().map(s -> securityDefinitions.get(s))
+                List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
                         .filter(Objects::nonNull).collect(Collectors.toList());
 
                 client.setSecurity(metadata, servient.getCredentials(id));
@@ -185,8 +185,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
                 try {
-                    Map values = ContentManager.contentToValue(content, new ObjectSchema());
-                    return values;
+                    return ContentManager.contentToValue(content, new ObjectSchema());
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));

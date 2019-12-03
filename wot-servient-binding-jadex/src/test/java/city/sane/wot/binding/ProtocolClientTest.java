@@ -21,8 +21,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -116,7 +116,7 @@ public class ProtocolClientTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
+        return Collections.singletonList(
                 new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class)
         );
     }

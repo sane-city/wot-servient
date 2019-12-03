@@ -4,8 +4,6 @@ import city.sane.wot.DefaultWot;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-
 public class ScriptingManagerTest {
     @Before
     public void setup() {

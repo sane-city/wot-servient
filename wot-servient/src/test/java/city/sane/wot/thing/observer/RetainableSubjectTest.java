@@ -19,9 +19,7 @@ public class RetainableSubjectTest {
         subject.next("Awesome").join();
 
         StringBuilder sb = new StringBuilder();
-        subject.subscribe(next -> {
-            sb.append(next);
-        });
+        subject.subscribe(sb::append);
 
         assertEquals("BeerisAwesome", sb.toString());
 

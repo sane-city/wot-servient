@@ -9,7 +9,6 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQuery;
-import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.property.ThingProperty;
 
 import java.util.Collection;
@@ -20,7 +19,7 @@ import java.util.concurrent.ExecutionException;
  * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link AkkaDiscovery}.
  */
 public class AkkaDiscoveryClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, ThingQueryException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         Wot wot = DefaultWot.clientOnly();
 
         // Expose a thing
@@ -50,16 +49,14 @@ public class AkkaDiscoveryClient {
 
         if (!things.isEmpty()) {
             // print found things
-            things.stream().forEach(t -> {
+            things.forEach(t -> {
                 System.out.println("=== TD ===");
                 System.out.println(t.toJson(true));
                 ConsumedThing ct = wot.consume(t);
 
                 try {
                     Map<String, Object> properties = ct.readProperties().get();
-                    properties.forEach((key, value) -> {
-                        System.out.println(key + ": " + value);
-                    });
+                    properties.forEach((key, value) -> System.out.println(key + ": " + value));
                 }
                 catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

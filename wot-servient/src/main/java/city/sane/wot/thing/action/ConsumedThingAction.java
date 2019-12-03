@@ -52,8 +52,7 @@ public class ConsumedThingAction extends ThingAction {
             CompletableFuture<Content> result = client.invokeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this.getOutput());
-                    return value;
+                    return ContentManager.contentToValue(content, this.getOutput());
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));

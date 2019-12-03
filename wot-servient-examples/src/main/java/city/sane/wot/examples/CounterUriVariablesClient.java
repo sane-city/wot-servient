@@ -7,13 +7,12 @@ import city.sane.wot.thing.ConsumedThing;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch thing description exposes by {@link CounterUriVariables} and then interact with it.
  */
 public class CounterUriVariablesClient {
-    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException {
+    public static void main(String[] args) throws URISyntaxException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

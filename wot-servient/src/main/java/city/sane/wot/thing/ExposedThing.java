@@ -59,9 +59,9 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         setSecurity(thing.getSecurity());
         setSecurityDefinitions(thing.getSecurityDefinitions());
         setBase(thing.getBase());
-        ((Map<String, ThingProperty>) thing.getProperties()).forEach((n, p) -> addProperty(n, p));
-        ((Map<String, ThingAction>) thing.getActions()).forEach((n, a) -> addAction(n, a));
-        ((Map<String, ThingEvent>) thing.getEvents()).forEach((n, e) -> addEvent(n, e));
+        ((Map<String, ThingProperty>) thing.getProperties()).forEach(this::addProperty);
+        ((Map<String, ThingAction>) thing.getActions()).forEach(this::addAction);
+        ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
     }
 
     /**

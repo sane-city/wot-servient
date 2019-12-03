@@ -4,7 +4,6 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
-import city.sane.wot.thing.Thing;
 
 import java.io.IOException;
 import java.util.Timer;

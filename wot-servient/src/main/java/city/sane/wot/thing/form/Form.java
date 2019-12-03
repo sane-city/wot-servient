@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.*;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A form contains all the information from an endpoint for communication.<br>
@@ -115,7 +112,7 @@ public class Form implements Serializable {
         }
 
         public Builder setOp(Operation op) {
-            return setOp(Arrays.asList(op));
+            return setOp(Collections.singletonList(op));
         }
 
         public Builder setSubprotocol(String subprotocol) {

@@ -118,7 +118,7 @@ public class ConsumedThingTest {
     }
 
     @Test
-    public void invokeAction() throws ExecutionException, InterruptedException {
+    public void invokeAction() {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -252,7 +252,7 @@ public class ConsumedThingTest {
 
     @Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
+        return Collections.singletonList(
                 new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class)
         );
     }

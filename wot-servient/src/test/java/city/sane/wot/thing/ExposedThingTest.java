@@ -50,7 +50,7 @@ public class ExposedThingTest {
     }
 
     @Test
-    public void subscribeEvent() throws InterruptedException {
+    public void subscribeEvent() {
         ExposedThing thing = getCounterThing();
         ExposedThingEvent event = thing.getEvent("change");
 
@@ -74,8 +74,8 @@ public class ExposedThingTest {
 
         CompletableFuture<Object> subscriptionFuture = new CompletableFuture<>();
         property.subscribe(
-                next -> subscriptionFuture.complete(next),
-                e -> subscriptionFuture.completeExceptionally(e),
+                subscriptionFuture::complete,
+                subscriptionFuture::completeExceptionally,
                 () -> System.out.println("completed!"));
         property.write(1337);
 

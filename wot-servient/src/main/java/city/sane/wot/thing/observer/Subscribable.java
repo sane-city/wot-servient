@@ -14,7 +14,7 @@ public interface Subscribable<T> {
      * @return
      */
     default Subscription subscribe(Consumer<T> next, Consumer<Throwable> error, Runnable complete) {
-        return subscribe(new Observer<T>(next, error, complete));
+        return subscribe(new Observer<>(next, error, complete));
     }
 
     /**
@@ -24,6 +24,6 @@ public interface Subscribable<T> {
      * @return
      */
     default Subscription subscribe(Consumer<T> next)  {
-        return subscribe(new Observer<T>(next));
+        return subscribe(new Observer<>(next));
     }
 }

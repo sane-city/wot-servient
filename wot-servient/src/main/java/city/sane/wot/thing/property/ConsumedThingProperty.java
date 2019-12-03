@@ -71,8 +71,7 @@ public class ConsumedThingProperty extends ThingProperty {
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this);
-                    return value;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
@@ -97,8 +96,7 @@ public class ConsumedThingProperty extends ThingProperty {
             CompletableFuture<Content> result = client.writeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object output = ContentManager.contentToValue(content, this);
-                    return output;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));

@@ -88,7 +88,7 @@ public class Subject<T> implements Subscribable<T> {
 
         // call all observers in parallel
         CompletableFuture[] nextFutures = observers.stream()
-                .map(o -> CompletableFuture.runAsync(() -> o.complete())).toArray(CompletableFuture[]::new);
+                .map(o -> CompletableFuture.runAsync(o::complete)).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
     }

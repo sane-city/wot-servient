@@ -89,11 +89,6 @@ public class ScriptingManager {
 
     private static String extensionToMediaType(String extension) {
         Optional<ScriptingEngine> engine = ENGINES.values().stream().filter(e -> e.getFileExtension().equals(extension)).findFirst();
-        if (engine.isPresent()) {
-            return engine.get().getMediaType();
-        }
-        else {
-            return null;
-        }
+        return engine.map(ScriptingEngine::getMediaType).orElse(null);
     }
 }

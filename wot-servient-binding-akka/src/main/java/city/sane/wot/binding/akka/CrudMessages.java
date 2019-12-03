@@ -1,7 +1,7 @@
 package city.sane.wot.binding.akka;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class CrudMessages {
         }
 
         public Failed(Throwable e) {
-            this(Arrays.asList(e.toString()));
+            this(Collections.singletonList(e.toString()));
         }
     }
 

@@ -140,7 +140,7 @@ public class ServientTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
+        return Collections.singletonList(
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
         );
     }

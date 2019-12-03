@@ -170,8 +170,7 @@ public class ContentManager {
             }
         }
 
-        Content content = new Content(contentType, bytes);
-        return content;
+        return new Content(contentType, bytes);
     }
 
     /**

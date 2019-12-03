@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Produces and exposes every Klimabotschafter's weather stations as a thing.
@@ -281,7 +280,7 @@ public class Klimabotschafter {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException {
         new Klimabotschafter();
     }
 }

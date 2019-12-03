@@ -1,7 +1,6 @@
 package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.action.ConsumedThingAction;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryResults;

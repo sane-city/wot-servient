@@ -64,8 +64,7 @@ public class DefaultWot implements Wot {
 
     @Override
     public ConsumedThing consume(Thing thing) {
-        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
-        return consumedThing;
+        return new ConsumedThing(servient, thing);
     }
 
     @Override

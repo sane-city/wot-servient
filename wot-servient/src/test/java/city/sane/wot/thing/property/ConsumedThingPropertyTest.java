@@ -5,9 +5,9 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.form.Form;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ConsumedThingPropertyTest {
     @Test
@@ -15,7 +15,7 @@ public class ConsumedThingPropertyTest {
         Thing thing = new Thing.Builder().build();
         ConsumedThing consumedThing = new ConsumedThing(null, thing);
         Form form = new Form.Builder().setHref("http://example.com/properties/count").build();
-        ThingProperty property = new ThingProperty.Builder().setForms(Arrays.asList(form)).build();
+        ThingProperty property = new ThingProperty.Builder().setForms(Collections.singletonList(form)).build();
         ConsumedThingProperty consumedProperty = new ConsumedThingProperty("count", property, consumedThing);
 
         assertEquals("http://example.com/properties/count", consumedProperty.getForms().get(0).getHref());
@@ -26,7 +26,7 @@ public class ConsumedThingPropertyTest {
         Thing thing = new Thing.Builder().setBase("http://example.com").build();
         ConsumedThing consumedThing = new ConsumedThing(null, thing);
         Form form = new Form.Builder().setHref("/properties/count").build();
-        ThingProperty property = new ThingProperty.Builder().setForms(Arrays.asList(form)).build();
+        ThingProperty property = new ThingProperty.Builder().setForms(Collections.singletonList(form)).build();
         ConsumedThingProperty consumedProperty = new ConsumedThingProperty("count", property, consumedThing);
 
         assertEquals("http://example.com/properties/count", consumedProperty.getForms().get(0).getHref());
@@ -37,7 +37,7 @@ public class ConsumedThingPropertyTest {
         Thing thing = new Thing.Builder().setBase("http://example.com").build();
         ConsumedThing consumedThing = new ConsumedThing(null, thing);
         Form form = new Form.Builder().setHref("http://example.com/properties/count").build();
-        ThingProperty property = new ThingProperty.Builder().setForms(Arrays.asList(form)).build();
+        ThingProperty property = new ThingProperty.Builder().setForms(Collections.singletonList(form)).build();
         ConsumedThingProperty consumedProperty = new ConsumedThingProperty("count", property, consumedThing);
 
         assertEquals("http://example.com/properties/count", consumedProperty.getForms().get(0).getHref());

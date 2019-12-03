@@ -6,10 +6,6 @@ import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
-import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.ConsumedThingException;
-import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.NoFormForInteractionConsumedThingException;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -170,7 +166,7 @@ public class ConsumedThingTest {
         ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
         try {
-            Map values = thing.readProperties(Arrays.asList("count")).get();
+            Map values = thing.readProperties(Collections.singletonList("count")).get();
             assertEquals(1, values.size());
             assertEquals(42, values.get("count"));
         }
@@ -365,7 +361,7 @@ public class ConsumedThingTest {
 
     @Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
+        return Collections.singletonList(
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
         );
     }

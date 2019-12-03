@@ -15,7 +15,7 @@ public class SubjectTest {
     public void next() {
         AtomicReference<String> result = new AtomicReference<>();
         Subject<String> subject = new Subject();
-        subject.subscribe(next -> result.set(next));
+        subject.subscribe(result::set);
         subject.next("Hello World").join();
 
         assertEquals("Hello World", result.get());

@@ -162,7 +162,7 @@ public class Servient {
 
         if (thing == null) {
             log.warn("Thing must be added to the servient first");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.completedFuture(null);
         }
 
         log.info("Servient exposing '{}'", id);
@@ -275,8 +275,7 @@ public class Servient {
                 return client.readResource(form).thenApply((content) -> {
                     try {
                         Map map = ContentManager.contentToValue(content, new ObjectSchema());
-                        Thing thing = Thing.fromMap(map);
-                        return thing;
+                        return Thing.fromMap(map);
                     }
                     catch (ContentCodecException e) {
                         throw new CompletionException(new ServientException("Error while fetching TD: " + e.toString()));
@@ -326,12 +325,14 @@ public class Servient {
                         Map<String, Map> value = ContentManager.contentToValue(content, new ObjectSchema());
 
                         Map<String, Thing> things = new HashMap<>();
-                        for (Map.Entry<String, Map> entry : value.entrySet()) {
-                            String id = entry.getKey();
-                            Map map = entry.getValue();
-                            Thing thing = Thing.fromMap(map);
+                        if (value != null) {
+                            for (Map.Entry<String, Map> entry : value.entrySet()) {
+                                String id = entry.getKey();
+                                Map map = entry.getValue();
+                                Thing thing = Thing.fromMap(map);
 
-                            things.put(id, thing);
+                                things.put(id, thing);
+                            }
                         }
 
                         return things;
@@ -508,12 +509,7 @@ public class Servient {
      */
     public <T extends ProtocolServer> T getServer(Class<T> server) {
         Optional<T> optional = (Optional<T>) servers.stream().filter(server::isInstance).findFirst();
-        if (optional.isPresent()) {
-            return optional.get();
-        }
-        else {
-            return null;
-        }
+        return optional.orElse(null);
     }
 
     /**
@@ -603,7 +599,7 @@ public class Servient {
             return addresses;
         }
         catch (SocketException e) {
-            return new HashSet<>(Arrays.asList("127.0.0.1"));
+            return new HashSet<>(Collections.singletonList("127.0.0.1"));
         }
     }
 

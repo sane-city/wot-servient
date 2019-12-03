@@ -36,8 +36,7 @@ public class JsonpathHttpProtocolClient extends HttpProtocolClient {
                     String jsonPath = form.getOptional("sane:jsonPath").toString();
                     Object newValue = JsonPath.read(json, jsonPath);
 
-                    Content newContent = ContentManager.valueToContent(newValue, "application/json");
-                    return newContent;
+                    return ContentManager.valueToContent(newValue, "application/json");
                 }
                 catch (ContentCodecException e) {
                     log.warn("Unable apply JSONPath: {}", e);

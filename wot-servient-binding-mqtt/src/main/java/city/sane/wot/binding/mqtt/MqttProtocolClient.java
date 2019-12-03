@@ -66,9 +66,7 @@ public class MqttProtocolClient implements ProtocolClient {
             throw new ProtocolClientException("No broker defined for MQTT server binding - skipping");
         }
 
-        MqttClientPersistence persistence = null;
-        try {
-            persistence = new MemoryPersistence();
+        try (MqttClientPersistence persistence = new MemoryPersistence()) {
             client = new MqttClient(broker, clientId, persistence);
 
             MqttConnectOptions options = new MqttConnectOptions();
@@ -87,16 +85,7 @@ public class MqttProtocolClient implements ProtocolClient {
         catch (MqttException e) {
             log.error("MqttClient could not connect to broker at '{}': {}", broker, e.getMessage());
         }
-        finally {
-            if (persistence != null) {
-                try {
-                    persistence.close();
-                }
-                catch (MqttPersistenceException e) {
-                    // ignore
-                }
-            }
-        }
+        // ignore
     }
 
     @Override
