@@ -29,7 +29,7 @@ import java.util.UUID;
  * </a>
  */
 public class RdfResource {
-    final static Logger log = LoggerFactory.getLogger(RdfResource.class);
+    static final Logger log = LoggerFactory.getLogger(RdfResource.class);
 
     /**
      * DCAT meta-data

@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * Allows consuming Things via HTTP. The return values can be manipulated with JSON queries.
  */
 public class JsonpathHttpProtocolClient extends HttpProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(JsonpathHttpProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(JsonpathHttpProtocolClient.class);
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
@@ -40,8 +40,7 @@ public class JsonpathHttpProtocolClient extends HttpProtocolClient {
                     return newContent;
                 }
                 catch (ContentCodecException e) {
-                    log.warn("Unable apply JSONPath: " + e.getMessage());
-                    e.printStackTrace();
+                    log.warn("Unable apply JSONPath: {}", e);
                     return content;
                 }
             }

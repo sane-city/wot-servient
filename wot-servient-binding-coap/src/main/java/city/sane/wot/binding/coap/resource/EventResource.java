@@ -1,6 +1,6 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapServer;
+import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -17,16 +17,16 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.event.ThingEvent}.
  */
 public class EventResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(EventResource.class);
+    static final Logger log = LoggerFactory.getLogger(EventResource.class);
 
-    private final CoapServer server;
+    private final WotCoapServer server;
     private final String name;
     private final ExposedThingEvent event;
     private Subscription subscription = null;
     private Object data;
     private Throwable e;
 
-    public EventResource(CoapServer server, String name, ExposedThingEvent event) {
+    public EventResource(WotCoapServer server, String name, ExposedThingEvent event) {
         super(name);
         this.server = server;
         this.name = name;
@@ -76,15 +76,13 @@ public class EventResource extends AbstractResource {
                             exchange.respond(CoAP.ResponseCode.CONTENT);
                         }
                     }
-                    catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                        e.printStackTrace();
+                    catch (ContentCodecException ex) {
+                        log.warn("Cannot process data for Event '{}': {}", name, ex.getMessage());
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                     }
                 }
                 else {
-                    log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                    e.printStackTrace();
+                    log.warn("Cannot process data for Event '{}': {}", name, e.getMessage());
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                 }
             }
@@ -95,18 +93,18 @@ public class EventResource extends AbstractResource {
         }
     }
 
-    synchronized private void ensureSubcription() {
+    private synchronized void ensureSubcription() {
         if (subscription == null) {
             subscription = event.subscribe(
-                    data -> changeResource(data, null),
-                    e -> changeResource(null, e),
+                    next -> changeResource(next, null),
+                    ex -> changeResource(null, ex),
                     () -> {
                     }
             );
         }
     }
 
-    synchronized private void changeResource(Object data, Throwable e) {
+    private synchronized void changeResource(Object data, Throwable e) {
         this.data = data;
         this.e = e;
         changed();

@@ -9,7 +9,11 @@ import java.util.Map;
  * This class contains message types for <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD operations</a>.
  */
 public class CrudMessages {
-    static abstract class Failed implements Serializable {
+    private CrudMessages() {
+
+    }
+
+    abstract static class Failed implements Serializable {
         public final List<String> errors;
 
         public Failed(List<String> errors) {
@@ -22,10 +26,10 @@ public class CrudMessages {
     }
 
     // Index
-    static public class GetAll implements Serializable {
+    public static class GetAll implements Serializable {
     }
 
-    static public class RespondGetAll<K, E> implements Serializable {
+    public static class RespondGetAll<K extends Serializable, E extends Serializable> implements Serializable {
         public final Map<K, E> entities;
 
         public RespondGetAll(Map<K, E> entities) {
@@ -33,7 +37,7 @@ public class CrudMessages {
         }
     }
 
-    static public class GetAllFailed extends Failed {
+    public static class GetAllFailed extends Failed {
         public GetAllFailed(List<String> errors) {
             super(errors);
         }
@@ -44,7 +48,7 @@ public class CrudMessages {
     }
 
     // Get
-    static public class Get<K> implements Serializable {
+    public static class Get<K extends Serializable> implements Serializable {
         public final K id;
 
         public Get(K id) {
@@ -52,7 +56,7 @@ public class CrudMessages {
         }
     }
 
-    static public class RespondGet<E> implements Serializable {
+    public static class RespondGet<E extends Serializable> implements Serializable {
         public final E entity;
 
         public RespondGet(E entity) {
@@ -60,7 +64,7 @@ public class CrudMessages {
         }
     }
 
-    static public class GetFailed extends Failed {
+    public static class GetFailed extends Failed {
         public GetFailed(List<String> errors) {
             super(errors);
         }
@@ -71,7 +75,7 @@ public class CrudMessages {
     }
 
     // Create
-    static public class Create<E> implements Serializable {
+    public static class Create<E extends Serializable> implements Serializable {
         public final E entity;
 
         public Create(E entity) {
@@ -79,7 +83,7 @@ public class CrudMessages {
         }
     }
 
-    static public class Created<E> {
+    public static class Created<E extends Serializable> {
         public final E entity;
 
         public Created(E entity) {
@@ -87,7 +91,7 @@ public class CrudMessages {
         }
     }
 
-    static public class CreationFailed extends Failed {
+    public static class CreationFailed extends Failed {
         public CreationFailed(List<String> errors) {
             super(errors);
         }
@@ -98,7 +102,7 @@ public class CrudMessages {
     }
 
     // Update
-    static public class Update<K, E> implements Serializable {
+    public static class Update<K extends Serializable, E extends Serializable> implements Serializable {
         public final K id;
         public final E entity;
 
@@ -108,7 +112,7 @@ public class CrudMessages {
         }
     }
 
-    static public class UpdateFailed extends Failed {
+    public static class UpdateFailed extends Failed {
         public UpdateFailed(List<String> errors) {
             super(errors);
         }
@@ -118,7 +122,7 @@ public class CrudMessages {
         }
     }
 
-    static public class Updated<E> implements Serializable {
+    public static class Updated<E extends Serializable> implements Serializable {
         public final E entity;
 
         public Updated(E entity) {
@@ -127,7 +131,7 @@ public class CrudMessages {
     }
 
     // Delete
-    static public class Delete<K> implements Serializable {
+    public static class Delete<K extends Serializable> implements Serializable {
         public final K id;
 
         public Delete(K id) {
@@ -135,7 +139,7 @@ public class CrudMessages {
         }
     }
 
-    static public class Deleted<K> implements Serializable {
+    public static class Deleted<K extends Serializable> implements Serializable {
         public final K id;
 
         public Deleted(K id) {
@@ -143,7 +147,7 @@ public class CrudMessages {
         }
     }
 
-    static public class DeleteFailed extends Failed {
+    public static class DeleteFailed extends Failed {
         public DeleteFailed(List<String> errors) {
             super(errors);
         }

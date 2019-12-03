@@ -18,7 +18,7 @@ import java.util.Map;
  * Endpoint for invoking a {@link city.sane.wot.thing.action.ThingAction}.
  */
 public class InvokeActionRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
+    static final Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
 
     private final Map<String, ExposedThing> things;
 
@@ -29,6 +29,9 @@ public class InvokeActionRoute extends AbstractRoute {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        if (request.raw().getQueryString() != null && !request.raw().getQueryString().isEmpty()) {
+            log.info("Request parameters: {}", request.raw().getQueryString());
+        }
 
         String requestContentType = getOrDefaultRequestContentType(request);
         if (!ContentManager.isSupportedMediaType(requestContentType)) {
@@ -106,10 +109,10 @@ public class InvokeActionRoute extends AbstractRoute {
                         String value = urlValue[0];
                         params.put(name, value);
                     }
+                    else {
+                        log.warn("Not able to read variable '{}' because variable type '{}' is unknown", name, type);
+                    }
                 }
-            }
-            else {
-                continue;
             }
         }
         return params;

@@ -60,7 +60,7 @@ public class PhytecClient {
                         System.out.printf("%s: Button is not pressed\n", thing.getId());
                     }
 
-                    Thread.sleep(10 * 1000);
+                    Thread.sleep(10 * 1000L);
                 }
 
             }

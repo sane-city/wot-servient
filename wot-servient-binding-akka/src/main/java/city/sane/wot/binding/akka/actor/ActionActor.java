@@ -53,7 +53,7 @@ public class ActionActor extends AbstractActor {
                 .build();
     }
 
-    static public Props props(String name, ExposedThingAction action) {
+    public static Props props(String name, ExposedThingAction action) {
         return Props.create(ActionActor.class, () -> new ActionActor(name, action));
     }
 }

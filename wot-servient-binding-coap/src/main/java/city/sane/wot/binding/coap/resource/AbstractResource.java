@@ -15,7 +15,6 @@ public abstract class AbstractResource extends CoapResource {
 
     protected String getOrDefaultRequestContentType(CoapExchange exchange) {
         int requestContentFormatNum = exchange.getRequestOptions().getContentFormat();
-        String requestContentFormat;
         if (requestContentFormatNum != -1) {
             return MediaTypeRegistry.toString(requestContentFormatNum);
         }

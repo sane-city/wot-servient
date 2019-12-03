@@ -60,12 +60,8 @@ public class ExposedThingTest {
         AtomicInteger counter2 = new AtomicInteger();
         event.subscribe(next -> counter2.getAndIncrement());
 
-        event.emit();
-        event.emit();
-
-        // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-        // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(1 * 1000);
+        event.emit().join();
+        event.emit().join();
 
         assertEquals(2, counter1.get());
         assertEquals(2, counter2.get());

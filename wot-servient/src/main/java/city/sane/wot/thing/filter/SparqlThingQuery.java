@@ -1,6 +1,7 @@
 package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.action.ConsumedThingAction;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryResults;
@@ -9,6 +10,8 @@ import org.eclipse.rdf4j.repository.util.Repositories;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -22,8 +25,10 @@ import java.util.stream.Collectors;
  * ?x &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; &lt;https://www.w3.org/2019/wot/td#Thing&gt; .
  */
 public class SparqlThingQuery implements ThingQuery {
+    static final Logger log = LoggerFactory.getLogger(SparqlThingQuery.class);
+
     // FIXME use tag: or urn: instead (see https://github.com/jsonld-java/jsonld-java/issues/232)
-    final static String DEFAULT_BASE_IRI = "https://sane.city/";
+    static final String DEFAULT_BASE_IRI = "https://sane.city/";
     private static final RDFFormat FORMAT = Rio.getParserFormatForMIMEType("application/td+json").orElse(RDFFormat.JSONLD);
 
     private final String query;
@@ -58,7 +63,7 @@ public class SparqlThingQuery implements ThingQuery {
                 });
             }
             catch (IOException e) {
-                e.printStackTrace();
+                log.warn("Unable to create rdf resource for thing {}: {}", thing.getId(), e.getMessage());
             }
         }
 

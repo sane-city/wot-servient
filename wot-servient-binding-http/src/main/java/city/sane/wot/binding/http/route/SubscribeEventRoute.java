@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  * Endpoint for interaction with a {@link city.sane.wot.thing.event.ThingEvent}.
  */
 public class SubscribeEventRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
+    static final Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
 
     private final Map<String, ExposedThing> things;
 
@@ -54,7 +54,7 @@ public class SubscribeEventRoute extends AbstractRoute {
                                 result.complete(content);
                             }
                             catch (ContentCodecException e) {
-                                log.warn("Cannot process data for Event '{}': {}", name, e.toString());
+                                log.warn("Cannot process data for Event '{}': {}", name, e);
                                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                                 result.complete("Invalid Event Data");
                             }
@@ -73,9 +73,7 @@ public class SubscribeEventRoute extends AbstractRoute {
                     subscription.unsubscribe();
                 });
 
-                Object output = result.get();
-
-                return output;
+                return result.get();
             }
             else {
                 response.status(HttpStatus.NOT_FOUND_404);

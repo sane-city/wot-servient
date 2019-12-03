@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via HTTP.
  */
 public class HttpProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
 
     private final String bindHost;
     private final int bindPort;
@@ -72,9 +72,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     });
                     server.post("/actions/:name", new InvokeActionRoute(things));
                     server.get("/events/:name", new SubscribeEventRoute(things));
-                    server.path("/all", () -> {
-                        server.get("/properties", new ReadAllPropertiesRoute(things));
-                    });
+                    server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
                     server.get("", new ThingRoute(things));
                 });
             });
@@ -203,7 +201,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }
@@ -214,7 +212,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0) + "/" + id);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to thing url: {}", e);
             return null;
         }
     }
@@ -226,8 +224,7 @@ public class HttpProtocolServer implements ProtocolServer {
             variables = "{?" + String.join(",", uriVariables) + "}";
         }
 
-        String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
-        return href;
+        return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
     }
 
     public Service getHTTPServer () {

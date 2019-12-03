@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingEvent}.
  */
 public class ConsumedThingEvent extends ThingEvent {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
+    static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
 
     private final String name;
     private final ConsumedThing thing;

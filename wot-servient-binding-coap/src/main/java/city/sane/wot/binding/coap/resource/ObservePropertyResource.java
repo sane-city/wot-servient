@@ -1,6 +1,6 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapServer;
+import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -17,15 +17,15 @@ import org.slf4j.LoggerFactory;
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ObservePropertyResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(ObservePropertyResource.class);
-    private final CoapServer server;
+    static final Logger log = LoggerFactory.getLogger(ObservePropertyResource.class);
+    private final WotCoapServer server;
     private final String name;
     private final ExposedThingProperty property;
     private Subscription subscription = null;
     private Object data;
     private Throwable e;
 
-    public ObservePropertyResource(CoapServer server, String name, ExposedThingProperty property) {
+    public ObservePropertyResource(WotCoapServer server, String name, ExposedThingProperty property) {
         super("observable");
         this.server = server;
         this.name = name;
@@ -75,15 +75,13 @@ public class ObservePropertyResource extends AbstractResource {
                             exchange.respond(CoAP.ResponseCode.CONTENT);
                         }
                     }
-                    catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Property '{}': {}", name, e.toString());
-                        e.printStackTrace();
+                    catch (ContentCodecException ex) {
+                        log.warn("Cannot process data for Property '{}': {}", name, ex.getMessage());
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                     }
                 }
                 else {
-                    log.warn("Cannot process data for Property '{}': {}", name, e.toString());
-                    e.printStackTrace();
+                    log.warn("Cannot process data for Property '{}': {}", name, e.getMessage());
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                 }
             }
@@ -94,18 +92,18 @@ public class ObservePropertyResource extends AbstractResource {
         }
     }
 
-    synchronized private void ensureSubcription() {
+    private synchronized void ensureSubcription() {
         if (subscription == null) {
             subscription = property.subscribe(
-                    data -> changeResource(data, null),
-                    e -> changeResource(null, e),
+                    next -> changeResource(next, null),
+                    ex -> changeResource(null, ex),
                     () -> {
                     }
             );
         }
     }
 
-    synchronized private void changeResource(Object data, Throwable e) {
+    private synchronized void changeResource(Object data, Throwable e) {
         this.data = data;
         this.e = e;
         changed();

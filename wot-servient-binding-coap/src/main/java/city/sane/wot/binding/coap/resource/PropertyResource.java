@@ -1,6 +1,6 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapServer;
+import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -15,12 +15,12 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class PropertyResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(PropertyResource.class);
+    static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
 
-    private final CoapServer server;
+    private final WotCoapServer server;
     private final ExposedThingProperty property;
 
-    public PropertyResource(CoapServer server, String name, ExposedThingProperty property) {
+    public PropertyResource(WotCoapServer server, String name, ExposedThingProperty property) {
         super(name);
         this.server = server;
         this.property = property;
@@ -41,12 +41,12 @@ public class PropertyResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        e.printStackTrace();
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+                        log.warn("Exception: {}", ex);
+                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    e.printStackTrace();
+                    log.warn("Exception: {}", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
@@ -58,7 +58,7 @@ public class PropertyResource extends AbstractResource {
 
     @Override
     public void handlePUT(CoapExchange exchange) {
-        log.info("CoapServer handles PUT to {}", getURI());
+        log.info("WotCoapServer handles PUT to {}", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
         if (!ContentManager.isSupportedMediaType(requestContentFormat)) {
@@ -82,8 +82,7 @@ public class PropertyResource extends AbstractResource {
                                 exchange.respond(CoAP.ResponseCode.CHANGED, outputContent.getBody(), outputContentFormat);
                             }
                             catch (ContentCodecException ex) {
-                                ex.printStackTrace();
-                                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
+                                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
                             }
                         }
                         else {
@@ -91,14 +90,13 @@ public class PropertyResource extends AbstractResource {
                         }
                     }
                     else {
-                        e.printStackTrace();
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+                        log.warn("Exception: {}", e);
+                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
                     }
                 });
             }
             catch (ContentCodecException ex) {
-                ex.printStackTrace();
-                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
+                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
             }
         }
         else {

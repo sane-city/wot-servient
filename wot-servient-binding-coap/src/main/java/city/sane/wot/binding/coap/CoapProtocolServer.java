@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via CoAP.
  */
 public class CoapProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(CoapProtocolServer.class);
 
     static {
         // Californium uses java.util.logging. We need to redirect all log messages to logback
@@ -42,8 +42,8 @@ public class CoapProtocolServer implements ProtocolServer {
     private final List<String> addresses;
 
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final Map<String, CoapResource> resources = new HashMap<String, CoapResource>();
-    private CoapServer server;
+    private final Map<String, CoapResource> resources = new HashMap<>();
+    private WotCoapServer server;
 
     public CoapProtocolServer(Config config) {
         bindPort = config.getInt("wot.servient.coap.bind-port");
@@ -57,7 +57,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public String toString() {
-        return "CoapServer";
+        return "WotCoapServer";
     }
 
     @Override
@@ -65,7 +65,7 @@ public class CoapProtocolServer implements ProtocolServer {
         log.info("Starting on port '{}'", bindPort);
 
         return CompletableFuture.runAsync(() -> {
-            server = new CoapServer(this);
+            server = new WotCoapServer(this);
             server.start();
         });
     }
@@ -83,10 +83,10 @@ public class CoapProtocolServer implements ProtocolServer {
             //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
             //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
             try {
-                Thread.sleep(1 * 1000);
+                Thread.sleep(1 * 1000L);
             }
             catch (InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
 
             log.debug("Server stopped");
@@ -95,7 +95,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("CoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("WotCoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
         things.put(thing.getId(), thing);
 
@@ -104,7 +104,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
         Resource root = server.getRoot();
         if (root == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before CoapServer has been started"));
+            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before WotCoapServer has been started"));
         }
         root.add(thingResource);
 
@@ -229,7 +229,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("CoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
         things.remove(thing.getId());
 
@@ -247,7 +247,7 @@ public class CoapProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }
@@ -258,7 +258,7 @@ public class CoapProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0) + "/" + id);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to thing url: {}", e);
             return null;
         }
     }

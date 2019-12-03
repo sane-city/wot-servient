@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
 public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
-    final static Logger log = LoggerFactory.getLogger(ExposedThing.class);
+    static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
 
     private final Servient servient;
 
@@ -233,9 +233,11 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
             // wait until init value has been written
             exposedProperty.write(init).get();
         }
-        catch (InterruptedException | ExecutionException e) {
-            log.warn("'{}' unable to write initial value for Property '{}'", getId(), name);
-            e.printStackTrace();
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            log.warn("'{}' unable to write initial value for Property '{}': {}", getId(), name, e.getMessage());
         }
 
         return this;

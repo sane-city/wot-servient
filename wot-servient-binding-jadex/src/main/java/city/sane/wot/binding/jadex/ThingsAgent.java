@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static jadex.commons.future.IFuture.DONE;
+
 /**
  * This Agent is started together with {@link city.sane.wot.binding.jadex.JadexProtocolServer} and is responsible for exposing things. For each exposed Thing
  * a {@link ThingAgent} is created, which is responsible for the interaction with the Thing.
@@ -23,7 +25,7 @@ import java.util.Map;
         @ProvidedService(type = ThingsService.class, scope = ServiceScope.PLATFORM)
 })
 public class ThingsAgent implements ThingsService {
-    final static Logger log = LoggerFactory.getLogger(ThingsAgent.class);
+    static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
     private final Map<String, IExternalAccess> children = new HashMap<>();
     @Agent
     private IInternalAccess agent;
@@ -34,7 +36,7 @@ public class ThingsAgent implements ThingsService {
     public IFuture<Void> created() {
         log.debug("Agent created");
 
-        return Future.DONE;
+        return DONE;
     }
 
     @Override
