@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class WebsocketProtocolServer implements ProtocolServer {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
 
-    private final Map<String, ExposedThing> things = new HashMap<>();
+    private final Map<String, ExposedThing> things;
 
     private final MyServer server;
     private final List<String> addresses;
@@ -42,6 +42,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         server = new MyServer(new InetSocketAddress(8080));
         addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":8080").collect(Collectors.toList());
 
+        things = new HashMap<>();
     }
 
     @Override
@@ -164,7 +165,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     class MyServer extends WebSocketServer {
         private final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-        public MyServer(InetSocketAddress inetSocketAddress) {
+        MyServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
         }
 
@@ -183,7 +184,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
             // TODO: implementieren
             System.out.println("Nachricht erhalten: " + s);
-            AbstractMessage message = null;
+            AbstractMessage message;
             try {
                 message = JSON_MAPPER.readValue(s, AbstractMessage.class);
 
@@ -198,9 +199,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         } else {
                             ReadPropertyResponse response = new ReadPropertyResponse(value);
 
-                            String outputJson = null;
                             try {
-                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                                String outputJson = JSON_MAPPER.writeValueAsString(response);
                                 webSocket.send(outputJson);
                             } catch (JsonProcessingException ex) {
                                 ex.printStackTrace();
@@ -222,14 +222,14 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         if (e != null) {
                         } else {
                             WritePropertyResponse response = new WritePropertyResponse(result);
-                            String outputJson = null;
 
                             try {
-                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                                String outputJson = JSON_MAPPER.writeValueAsString(response);
+                                webSocket.send(outputJson);
+
                             } catch (JsonProcessingException ex) {
                                 ex.printStackTrace();
                             }
-                            webSocket.send(outputJson);
                         }
                     });
                 } else if (message instanceof SubscribeProperty) {
@@ -243,9 +243,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         } else {
                             SubscribePropertyResponse response = new SubscribePropertyResponse(value);
 
-                            String outputJson = null;
                             try {
-                                outputJson = JSON_MAPPER.writeValueAsString(response);
+                                String outputJson = JSON_MAPPER.writeValueAsString(response);
                                 webSocket.send(outputJson);
                             } catch (JsonProcessingException ex) {
                                 ex.printStackTrace();
