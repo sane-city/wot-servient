@@ -1,6 +1,7 @@
 package city.sane.wot.scripting;
 
 import city.sane.wot.DefaultWot;
+import city.sane.wot.WotException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScript() throws ScriptingManagerException {
+    public void runScript() throws ScriptingManagerException, WotException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +

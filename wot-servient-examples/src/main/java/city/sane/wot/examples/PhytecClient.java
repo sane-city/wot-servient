@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.net.URI;
@@ -12,7 +13,7 @@ import java.util.Map;
  * This examples read properties from a phyNODE.
  */
 public class PhytecClient {
-    public PhytecClient() throws URISyntaxException {
+    public PhytecClient() throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
@@ -70,7 +71,7 @@ public class PhytecClient {
         }).join();
     }
 
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) throws URISyntaxException, WotException {
         new PhytecClient();
     }
 }

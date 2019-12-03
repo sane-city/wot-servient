@@ -122,62 +122,9 @@ public class MqttProtocolServer implements ProtocolServer {
 
         things.put(thing.getId(), thing);
 
-        //
-        // properties
-        //
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
-        properties.forEach((name, property) -> {
-            String topic = thing.getId() + "/properties/" + name;
-
-            property.subscribe(data -> {
-                try {
-                    Content content = ContentManager.valueToContent(data);
-                    log.info("MqttServer at '{}' publishing new data to Property topic '{}'", broker, topic);
-                    client.publish(topic, new MqttMessage(content.getBody()));
-                }
-                catch (ContentCodecException e) {
-                    log.warn("MqttServer at '{}' cannot process data for Property '{}': {}", broker, name, e.getMessage());
-                }
-                catch (MqttException e) {
-                    log.warn("MqttServer at '{}' cannot publish data for Property '{}': {}", broker, name, e.getMessage());
-                }
-            });
-
-            String href = createUrl() + topic;
-            Form form = new Form.Builder()
-                    .setHref(href)
-                    .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.observeproperty, Operation.unobserveproperty))
-                    .build();
-            property.addForm(form);
-            log.info("Assign '{}' to Property '{}'", href, name);
-        });
-
-        //
-        // actions
-        //
-        Map<String, ExposedThingAction> actions = thing.getActions();
-        for (Map.Entry<String, ExposedThingAction> entry : actions.entrySet()) {
-            String name = entry.getKey();
-            ExposedThingAction action = entry.getValue();
-
-            String topic = thing.getId() + "/actions/" + name;
-            try {
-                client.subscribe(topic);
-
-                String href = createUrl() + topic;
-                Form form = new Form.Builder()
-                        .setHref(href)
-                        .setContentType(ContentManager.DEFAULT)
-                        .setOp(Operation.invokeaction)
-                        .build();
-                action.addForm(form);
-                log.info("Assign '{}' to Action '{}'", href, name);
-            }
-            catch (MqttException e) {
-                throw new CompletionException(e);
-            }
-        }
+        exposeProperties(thing);
+        exposeActions(thing);
+        exposeEvents(thing);
 
         // connect incoming messages to Thing
         client.setCallback(new MqttCallback() {
@@ -233,9 +180,65 @@ public class MqttProtocolServer implements ProtocolServer {
             }
         });
 
-        //
-        // events
-        //
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private void exposeProperties(ExposedThing thing) {
+        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        properties.forEach((name, property) -> {
+            String topic = thing.getId() + "/properties/" + name;
+
+            property.subscribe(data -> {
+                try {
+                    Content content = ContentManager.valueToContent(data);
+                    log.info("MqttServer at '{}' publishing new data to Property topic '{}'", broker, topic);
+                    client.publish(topic, new MqttMessage(content.getBody()));
+                }
+                catch (ContentCodecException e) {
+                    log.warn("MqttServer at '{}' cannot process data for Property '{}': {}", broker, name, e.getMessage());
+                }
+                catch (MqttException e) {
+                    log.warn("MqttServer at '{}' cannot publish data for Property '{}': {}", broker, name, e.getMessage());
+                }
+            });
+
+            String href = createUrl() + topic;
+            Form form = new Form.Builder()
+                    .setHref(href)
+                    .setContentType(ContentManager.DEFAULT)
+                    .setOp(Arrays.asList(Operation.observeproperty, Operation.unobserveproperty))
+                    .build();
+            property.addForm(form);
+            log.info("Assign '{}' to Property '{}'", href, name);
+        });
+    }
+
+    private void exposeActions(ExposedThing thing) {
+        Map<String, ExposedThingAction> actions = thing.getActions();
+        for (Map.Entry<String, ExposedThingAction> entry : actions.entrySet()) {
+            String name = entry.getKey();
+            ExposedThingAction action = entry.getValue();
+
+            String topic = thing.getId() + "/actions/" + name;
+            try {
+                client.subscribe(topic);
+
+                String href = createUrl() + topic;
+                Form form = new Form.Builder()
+                        .setHref(href)
+                        .setContentType(ContentManager.DEFAULT)
+                        .setOp(Operation.invokeaction)
+                        .build();
+                action.addForm(form);
+                log.info("Assign '{}' to Action '{}'", href, name);
+            }
+            catch (MqttException e) {
+                throw new CompletionException(e);
+            }
+        }
+    }
+
+    private void exposeEvents(ExposedThing thing) {
         Map<String, ExposedThingEvent> events = thing.getEvents();
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
@@ -265,8 +268,6 @@ public class MqttProtocolServer implements ProtocolServer {
             event.addForm(form);
             log.info("Assign '{}' to Event '{}'", href, name);
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override

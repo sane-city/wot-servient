@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.util.concurrent.ExecutionException;
@@ -10,7 +11,7 @@ import java.util.concurrent.ExecutionException;
  * Interacts with a Thing that is secured with HTTP Basic Auth.
  */
 public class HttpBasicAuthClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         Wot wot = DefaultWot.clientOnly();
 
         String thing = "{\n" +

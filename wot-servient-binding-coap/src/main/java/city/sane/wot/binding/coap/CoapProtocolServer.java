@@ -110,121 +110,121 @@ public class CoapProtocolServer implements ProtocolServer {
 
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
-                //
-                // properties
-                //
-
-                Map<String, ExposedThingProperty> properties = thing.getProperties();
-                if (!properties.isEmpty()) {
-                    // make reporting of all properties optional?
-                    if (true) {
-                        CoapResource allResource = new CoapResource("all");
-                        thingResource.add(allResource);
-
-                        String href = address + "/" + thing.getId() + "/all/properties";
-                        Form form = new Form.Builder()
-                                .setHref(href)
-                                .setContentType(contentType)
-                                .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
-                                .build();
-
-                        thing.addForm(form);
-                        log.info("Assign '{}' for reading all properties", href);
-
-                        allResource.add(new AllPropertiesResource(server, thing));
-                    }
-
-                    CoapResource propertiesResource = new CoapResource("properties");
-                    thingResource.add(propertiesResource);
-
-                    properties.forEach((name, property) -> {
-                        String href = address + "/" + thing.getId() + "/properties/" + name;
-                        Form.Builder form = new Form.Builder()
-                                .setHref(href)
-                                .setContentType(contentType);
-                        if (property.isReadOnly()) {
-                            form.setOp(Operation.readproperty);
-                        }
-                        else if (property.isWriteOnly()) {
-                            form.setOp(Operation.writeproperty);
-                        }
-                        else {
-                            form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
-                        }
-
-                        property.addForm(form.build());
-                        log.info("Assign '{}' to Property '{}'", href, name);
-
-                        PropertyResource propertyResource = new PropertyResource(server, name, property);
-                        propertiesResource.add(propertyResource);
-
-                        // if property is observable add an additional form with a observable href
-                        if (property.isObservable()) {
-                            String observableHref = href + "/observable";
-                            Form observableForm = new Form.Builder()
-                                    .setHref(observableHref)
-                                    .setContentType(contentType)
-                                    .setOp(Operation.observeproperty)
-                                    .setSubprotocol("longpoll")
-                                    .build();
-
-                            property.addForm(observableForm);
-                            log.info("Assign '{}' to observable Property '{}'", observableHref, name);
-
-                            propertyResource.add(new ObservePropertyResource(server, name, property));
-                        }
-                    });
-                }
-
-                //
-                // actions
-                //
-                Map<String, ExposedThingAction> actions = thing.getActions();
-                if (!actions.isEmpty()) {
-                    CoapResource actionsResource = new CoapResource("actions");
-                    thingResource.add(actionsResource);
-
-                    actions.forEach((name, action) -> {
-                        String href = address + "/" + thing.getId() + "/actions/" + name;
-                        Form form = new Form.Builder()
-                                .setHref(href)
-                                .setOp(Operation.invokeaction)
-                                .setContentType(contentType)
-                                .build();
-
-                        action.addForm(form);
-                        log.info("Assign '{}' to Action '{}'", href, name);
-
-                        actionsResource.add(new ActionResource(server, name, action));
-                    });
-                }
-
-                //
-                // events
-                //
-                Map<String, ExposedThingEvent> events = thing.getEvents();
-                if (!events.isEmpty()) {
-                    CoapResource eventsResource = new CoapResource("events");
-                    thingResource.add(eventsResource);
-
-                    events.forEach((name, event) -> {
-                        String href = address + "/" + thing.getId() + "/events/" + name;
-                        Form form = new Form.Builder()
-                                .setHref(href)
-                                .setOp(Operation.subscribeevent)
-                                .setContentType(contentType)
-                                .build();
-
-                        event.addForm(form);
-                        log.info("Assign '{}' to Event '{}'", href, name);
-
-                        eventsResource.add(new EventResource(server, name, event));
-                    });
-                }
+                exposeProperties(thing, thingResource, address, contentType);
+                exposeActions(thing, thingResource, address, contentType);
+                exposeEvents(thing, thingResource, address, contentType);
             }
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    private void exposeProperties(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        if (!properties.isEmpty()) {
+            // make reporting of all properties optional?
+            if (true) {
+                CoapResource allResource = new CoapResource("all");
+                thingResource.add(allResource);
+
+                String href = address + "/" + thing.getId() + "/all/properties";
+                Form form = new Form.Builder()
+                        .setHref(href)
+                        .setContentType(contentType)
+                        .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                        .build();
+
+                thing.addForm(form);
+                log.info("Assign '{}' for reading all properties", href);
+
+                allResource.add(new AllPropertiesResource(server, thing));
+            }
+
+            CoapResource propertiesResource = new CoapResource("properties");
+            thingResource.add(propertiesResource);
+
+            properties.forEach((name, property) -> {
+                String href = address + "/" + thing.getId() + "/properties/" + name;
+                Form.Builder form = new Form.Builder()
+                        .setHref(href)
+                        .setContentType(contentType);
+                if (property.isReadOnly()) {
+                    form.setOp(Operation.readproperty);
+                }
+                else if (property.isWriteOnly()) {
+                    form.setOp(Operation.writeproperty);
+                }
+                else {
+                    form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+                }
+
+                property.addForm(form.build());
+                log.info("Assign '{}' to Property '{}'", href, name);
+
+                PropertyResource propertyResource = new PropertyResource(server, name, property);
+                propertiesResource.add(propertyResource);
+
+                // if property is observable add an additional form with a observable href
+                if (property.isObservable()) {
+                    String observableHref = href + "/observable";
+                    Form observableForm = new Form.Builder()
+                            .setHref(observableHref)
+                            .setContentType(contentType)
+                            .setOp(Operation.observeproperty)
+                            .setSubprotocol("longpoll")
+                            .build();
+
+                    property.addForm(observableForm);
+                    log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+
+                    propertyResource.add(new ObservePropertyResource(server, name, property));
+                }
+            });
+        }
+    }
+
+    private void exposeActions(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+        Map<String, ExposedThingAction> actions = thing.getActions();
+        if (!actions.isEmpty()) {
+            CoapResource actionsResource = new CoapResource("actions");
+            thingResource.add(actionsResource);
+
+            actions.forEach((name, action) -> {
+                String href = address + "/" + thing.getId() + "/actions/" + name;
+                Form form = new Form.Builder()
+                        .setHref(href)
+                        .setOp(Operation.invokeaction)
+                        .setContentType(contentType)
+                        .build();
+
+                action.addForm(form);
+                log.info("Assign '{}' to Action '{}'", href, name);
+
+                actionsResource.add(new ActionResource(server, name, action));
+            });
+        }
+    }
+
+    private void exposeEvents(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+        Map<String, ExposedThingEvent> events = thing.getEvents();
+        if (!events.isEmpty()) {
+            CoapResource eventsResource = new CoapResource("events");
+            thingResource.add(eventsResource);
+
+            events.forEach((name, event) -> {
+                String href = address + "/" + thing.getId() + "/events/" + name;
+                Form form = new Form.Builder()
+                        .setHref(href)
+                        .setOp(Operation.subscribeevent)
+                        .setContentType(contentType)
+                        .build();
+
+                event.addForm(form);
+                log.info("Assign '{}' to Event '{}'", href, name);
+
+                eventsResource.add(new EventResource(server, name, event));
+            });
+        }
     }
 
     @Override

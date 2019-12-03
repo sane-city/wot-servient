@@ -55,12 +55,12 @@ public class Servient {
      *
      * @param config
      */
-    public Servient(Config config) {
+    public Servient(Config config) throws ServientException {
         this.config = config;
 
         // read servers from config
         List<String> requiredServers = this.config.getStringList("wot.servient.servers");
-        requiredServers.forEach(serverName -> {
+        for (String serverName : requiredServers) {
             try {
                 Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
                 Constructor<ProtocolServer> constructor = serverKlass.getConstructor(Config.class);
@@ -68,13 +68,13 @@ public class Servient {
                 servers.add(server);
             }
             catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw new ServientException(e);
             }
-        });
+        }
 
         // read client factories from config
         List<String> requiredFactories = this.config.getStringList("wot.servient.client-factories");
-        requiredFactories.forEach(factoryName -> {
+        for (String factoryName : requiredFactories) {
             try {
                 Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
                 Constructor<ProtocolClientFactory> constructor = factoryKlass.getConstructor(Config.class);
@@ -82,9 +82,9 @@ public class Servient {
                 clientFactories.put(factory.getScheme(), factory);
             }
             catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw new ServientException(e);
             }
-        });
+        }
 
         // read credentials from config
         String credentialsPath = "wot.servient.credentials";
@@ -96,7 +96,7 @@ public class Servient {
     /**
      * Creates a servient.
      */
-    public Servient() {
+    public Servient() throws ServientException {
         this(ConfigFactory.load());
     }
 
@@ -609,7 +609,7 @@ public class Servient {
      *
      * @param config
      */
-    public static Servient clientOnly(Config config) {
+    public static Servient clientOnly(Config config) throws ServientException {
         Config clientOnlyConfig = ConfigFactory
                 .parseString("wot.servient.servers = []")
                 .withFallback(config);

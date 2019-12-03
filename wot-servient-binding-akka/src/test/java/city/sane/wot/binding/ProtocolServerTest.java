@@ -1,6 +1,7 @@
 package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -26,7 +27,7 @@ public class ProtocolServerTest {
     private Servient servient;
 
     @Before
-    public void setup() {
+    public void setup() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"" + protocolServerClass.getName() + "\"]\n" +
                         "wot.servient.client-factories = []")

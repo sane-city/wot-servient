@@ -1,6 +1,7 @@
 package city.sane.wot.binding.http;
 
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -45,7 +46,7 @@ public class HttpProtocolServerTest {
     private Servient servient;
 
     @Before
-    public void setup() {
+    public void setup() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"city.sane.wot.binding.http.HttpProtocolServer\"]\n" +
                         "wot.servient.client-factories = []")

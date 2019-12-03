@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.net.URISyntaxException;
@@ -10,7 +11,7 @@ import java.net.URISyntaxException;
  * Fetch thing description exposes by {@link Counter} and then interact with it.
  */
 public class CounterClient {
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

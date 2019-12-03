@@ -2,6 +2,7 @@ package city.sane.wot.binding;
 
 import city.sane.Pair;
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
 import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.thing.Context;
@@ -35,7 +36,7 @@ public class ProtocolClientTest {
     private Servient servient;
 
     @Before
-    public void setup() {
+    public void setup() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
                         "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")

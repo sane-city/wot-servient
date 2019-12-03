@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.net.URISyntaxException;
  * Fetch thing description exposes by {@link ExampleEvent} and then subscribe to the event.
  */
 public class ExampleEventClient {
-    public static void main(String[] args) throws URISyntaxException, IOException {
+    public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
