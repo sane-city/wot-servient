@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.net.URI;
@@ -12,7 +13,7 @@ import java.util.HashMap;
  * Fetch thing description exposes by {@link CounterUriVariables} and then interact with it.
  */
 public class CounterUriVariablesClient {
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

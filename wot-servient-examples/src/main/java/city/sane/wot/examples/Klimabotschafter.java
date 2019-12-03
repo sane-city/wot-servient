@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class Klimabotschafter {
     private final Map<String, ExposedThing> things = new HashMap();
 
-    public Klimabotschafter() throws InterruptedException {
+    public Klimabotschafter() throws InterruptedException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -280,7 +281,7 @@ public class Klimabotschafter {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, WotException {
         new Klimabotschafter();
     }
 }

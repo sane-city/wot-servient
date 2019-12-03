@@ -16,6 +16,7 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -62,7 +63,7 @@ public class AkkaSimpleClusterListener extends AbstractActor {
                 .build();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ServientException {
         Config config = ConfigFactory.load();
 
         Servient servient = new Servient(config);

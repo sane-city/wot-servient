@@ -33,7 +33,7 @@ public class ServientTest {
     private Servient servient;
 
     @Before
-    public void setup() {
+    public void setup() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
                         "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")

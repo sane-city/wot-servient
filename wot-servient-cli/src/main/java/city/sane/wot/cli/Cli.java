@@ -22,32 +22,37 @@ import java.util.stream.Collectors;
 public class Cli {
     static final Logger log = LoggerFactory.getLogger(Cli.class);
 
-    private final String CONF = "wot-servient.conf";
-    private final String LOGLEVEL = "warn";
+    private static final String CONF = "wot-servient.conf";
+    private static final String LOGLEVEL = "warn";
 
-    public Cli(String[] args) throws ParseException {
+    public Cli(String[] args) throws CliException {
         ScriptingManager.addEngine(new GroovyEngine());
 
         Options options = getOptions();
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
+        try {
+            CommandLineParser parser = new DefaultParser();
+            CommandLine cmd = parser.parse(options, args);
 
-        if (cmd.hasOption("loglevel")) {
-            setLogLevel(cmd.getOptionValue("loglevel"));
-        }
-        else {
-            setLogLevel(LOGLEVEL);
-        }
+            if (cmd.hasOption("loglevel")) {
+                setLogLevel(cmd.getOptionValue("loglevel"));
+            }
+            else {
+                setLogLevel(LOGLEVEL);
+            }
 
-        if (cmd.hasOption("help")) {
-            printHelp(options);
+            if (cmd.hasOption("help")) {
+                printHelp(options);
+            }
+            else if (cmd.hasOption("version")) {
+                printVersion();
+            }
+            else {
+                runScripts(cmd);
+            }
         }
-        else if (cmd.hasOption("version")) {
-            printVersion();
-        }
-        else {
-            runScripts(cmd);
+        catch (ServientException | ParseException e) {
+            throw new CliException(e);
         }
     }
 
@@ -64,7 +69,7 @@ public class Cli {
         System.out.println(version);
     }
 
-    private void runScripts(CommandLine cmd) {
+    private void runScripts(CommandLine cmd) throws ServientException {
         List<File> scripts = cmd.getArgList().stream().map(File::new).collect(Collectors.toList());
         if (!scripts.isEmpty()) {
             log.info("Servient is loading {} command line script(s)", scripts.size());
@@ -91,7 +96,7 @@ public class Cli {
         }
     }
 
-    private Servient getServient(CommandLine cmd) {
+    private Servient getServient(CommandLine cmd) throws ServientException {
         Config config;
         if (!cmd.hasOption("f")) {
             File defaultFile = new File(CONF);
@@ -184,7 +189,7 @@ public class Cli {
         return options;
     }
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, CliException {
         new Cli(args);
     }
 }

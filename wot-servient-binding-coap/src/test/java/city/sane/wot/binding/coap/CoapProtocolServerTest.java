@@ -1,6 +1,7 @@
 package city.sane.wot.binding.coap;
 
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
@@ -41,7 +42,7 @@ public class CoapProtocolServerTest {
     private Servient servient;
 
     @Before
-    public void setup() {
+    public void setup() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
                         "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")

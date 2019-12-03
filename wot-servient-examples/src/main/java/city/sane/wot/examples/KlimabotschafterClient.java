@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.property.ConsumedThingProperty;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
  */
 public class KlimabotschafterClient {
-    public static void main(String[] args) throws URISyntaxException, IOException {
+    public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
