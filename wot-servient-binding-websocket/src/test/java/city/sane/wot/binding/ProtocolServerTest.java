@@ -231,6 +231,7 @@ public class ProtocolServerTest {
                     AbstractMessage message3 = new SubscribeProperty("counter", "count");
                     System.out.println("let's go message3");
                     String json = null;
+                    Content payload = null;
                     try {
                         json = ProtocolServerTest.JSON_MAPPER.writeValueAsString(message3);
                     } catch (JsonProcessingException e) {
@@ -238,6 +239,26 @@ public class ProtocolServerTest {
                     }
                     cc.send(json);
 
+                    //Test Write
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        payload = ContentManager.valueToContent(9999, "none");
+                    } catch (ContentCodecException e) {
+                        e.printStackTrace();
+                    }
+                    AbstractMessage writeTestMessage = new WriteProperty("counter","count", payload);
+                    System.out.println("Send Test Count Message");
+                    String jsonTestWrite = null;
+                    try {
+                        jsonTestWrite = ProtocolServerTest.JSON_MAPPER.writeValueAsString(writeTestMessage);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    cc.send(jsonTestWrite);
 
                 }
 
