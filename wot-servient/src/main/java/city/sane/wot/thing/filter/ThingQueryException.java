@@ -7,4 +7,8 @@ public class ThingQueryException extends Throwable {
     public ThingQueryException(Throwable cause) {
         super(cause);
     }
+
+    public ThingQueryException(String message) {
+        super(message);
+    }
 }

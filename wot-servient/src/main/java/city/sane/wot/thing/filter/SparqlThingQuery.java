@@ -32,7 +32,10 @@ public class SparqlThingQuery implements ThingQuery {
 
     private final String query;
 
-    public SparqlThingQuery(String query) {
+    public SparqlThingQuery(String query) throws ThingQueryException {
+        if (query.matches(".*\\?__id__\\s.*")) {
+            throw new ThingQueryException("Your query is invalid because it contains the reserved variable '?__id__'");
+        }
         this.query = query;
     }
 
@@ -67,9 +70,9 @@ public class SparqlThingQuery implements ThingQuery {
         }
 
         // apply query on repository
-        Set<String> filteredIris = Repositories.tupleQuery(repository, "SELECT DISTINCT ?id WHERE { GRAPH ?id { " + query + " }}", result -> {
+        Set<String> filteredIris = Repositories.tupleQuery(repository, "SELECT DISTINCT ?__id__ WHERE { GRAPH ?__id__ { " + query + " }}", result -> {
             Set<BindingSet> bindings = QueryResults.asSet(result);
-            return bindings.stream().map(b -> b.getValue("id").stringValue()).collect(Collectors.toSet());
+            return bindings.stream().map(b -> b.getValue("__id__").stringValue()).collect(Collectors.toSet());
         });
 
         // map returned iris to things
