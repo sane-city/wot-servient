@@ -16,10 +16,6 @@ public class ReadProperty extends AbstractMessage {
         this.name = name;
     }
 
-    @Override
-    public String getType() {
-        return "readProperty";
-    }
 
     public String getThingId() {
         return thingId;

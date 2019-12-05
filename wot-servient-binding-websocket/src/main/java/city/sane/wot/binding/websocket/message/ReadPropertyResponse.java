@@ -11,11 +11,6 @@ public class ReadPropertyResponse extends AbstractMessage {
         this.value = value;
     }
 
-    @Override
-    public String getType() {
-        return "readPropertyResponse";
-    }
-
     public Object getValue() {
         return value;
     }

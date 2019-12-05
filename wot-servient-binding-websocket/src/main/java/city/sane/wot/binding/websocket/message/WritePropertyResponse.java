@@ -13,11 +13,6 @@ public class WritePropertyResponse extends AbstractMessage {
         this.value = value;
     }
 
-    @Override
-    public String getType() {
-        return "writePropertyResponse";
-    }
-
     public Object getValue() {
         return value;
     }

@@ -13,10 +13,6 @@ public class SubscribeProperty extends AbstractMessage {
         this.thingId = thingId;
         this.name = name;
     }
-    @Override
-    public String getType() {
-        return "subscribeProperty";
-    }
 
     public String getThingId() {
         return thingId;

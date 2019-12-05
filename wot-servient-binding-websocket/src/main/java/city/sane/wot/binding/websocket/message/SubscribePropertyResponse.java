@@ -14,11 +14,6 @@ public class SubscribePropertyResponse extends AbstractMessage {
     }
 
 
-    @Override
-    public String getType() {
-        return "subscribePropertyResponse";
-    }
-
     public Object getValue() {
         return value;
     }

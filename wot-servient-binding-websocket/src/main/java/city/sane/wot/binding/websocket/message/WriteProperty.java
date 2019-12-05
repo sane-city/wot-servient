@@ -21,11 +21,6 @@ public class WriteProperty extends AbstractMessage {
         this.payload = payload;
     }
 
-    @Override
-    public String getType() {
-        return "writeProperty";
-    }
-
     public String getThingId() {
         return thingId;
     }
