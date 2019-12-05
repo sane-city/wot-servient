@@ -11,8 +11,8 @@ artifactId=$(cat pom.xml | grep -m1 "</artifactId>" | sed  -e 's/<artifactId>\|<
 artifactId=$(echo $artifactId|cut -d'>' -f 2)
 artifactId=$(echo $artifactId|cut -d'<' -f 1)
 
-
-branchname=$artifactId-$1
+branchname=$(echo $1 | sed -e 's/\//_/g')
+branchname="$artifactId-$branchname"
 artreplace $artifactId $branchname pom.xml
 
 for D in *; do
