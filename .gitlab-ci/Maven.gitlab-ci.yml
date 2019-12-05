@@ -29,11 +29,10 @@ cache:
 build-dist:
   stage: build
   script:
-    - mvn -DskipTests --batch-mode -pl wot-servient-cli -am install dependency:copy-dependencies
-    - mkdir -p dist/wot-servient/lib dist/wot-servient/bin
-    - cp wot-servient-cli/bin/* dist/wot-servient/bin
-    - cp wot-servient-cli/target/dependency/*.jar dist/wot-servient/lib
-    - cp wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient/lib
+    - mvn -DskipTests --batch-mode -pl wot-servient-cli -am package
+    - mkdir -p dist/wot-servient
+    - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
+    - cp wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
   artifacts:
     paths:
       - dist/wot-servient

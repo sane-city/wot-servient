@@ -9,10 +9,6 @@ setlocal EnableDelayedExpansion
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
 
-@rem Add default JVM options here. You can also use JAVA_OPTS to pass JVM options to this script.
-
-set JVM_OPTS=
-
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.
 set APP_BASE_NAME=%~n0
@@ -71,10 +67,8 @@ set CMD_LINE_ARGS=%$
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%CLASSPATH%;%SERVIENT_HOME%;%SERVIENT_HOME%\lib\*
-
 @rem Execute WoT Servient
-"%JAVA_EXE%" %JVM_OPTS% %JAVA_OPTS% -classpath "%CLASSPATH%" city.sane.wot.cli.Cli %CMD_LINE_ARGS%
+"%JAVA_EXE%" -jar "%SERVIENT_HOME%\wot-servient.jar" %CMD_LINE_ARGS%
 
 :end
 @rem End local scope for the variables with windows NT shell
