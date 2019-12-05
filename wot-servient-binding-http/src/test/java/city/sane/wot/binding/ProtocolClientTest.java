@@ -8,10 +8,7 @@ import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.filter.DiscoveryMethod;
-import city.sane.wot.thing.filter.SparqlThingQuery;
-import city.sane.wot.thing.filter.ThingFilter;
-import city.sane.wot.thing.filter.ThingQuery;
+import city.sane.wot.thing.filter.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
@@ -70,7 +67,7 @@ public class ProtocolClientTest {
     }
 
     @Test
-    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException {
+    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException, ThingQueryException {
         // expose things so that something can be discovered
         ExposedThing thingX = new ExposedThing(servient)
                 .setId("ThingX")
