@@ -51,8 +51,8 @@ public class JadexProtocolClientFactory implements ProtocolClientFactory {
     public CompletableFuture<Void> init() {
         log.debug("Create Jadex Platform");
         CompletableFuture<IExternalAccess> result = FutureConverters.fromJadex(Starter.createPlatform(platformConfig));
-        return result.thenApply(platform -> {
-            this.platform = platform;
+        return result.thenApply(ia -> {
+            this.platform = ia;
             return null;
         });
     }
@@ -61,6 +61,6 @@ public class JadexProtocolClientFactory implements ProtocolClientFactory {
     public CompletableFuture<Void> destroy() {
         log.debug("Kill Jadex Platform");
         CompletableFuture<Map<String, Object>> result = FutureConverters.fromJadex(platform.killComponent());
-        return result.thenApply(platform -> null);
+        return result.thenApply(ia -> null);
     }
 }

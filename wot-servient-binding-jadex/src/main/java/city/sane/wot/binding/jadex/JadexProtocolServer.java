@@ -56,9 +56,9 @@ public class JadexProtocolServer implements ProtocolServer {
                 .fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class))));
 
         CompletableFuture<ThingsService> start = createPlatform
-                .thenCombine(searchThingsService, (platform, thingsService) -> {
-                    this.platform = platform;
-                    this.thingsService = thingsService;
+                .thenCombine(searchThingsService, (ia, service) -> {
+                    this.platform = ia;
+                    this.thingsService = service;
                     return thingsService;
                 });
 
