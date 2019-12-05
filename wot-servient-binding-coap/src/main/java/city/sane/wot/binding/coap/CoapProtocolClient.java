@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
  * Allows consuming Things via CoAP.
  */
 public class CoapProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;
 
     public CoapProtocolClient(ExecutorService executor) {
@@ -39,7 +39,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
         log.debug("CoapClient sending {} to {}", "GET", url);
 
         Request request = generateRequest(form, CoAP.Code.GET);
@@ -55,7 +55,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
         log.debug("Sending '{}' to '{}'", request.getCode(), url);
@@ -75,7 +75,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
-                .setTimeout(10 * 1000);
+                .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.POST);
         log.debug("Sending '{}' to '{}'", request.getCode(), url);
@@ -119,7 +119,6 @@ public class CoapProtocolClient implements ProtocolClient {
                         }
                         catch (ContentCodecException e) {
                             log.debug("Error received for subcription '{}': ", url, e.getMessage());
-                            e.printStackTrace();
                         }
                     }
                 }
@@ -181,7 +180,6 @@ public class CoapProtocolClient implements ProtocolClient {
                 }
                 catch (ContentCodecException e) {
                     future.completeExceptionally(new ProtocolClientException("Response was not successful: " + e.getMessage()));
-                    e.printStackTrace();
                 }
             }
         }

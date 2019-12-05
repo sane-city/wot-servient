@@ -67,7 +67,7 @@ public class ThingActor extends AbstractActor {
         }
     }
 
-    static public Props props(ActorRef requestor, ExposedThing thing) {
+    public static Props props(ActorRef requestor, ExposedThing thing) {
         return Props.create(ThingActor.class, () -> new ThingActor(requestor, thing));
     }
 }

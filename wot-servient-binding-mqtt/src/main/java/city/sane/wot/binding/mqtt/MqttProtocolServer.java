@@ -26,7 +26,7 @@ import java.util.concurrent.CompletionException;
  * Allows exposing Things via MQTT.
  */
 public class MqttProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 
     private final String broker;
     private final String clientId;
@@ -91,7 +91,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 }
                 catch (MqttException e) {
                     log.error("MqttServer could not connect to broker at '{}': {}", broker, e.getMessage());
-                    e.printStackTrace();
                     throw new CompletionException(e);
                 }
             }
@@ -108,7 +107,6 @@ public class MqttProtocolServer implements ProtocolServer {
             }
             catch (MqttException e) {
                 log.error("MqttServer could not disconnect from broker at '{}': {}", broker, e.getMessage());
-                e.printStackTrace();
                 throw new CompletionException(e);
             }
         });
@@ -139,11 +137,9 @@ public class MqttProtocolServer implements ProtocolServer {
                 }
                 catch (ContentCodecException e) {
                     log.warn("MqttServer at '{}' cannot process data for Property '{}': {}", broker, name, e.getMessage());
-                    e.printStackTrace();
                 }
                 catch (MqttException e) {
                     log.warn("MqttServer at '{}' cannot publish data for Property '{}': {}", broker, name, e.getMessage());
-                    e.printStackTrace();
                 }
             });
 
@@ -179,7 +175,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 log.info("Assign '{}' to Action '{}'", href, name);
             }
             catch (MqttException e) {
-                e.printStackTrace();
                 throw new CompletionException(e);
             }
         }
@@ -188,8 +183,7 @@ public class MqttProtocolServer implements ProtocolServer {
         client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
-                log.info("MqttServer at '{}' lost connection to broker", broker);
-                cause.printStackTrace();
+                log.info("MqttServer at '{}' lost connection to broker: {}", broker, cause.getMessage());
             }
 
             @Override
@@ -215,7 +209,6 @@ public class MqttProtocolServer implements ProtocolServer {
                                 }
                                 catch (ContentCodecException e) {
                                     log.info("Unable to parse input: {}", e.getMessage());
-                                    e.printStackTrace();
                                 }
                             }
                             else {
@@ -255,11 +248,9 @@ public class MqttProtocolServer implements ProtocolServer {
                 }
                 catch (ContentCodecException e) {
                     log.warn("MqttServer at '{}' cannot process data for Event '{}': {}", broker, name, e.getMessage());
-                    e.printStackTrace();
                 }
                 catch (MqttException e) {
                     log.warn("MqttServer at '{}' cannot publish data for Event '{}': {}", broker, name, e.getMessage());
-                    e.printStackTrace();
                 }
             });
 

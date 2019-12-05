@@ -17,7 +17,7 @@ import java.util.Map;
  * Endpoint for reading values from a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ReadPropertyRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(ReadPropertyRoute.class);
+    static final Logger log = LoggerFactory.getLogger(ReadPropertyRoute.class);
 
     private final Map<String, ExposedThing> things;
 

@@ -15,7 +15,7 @@ variables:
   # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
   # when running from the command line.
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
-  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
+  MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
 
 # This template uses jdk11 for verifying and deploying images
 image: maven:3.6.1-jdk-11
@@ -49,6 +49,18 @@ build-dist:
   except:
     - master
 
+check-code:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
+    - /bin/bash coverage-jacoco.sh
+  coverage: '/\d+.\d+ \% covered/'
+  artifacts:
+    reports:
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
+        - "*/target/failsafe-reports/TEST-*.xml"
+
 # Verify merge requests using JDK11
 verify:jdk11:
   <<: *verify
@@ -63,6 +75,6 @@ deploy:jdk11:
     - if [ ! -f ci_settings.xml ];
       then echo "CI settings missing\! If deploying to GitLab Maven Repository, please see https://docs.gitlab.com/ee/user/project/packages/maven_repository.html#creating-maven-packages-with-gitlab-cicd for instructions.";
       fi
-    - 'mvn $MAVEN_CLI_OPTS deploy -s ci_settings.xml'
+    - 'mvn $MAVEN_CLI_OPTS deploy'
   only:
     - master

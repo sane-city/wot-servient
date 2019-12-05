@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
 public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThing.class);
+    static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
 
     public static final String DEFAULT_OBJECT_TYPE = "Thing";
     public static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
@@ -189,7 +189,6 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                     return values;
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });

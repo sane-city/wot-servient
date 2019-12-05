@@ -15,7 +15,7 @@ import java.util.Map;
  * Endpoint for listing all Things from the {@link city.sane.wot.Servient}.
  */
 public class ThingsRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(ThingsRoute.class);
+    static final Logger log = LoggerFactory.getLogger(ThingsRoute.class);
 
     private final Map<String, ExposedThing> things;
 

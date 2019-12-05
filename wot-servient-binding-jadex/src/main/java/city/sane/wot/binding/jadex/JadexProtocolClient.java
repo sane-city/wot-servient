@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * platforms.
  */
 public class JadexProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
 
     private final IExternalAccess platform;
 

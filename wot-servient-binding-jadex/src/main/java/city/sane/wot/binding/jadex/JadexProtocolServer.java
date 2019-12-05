@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
  * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.server".
  */
 public class JadexProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final IPlatformConfiguration platformConfig;

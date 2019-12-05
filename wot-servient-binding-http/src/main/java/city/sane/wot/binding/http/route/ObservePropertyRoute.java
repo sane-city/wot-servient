@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ObservePropertyRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(ObservePropertyRoute.class);
+    static final Logger log = LoggerFactory.getLogger(ObservePropertyRoute.class);
 
     private final Map<String, ExposedThing> things;
 

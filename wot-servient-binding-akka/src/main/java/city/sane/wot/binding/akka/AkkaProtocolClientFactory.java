@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolClientFactory implements ProtocolClientFactory {
-    final static Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
+    static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
 
     private final Config config;
 
@@ -60,10 +60,10 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         return CompletableFuture.runAsync(() -> {
             // wait a bit for the cluster to form
             try {
-                Thread.sleep(3 * 1000);
+                Thread.sleep(3 * 1000L);
             }
             catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
 
             discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher");
@@ -73,7 +73,13 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> destroy() {
         log.debug("Terminate Actor System");
-        CompletableFuture<Terminated> result = FutureConverters.toJava(system.terminate()).toCompletableFuture();
-        return result.thenApply(terminated -> null);
+
+        if (system != null) {
+            CompletableFuture<Terminated> result = FutureConverters.toJava(system.terminate()).toCompletableFuture();
+            return result.thenApply(terminated -> null);
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 }

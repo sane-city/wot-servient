@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.event.ThingEvent}.
  */
 public class EventResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(EventResource.class);
+    static final Logger log = LoggerFactory.getLogger(EventResource.class);
 
     private final CoapServer server;
     private final String name;
@@ -77,14 +77,12 @@ public class EventResource extends AbstractResource {
                         }
                     }
                     catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                        e.printStackTrace();
+                        log.warn("Cannot process data for Event '{}': {}", name, e.getMessage());
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                     }
                 }
                 else {
-                    log.warn("Cannot process data for Event '{}': {}", name, e.toString());
-                    e.printStackTrace();
+                    log.warn("Cannot process data for Event '{}': {}", name, e.getMessage());
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid Event Data");
                 }
             }
@@ -95,7 +93,7 @@ public class EventResource extends AbstractResource {
         }
     }
 
-    synchronized private void ensureSubcription() {
+    private synchronized void ensureSubcription() {
         if (subscription == null) {
             subscription = event.subscribe(
                     data -> changeResource(data, null),
@@ -106,7 +104,7 @@ public class EventResource extends AbstractResource {
         }
     }
 
-    synchronized private void changeResource(Object data, Throwable e) {
+    private synchronized void changeResource(Object data, Throwable e) {
         this.data = data;
         this.e = e;
         changed();

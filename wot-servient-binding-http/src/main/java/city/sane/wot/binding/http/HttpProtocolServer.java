@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via HTTP.
  */
 public class HttpProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
 
     private final String bindHost;
     private final int bindPort;
@@ -40,7 +40,8 @@ public class HttpProtocolServer implements ProtocolServer {
         bindPort = config.getInt("wot.servient.http.bind-port");
         if (!config.getStringList("wot.servient.http.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.http.addresses");
-        } else {
+        }
+        else {
             addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
         }
 
@@ -124,10 +125,12 @@ public class HttpProtocolServer implements ProtocolServer {
                     if (property.isReadOnly()) {
                         form.setOp(Operation.readproperty);
                         form.setOptional("htv:methodName", "GET");
-                    } else if (property.isWriteOnly()) {
+                    }
+                    else if (property.isWriteOnly()) {
                         form.setOp(Operation.writeproperty);
                         form.setOptional("htv:methodName", "PUT");
-                    } else {
+                    }
+                    else {
                         form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
                     }
 
@@ -198,8 +201,9 @@ public class HttpProtocolServer implements ProtocolServer {
     public URI getDirectoryUrl() {
         try {
             return new URI(addresses.get(0));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create directory url: {}", e);
             return null;
         }
     }
@@ -208,8 +212,9 @@ public class HttpProtocolServer implements ProtocolServer {
     public URI getThingUrl(String id) {
         try {
             return new URI(addresses.get(0) + "/" + id);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to thing url: {}", e);
             return null;
         }
     }
@@ -221,10 +226,11 @@ public class HttpProtocolServer implements ProtocolServer {
             variables = "{?" + String.join(",", uriVariables) + "}";
         }
 
-        return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
+        String href = address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
+        return href;
     }
 
-    public Service getHTTPServer() {
+    public Service getHTTPServer () {
         return this.server;
     }
 }

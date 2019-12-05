@@ -16,7 +16,7 @@ import java.util.Map;
  * Endpoint for displaying a Thing Description.
  */
 public class ThingRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(ThingRoute.class);
+    static final Logger log = LoggerFactory.getLogger(ThingRoute.class);
 
     private final Map<String, ExposedThing> things;
 

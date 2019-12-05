@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
  * Allows consuming Things via MQTT.
  */
 public class MqttProtocolClient implements ProtocolClient {
-    final static Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
+    static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
 
     private final String broker;
     private final String clientId;
@@ -66,8 +66,9 @@ public class MqttProtocolClient implements ProtocolClient {
             throw new ProtocolClientException("No broker defined for MQTT server binding - skipping");
         }
 
+        MqttClientPersistence persistence = null;
         try {
-            MqttClientPersistence persistence = new MemoryPersistence();
+            persistence = new MemoryPersistence();
             client = new MqttClient(broker, clientId, persistence);
 
             MqttConnectOptions options = new MqttConnectOptions();
@@ -85,7 +86,16 @@ public class MqttProtocolClient implements ProtocolClient {
         }
         catch (MqttException e) {
             log.error("MqttClient could not connect to broker at '{}': {}", broker, e.getMessage());
-            e.printStackTrace();
+        }
+        finally {
+            if (persistence != null) {
+                try {
+                    persistence.close();
+                }
+                catch (MqttPersistenceException e) {
+                    // ignore
+                }
+            }
         }
     }
 
@@ -107,18 +117,16 @@ public class MqttProtocolClient implements ProtocolClient {
                 }
                 client.publish(topic, new MqttMessage(payload));
 
-                // MQTT does not support the request-response pattern. return empty message.
+                // MQTT does not support the request-response pattern. return empty message
                 future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
             }
             catch (MqttException e) {
-                e.printStackTrace();
                 future.completeExceptionally(new ProtocolClientException(
                         "MqttClient at '" + broker + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
                 ));
             }
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
             future.completeExceptionally(
                     new ProtocolClientException("Unable to extract topic from href '" + form.getHref() + "'"));
         }
@@ -138,7 +146,7 @@ public class MqttProtocolClient implements ProtocolClient {
             topic = new URI(form.getHref()).getPath().substring(1);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to subscribe resource: {}", e.getMessage());
             return null;
         }
 
@@ -146,7 +154,7 @@ public class MqttProtocolClient implements ProtocolClient {
         Subject<Content> existingSubject = topicSubjects.putIfAbsent(topic, newSubject);
         CompletableFuture<Subscription> result = new CompletableFuture<>();
         if (existingSubject == null) {
-            // first subscription for this mqtt topic. create new subject and create subscription.
+            // first subscription for this mqtt topic. create new subject and create subscription
             Subscription subscription = newSubject.subscribe(observer);
 
             CompletableFuture.runAsync(() -> {
@@ -154,14 +162,13 @@ public class MqttProtocolClient implements ProtocolClient {
 
                 try {
                     client.subscribe(topic, (receivedTopic, message) -> {
-                        log.info("MqttClient received message from the broker '{}' for topic '{}'", broker, receivedTopic);
+                        log.info("MqttClient received message from broker '{}' for topic '{}'", broker, receivedTopic);
                         Content content = new Content(form.getContentType(), message.getPayload());
                         newSubject.next(content);
                     });
                 }
                 catch (MqttException e) {
-                    log.warn("Exception occurred while trying to subscribe to broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
-                    e.printStackTrace();
+                    log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
                     newSubject.error(e);
                 }
             }).thenApply(done -> result.complete(subscription));
@@ -179,15 +186,14 @@ public class MqttProtocolClient implements ProtocolClient {
         result.thenApply(subscription -> {
             subscription.add(() -> {
                 if (subject.getObservers().isEmpty()) {
-                    log.debug("MqttClient subscriptions of broker and topic has no more observers. Remove subscription.");
+                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", broker, topic);
                     topicSubjects.remove(topic);
                     subject.complete();
                     try {
                         client.unsubscribe(topic);
                     }
                     catch (MqttException e) {
-                        log.warn("Exception occurred while trying to unsubscribe from the broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
-                        e.printStackTrace();
+                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", broker, topic, e.getMessage());
                     }
                 }
             });

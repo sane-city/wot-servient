@@ -57,12 +57,12 @@ public class DiscoveryDispatcherActor extends AbstractActor {
         requester.tell(new RespondGetAll<>(things), getSelf());
     }
 
-    static public Props props() {
+    public static Props props() {
         return Props.create(DiscoveryDispatcherActor.class, () -> new DiscoveryDispatcherActor());
     }
 
     // CrudMessages
-    static public class Discover implements Serializable {
+    public static class Discover implements Serializable {
         public final ThingFilter filter;
 
         public Discover(ThingFilter filter) {

@@ -76,15 +76,16 @@ public class PropertyActor extends AbstractActor {
 
         property.read().whenComplete((value, e) -> {
             if (e != null) {
-                e.printStackTrace();
+                log.warning("Unable to read property: {}", e.getMessage());
             }
-
-            try {
-                Content content = ContentManager.valueToContent(value);
-                sender.tell(new RespondRead(content), getSelf());
-            }
-            catch (ContentCodecException ex) {
-                ex.printStackTrace();
+            else {
+                try {
+                    Content content = ContentManager.valueToContent(value);
+                    sender.tell(new RespondRead(content), getSelf());
+                }
+                catch (ContentCodecException ex) {
+                    log.warning("Unable to read property: {}", ex.getMessage());
+                }
             }
         });
     }
@@ -97,16 +98,17 @@ public class PropertyActor extends AbstractActor {
 
             property.write(input).whenComplete((output, e) -> {
                 if (e != null) {
-                    e.printStackTrace(); // TODO: better exception handling?
+                    log.warning("Unable to write property: {}", e.getMessage());
                 }
-
-                // TODO: return output if available
-                sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                else {
+                    // TODO: return output if available
+                    sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                }
             });
 
         }
         catch (ContentCodecException e) {
-            e.printStackTrace(); // TODO: better exception handling?
+            log.warning("Unable to write property: {}", e.getMessage());
         }
     }
 
@@ -114,11 +116,11 @@ public class PropertyActor extends AbstractActor {
         // FIXME: Implement
     }
 
-    static public Props props(String name, ExposedThingProperty property) {
+    public static Props props(String name, ExposedThingProperty property) {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
     }
 
-    static public class Subscribe implements Serializable {
+    public static class Subscribe implements Serializable {
         // FIXME: Implement
     }
 }
