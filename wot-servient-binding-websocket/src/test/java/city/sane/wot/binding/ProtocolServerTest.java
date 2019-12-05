@@ -59,7 +59,7 @@ public class ProtocolServerTest {
     }
 
     @Test
-    public void test1() throws ExecutionException {
+    public void testReadProperty() throws ExecutionException {
         try {
             servient.start().join();
 
@@ -121,7 +121,7 @@ public class ProtocolServerTest {
     }
 
     @Test
-    public void test2() throws ExecutionException {
+    public void testWriteProperty() throws ExecutionException {
         try {
             servient.start().join();
 
@@ -195,13 +195,15 @@ public class ProtocolServerTest {
     }
 
     @Test
-    public void test3() throws ExecutionException {
+    public void testsubscribeProperty() throws ExecutionException {
         try {
             servient.start().join();
 
             ExposedThing thing = getCounterThing();
             servient.addThing(thing);
             thing.expose().join();
+
+            List testList;
 
             CompletableFuture<Object> future3 = new CompletableFuture<>();
 
@@ -219,8 +221,8 @@ public class ProtocolServerTest {
                             System.out.println("SubscribePropertyResponse");
                             SubscribePropertyResponse sMessage = (SubscribePropertyResponse) message;
                             future3.complete(sMessage.getValue());
+                            System.out.println(sMessage.getValue());
                         }
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -239,26 +241,16 @@ public class ProtocolServerTest {
                     }
                     cc.send(json);
 
-                    //Test Write
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    for (int i = 0; i < 3; i++) {
+                        //Test Write
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        thing.getProperty("count").write(Math.random()).join();
                     }
-                    try {
-                        payload = ContentManager.valueToContent(9999, "none");
-                    } catch (ContentCodecException e) {
-                        e.printStackTrace();
-                    }
-                    AbstractMessage writeTestMessage = new WriteProperty("counter","count", payload);
-                    System.out.println("Send Test Count Message");
-                    String jsonTestWrite = null;
-                    try {
-                        jsonTestWrite = ProtocolServerTest.JSON_MAPPER.writeValueAsString(writeTestMessage);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-                    cc.send(jsonTestWrite);
 
                 }
 
