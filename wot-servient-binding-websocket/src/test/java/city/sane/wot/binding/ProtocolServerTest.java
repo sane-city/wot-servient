@@ -259,6 +259,7 @@ public class ProtocolServerTest {
                         e.printStackTrace();
                     }
                     cc.send(jsonTestWrite);
+
                 }
 
                 @Override
