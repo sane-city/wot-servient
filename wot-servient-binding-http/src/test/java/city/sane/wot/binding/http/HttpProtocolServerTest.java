@@ -224,9 +224,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HashMap<Object, Object> parameters = new HashMap<>() {{
-            put("step", 3);
-        }};
+        Map<String, Integer> parameters = Map.of("step", 3);
         Content content = ContentManager.valueToContent(parameters, "application/json");
 
         HttpPost request = new HttpPost("http://localhost:8080/things/counter/actions/increment");
@@ -327,13 +325,13 @@ public class HttpProtocolServerTest {
         thing.addAction("increment", new ThingAction.Builder()
                 .setInput(new ObjectSchema())
                 .setOutput(new NumberSchema())
-                .setUriVariables(new HashMap<>() {{
-                    put("step", new HashMap<>() {{
-                        put("type", "integer");
-                        put("minium", 1);
-                        put("maximum", 250);
-                    }});
-                }})
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
                 .build(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int step;

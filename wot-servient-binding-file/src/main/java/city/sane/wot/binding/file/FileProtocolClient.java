@@ -23,10 +23,10 @@ import java.util.concurrent.CompletionException;
  */
 public class FileProtocolClient implements ProtocolClient {
     static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
-    private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = new HashMap() {{
-        put(".json", "application/json");
-        put(".jsonld", "application/ld+json");
-    }};
+    private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = Map.of(
+        ".json", "application/json",
+        ".jsonld", "application/ld+json"
+    );
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {

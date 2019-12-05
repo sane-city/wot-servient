@@ -128,9 +128,7 @@ public class ConsumedThingTest {
 
         ConsumedThingAction increment = thing.getAction("increment");
 
-        increment.invoke(new HashMap<>() {{
-            put("step", 3);
-        }}).join();
+        increment.invoke(Map.of("step", 3)).join();
     }
 
     @Test(timeout = 20 * 1000)
@@ -198,13 +196,13 @@ public class ConsumedThingTest {
         thing.addAction("increment",
                 new ThingAction.Builder()
                         .setDescription("Incrementing counter content with optional step content as uriVariable")
-                        .setUriVariables(new HashMap<>() {{
-                            put("step", new HashMap<>() {{
-                                put("type", "integer");
-                                put("minium", 1);
-                                put("maximum", 250);
-                            }});
-                        }})
+                        .setUriVariables(Map.of(
+                                "step", Map.of(
+                                        "type", "integer",
+                                        "minimum", 1,
+                                        "maximum", 250
+                                )
+                        ))
                         .setInput(new ObjectSchema())
                         .setOutput(new IntegerSchema())
                         .build(),

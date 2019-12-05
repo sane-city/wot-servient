@@ -8,6 +8,7 @@ import city.sane.wot.thing.ConsumedThing;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Fetch thing description exposes by {@link CounterUriVariables} and then interact with it.
@@ -32,19 +33,17 @@ public class CounterUriVariablesClient {
                 ConsumedThing consumedThing = wot.consume(thing);
 
                 // increment property #1 (without step)
-                consumedThing.getAction("increment").invoke().get();
+                consumedThing.getAction("increment").invoke().join();
                 Object inc1 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterUriVariablesClient: count value after increment #1 is " + inc1);
 
                 // increment property #2
-                consumedThing.getAction("increment").invoke(new HashMap<>() {{
-                    put("step", 3);
-                }}).get();
+                consumedThing.getAction("increment").invoke(Map.of("step", 3)).join();
                 Object inc2 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterUriVariablesClient: count value after increment #2 (with step 3) is " + inc2);
 
                 // decrement property
-                consumedThing.getAction("decrement").invoke().get();
+                consumedThing.getAction("decrement").invoke().join();
                 Object dec1 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterUriVariablesClient: count value after decrement is " + dec1);
 

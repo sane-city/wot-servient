@@ -51,9 +51,9 @@ public class InvokeActionRoute extends AbstractRoute {
                     Content content = new Content(requestContentType, request.bodyAsBytes());
                     Object input = ContentManager.contentToValue(content, action.getInput());
 
-                    Map<String, Object> options = new HashMap<>() {{
-                        put("uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables()));
-                    }};
+                    Map<String, Object> options = Map.of(
+                            "uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables())
+                    );
 
                     Object value = action.invoke(input, options).get();
 
