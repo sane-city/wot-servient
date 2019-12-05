@@ -99,7 +99,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
-        // TODO is that a subscription?
         String topic;
         try {
             topic = new URI(form.getHref()).getPath().substring(1);
