@@ -303,9 +303,7 @@ public class CoapProtocolServerTest {
 
         CoapClient client = new CoapClient("coap://localhost:5683/counter/actions/increment");
         ExposedThingAction action = thing.getAction("increment");
-        Content inputContent = ContentManager.valueToContent(new HashMap<>() {{
-            put("step", 3);
-        }}, "application/json");
+        Content inputContent = ContentManager.valueToContent(Map.of("step", 3), "application/json");
         CoapResponse response = client.post(inputContent.getBody(), MediaTypeRegistry.APPLICATION_JSON);
 
         assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
@@ -364,13 +362,13 @@ public class CoapProtocolServerTest {
                 .setType("integer")
                 .setDescription("current counter value")
                 .setObservable(true)
-                .setUriVariables(new HashMap<>() {{
-                    put("step", new HashMap<>() {{
-                        put("type", "integer");
-                        put("minium", 1);
-                        put("maximum", 250);
-                    }});
-                }})
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
                 .build();
 
         ThingProperty lastChangeProperty = new ThingProperty.Builder()
