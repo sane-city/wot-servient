@@ -254,12 +254,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         @Override
         public void onError(WebSocket webSocket, Exception e) {
-
         }
 
         @Override
         public void onStart() {
-
         }
     }
 }
