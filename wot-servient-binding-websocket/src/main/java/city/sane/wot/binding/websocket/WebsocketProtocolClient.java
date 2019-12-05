@@ -99,24 +99,23 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
-        String topic;
         try {
-            topic = new URI(form.getHref()).getPath().substring(1);
+            String topic = new URI(form.getHref()).getPath().substring(1);
+            newSubject = new Subject<>();
+            Subscription subscription = newSubject.subscribe(observer);
+            return CompletableFuture.runAsync(() -> {
+                try {
+                    // TODO integrate topic
+                    Form subscribeForm = new Form.Builder(form).setOptional("topic", topic).build();
+                    String json = JSON_MAPPER.writeValueAsString(subscribeForm);
+                    cc.send(json);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }).thenApply(done -> subscription);
         } catch (URISyntaxException e) {
             log.warn("Unable to subscribe resource: {}", e.getMessage());
+            return null;
         }
-        newSubject = new Subject<>();
-        CompletableFuture<Subscription> result = new CompletableFuture<>();
-        Subscription subscription = newSubject.subscribe(observer);
-        return CompletableFuture.runAsync(() -> {
-            try {
-                // TODO integrate topic
-                Form subscribeForm = new Form.Builder(form).setOptional("observer", observer).build();
-                String json = JSON_MAPPER.writeValueAsString(subscribeForm);
-                cc.send(json);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }).thenApply(done -> subscription);
     }
 }
