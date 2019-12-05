@@ -47,7 +47,7 @@ public class ThingsActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        // TODO: Remove weenn der
+        // TODO: Remove wenn der Mediator endlich rechtzeitig erstellt wird
         ActorRef mediator = null;
         try {
             mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();

@@ -45,6 +45,8 @@ public class DiscoverActor extends AbstractActor {
     @Override
     public void preStart() {
         log.info("Started");
+
+        // TODO: Remove wenn der Mediator endlich rechtzeitig erstellt wird
         ActorRef mediator = null;
         try {
             mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();
