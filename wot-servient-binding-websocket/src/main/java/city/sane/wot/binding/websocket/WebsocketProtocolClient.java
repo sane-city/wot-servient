@@ -110,6 +110,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         Subscription subscription = newSubject.subscribe(observer);
         return CompletableFuture.runAsync(() -> {
             try {
+                // TODO integrate topic
                 Form subscribeForm = new Form.Builder(form).setOptional("observer", observer).build();
                 String json = JSON_MAPPER.writeValueAsString(subscribeForm);
                 cc.send(json);
