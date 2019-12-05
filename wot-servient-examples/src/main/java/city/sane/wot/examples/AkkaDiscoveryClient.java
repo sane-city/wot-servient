@@ -10,6 +10,7 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQuery;
+import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.property.ThingProperty;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ import java.util.concurrent.ExecutionException;
  * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link AkkaDiscovery}.
  */
 public class AkkaDiscoveryClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException, ThingQueryException {
         Wot wot = DefaultWot.clientOnly();
 
         // Expose a thing
