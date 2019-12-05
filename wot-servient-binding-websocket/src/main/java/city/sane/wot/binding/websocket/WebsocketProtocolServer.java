@@ -212,7 +212,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     String name = ((WriteProperty) message).getName();
                     Content payload = ((WriteProperty) message).getPayload();
 
-                    //TODO Payload to Property???
+                    //TODO: Payload to Property???
                     ByteArrayInputStream bis = new ByteArrayInputStream(payload.getBody());
                     ObjectInput in = new ObjectInputStream(bis);
                     Object value = in.readObject();
