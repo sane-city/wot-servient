@@ -23,8 +23,6 @@ public abstract class AbstractMessage {
         id = UUID.randomUUID().toString();
     }
 
-    public abstract String getType();
-
     public String getId() {
         return id;
     }
