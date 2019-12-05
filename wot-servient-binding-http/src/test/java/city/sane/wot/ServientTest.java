@@ -85,13 +85,13 @@ public class ServientTest {
         thing.addAction("increment",
                 new ThingAction.Builder()
                         .setDescription("Incrementing counter content with optional step content as uriVariable")
-                        .setUriVariables(new HashMap<>() {{
-                            put("step", new HashMap<>() {{
-                                put("type", "integer");
-                                put("minium", 1);
-                                put("maximum", 250);
-                            }});
-                        }})
+                        .setUriVariables(Map.of(
+                                "step", Map.of(
+                                        "type", "integer",
+                                        "minimum", 1,
+                                        "maximum", 250
+                                )
+                        ))
                         .setInput(new ObjectSchema())
                         .setOutput(new IntegerSchema())
                         .build(),
