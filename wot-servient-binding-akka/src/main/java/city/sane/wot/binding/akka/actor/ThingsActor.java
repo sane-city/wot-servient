@@ -8,6 +8,9 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.Pair;
+import city.sane.akkamediator.MediatorActor;
+import city.sane.akkamediator.relayextension.MediatorRelayExtension;
+import city.sane.akkamediator.relayextension.MediatorRelayExtensionImpl;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -35,7 +38,6 @@ public class ThingsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
     private final Map<String, ActorRef> children = new HashMap<>();
-    private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
 
     public ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
@@ -45,14 +47,25 @@ public class ThingsActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        mediator.tell(new DistributedPubSubMediator.Subscribe(TOPIC, getSelf()), getSelf());
+        // TODO: Remove wenn der Mediator endlich rechtzeitig erstellt wird
+        ActorRef mediator = null;
+        try {
+            mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();
+        } catch (MediatorRelayExtensionImpl.NoSuchMediatorException e) {
+            mediator = getContext().getSystem().actorOf(MediatorActor.props(), "MediatorActor");
+            MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).register(getContext().getSystem().name(), mediator);
+        }
+
+        if (mediator == null) {
+            log.error("Can not create Mediator!!!!!!");
+        }
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).join(getSelf());
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
-
-        mediator.tell(new DistributedPubSubMediator.Unsubscribe(TOPIC, getSelf()), getSelf());
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).leave(getSelf());
     }
 
     @Override
@@ -111,10 +124,7 @@ public class ThingsActor extends AbstractActor {
         }
 
         Map<String, Thing> thingsMap = things.stream().collect(Collectors.toMap(t -> t.getId(), t -> t));
-        getSender().tell(
-                new RespondGetAll<>(thingsMap),
-                getSelf()
-        );
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).tell(getSender().path(),  new RespondGetAll<>(thingsMap));
     }
 
     private void destroy(Delete<String> m) {

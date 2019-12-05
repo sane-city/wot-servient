@@ -16,6 +16,14 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>city.sane</groupId>
+            <artifactId>akkamediator</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient</artifactId>

@@ -45,14 +45,8 @@ build-dist:
 .verify: &verify
   stage: test
   script:
-    - 'mvn $MAVEN_CLI_OPTS verify'
-  except:
-    - master
-
-check-code:
-  stage: test
-  script:
-    - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
+    - sh mvnreplace.sh ${CI_COMMIT_REF_NAME}
+    - mvn $MAVEN_CLI_OPTS clean compile test verify site sonar:sonar
     - /bin/bash coverage-jacoco.sh
   coverage: '/\d+.\d+ \% covered/'
   artifacts:
