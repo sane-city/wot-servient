@@ -1,13 +1,13 @@
 package city.sane.wot.binding.akka.actor;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import city.sane.akkamediator.MediatorActor;
+import city.sane.akkamediator.relayextension.MediatorRelayExtension;
+import city.sane.akkamediator.relayextension.MediatorRelayExtensionImpl;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 
@@ -25,7 +25,6 @@ public class DiscoverActor extends AbstractActor {
     private final Cancellable timer;
     private final ActorRef requester;
     private final ThingFilter filter;
-    private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     private final Map<String, Thing> things = new HashMap<>();
 
     public DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
@@ -46,14 +45,26 @@ public class DiscoverActor extends AbstractActor {
     @Override
     public void preStart() {
         log.info("Started");
+        ActorRef mediator = null;
+        try {
+            mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();
+        } catch (MediatorRelayExtensionImpl.NoSuchMediatorException e) {
+            mediator = getContext().getSystem().actorOf(MediatorActor.props(), "MediatorActor");
+            MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).register(getContext().getSystem().name(), mediator);
+        }
 
-        mediator.tell(new DistributedPubSubMediator.Publish(ThingsActor.TOPIC, new ThingsActor.Discover(filter)), getSelf());
+        if (mediator == null) {
+            log.error("Can not create Mediator!!!!!!");
+        }
+
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).join(getSelf());
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).tell(ActorPath.fromString("bud://ALL/ALL"), new ThingsActor.Discover(filter));
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
-
+        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).leave(getSelf());
         timer.cancel();
     }
 
