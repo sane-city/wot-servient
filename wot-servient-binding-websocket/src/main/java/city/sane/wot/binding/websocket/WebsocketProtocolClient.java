@@ -9,6 +9,7 @@ import city.sane.wot.binding.websocket.message.WritePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
+import city.sane.wot.thing.observer.Subject;
 import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +26,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final WebSocketClient cc;
+    private Subject<Content> newSubject;
+
 
     WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
         cc = new WebSocketClient(new URI("ws://localhost:8080")) {
@@ -97,7 +100,16 @@ public class WebsocketProtocolClient implements ProtocolClient {
     // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
         // TODO is that a subscription?
-        return CompletableFuture.supplyAsync(() -> {
+        String topic;
+        try {
+            topic = new URI(form.getHref()).getPath().substring(1);
+        } catch (URISyntaxException e) {
+            log.warn("Unable to subscribe resource: {}", e.getMessage());
+        }
+        newSubject = new Subject<>();
+        CompletableFuture<Subscription> result = new CompletableFuture<>();
+        Subscription subscription = newSubject.subscribe(observer);
+        return CompletableFuture.runAsync(() -> {
             try {
                 Form subscribeForm = new Form.Builder(form).setOptional("observer", observer).build();
                 String json = JSON_MAPPER.writeValueAsString(subscribeForm);
@@ -105,8 +117,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            // TODO
-            return null;
-        });
+        }).thenApply(done -> subscription);
     }
 }

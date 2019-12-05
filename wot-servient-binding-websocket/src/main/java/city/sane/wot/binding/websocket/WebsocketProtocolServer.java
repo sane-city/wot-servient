@@ -226,7 +226,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
                             try {
                                 String outputJson = JSON_MAPPER.writeValueAsString(response);
                                 webSocket.send(outputJson);
-
                             } catch (JsonProcessingException ex) {
                                 ex.printStackTrace();
                             }
@@ -237,18 +236,13 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     String name = ((SubscribeProperty) message).getName();
 
                     ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).read().whenComplete((value, e) -> {
-                        if (e != null) {
-                            // implement
-                        } else {
-                            SubscribePropertyResponse response = new SubscribePropertyResponse(value);
-
-                            try {
-                                String outputJson = JSON_MAPPER.writeValueAsString(response);
-                                webSocket.send(outputJson);
-                            } catch (JsonProcessingException ex) {
-                                ex.printStackTrace();
-                            }
+                    thing.getProperty(name).subscribe(next -> {
+                        SubscribePropertyResponse response = new SubscribePropertyResponse(next);
+                        try {
+                            String outputJson = JSON_MAPPER.writeValueAsString(response);
+                            webSocket.send(outputJson);
+                        } catch (JsonProcessingException ex) {
+                            ex.printStackTrace();
                         }
                     });
                 }
