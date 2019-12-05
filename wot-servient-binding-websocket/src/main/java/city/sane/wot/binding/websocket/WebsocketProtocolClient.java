@@ -109,8 +109,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
             Subscription subscription = newSubject.subscribe(observer);
             return CompletableFuture.runAsync(() -> {
                 try {
-                    // TODO: is a topic needed here, because we already get the property we want to change via getName?
-                    // Form subscribeForm = new Form.Builder(form).setOptional("topic", topic).build();
                     String json = JSON_MAPPER.writeValueAsString(form);
                     cc.send(json);
                 } catch (JsonProcessingException e) {
