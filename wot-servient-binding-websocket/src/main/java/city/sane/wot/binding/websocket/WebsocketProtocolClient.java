@@ -32,6 +32,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
 
     WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
+        // TODO: uri from config
         cc = new WebSocketClient(new URI("ws://localhost:8080")) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
@@ -45,10 +46,13 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 try {
                     AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
                     if (message instanceof ReadPropertyResponse) {
+                        // TODO: need to something here?
                         System.out.println("ReadPropertyResponse");
                     } else if (message instanceof WritePropertyResponse) {
+                        // TODO: need to something here?
                         System.out.println("WritePropertyResponse");
                     } else if (message instanceof SubscribePropertyResponse) {
+                        // TODO: need to something here?
                         System.out.println("SubscribePropertyResponse");
                     }
                 } catch (IOException e) {
@@ -77,7 +81,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            // TODO
+            // TODO:
             return null;
         });
     }
@@ -92,12 +96,12 @@ public class WebsocketProtocolClient implements ProtocolClient {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            // TODO
+            // TODO:
             return null;
         });
     }
 
-    // TODO CompletableFuture subscribeResource(Form form, Observer<Content> observer)
+    // TODO: CompletableFuture subscribeResource(Form form, Observer<Content> observer)
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
         try {
             String topic = new URI(form.getHref()).getPath().substring(1);
@@ -105,9 +109,9 @@ public class WebsocketProtocolClient implements ProtocolClient {
             Subscription subscription = newSubject.subscribe(observer);
             return CompletableFuture.runAsync(() -> {
                 try {
-                    // TODO integrate topic
-                    Form subscribeForm = new Form.Builder(form).setOptional("topic", topic).build();
-                    String json = JSON_MAPPER.writeValueAsString(subscribeForm);
+                    // TODO: is a topic needed here, because we already get the property we want to change via getName?
+                    // Form subscribeForm = new Form.Builder(form).setOptional("topic", topic).build();
+                    String json = JSON_MAPPER.writeValueAsString(form);
                     cc.send(json);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
