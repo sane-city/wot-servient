@@ -9,7 +9,7 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingEvent}.

@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.wot.binding.akka.CrudMessages;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -42,7 +41,7 @@ public class AllPropertiesActor extends AbstractActor {
         thing.addForm(form);
         log.info("Assign '{}' for reading all properties", href);
 
-        getContext().getParent().tell(new CrudMessages.Created<>(getSelf()), getSelf());
+        getContext().getParent().tell(new ThingsActor.Created<>(getSelf()), getSelf());
     }
 
     @Override

@@ -7,10 +7,12 @@ import org.junit.Test;
 
 import static org.testng.Assert.assertTrue;
 
-public class ScriptingManagerTest {
+public class GroovyEngineTest {
+    private ScriptingEngine engine;
+
     @Before
     public void setup() {
-        ScriptingManager.addEngine(new GroovyEngine());
+        engine = new GroovyEngine();
     }
 
     @Test
@@ -46,8 +48,9 @@ public class ScriptingManagerTest {
                 "println(exposedThing.toJson(true))";
 
         DefaultWot wot = new DefaultWot();
-        ScriptingManager.runScript(script, "application/groovy", wot);
+        engine.runScript(script, wot);
 
+        // should not fail
         assertTrue(true);
     }
 
@@ -56,6 +59,6 @@ public class ScriptingManagerTest {
         String script = "wot.dahsjkdhajkdhajkdhasjk()";
 
         DefaultWot wot = new DefaultWot();
-        ScriptingManager.runScript(script, "application/groovy", wot);
+        engine.runScript(script, wot);
     }
 }

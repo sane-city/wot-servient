@@ -17,8 +17,8 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import static akka.pattern.Patterns.ask;
-import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * Allows consuming Things via Akka Actors.<br>
@@ -69,7 +69,7 @@ public class AkkaProtocolClient implements ProtocolClient {
 
         Duration timeout = Duration.ofSeconds(10);
         return ask(discoveryActor, message, timeout)
-                .thenApply(m -> ((Collection<Thing>) (((RespondGetAll) m).entities.values())))
+                .thenApply(m -> ((Collection<Thing>) (((Things) m).entities.values())))
                 .toCompletableFuture();
     }
 }

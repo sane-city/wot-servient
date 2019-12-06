@@ -23,6 +23,7 @@ public class ContentManager {
     static {
         addCodec(new JsonCodec(), true);
         addCodec(new TextCodec());
+        addCodec(new HtmlCodec());
         addCodec(new CborCodec());
     }
 
@@ -106,6 +107,7 @@ public class ContentManager {
         if (contentType == null) {
             // default to text/plain
             contentType = DEFAULT;
+            log.warn("No content type given. Use default one: {}", DEFAULT);
         }
 
         String mediaType = getMediaType(contentType);

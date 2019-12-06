@@ -9,6 +9,19 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Interacts with a Thing that is secured with HTTP Basic Auth.
+ *
+ * application.conf:
+ *
+ * wot {
+ *   servient {
+ *     credentials {
+ *       "urn:dev:wot:http:auth:basic" = {
+ *         username = "guest"
+ *         password = "guest"
+ *       }
+ *     }
+ *   }
+ * }
  */
 public class HttpBasicAuthClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {

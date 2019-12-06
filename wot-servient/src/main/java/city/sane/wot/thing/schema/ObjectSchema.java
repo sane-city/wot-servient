@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Describes data of type <a href="https://www.w3.org/TR/wot-thing-description/#objectschema">object</a>.
  */
-public class ObjectSchema implements DataSchema<Map> {
+public class ObjectSchema extends AbstractDataSchema<Map> {
     @Override
     public String getType() {
         return "object";

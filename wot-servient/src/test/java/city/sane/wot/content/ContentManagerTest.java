@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ContentManagerTest {
     @Test
@@ -50,5 +50,17 @@ public class ContentManagerTest {
         ObjectInputStream ois = new ObjectInputStream(bis);
 
         assertEquals(42, ois.readObject());
+    }
+
+    @Test
+    public void removeCodec() {
+        try {
+            assertTrue(ContentManager.isSupportedMediaType("text/plain"));
+            ContentManager.removeCodec("text/plain");
+            assertFalse(ContentManager.isSupportedMediaType("text/plain"));
+        }
+        finally {
+            ContentManager.addCodec(new TextCodec());
+        }
     }
 }

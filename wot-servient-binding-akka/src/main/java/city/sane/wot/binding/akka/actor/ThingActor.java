@@ -11,7 +11,7 @@ import city.sane.wot.thing.ExposedThing;
 import java.util.HashSet;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
@@ -27,7 +27,7 @@ public class ThingActor extends AbstractActor {
     private final Set<ActorRef> children = new HashSet<>();
 
     public ThingActor(ActorRef requester, ExposedThing thing) {
-        this.requestor = requester;
+        requestor = requester;
         this.thing = thing;
     }
 

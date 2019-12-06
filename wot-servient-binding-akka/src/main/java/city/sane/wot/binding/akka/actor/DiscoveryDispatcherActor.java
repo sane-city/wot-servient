@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.util.Map;
 
-import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolClient} and is responsible for serving of discovery requests.
@@ -50,7 +50,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
         Map<String, Thing> things = m.things;
 
         log.info("AkkaDiscovery finished. Send result requester '{}'", requester);
-        requester.tell(new RespondGetAll<>(things), getSelf());
+        requester.tell(new Things(things), getSelf());
     }
 
     public static Props props() {

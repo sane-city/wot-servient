@@ -95,7 +95,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      */
     public Pair<ProtocolClient, Form> getClientFor(List<Form> forms, Operation op) throws ConsumedThingException {
         if (forms.isEmpty()) {
-            throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+            throw new NoFormForInteractionConsumedThingException(getTitle(), op);
         }
 
         Set<String> schemes = forms.stream().map(Form::getHrefScheme)
@@ -140,12 +140,12 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (form == null) {
             // if there no op was defined use default assignment
-            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp().isEmpty()).findFirst();
+            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp() == null || f.getOp().isEmpty()).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
             }
             else {
-                throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+                throw new NoFormForInteractionConsumedThingException(getTitle(), op);
             }
         }
 
@@ -172,7 +172,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                 }
             }
 
-            throw new ConsumedThingException("'" + getTitle() + "' missing ClientFactory for '" + schemes + "'");
+            throw new NoClientFactoryForSchemesConsumedThingException(getTitle(), schemes);
         }
         catch (ProtocolClientException e) {
             throw new ConsumedThingException("Unable to create client: " + e.getMessage());
@@ -227,7 +227,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
      * see RFC6570 (https://tools.ietf.org/html/rfc6570) for URI Template syntax
      */
-    public Form handleUriVariables(Form form, Map<String, Object> parameters) {
+    public static Form handleUriVariables(Form form, Map<String, Object> parameters) {
         String href = form.getHref();
         UriTemplate uriTemplate = UriTemplate.fromTemplate(href);
         String updatedHref = uriTemplate.expand(parameters);

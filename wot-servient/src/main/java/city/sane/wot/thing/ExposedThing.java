@@ -43,7 +43,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
 
     public ExposedThing(Servient servient) {
         this.servient = servient;
-        this.subject = new Subject();
+        subject = new Subject();
     }
 
     public ExposedThing(Servient servient, Thing thing) {
@@ -94,7 +94,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing setObjectContexts(Context objectContexts) {
-        this.objectContext = objectContexts;
+        objectContext = objectContexts;
         return this;
     }
 
@@ -352,7 +352,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, Supplier<CompletableFuture<Object>> handler) {
-        return addAction(name, action, (BiConsumer<Object, Map<String, Object>>) (input, options) -> handler.get());
+        return addAction(name, action, (BiFunction<Object, Map<String, Object>, CompletableFuture<Object>>) (input, options) -> handler.get());
     }
 
     /**
@@ -495,7 +495,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         log.info("Expose all Interactions and TD for '{}'", getId());
 
         // let servient forward exposure to the servers
-        return servient.expose(this.getId()).whenComplete((thing, e) -> {
+        return servient.expose(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
                 subject.next(thing);
@@ -512,7 +512,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         log.info("Stop exposing all Interactions and TD for '{}'", getId());
 
         // let servient forward destroy to the servers
-        return servient.destroy(this.getId()).whenComplete((thing, e) -> {
+        return servient.destroy(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
                 subject.next(thing);
