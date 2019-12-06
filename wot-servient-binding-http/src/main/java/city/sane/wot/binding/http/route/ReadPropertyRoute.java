@@ -27,7 +27,7 @@ public class ReadPropertyRoute extends AbstractRoute {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
 
@@ -45,7 +45,6 @@ public class ReadPropertyRoute extends AbstractRoute {
             if (property != null) {
                 if (!property.isWriteOnly()) {
                     Object value = property.read().get();
-
 
                     try {
                         Content content = ContentManager.valueToContent(value, requestContentType);

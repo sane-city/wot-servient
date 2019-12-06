@@ -27,7 +27,7 @@ public class WritePropertyRoute extends AbstractRoute {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
 
@@ -44,24 +44,7 @@ public class WritePropertyRoute extends AbstractRoute {
             ExposedThingProperty property = thing.getProperty(name);
             if (property != null) {
                 if (!property.isReadOnly()) {
-                    try {
-                        Content content = new Content(requestContentType, request.bodyAsBytes());
-                        Object input = ContentManager.contentToValue(content, property);
-
-                        Object output = property.write(input).get();
-                        if (output != null) {
-                            response.status(HttpStatus.OK_200);
-                            return output;
-                        }
-                        else {
-                            response.status(HttpStatus.NO_CONTENT_204);
-                            return "";
-                        }
-                    }
-                    catch (ContentCodecException e) {
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        return e;
-                    }
+                    return writeProperty(request, response, requestContentType, property);
                 }
                 else {
                     response.status(HttpStatus.BAD_REQUEST_400);
@@ -76,6 +59,30 @@ public class WritePropertyRoute extends AbstractRoute {
         else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
+        }
+    }
+
+    private Object writeProperty(Request request,
+                                 Response response,
+                                 String requestContentType,
+                                 ExposedThingProperty property) throws InterruptedException, java.util.concurrent.ExecutionException {
+        try {
+            Content content = new Content(requestContentType, request.bodyAsBytes());
+            Object input = ContentManager.contentToValue(content, property);
+
+            Object output = property.write(input).get();
+            if (output != null) {
+                response.status(HttpStatus.OK_200);
+                return output;
+            }
+            else {
+                response.status(HttpStatus.NO_CONTENT_204);
+                return "";
+            }
+        }
+        catch (ContentCodecException e) {
+            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+            return e;
         }
     }
 }

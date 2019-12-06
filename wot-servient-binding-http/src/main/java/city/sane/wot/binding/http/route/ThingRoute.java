@@ -26,7 +26,7 @@ public class ThingRoute extends AbstractRoute {
 
     @Override
     public Object handle(Request request, Response response) {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
 

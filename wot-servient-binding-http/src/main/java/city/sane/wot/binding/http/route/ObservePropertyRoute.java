@@ -29,7 +29,7 @@ public class ObservePropertyRoute extends AbstractRoute {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
 
@@ -46,33 +46,7 @@ public class ObservePropertyRoute extends AbstractRoute {
             ExposedThingProperty property = thing.getProperty(name);
             if (property != null) {
                 if (!property.isWriteOnly() && property.isObservable()) {
-                    CompletableFuture<Object> result = new CompletableFuture();
-                    Subscription subscription = property.subscribe(
-                            data -> {
-                                log.debug("Next data received for Property connection");
-                                try {
-                                    Content content = ContentManager.valueToContent(data, requestContentType);
-                                    response.type(content.getType());
-                                    result.complete(content);
-                                }
-                                catch (ContentCodecException e) {
-                                    log.warn("Cannot process data for Property '{}': {}", name, e);
-                                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                                    result.complete("Invalid Property Data");
-                                }
-
-                            },
-                            e -> {
-                                response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                                result.complete(e);
-                            },
-                            () -> result.complete("")
-                    );
-
-                    result.whenComplete((r, e) -> {
-                        log.debug("Closes Property connection");
-                        subscription.unsubscribe();
-                    });
+                    CompletableFuture<Object> result = subscribeForNextData(response, requestContentType, name, property);
 
                     return result.get();
                 }
@@ -90,5 +64,37 @@ public class ObservePropertyRoute extends AbstractRoute {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }
+    }
+
+    private CompletableFuture<Object> subscribeForNextData(Response response, String requestContentType, String name, ExposedThingProperty property) {
+        CompletableFuture<Object> result = new CompletableFuture();
+        Subscription subscription = property.subscribe(
+                data -> {
+                    log.debug("Next data received for Property connection");
+                    try {
+                        Content content = ContentManager.valueToContent(data, requestContentType);
+                        response.type(content.getType());
+                        result.complete(content);
+                    }
+                    catch (ContentCodecException e) {
+                        log.warn("Cannot process data for Property '{}': {}", name, e);
+                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                        result.complete("Invalid Property Data");
+                    }
+
+                },
+                e -> {
+                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                    result.complete(e);
+                },
+                () -> result.complete("")
+        );
+
+        result.whenComplete((r, e) -> {
+            log.debug("Closes Property connection");
+            subscription.unsubscribe();
+        });
+
+        return result;
     }
 }

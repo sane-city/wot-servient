@@ -35,6 +35,7 @@ import java.util.concurrent.CompletionException;
  */
 public class HttpProtocolClient implements ProtocolClient {
     static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    private static final String HTTP_METHOD_NAME = "htv:methodName";
 
     private String authorizationHeader = HttpHeaders.AUTHORIZATION;
     private String authorization = null;
@@ -169,8 +170,8 @@ public class HttpProtocolClient implements ProtocolClient {
     private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
         String href = form.getHref();
         String method = defaultMethod;
-        if (form.getOptional("htv:methodName") != null) {
-            method = (String) form.getOptional("htv:methodName");
+        if (form.getOptional(HTTP_METHOD_NAME) != null) {
+            method = (String) form.getOptional(HTTP_METHOD_NAME);
         }
 
         RequestBuilder builder = RequestBuilder.create(method)

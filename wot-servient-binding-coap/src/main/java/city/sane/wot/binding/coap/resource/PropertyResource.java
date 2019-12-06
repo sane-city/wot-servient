@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -17,12 +16,10 @@ import org.slf4j.LoggerFactory;
 public class PropertyResource extends AbstractResource {
     static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
 
-    private final WotCoapServer server;
     private final ExposedThingProperty property;
 
-    public PropertyResource(WotCoapServer server, String name, ExposedThingProperty property) {
+    public PropertyResource(String name, ExposedThingProperty property) {
         super(name);
-        this.server = server;
         this.property = property;
     }
 
@@ -41,12 +38,12 @@ public class PropertyResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        log.warn("Exception: {}", ex);
+                        log.warn("Unable to serialize new property value: {}", ex);
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    log.warn("Exception: {}", e);
+                    log.warn("Unable to read property value: {}", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
@@ -68,39 +65,43 @@ public class PropertyResource extends AbstractResource {
         }
 
         if (!property.isReadOnly()) {
-            byte[] requestPayload = exchange.getRequestPayload();
-
-            try {
-                Object input = ContentManager.contentToValue(new Content(requestContentFormat, requestPayload), property);
-
-                property.write(input).whenComplete((output, e) -> {
-                    if (e == null) {
-                        if (output != null) {
-                            try {
-                                Content outputContent = ContentManager.valueToContent(output, requestContentFormat);
-                                int outputContentFormat = MediaTypeRegistry.parse(outputContent.getType());
-                                exchange.respond(CoAP.ResponseCode.CHANGED, outputContent.getBody(), outputContentFormat);
-                            }
-                            catch (ContentCodecException ex) {
-                                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
-                            }
-                        }
-                        else {
-                            exchange.respond(CoAP.ResponseCode.CHANGED, new byte[0], MediaTypeRegistry.parse(requestContentFormat));
-                        }
-                    }
-                    else {
-                        log.warn("Exception: {}", e);
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
-                    }
-                });
-            }
-            catch (ContentCodecException ex) {
-                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
-            }
+            writeProperty(exchange, requestContentFormat);
         }
         else {
             exchange.respond(CoAP.ResponseCode.METHOD_NOT_ALLOWED, "Property writeOnly");
+        }
+    }
+
+    private void writeProperty(CoapExchange exchange, String requestContentFormat) {
+        byte[] requestPayload = exchange.getRequestPayload();
+
+        try {
+            Object input = ContentManager.contentToValue(new Content(requestContentFormat, requestPayload), property);
+
+            property.write(input).whenComplete((output, e) -> {
+                if (e == null) {
+                    if (output != null) {
+                        try {
+                            Content outputContent = ContentManager.valueToContent(output, requestContentFormat);
+                            int outputContentFormat = MediaTypeRegistry.parse(outputContent.getType());
+                            exchange.respond(CoAP.ResponseCode.CHANGED, outputContent.getBody(), outputContentFormat);
+                        }
+                        catch (ContentCodecException ex) {
+                            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
+                        }
+                    }
+                    else {
+                        exchange.respond(CoAP.ResponseCode.CHANGED, new byte[0], MediaTypeRegistry.parse(requestContentFormat));
+                    }
+                }
+                else {
+                    log.warn("Unable to write property value: {}", e);
+                    exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
+                }
+            });
+        }
+        catch (ContentCodecException ex) {
+            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.getMessage());
         }
     }
 }
