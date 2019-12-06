@@ -54,7 +54,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         Config actorSystemConfig = config.getConfig("wot.servient.akka.client")
                 .withFallback(ConfigFactory.defaultOverrides());
 
-        log.debug("Create Actor System");
+        log.debug("Expose Actor System");
         system = ActorSystem.create(actorSystemName, actorSystemConfig);
 
         return CompletableFuture.runAsync(() -> {

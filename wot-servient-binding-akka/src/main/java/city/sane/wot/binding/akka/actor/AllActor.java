@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.wot.binding.akka.CrudMessages;
 import city.sane.wot.thing.ExposedThing;
 
 import java.util.HashSet;
@@ -39,11 +38,11 @@ public class AllActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(CrudMessages.Created.class, this::exposed)
+                .match(ThingsActor.Created.class, this::exposed)
                 .build();
     }
 
-    private void exposed(CrudMessages.Created m) {
+    private void exposed(ThingsActor.Created m) {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }
@@ -51,7 +50,7 @@ public class AllActor extends AbstractActor {
 
     private void done() {
         log.info("'all' resources have been exposed");
-        getContext().getParent().tell(new CrudMessages.Created<>(getSelf()), getSelf());
+        getContext().getParent().tell(new ThingsActor.Created<>(getSelf()), getSelf());
     }
 
     public static Props props(ExposedThing thing) {

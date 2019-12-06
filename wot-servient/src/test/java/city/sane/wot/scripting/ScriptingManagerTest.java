@@ -44,10 +44,6 @@ public class ScriptingManagerTest {
         ScriptingManager.runScript("1+1", "application/lolcode",null);
     }
 
-    @Test
-    public void runScript1() {
-    }
-
     static class MyScriptingEngine implements ScriptingEngine {
         @Override
         public String getMediaType() {

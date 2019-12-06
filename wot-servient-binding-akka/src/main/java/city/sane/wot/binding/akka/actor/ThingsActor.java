@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static city.sane.wot.binding.akka.CrudMessages.*;
 import static city.sane.wot.binding.akka.Messages.Read;
 import static city.sane.wot.binding.akka.Messages.RespondRead;
 
@@ -61,9 +60,9 @@ public class ThingsActor extends AbstractActor {
                 .match(DistributedPubSubMediator.SubscribeAck.class, this::subscriptionAcknowledged)
                 .match(Read.class, this::getThings)
                 .match(Discover.class, this::discover)
-                .match(Create.class, this::expose)
+                .match(Expose.class, this::expose)
                 .match(Created.class, this::exposed)
-                .match(Delete.class, this::destroy)
+                .match(Destroy.class, this::destroy)
                 .match(Deleted.class, this::destroyed)
                 .build();
     }
@@ -72,7 +71,7 @@ public class ThingsActor extends AbstractActor {
         log.info("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
-    private void expose(Create<String> m) {
+    private void expose(Expose m) {
         String id = m.entity;
         ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
         children.put(id, thingActor);
@@ -83,14 +82,14 @@ public class ThingsActor extends AbstractActor {
         ActorRef requester = pair.first();
         String id = pair.second();
         log.info("Thing '{}' has been exposed", id);
-        requester.tell(new Created<>(getSender()), getSelf());
+        requester.tell(new Created(getSender()), getSelf());
     }
 
     private void getThings(Read m) throws ContentCodecException {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
-        Map<String, Thing> thingMap = this.things.entrySet()
+        Map<String, Thing> thingMap = things.entrySet()
                 .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> Thing.fromJson(e.getValue().toJson())));
         Content content = ContentManager.valueToContent(thingMap);
 
@@ -104,7 +103,7 @@ public class ThingsActor extends AbstractActor {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
-        Collection<Thing> thingCollection = this.things.values().stream()
+        Collection<Thing> thingCollection = things.values().stream()
                 .map(t -> Thing.fromJson(t.toJson())).collect(Collectors.toList());
         if (m.filter.getQuery() != null) {
             thingCollection = m.filter.getQuery().filter(thingCollection);
@@ -113,12 +112,12 @@ public class ThingsActor extends AbstractActor {
         Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
 
         getSender().tell(
-                new RespondGetAll<>(thingsMap),
+                new Things(thingsMap),
                 getSelf()
         );
     }
 
-    private void destroy(Delete<String> m) {
+    private void destroy(Destroy m) {
         String id = m.id;
         ActorRef actorRef = children.remove(id);
         if (actorRef != null) {
@@ -145,6 +144,46 @@ public class ThingsActor extends AbstractActor {
 
         public Discover(ThingFilter filter) {
             this.filter = filter;
+        }
+    }
+
+    public static class Things implements Serializable {
+        public final Map<String, Thing> entities;
+
+        public Things(Map<String, Thing> entities) {
+            this.entities = entities;
+        }
+    }
+
+    public static class Expose implements Serializable {
+        public final String entity;
+
+        public Expose(String entity) {
+            this.entity = entity;
+        }
+    }
+
+    public static class Created<E extends Serializable> {
+        public final E entity;
+
+        public Created(E entity) {
+            this.entity = entity;
+        }
+    }
+
+    public static class Destroy implements Serializable {
+        public final String id;
+
+        public Destroy(String id) {
+            this.id = id;
+        }
+    }
+
+    public static class Deleted<K extends Serializable> implements Serializable {
+        public final K id;
+
+        public Deleted(K id) {
+            this.id = id;
         }
     }
 }

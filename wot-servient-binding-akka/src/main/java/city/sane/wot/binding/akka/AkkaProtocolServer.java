@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static akka.pattern.Patterns.ask;
-import static city.sane.wot.binding.akka.CrudMessages.*;
 
 /**
  * Allows exposing Things via Akka Actors.<br>
@@ -79,9 +78,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         }
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Create<>(thing.getId()), timeout)
+        return ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Created) m).entity;
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
@@ -94,9 +93,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         things.remove(thing.getId());
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Delete<>(thing.getId()), timeout)
+        return ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Deleted) m).id;
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;

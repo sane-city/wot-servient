@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor creates a {@link PropertyActor} for each {@link ExposedThingProperty}.

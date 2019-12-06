@@ -15,8 +15,8 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingProperty}.
