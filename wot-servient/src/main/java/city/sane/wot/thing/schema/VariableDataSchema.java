@@ -5,7 +5,7 @@ import city.sane.ObjectBuilder;
 /**
  * Describes data whose type is determined at runtime.
  */
-public class VariableDataSchema implements DataSchema<Object> {
+public class VariableDataSchema extends AbstractDataSchema<Object> {
     protected String type;
 
     @Override
