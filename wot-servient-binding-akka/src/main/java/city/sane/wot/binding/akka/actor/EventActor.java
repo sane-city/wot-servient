@@ -33,7 +33,7 @@ public class EventActor extends AbstractActor {
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
                 .setSubprotocol("longpoll")
-                .setOp(Operation.subscribeevent)
+                .setOp(Operation.SUBSCRIBE_EVENT)
                 .build();
 
         event.addForm(form);

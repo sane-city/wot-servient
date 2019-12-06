@@ -147,11 +147,9 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         // find right operation and corresponding scheme in the array form
         Form form = null;
         for (Form f : forms) {
-            if (f.getOp() != null) {
-                if (f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
-                    form = f;
-                    break;
-                }
+            if (f.getOp() != null && f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
+                form = f;
+                break;
             }
         }
 
@@ -176,7 +174,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      */
     public CompletableFuture<Map<String, Object>> readProperties() {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.readallproperties);
+            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.READ_ALL_PROPERTIES);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 

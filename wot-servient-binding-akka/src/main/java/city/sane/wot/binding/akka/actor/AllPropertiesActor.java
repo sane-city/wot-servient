@@ -36,7 +36,7 @@ public class AllPropertiesActor extends AbstractActor {
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
-                .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
                 .build();
 
         thing.addForm(form);

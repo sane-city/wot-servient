@@ -5,6 +5,8 @@ import city.sane.wot.WotException;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.testng.Assert.assertTrue;
+
 public class ScriptingManagerTest {
     @Before
     public void setup() {
@@ -12,7 +14,7 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScript() throws ScriptingManagerException, WotException {
+    public void runScript() throws ScriptingException, WotException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -43,6 +45,17 @@ public class ScriptingManagerTest {
                 ")\n" +
                 "println(exposedThing.toJson(true))";
 
-        ScriptingManager.runScript(script, "application/groovy", new DefaultWot());
+        DefaultWot wot = new DefaultWot();
+        ScriptingManager.runScript(script, "application/groovy", wot);
+
+        assertTrue(true);
+    }
+
+    @Test(expected = ScriptingEngineException.class)
+    public void runInvalidScript() throws ScriptingException, WotException {
+        String script = "wot.dahsjkdhajkdhajkdhasjk()";
+
+        DefaultWot wot = new DefaultWot();
+        ScriptingManager.runScript(script, "application/groovy", wot);
     }
 }

@@ -40,13 +40,13 @@ public class PropertyActor extends AbstractActor {
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT);
         if (property.isReadOnly()) {
-            builder.setOp(Operation.readproperty);
+            builder.setOp(Operation.READ_PROPERTY);
         }
         else if (property.isWriteOnly()) {
-            builder.setOp(Operation.writeproperty);
+            builder.setOp(Operation.WRITE_PROPERTY);
         }
         else {
-            builder.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+            builder.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
         }
 
         property.addForm(builder.build());

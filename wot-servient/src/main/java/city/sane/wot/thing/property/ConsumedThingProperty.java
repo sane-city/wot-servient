@@ -62,7 +62,7 @@ public class ConsumedThingProperty extends ThingProperty {
 
     public CompletableFuture<Object> read() {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.readproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.READ_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -85,7 +85,7 @@ public class ConsumedThingProperty extends ThingProperty {
 
     public CompletableFuture<Object> write(Object value) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.writeproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.WRITE_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -112,7 +112,7 @@ public class ConsumedThingProperty extends ThingProperty {
     }
 
     public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
-        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.observeproperty);
+        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 

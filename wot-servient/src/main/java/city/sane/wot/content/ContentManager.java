@@ -26,6 +26,9 @@ public class ContentManager {
         addCodec(new CborCodec());
     }
 
+    private ContentManager() {
+    }
+
     /**
      * Adds support for media type specified in codec. If offered is {@code true}, this media type will also be included in thing descriptions.
      *
@@ -233,7 +236,7 @@ public class ContentManager {
         String[] parts = contentType.split(";");
         for (int i = 1; i < parts.length; i++) {
             String part = parts[i];
-            int eq = part.indexOf("=");
+            int eq = part.indexOf('=');
 
             String name;
             String value;

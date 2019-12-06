@@ -42,7 +42,7 @@ public class JsonpathHttpProtocolClientTest {
 
         Form form = new Form.Builder()
                 .setHref("jsonpath+http://localhost:8080/my-endpoint")
-                .setOp(Operation.readproperty)
+                .setOp(Operation.READ_PROPERTY)
                 .setOptional("sane:jsonPath", "$.[\"1001293\"].Temp_2m")
                 .build();
 

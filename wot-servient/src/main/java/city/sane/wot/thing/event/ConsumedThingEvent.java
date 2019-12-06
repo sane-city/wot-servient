@@ -35,11 +35,11 @@ public class ConsumedThingEvent extends ThingEvent {
     }
 
     public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
-        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.subscribeevent);
+        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.SUBSCRIBE_EVENT);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 
-        log.debug("New subscription for '{}'", thing.getTitle());
+        log.debug("New subscription for Event '{}' from '{}'", name, thing.getTitle());
         try {
             return client.subscribeResource(form,
                     new Observer<>(content -> {

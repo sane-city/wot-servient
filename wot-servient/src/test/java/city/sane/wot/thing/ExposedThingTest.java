@@ -16,7 +16,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ExposedThingTest {
     @Test
@@ -44,9 +47,10 @@ public class ExposedThingTest {
     }
 
     @Test
-    public void emitEvent() {
+    public void emitEvent() throws ExecutionException, InterruptedException {
         ExposedThing thing = getCounterThing();
-        thing.getEvent("change").emit();
+
+        assertNull(thing.getEvent("change").emit().get());
     }
 
     @Test
@@ -68,7 +72,7 @@ public class ExposedThingTest {
     }
 
     @Test
-    public void observeProperty() {
+    public void observeProperty() throws ExecutionException, InterruptedException {
         ExposedThing thing = getCounterThing();
         ExposedThingProperty property = thing.getProperty("count");
 
@@ -79,7 +83,7 @@ public class ExposedThingTest {
                 () -> System.out.println("completed!"));
         property.write(1337);
 
-        subscriptionFuture.join();
+        assertEquals(1337, subscriptionFuture.get());
     }
 
     @Test
@@ -97,7 +101,9 @@ public class ExposedThingTest {
         String json = thing.toJson();
 
         System.out.println(json);
+
 //        assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"description\":\"counter example Thing\",\"properties\":{\"lastChange\":{\"description\":\"last change of counter value\",\"type\":\"string\",\"observable\":true,\"readOnly\":true},\"counter\":{\"description\":\"current counter value\",\"type\":\"integer\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{},\"reset\":{}},\"events\":{\"change\":{}}}", json);
+        assertThat(json, instanceOf(String.class));
     }
 
     @Test

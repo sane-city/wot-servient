@@ -4,6 +4,7 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ConsumedThingException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,7 +22,7 @@ public class ExampleEventClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -39,7 +40,7 @@ public class ExampleEventClient {
                 System.out.println("ExampleDynamicClient: Subscribed");
 
             }
-            catch (Throwable ex) {
+            catch (ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

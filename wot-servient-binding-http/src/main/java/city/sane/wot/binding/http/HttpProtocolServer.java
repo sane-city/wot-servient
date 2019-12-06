@@ -42,7 +42,7 @@ public class HttpProtocolServer implements ProtocolServer {
             addresses = config.getStringList("wot.servient.http.addresses");
         }
         else {
-            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
+            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort).collect(Collectors.toList());
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
@@ -62,19 +62,17 @@ public class HttpProtocolServer implements ProtocolServer {
             server.init();
             server.awaitInitialization();
 
-            server.path("/things", () -> {
-                server.get("", new ThingsRoute(things));
-                server.path("/:id", () -> {
-                    server.path("/properties/:name", () -> {
-                        server.get("/observable", new ObservePropertyRoute(things));
-                        server.get("", new ReadPropertyRoute(things));
-                        server.put("", new WritePropertyRoute(things));
-                    });
-                    server.post("/actions/:name", new InvokeActionRoute(things));
-                    server.get("/events/:name", new SubscribeEventRoute(things));
-                    server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
-                    server.get("", new ThingRoute(things));
+            server.get("/", new ThingsRoute(things));
+            server.path("/:id", () -> {
+                server.path("/properties/:name", () -> {
+                    server.get("/observable", new ObservePropertyRoute(things));
+                    server.get("", new ReadPropertyRoute(things));
+                    server.put("", new WritePropertyRoute(things));
                 });
+                server.post("/actions/:name", new InvokeActionRoute(things));
+                server.get("/events/:name", new SubscribeEventRoute(things));
+                server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
+                server.get("", new ThingRoute(things));
             });
         });
     }
@@ -107,7 +105,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     Form form = new Form.Builder()
                             .setHref(href)
                             .setContentType(contentType)
-                            .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                            .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
                             .build();
 
                     thing.addForm(form);
@@ -121,15 +119,15 @@ public class HttpProtocolServer implements ProtocolServer {
                     form.setHref(href);
                     form.setContentType(contentType);
                     if (property.isReadOnly()) {
-                        form.setOp(Operation.readproperty);
+                        form.setOp(Operation.READ_PROPERTY);
                         form.setOptional("htv:methodName", "GET");
                     }
                     else if (property.isWriteOnly()) {
-                        form.setOp(Operation.writeproperty);
+                        form.setOp(Operation.WRITE_PROPERTY);
                         form.setOptional("htv:methodName", "PUT");
                     }
                     else {
-                        form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+                        form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
                     }
 
                     property.addForm(form.build());
@@ -141,7 +139,7 @@ public class HttpProtocolServer implements ProtocolServer {
                         Form.Builder observableForm = new Form.Builder();
                         observableForm.setHref(observableHref);
                         observableForm.setContentType(contentType);
-                        observableForm.setOp(Operation.observeproperty);
+                        observableForm.setOp(Operation.OBSERVE_PROPERTY);
                         observableForm.setSubprotocol("longpoll");
 
                         property.addForm(observableForm.build());
@@ -158,7 +156,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     Form.Builder form = new Form.Builder();
                     form.setHref(href);
                     form.setContentType(contentType);
-                    form.setOp(Operation.invokeaction);
+                    form.setOp(Operation.INVOKE_ACTION);
                     form.setOptional("htv:methodName", "POST");
 
                     action.addForm(form.build());
@@ -175,7 +173,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     form.setHref(href);
                     form.setContentType(contentType);
                     form.setSubprotocol("longpoll");
-                    form.setOp(Operation.subscribeevent);
+                    form.setOp(Operation.SUBSCRIBE_EVENT);
 
                     event.addForm(form.build());
                     log.info("Assign '{}' to Event '{}'", href, name);
@@ -209,7 +207,7 @@ public class HttpProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            return new URI(addresses.get(0) + "/" + id);
+            return new URI(addresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to thing url: {}", e);

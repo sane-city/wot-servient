@@ -6,6 +6,7 @@ import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch thing description exposes by {@link Counter} and then interact with it.
@@ -18,7 +19,7 @@ public class CounterClient {
         wot.fetch("coap://localhost:5683/counter").whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -47,7 +48,7 @@ public class CounterClient {
                 Object dec1 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterClient: count value after decrement is " + dec1);
             }
-            catch (Throwable ex) {
+            catch (InterruptedException | ExecutionException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();
