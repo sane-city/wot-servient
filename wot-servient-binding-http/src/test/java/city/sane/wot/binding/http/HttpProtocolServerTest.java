@@ -32,7 +32,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -157,7 +156,7 @@ public class HttpProtocolServerTest {
             }
         });
 
-        // wait until client establish subcription
+        // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
         Thread.sleep(5 * 1000L);
 
@@ -257,7 +256,7 @@ public class HttpProtocolServerTest {
             }
         });
 
-        // wait until client establish subcription
+        // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
         Thread.sleep(5 * 1000L);
 
@@ -287,7 +286,7 @@ public class HttpProtocolServerTest {
             }
         });
 
-        // wait until client establish subcription
+        // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
         Thread.sleep(5 * 1000L);
 

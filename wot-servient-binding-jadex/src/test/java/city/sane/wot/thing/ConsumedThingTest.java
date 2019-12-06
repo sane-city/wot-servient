@@ -99,7 +99,7 @@ public class ConsumedThingTest {
                 next -> counter2.getAndIncrement()
         ).get();
 
-        // wait until client establish subcription
+        // wait until client establish subscription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
         Thread.sleep(5 * 1000L);
 
@@ -180,7 +180,7 @@ public class ConsumedThingTest {
                 next -> counter2.getAndIncrement()
         ).get();
 
-        // wait until client establish subcription
+        // wait until client establish subscription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
         Thread.sleep(5 * 1000L);
 
