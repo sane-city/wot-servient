@@ -66,7 +66,10 @@ public class PhytecClient {
                 }
 
             }
-            catch (InterruptedException | ExecutionException ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

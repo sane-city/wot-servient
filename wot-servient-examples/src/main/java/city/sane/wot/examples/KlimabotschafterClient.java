@@ -46,7 +46,10 @@ public class KlimabotschafterClient {
                 }
 
             }
-            catch (InterruptedException | ExecutionException | ConsumedThingException ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException | ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

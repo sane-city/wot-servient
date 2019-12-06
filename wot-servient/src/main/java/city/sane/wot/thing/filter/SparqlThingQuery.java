@@ -1,9 +1,9 @@
 package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Thing;
+import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.util.Repositories;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -71,7 +71,7 @@ public class SparqlThingQuery implements ThingQuery {
 
         // apply query on repository
         Set<String> filteredIris = Repositories.tupleQuery(repository, "SELECT DISTINCT ?__id__ WHERE { GRAPH ?__id__ { " + query + " }}", result -> {
-            Set<BindingSet> bindings = QueryResults.asSet(result);
+            Set<BindingSet> bindings = Iterations.asSet(result);
             return bindings.stream().map(b -> b.getValue("__id__").stringValue()).collect(Collectors.toSet());
         });
 

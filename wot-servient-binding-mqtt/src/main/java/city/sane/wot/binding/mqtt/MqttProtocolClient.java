@@ -95,25 +95,7 @@ public class MqttProtocolClient implements ProtocolClient {
         try {
             String topic = new URI(form.getHref()).getPath().substring(1);
 
-            try {
-                log.info("MqttClient at '{}' publishing to topic '{}'", broker, topic);
-                byte[] payload;
-                if (content != null) {
-                    payload = content.getBody();
-                }
-                else {
-                    payload = new byte[0];
-                }
-                client.publish(topic, new MqttMessage(payload));
-
-                // MQTT does not support the request-response pattern. return empty message
-                future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
-            }
-            catch (MqttException e) {
-                future.completeExceptionally(new ProtocolClientException(
-                        "MqttClient at '" + broker + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
-                ));
-            }
+            publishToTopic(content, future, topic);
         }
         catch (URISyntaxException e) {
             future.completeExceptionally(
@@ -121,6 +103,28 @@ public class MqttProtocolClient implements ProtocolClient {
         }
 
         return future;
+    }
+
+    private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
+        try {
+            log.info("MqttClient at '{}' publishing to topic '{}'", broker, topic);
+            byte[] payload;
+            if (content != null) {
+                payload = content.getBody();
+            }
+            else {
+                payload = new byte[0];
+            }
+            client.publish(topic, new MqttMessage(payload));
+
+            // MQTT does not support the request-response pattern. return empty message
+            future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
+        }
+        catch (MqttException e) {
+            future.completeExceptionally(new ProtocolClientException(
+                    "MqttClient at '" + broker + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
+            ));
+        }
     }
 
     @Override

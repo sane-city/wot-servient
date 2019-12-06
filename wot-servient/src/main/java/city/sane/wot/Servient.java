@@ -324,18 +324,18 @@ public class Servient {
                     try {
                         Map<String, Map> value = ContentManager.contentToValue(content, new ObjectSchema());
 
-                        Map<String, Thing> things = new HashMap<>();
+                        Map<String, Thing> directoryThings = new HashMap<>();
                         if (value != null) {
                             for (Map.Entry<String, Map> entry : value.entrySet()) {
                                 String id = entry.getKey();
                                 Map map = entry.getValue();
                                 Thing thing = Thing.fromMap(map);
 
-                                things.put(id, thing);
+                                directoryThings.put(id, thing);
                             }
                         }
 
-                        return things;
+                        return directoryThings;
                     }
                     catch (ContentCodecException e2) {
                         throw new CompletionException(new ServientException("Error while fetching TD directory: " + e2.toString()));
@@ -431,21 +431,21 @@ public class Servient {
             return fetchDirectory(filter.getUrl()).thenApply(Map::values);
         }
         else {
-            Set<Thing> things = new HashSet<>();
+            Set<Thing> discoveredThings = new HashSet<>();
             AtomicBoolean atLeastOneImplementation = new AtomicBoolean(false);
             List<CompletableFuture> discoverFutures = new ArrayList<>();
 
             // get local Things with or without filter query
             if (filter.getQuery() != null) {
-                things.addAll(filter.getQuery().filter(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList())));
+                discoveredThings.addAll(filter.getQuery().filter(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList())));
             }
             else {
-                things.addAll(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList()));
+                discoveredThings.addAll(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList()));
             }
 
             if (filter.getMethod() == DiscoveryMethod.LOCAL) {
                 CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
-                future.complete(things);
+                future.complete(discoveredThings);
                 return future;
             }
 
@@ -454,7 +454,7 @@ public class Servient {
                     ProtocolClient client = factory.getClient();
                     CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
                         if (e == null) {
-                            things.addAll(clientThings);
+                            discoveredThings.addAll(clientThings);
                             atLeastOneImplementation.set(true);
                         }
                         else if (!(e instanceof ProtocolClientNotImplementedException)) {
@@ -475,7 +475,7 @@ public class Servient {
             return discoveryDone.handle((r, e) -> {
                 if (e == null) {
                     if (atLeastOneImplementation.get()) {
-                        return things;
+                        return discoveredThings;
                     }
                     else {
                         throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));

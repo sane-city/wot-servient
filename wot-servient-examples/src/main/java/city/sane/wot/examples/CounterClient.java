@@ -48,7 +48,10 @@ public class CounterClient {
                 Object dec1 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterClient: count value after decrement is " + dec1);
             }
-            catch (InterruptedException | ExecutionException ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

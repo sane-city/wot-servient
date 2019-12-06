@@ -62,14 +62,19 @@
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                        <execution>
-                                <id>report</id>
-                            <phase>prepare-package</phase>
-                            <goals>
-                               <goal>report</goal>
-                            </goals>
-                       </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>wot-servient-examples/src/main/java/city/sane/wot/examples/Counter.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
