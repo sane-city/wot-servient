@@ -1,10 +1,7 @@
 package city.sane.wot.thing;
 
-import city.sane.Pair;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
-import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.thing.action.ConsumedThingAction;
@@ -21,12 +18,10 @@ import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -34,17 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(Parameterized.class)
-public class ConsumedThingTest {
-    @Parameter
-    public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
+public class HttpProtocolTest {
     private Servient servient;
 
     @Before
     public void setup() throws ServientException {
         Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
-                        "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")
+                .parseString("wot.servient.servers = [\"" + HttpProtocolServer.class.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + HttpProtocolClientFactory.class.getName() + "\"]")
                 .withFallback(ConfigFactory.load());
 
         servient = new Servient(config);
@@ -352,12 +344,5 @@ public class ConsumedThingTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Collections.singletonList(
-                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
-        );
     }
 }
