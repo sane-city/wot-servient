@@ -6,59 +6,39 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Endpoint for writing values to a {@link city.sane.wot.thing.property.ThingProperty}.
  */
-public class WritePropertyRoute extends AbstractRoute {
-    static final Logger log = LoggerFactory.getLogger(WritePropertyRoute.class);
-
-    private final Map<String, ExposedThing> things;
-
+public class WritePropertyRoute extends AbstractInteractionRoute {
     public WritePropertyRoute(Map<String, ExposedThing> things) {
-        this.things = things;
+        super(things);
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        logRequest(request);
-
-        String requestContentType = getOrDefaultRequestContentType(request);
-
-        String unsupportedMediaTypeResponse = unsupportedMediaTypeResponse(response, requestContentType);
-        if (unsupportedMediaTypeResponse != null) {
-            return unsupportedMediaTypeResponse;
-        }
-
-        String id = request.params(":id");
-        String name = request.params(":name");
-
-        ExposedThing thing = things.get(id);
-        if (thing != null) {
-            ExposedThingProperty property = thing.getProperty(name);
-            if (property != null) {
-                if (!property.isReadOnly()) {
-                    return writeProperty(request, response, requestContentType, property);
-                }
-                else {
-                    response.status(HttpStatus.BAD_REQUEST_400);
-                    return "Property readOnly";
-                }
+    protected Object handleInteraction(Request request,
+                                       Response response,
+                                       String requestContentType,
+                                       String name,
+                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+        ExposedThingProperty property = thing.getProperty(name);
+        if (property != null) {
+            if (!property.isReadOnly()) {
+                return writeProperty(request, response, requestContentType, property);
             }
             else {
-                response.status(HttpStatus.NOT_FOUND_404);
-                return "Property not found";
+                response.status(HttpStatus.BAD_REQUEST_400);
+                return "Property readOnly";
             }
         }
         else {
             response.status(HttpStatus.NOT_FOUND_404);
-            return "Thing not found";
+            return "Property not found";
         }
     }
 

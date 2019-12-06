@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.thing.property.ExposedThingProperty;
 
 /**

@@ -96,10 +96,6 @@ public class HttpProtocolServer implements ProtocolServer {
 
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
-                //
-                // properties
-                //
-
                 // make reporting of all properties optional?
                 if (true) {
                     String href = address + "/" + thing.getId() + "/all/properties";
@@ -113,76 +109,81 @@ public class HttpProtocolServer implements ProtocolServer {
                     log.info("Assign '{}' for reading all properties", href);
                 }
 
-                Map<String, ExposedThingProperty> properties = thing.getProperties();
-                properties.forEach((name, property) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "properties", name, property);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    if (property.isReadOnly()) {
-                        form.setOp(Operation.READ_PROPERTY);
-                        form.setOptional(HTTP_METHOD_NAME, "GET");
-                    }
-                    else if (property.isWriteOnly()) {
-                        form.setOp(Operation.WRITE_PROPERTY);
-                        form.setOptional(HTTP_METHOD_NAME, "PUT");
-                    }
-                    else {
-                        form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
-                    }
+                exposeProperties(thing, address, contentType);
+                exposeActions(thing, address, contentType);
+                exposeEvents(thing, address, contentType);
 
-                    property.addForm(form.build());
-                    log.info("Assign '{}' to Property '{}'", href, name);
-
-                    // if property is observable add an additional form with a observable href
-                    if (property.isObservable()) {
-                        String observableHref = href + "/observable";
-                        Form.Builder observableForm = new Form.Builder();
-                        observableForm.setHref(observableHref);
-                        observableForm.setContentType(contentType);
-                        observableForm.setOp(Operation.OBSERVE_PROPERTY);
-                        observableForm.setSubprotocol("longpoll");
-
-                        property.addForm(observableForm.build());
-                        log.info("Assign '{}' to observable Property '{}'", observableHref, name);
-                    }
-                });
-
-                //
-                // actions
-                //
-                Map<String, ExposedThingAction> actions = thing.getActions();
-                actions.forEach((name, action) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    form.setOp(Operation.INVOKE_ACTION);
-                    form.setOptional(HTTP_METHOD_NAME, "POST");
-
-                    action.addForm(form.build());
-                    log.info("Assign '{}' to Action '{}'", href, name);
-                });
-
-                //
-                // events
-                //
-                Map<String, ExposedThingEvent> events = thing.getEvents();
-                events.forEach((name, event) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "events", name, event);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    form.setSubprotocol("longpoll");
-                    form.setOp(Operation.SUBSCRIBE_EVENT);
-
-                    event.addForm(form.build());
-                    log.info("Assign '{}' to Event '{}'", href, name);
-                });
             }
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    private void exposeProperties(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        properties.forEach((name, property) -> {
+            String href = getHrefWithVariablePattern(address, thing, "properties", name, property);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            if (property.isReadOnly()) {
+                form.setOp(Operation.READ_PROPERTY);
+                form.setOptional(HTTP_METHOD_NAME, "GET");
+            }
+            else if (property.isWriteOnly()) {
+                form.setOp(Operation.WRITE_PROPERTY);
+                form.setOptional(HTTP_METHOD_NAME, "PUT");
+            }
+            else {
+                form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
+            }
+
+            property.addForm(form.build());
+            log.info("Assign '{}' to Property '{}'", href, name);
+
+            // if property is observable add an additional form with a observable href
+            if (property.isObservable()) {
+                String observableHref = href + "/observable";
+                Form.Builder observableForm = new Form.Builder();
+                observableForm.setHref(observableHref);
+                observableForm.setContentType(contentType);
+                observableForm.setOp(Operation.OBSERVE_PROPERTY);
+                observableForm.setSubprotocol("longpoll");
+
+                property.addForm(observableForm.build());
+                log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+            }
+        });
+    }
+
+    private void exposeActions(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingAction> actions = thing.getActions();
+        actions.forEach((name, action) -> {
+            String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            form.setOp(Operation.INVOKE_ACTION);
+            form.setOptional(HTTP_METHOD_NAME, "POST");
+
+            action.addForm(form.build());
+            log.info("Assign '{}' to Action '{}'", href, name);
+        });
+    }
+
+    private void exposeEvents(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingEvent> events = thing.getEvents();
+        events.forEach((name, event) -> {
+            String href = getHrefWithVariablePattern(address, thing, "events", name, event);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            form.setSubprotocol("longpoll");
+            form.setOp(Operation.SUBSCRIBE_EVENT);
+
+            event.addForm(form.build());
+            log.info("Assign '{}' to Event '{}'", href, name);
+        });
     }
 
     @Override
