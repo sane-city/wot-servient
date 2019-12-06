@@ -3,8 +3,8 @@ package city.sane.wot;
 import city.sane.wot.binding.*;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
+import city.sane.wot.scripting.ScriptingException;
 import city.sane.wot.scripting.ScriptingManager;
-import city.sane.wot.scripting.ScriptingManagerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ExposedThingAction;
@@ -176,7 +176,7 @@ public class Servient {
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.expose(thing)).toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(serverFutures).thenApply((result) -> thing);
+        return CompletableFuture.allOf(serverFutures).thenApply(result -> thing);
     }
 
     /**
@@ -206,7 +206,7 @@ public class Servient {
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.destroy(thing)).toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(serverFutures).thenApply((result) -> thing);
+        return CompletableFuture.allOf(serverFutures).thenApply(result -> thing);
     }
 
     /**
@@ -241,7 +241,7 @@ public class Servient {
             return factory.getClient();
         }
         else {
-            log.warn("Servient has no ClientFactory for scheme '" + scheme + "'");
+            log.warn("Servient has no ClientFactory for scheme '{}'", scheme);
             return null;
         }
     }
@@ -272,7 +272,7 @@ public class Servient {
                 Form form = new Form.Builder()
                         .setHref(url.toString())
                         .build();
-                return client.readResource(form).thenApply((content) -> {
+                return client.readResource(form).thenApply(content -> {
                     try {
                         Map map = ContentManager.contentToValue(content, new ObjectSchema());
                         return Thing.fromMap(map);
@@ -548,7 +548,7 @@ public class Servient {
         try {
             ScriptingManager.runScript(file, wot);
         }
-        catch (ScriptingManagerException e) {
+        catch (ScriptingException e) {
             throw new ServientException(e);
         }
     }
@@ -586,7 +586,7 @@ public class Servient {
                         String hostAddress = ifaceAddress.getHostAddress();
 
                         // remove scope
-                        int percent = hostAddress.indexOf("%");
+                        int percent = hostAddress.indexOf('%');
                         if (percent != -1) {
                             hostAddress = hostAddress.substring(0, percent);
                         }

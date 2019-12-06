@@ -55,7 +55,7 @@ public class RdfResource {
         this.metadata.add(iri, RDF.TYPE, DCAT.DATASET);
         this.metadata.add(iri, DCTERMS.ISSUED, SimpleValueFactory.getInstance().createLiteral(new Date()));
 
-        log.info("Creating RDF resource object with id <" + iri + ">");
+        log.info("Creating RDF resource object with id <{}>", iri);
     }
 
     public Model getMetadata() {

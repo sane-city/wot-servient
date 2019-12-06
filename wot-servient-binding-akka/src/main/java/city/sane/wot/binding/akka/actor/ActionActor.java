@@ -32,7 +32,7 @@ public class ActionActor extends AbstractActor {
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
-                .setOp(Operation.invokeaction)
+                .setOp(Operation.INVOKE_ACTION)
                 .build();
 
         action.addForm(form);

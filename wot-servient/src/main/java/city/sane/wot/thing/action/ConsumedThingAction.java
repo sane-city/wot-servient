@@ -36,7 +36,7 @@ public class ConsumedThingAction extends ThingAction {
 
     public CompletableFuture invoke(Map<String, Object> parameters) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.invokeaction);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.INVOKE_ACTION);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 

@@ -20,5 +20,5 @@ public interface ScriptingEngine {
      */
     String getFileExtension();
 
-    void runScript(String script, Wot wot);
+    void runScript(String script, Wot wot) throws ScriptingEngineException;
 }

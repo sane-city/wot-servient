@@ -30,32 +30,29 @@ public class AllPropertiesResource extends AbstractResource {
         log.info("Handle GET to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
-        if (!ContentManager.isSupportedMediaType(requestContentFormat)) {
-            log.warn("Unsupported media type: {}", requestContentFormat);
-            String payload = "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
-            exchange.respond(CoAP.ResponseCode.UNSUPPORTED_CONTENT_FORMAT, payload);
+
+        if (ensureSupportedContentFormat(exchange, requestContentFormat)) {
+            thing.readProperties().whenComplete((values, e) -> {
+                if (e == null) {
+                    // remove writeOnly properties
+                    values.entrySet().removeIf(entry -> thing.getProperty(entry.getKey()).isWriteOnly());
+
+                    try {
+                        Content content = ContentManager.valueToContent(values, requestContentFormat);
+
+                        int contentFormat = MediaTypeRegistry.parse(content.getType());
+                        exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
+                    }
+                    catch (ContentCodecException ex) {
+                        log.warn("Exception: {}", ex);
+                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
+                    }
+                }
+                else {
+                    log.warn("Exception: {}", e);
+                    exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
+                }
+            });
         }
-
-        thing.readProperties().whenComplete((values, e) -> {
-            if (e == null) {
-                // remove writeOnly properties
-                values.entrySet().removeIf(entry -> thing.getProperty(entry.getKey()).isWriteOnly());
-
-                try {
-                    Content content = ContentManager.valueToContent(values, requestContentFormat);
-
-                    int contentFormat = MediaTypeRegistry.parse(content.getType());
-                    exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
-                }
-                catch (ContentCodecException ex) {
-                    log.warn("Exception: {}", ex);
-                    exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
-                }
-            }
-            else {
-                log.warn("Exception: {}", e);
-                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
-            }
-        });
     }
 }

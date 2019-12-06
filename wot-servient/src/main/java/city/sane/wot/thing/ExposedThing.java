@@ -328,9 +328,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, Runnable handler) {
-        return addAction(name, action, (input, options) -> {
-            handler.run();
-        });
+        return addAction(name, action, (BiConsumer<Object, Map<String, Object>>) (input, options) -> handler.run());
     }
 
     /**
@@ -344,9 +342,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, Supplier<CompletableFuture<Object>> handler) {
-        return addAction(name, action, (input, options) -> {
-            return handler.get();
-        });
+        return addAction(name, action, (BiConsumer<Object, Map<String, Object>>) (input, options) -> handler.get());
     }
 
     /**

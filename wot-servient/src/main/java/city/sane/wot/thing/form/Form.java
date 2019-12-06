@@ -41,7 +41,7 @@ public class Form implements Serializable {
         try {
             // remove uri variables first
             String sanitizedHref = href;
-            int index = href.indexOf("{");
+            int index = href.indexOf('{');
             if (index != -1) {
                 sanitizedHref = sanitizedHref.substring(0, index);
             }

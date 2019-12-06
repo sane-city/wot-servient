@@ -189,7 +189,7 @@ public class Cli {
         return options;
     }
 
-    public static void main(String[] args) throws ParseException, CliException {
+    public static void main(String[] args) throws CliException {
         new Cli(args);
     }
 }

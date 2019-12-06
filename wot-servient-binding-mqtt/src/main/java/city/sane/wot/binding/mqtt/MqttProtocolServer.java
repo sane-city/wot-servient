@@ -206,7 +206,7 @@ public class MqttProtocolServer implements ProtocolServer {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.observeproperty, Operation.unobserveproperty))
+                    .setOp(Arrays.asList(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY))
                     .build();
             property.addForm(form);
             log.info("Assign '{}' to Property '{}'", href, name);
@@ -227,7 +227,7 @@ public class MqttProtocolServer implements ProtocolServer {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(ContentManager.DEFAULT)
-                        .setOp(Operation.invokeaction)
+                        .setOp(Operation.INVOKE_ACTION)
                         .build();
                 action.addForm(form);
                 log.info("Assign '{}' to Action '{}'", href, name);
@@ -243,7 +243,7 @@ public class MqttProtocolServer implements ProtocolServer {
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
 
-            event.subscribe((data) -> {
+            event.subscribe(data -> {
                 try {
                     Content content = ContentManager.valueToContent(data);
                     log.info("MqttServer at '{}' publishing new data to Event topic '{}'", broker, topic);
@@ -261,7 +261,7 @@ public class MqttProtocolServer implements ProtocolServer {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.subscribeevent, Operation.unsubscribeevent))
+                    .setOp(Arrays.asList(Operation.SUBSCRIBE_EVENT, Operation.UNSUBSCRIBE_EVENT))
                     .setOptional("mqtt:qos", 0)
                     .setOptional("mqtt:retain", false)
                     .build();

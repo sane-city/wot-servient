@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.*;
 
 public class HttpProtocolServerTest {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
@@ -66,7 +66,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/things");
+        HttpUriRequest request = new HttpGet("http://localhost:8080");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -83,7 +83,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -100,7 +100,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/lastChange");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -114,7 +114,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/lastChange");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
         request.addHeader("Content-Type", "text/plain");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -129,7 +129,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpPut request = new HttpPut("http://localhost:8080/things/counter/properties/count");
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/count");
         request.setEntity(new StringEntity("1337"));
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -146,7 +146,7 @@ public class HttpProtocolServerTest {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/properties/count/observable");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
@@ -179,7 +179,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/all/properties");
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/all/properties");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -196,7 +196,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpPost("http://localhost:8080/things/counter/actions/increment");
+        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -210,7 +210,7 @@ public class HttpProtocolServerTest {
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
 
-        HttpUriRequest request = new HttpPost("http://localhost:8080/things/counter/actions/increment?step=3");
+        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment?step=3");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -227,7 +227,7 @@ public class HttpProtocolServerTest {
         Map<String, Integer> parameters = Map.of("step", 3);
         Content content = ContentManager.valueToContent(parameters, "application/json");
 
-        HttpPost request = new HttpPost("http://localhost:8080/things/counter/actions/increment");
+        HttpPost request = new HttpPost("http://localhost:8080/counter/actions/increment");
         request.setHeader("Content-Type", content.getType());
         request.setEntity(new ByteArrayEntity(content.getBody()));
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
@@ -238,7 +238,7 @@ public class HttpProtocolServerTest {
     }
 
     @Test
-    public void subscribeEvent() throws InterruptedException, ExecutionException {
+    public void subscribeEvent() throws InterruptedException, ExecutionException, ContentCodecException {
         ExposedThing thing = getCounterThing();
         servient.addThing(thing);
         servient.expose(thing.getId()).join();
@@ -246,7 +246,7 @@ public class HttpProtocolServerTest {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/events/change");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
@@ -266,7 +266,9 @@ public class HttpProtocolServerTest {
         event.emit().get();
 
         // future should complete within a few seconds
-        result.get();
+        Number value = ContentManager.contentToValue(result.get(), new NumberSchema());
+
+        assertThat(result.get(), instanceOf(Content.class));
     }
 
     @Test
@@ -277,7 +279,7 @@ public class HttpProtocolServerTest {
 
         CompletableFuture.runAsync(() -> {
             try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/things/counter/events/change");
+                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
                 HttpClientBuilder.create().build().execute(request);
             }
             catch (IOException e) {

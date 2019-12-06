@@ -28,21 +28,18 @@ public class RootResource extends AbstractResource {
         log.info("Handle GET to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
-        if (!ContentManager.isSupportedMediaType(requestContentFormat)) {
-            log.warn("Unsupported media type: {}", requestContentFormat);
-            String payload = "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
-            exchange.respond(CoAP.ResponseCode.UNSUPPORTED_CONTENT_FORMAT, payload);
-        }
 
-        try {
-            Content content = ContentManager.valueToContent(server.getProtocolServer().getThings(), requestContentFormat);
-            int contentFormat = MediaTypeRegistry.parse(content.getType());
+        if (ensureSupportedContentFormat(exchange, requestContentFormat)) {
+            try {
+                Content content = ContentManager.valueToContent(server.getProtocolServer().getThings(), requestContentFormat);
+                int contentFormat = MediaTypeRegistry.parse(content.getType());
 
-            exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
-        }
-        catch (ContentCodecException e) {
-            log.warn("Exception: {}", e);
-            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
+                exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
+            }
+            catch (ContentCodecException e) {
+                log.warn("Exception: {}", e);
+                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
+            }
         }
     }
 }

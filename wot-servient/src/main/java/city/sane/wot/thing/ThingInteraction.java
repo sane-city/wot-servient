@@ -63,11 +63,6 @@ public abstract class ThingInteraction<T> implements Serializable {
             return (T) this;
         }
 
-        public T setDescriptions(Map<String, String> descriptions) {
-            this.descriptions = descriptions;
-            return (T) this;
-        }
-
         public T setDescription(Map<String, String> descriptions) {
             this.descriptions = descriptions;
             return (T) this;

@@ -45,11 +45,8 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
         if (state.getReadHandler() != null) {
             log.info("'{}' calls registered readHandler for Property '{}'", thing.getId(), name);
 
-            return state.getReadHandler().get().whenComplete((customValue, e) -> {
-                // update internal state in case writeHandler wants to get the value
-                state.setValue(customValue);
-            });
-
+            // update internal state in case writeHandler wants to get the value
+            return state.getReadHandler().get().whenComplete((customValue, e) -> state.setValue(customValue));
         }
         else {
             CompletableFuture<Object> future = new CompletableFuture<>();

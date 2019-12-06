@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutionException;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CoapProtocolServerTest {
     private Servient servient;
@@ -349,7 +350,7 @@ public class CoapProtocolServerTest {
         event.emit().get();
 
         // future should complete within a few seconds
-        result.get();
+        assertNull(result.get());
     }
 
     private ExposedThing getCounterThing() {

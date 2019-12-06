@@ -4,6 +4,7 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.property.ConsumedThingProperty;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
@@ -24,7 +26,7 @@ public class KlimabotschafterClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -44,7 +46,7 @@ public class KlimabotschafterClient {
                 }
 
             }
-            catch (Throwable ex) {
+            catch (InterruptedException | ExecutionException | ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

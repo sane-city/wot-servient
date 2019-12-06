@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(Parameterized.class)
 public class ConsumedThingTest {
@@ -119,7 +120,7 @@ public class ConsumedThingTest {
     }
 
     @Test
-    public void invokeAction() {
+    public void invokeAction() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -128,7 +129,7 @@ public class ConsumedThingTest {
 
         ConsumedThingAction increment = thing.getAction("increment");
 
-        increment.invoke(Map.of("step", 3)).join();
+        assertNull(increment.invoke(Map.of("step", 3)).get());
     }
 
     @Test(timeout = 20 * 1000)

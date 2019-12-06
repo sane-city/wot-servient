@@ -131,7 +131,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(contentType)
-                        .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                        .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
                         .build();
 
                 thing.addForm(form);
@@ -149,13 +149,13 @@ public class CoapProtocolServer implements ProtocolServer {
                         .setHref(href)
                         .setContentType(contentType);
                 if (property.isReadOnly()) {
-                    form.setOp(Operation.readproperty);
+                    form.setOp(Operation.READ_PROPERTY);
                 }
                 else if (property.isWriteOnly()) {
-                    form.setOp(Operation.writeproperty);
+                    form.setOp(Operation.WRITE_PROPERTY);
                 }
                 else {
-                    form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+                    form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
                 }
 
                 property.addForm(form.build());
@@ -170,7 +170,7 @@ public class CoapProtocolServer implements ProtocolServer {
                     Form observableForm = new Form.Builder()
                             .setHref(observableHref)
                             .setContentType(contentType)
-                            .setOp(Operation.observeproperty)
+                            .setOp(Operation.OBSERVE_PROPERTY)
                             .setSubprotocol("longpoll")
                             .build();
 
@@ -193,7 +193,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 String href = address + "/" + thing.getId() + "/actions/" + name;
                 Form form = new Form.Builder()
                         .setHref(href)
-                        .setOp(Operation.invokeaction)
+                        .setOp(Operation.INVOKE_ACTION)
                         .setContentType(contentType)
                         .build();
 
@@ -215,14 +215,14 @@ public class CoapProtocolServer implements ProtocolServer {
                 String href = address + "/" + thing.getId() + "/events/" + name;
                 Form form = new Form.Builder()
                         .setHref(href)
-                        .setOp(Operation.subscribeevent)
+                        .setOp(Operation.SUBSCRIBE_EVENT)
                         .setContentType(contentType)
                         .build();
 
                 event.addForm(form);
                 log.info("Assign '{}' to Event '{}'", href, name);
 
-                eventsResource.add(new EventResource(server, name, event));
+                eventsResource.add(new EventResource(name, event));
             });
         }
     }
@@ -255,7 +255,7 @@ public class CoapProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            return new URI(addresses.get(0) + "/" + id);
+            return new URI(addresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to thing url: {}", e);

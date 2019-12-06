@@ -7,8 +7,8 @@ import city.sane.wot.thing.ConsumedThing;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch thing description exposes by {@link CounterUriVariables} and then interact with it.
@@ -22,7 +22,7 @@ public class CounterUriVariablesClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -48,7 +48,7 @@ public class CounterUriVariablesClient {
                 System.out.println("CounterUriVariablesClient: count value after decrement is " + dec1);
 
             }
-            catch (Throwable ex) {
+            catch (InterruptedException | ExecutionException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

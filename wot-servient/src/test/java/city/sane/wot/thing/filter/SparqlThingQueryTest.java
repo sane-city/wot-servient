@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class SparqlThingQueryTest {
     @Test
@@ -52,6 +53,8 @@ public class SparqlThingQueryTest {
 
     @Test
     public void filterWarnOnUseOfReservedWordsNegative() throws ThingQueryException {
-        new SparqlThingQuery("?idiotype ?p ?o");
+        SparqlThingQuery query = new SparqlThingQuery("?idiotype ?p ?o");
+
+        assertNotNull(query);
     }
 }
