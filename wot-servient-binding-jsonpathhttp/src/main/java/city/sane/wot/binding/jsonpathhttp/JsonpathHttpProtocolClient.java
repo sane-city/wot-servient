@@ -1,13 +1,11 @@
 package city.sane.wot.binding.jsonpathhttp;
 
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.http.HttpProtocolClient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,40 +36,15 @@ public class JsonpathHttpProtocolClient extends HttpProtocolClient {
 
                     return ContentManager.valueToContent(newValue, "application/json");
                 }
-                catch (ContentCodecException e) {
-                    log.warn("Unable apply JSONPath: {}", e);
+                catch (InvalidPathException | ContentCodecException e) {
+                    log.warn("Unable apply JSON Path: {}", e);
                     return content;
                 }
             }
             else {
-                log.warn("No JsonPath found in form '{}'", form);
+                log.warn("No JSON Path found in form '{}'", form);
                 return content;
             }
         });
-    }
-
-    @Override
-    public CompletableFuture<Content> writeResource(Form form, Content content) {
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        future.completeExceptionally(new ProtocolClientException("JsonpathHttpClient does not implement 'write'"));
-        return future;
-    }
-
-    @Override
-    public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        future.completeExceptionally(new ProtocolClientException("JsonpathHttpClient does not implement 'invoke'"));
-        return future;
-    }
-
-    @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
-        observer.error(new ProtocolClientException("JsonpathHttpClient does not implement 'subscribe'"));
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Content> invokeResource(Form form) {
-        return invokeResource(form, null);
     }
 }
