@@ -48,7 +48,10 @@ public class CounterUriVariablesClient {
                 System.out.println("CounterUriVariablesClient: count value after decrement is " + dec1);
 
             }
-            catch (InterruptedException | ExecutionException ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

@@ -177,7 +177,7 @@ public class CoapProtocolServer implements ProtocolServer {
                     property.addForm(observableForm);
                     log.info("Assign '{}' to observable Property '{}'", observableHref, name);
 
-                    propertyResource.add(new ObservePropertyResource(server, name, property));
+                    propertyResource.add(new ObservePropertyResource(name, property));
                 }
             });
         }

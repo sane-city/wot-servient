@@ -8,7 +8,6 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.property.ThingProperty;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**

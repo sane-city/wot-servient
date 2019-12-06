@@ -7,7 +7,7 @@ import city.sane.wot.thing.property.ExposedThingProperty;
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ObservePropertyResource extends AbstractSubscriptionResource {
-    public ObservePropertyResource(WotCoapServer server, String name, ExposedThingProperty property) {
+    public ObservePropertyResource(String name, ExposedThingProperty property) {
         super("observable", name, property);
     }
 }

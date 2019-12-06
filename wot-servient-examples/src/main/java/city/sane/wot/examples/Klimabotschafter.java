@@ -45,15 +45,15 @@ public class Klimabotschafter {
                 Iterator<JsonNode> stations = json.elements();
                 while (stations.hasNext()) {
                     JsonNode station = stations.next();
-                    String st_name = station.get("st_name").asText();
+                    String stName = station.get("st_name").asText();
 
-                    ExposedThing exposedThing = things.get(st_name);
+                    ExposedThing exposedThing = things.get(stName);
 
                     if (exposedThing == null) {
                         // create and expose thing
                         Thing thing = new Thing.Builder()
-                                .setId("KlimabotschafterWetterstationen:" + st_name)
-                                .setTitle("KlimabotschafterWetterstationen:" + st_name)
+                                .setId("KlimabotschafterWetterstationen:" + stName)
+                                .setTitle("KlimabotschafterWetterstationen:" + stName)
                                 .setObjectContext(new Context("http://www.w3.org/ns/td")
                                         .addContext("om", "http://www.wurvoc.org/vocabularies/om-1.8/")
                                         .addContext("saref", "https://w3id.org/saref#")
@@ -221,7 +221,7 @@ public class Klimabotschafter {
                                         .build()
                         );
 
-                        things.put(st_name, exposedThing);
+                        things.put(stName, exposedThing);
 
                         exposedThing.expose();
                     }

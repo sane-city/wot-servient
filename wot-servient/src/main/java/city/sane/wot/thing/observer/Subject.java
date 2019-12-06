@@ -37,11 +37,11 @@ public class Subject<T> implements Subscribable<T> {
             return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
         }
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about next value '{}'", observers.size(), value);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.next(value))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
@@ -61,11 +61,11 @@ public class Subject<T> implements Subscribable<T> {
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about error '{}'", observers.size(), e);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.error(e))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
@@ -83,11 +83,11 @@ public class Subject<T> implements Subscribable<T> {
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about completion", observers.size());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about completion", observersSnapshot.size());
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(o::complete)).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);

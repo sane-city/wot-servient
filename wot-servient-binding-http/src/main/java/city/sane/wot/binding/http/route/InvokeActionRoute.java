@@ -57,21 +57,7 @@ public class InvokeActionRoute extends AbstractRoute {
 
                     Object value = action.invoke(input, options).get();
 
-                    try {
-                        Content outputContent = ContentManager.valueToContent(value, requestContentType);
-
-                        if (value != null) {
-                            response.type(content.getType());
-                            return outputContent;
-                        }
-                        else {
-                            return "";
-                        }
-                    }
-                    catch (ContentCodecException e) {
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        return e;
-                    }
+                    return respondWithValue(response, requestContentType, content, value);
                 }
                 catch (ContentCodecException e) {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
@@ -86,6 +72,24 @@ public class InvokeActionRoute extends AbstractRoute {
         else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
+        }
+    }
+
+    private Object respondWithValue(Response response, String requestContentType, Content content, Object value) {
+        try {
+            Content outputContent = ContentManager.valueToContent(value, requestContentType);
+
+            if (value != null) {
+                response.type(content.getType());
+                return outputContent;
+            }
+            else {
+                return "";
+            }
+        }
+        catch (ContentCodecException e) {
+            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+            return e;
         }
     }
 
