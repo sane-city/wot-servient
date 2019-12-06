@@ -52,21 +52,7 @@ public abstract class AbstractSubscriptionResource extends AbstractResource {
                     addObserveRelation(relation);
                 }
                 else {
-                    String subscribableType = subscribable.getClass().getSimpleName();
-                    if (e == null) {
-                        try {
-                            log.debug("New data received for {} '{}': {}", subscribableType, name, data);
-                            respondSubscriptionData(exchange, requestContentFormat, data);
-                        }
-                        catch (ContentCodecException ex) {
-                            log.warn("Cannot process data for {} '{}': {}", subscribableType, name, ex.getMessage());
-                            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
-                        }
-                    }
-                    else {
-                        log.warn("Cannot process data for {} '{}': {}", subscribableType, name, e.getMessage());
-                        exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
-                    }
+                    respondSubscriptionData(exchange, requestContentFormat);
                 }
             }
             else {
@@ -76,16 +62,30 @@ public abstract class AbstractSubscriptionResource extends AbstractResource {
         }
     }
 
-    private void respondSubscriptionData(CoapExchange exchange, String requestContentFormat, Object data) throws ContentCodecException {
-        Content content = ContentManager.valueToContent(data, requestContentFormat);
+    private void respondSubscriptionData(CoapExchange exchange, String requestContentFormat) {
+        String subscribableType = subscribable.getClass().getSimpleName();
+        if (e == null) {
+            try {
+                log.debug("New data received for {} '{}': {}", subscribableType, name, data);
+                Content content = ContentManager.valueToContent(data, requestContentFormat);
 
-        int contentFormat = MediaTypeRegistry.parse(content.getType());
-        byte[] body = content.getBody();
-        if (body.length > 0) {
-            exchange.respond(CoAP.ResponseCode.CONTENT, body, contentFormat);
+                int contentFormat = MediaTypeRegistry.parse(content.getType());
+                byte[] body = content.getBody();
+                if (body.length > 0) {
+                    exchange.respond(CoAP.ResponseCode.CONTENT, body, contentFormat);
+                }
+                else {
+                    exchange.respond(CoAP.ResponseCode.CONTENT);
+                }
+            }
+            catch (ContentCodecException ex) {
+                log.warn("Cannot process data for {} '{}': {}", subscribableType, name, ex.getMessage());
+                exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
+            }
         }
         else {
-            exchange.respond(CoAP.ResponseCode.CONTENT);
+            log.warn("Cannot process data for {} '{}': {}", subscribableType, name, e.getMessage());
+            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
         }
     }
 

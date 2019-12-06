@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  */
 public class HttpProtocolServer implements ProtocolServer {
     static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    private static final String HTTP_METHOD_NAME = "htv:methodName";
 
     private final String bindHost;
     private final int bindPort;
@@ -120,11 +121,11 @@ public class HttpProtocolServer implements ProtocolServer {
                     form.setContentType(contentType);
                     if (property.isReadOnly()) {
                         form.setOp(Operation.READ_PROPERTY);
-                        form.setOptional("htv:methodName", "GET");
+                        form.setOptional(HTTP_METHOD_NAME, "GET");
                     }
                     else if (property.isWriteOnly()) {
                         form.setOp(Operation.WRITE_PROPERTY);
-                        form.setOptional("htv:methodName", "PUT");
+                        form.setOptional(HTTP_METHOD_NAME, "PUT");
                     }
                     else {
                         form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
@@ -157,7 +158,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     form.setHref(href);
                     form.setContentType(contentType);
                     form.setOp(Operation.INVOKE_ACTION);
-                    form.setOptional("htv:methodName", "POST");
+                    form.setOptional(HTTP_METHOD_NAME, "POST");
 
                     action.addForm(form.build());
                     log.info("Assign '{}' to Action '{}'", href, name);

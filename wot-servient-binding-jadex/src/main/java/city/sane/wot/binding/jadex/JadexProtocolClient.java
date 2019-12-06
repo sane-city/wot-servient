@@ -124,26 +124,22 @@ public class JadexProtocolClient implements ProtocolClient {
             AtomicInteger ai = new AtomicInteger();
             ai.incrementAndGet(); // start searchServices()
             ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-            search.addResultListener(services -> {
-                Collection<Thing> things = new ArrayList<>();
-                services.forEach(service -> {
-                    ai.incrementAndGet(); // start get()
-                    service.get().addResultListener(json -> {
-                        Thing thing = Thing.fromJson(json);
-                        things.add(thing);
-                        if (ai.decrementAndGet() < 1) { // end get()
-                            if (filter.getQuery() != null) {
-                                // TODO: move filter to server-side
-                                List<Thing> filtered = filter.getQuery().filter(things);
-                                result.complete(filtered);
-                            }
-                            else {
-                                result.complete(things);
-                            }
-                        }
-                    }, result::completeExceptionally);
-                });
-                if (ai.decrementAndGet() < 1) { // end searchServices()
+            search.addResultListener(services -> discoverThingServices(filter, result, ai, services), result::completeExceptionally);
+
+            return DONE;
+        });
+
+        return result;
+    }
+
+    private void discoverThingServices(ThingFilter filter, CompletableFuture<Collection<Thing>> result, AtomicInteger ai, Collection<ThingService> services) {
+        Collection<Thing> things = new ArrayList<>();
+        services.forEach(service -> {
+            ai.incrementAndGet(); // start get()
+            service.get().addResultListener(json -> {
+                Thing thing = Thing.fromJson(json);
+                things.add(thing);
+                if (ai.decrementAndGet() < 1) { // end get()
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side
                         List<Thing> filtered = filter.getQuery().filter(things);
@@ -154,10 +150,17 @@ public class JadexProtocolClient implements ProtocolClient {
                     }
                 }
             }, result::completeExceptionally);
-            return DONE;
         });
-
-        return result;
+        if (ai.decrementAndGet() < 1) { // end searchServices()
+            if (filter.getQuery() != null) {
+                // TODO: move filter to server-side
+                List<Thing> filtered = filter.getQuery().filter(things);
+                result.complete(filtered);
+            }
+            else {
+                result.complete(things);
+            }
+        }
     }
 
     private Triple<String, String, String> parseAsReadResourceHref(String href) throws ProtocolClientException {

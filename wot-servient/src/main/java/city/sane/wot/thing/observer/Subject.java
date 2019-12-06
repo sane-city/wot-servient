@@ -34,7 +34,7 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> next(T value) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
 
         ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
@@ -57,7 +57,7 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> error(Throwable e) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
         closed = true;
 
@@ -79,7 +79,7 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> complete() {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
         closed = true;
 

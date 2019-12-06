@@ -72,7 +72,7 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
     /**
      * Allows building new {@link ThingProperty} objects.
      */
-    public static class Builder extends ThingInteraction.Builder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder> {
         private String objectType;
         private String type;
         private boolean observable;

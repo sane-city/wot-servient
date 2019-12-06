@@ -33,7 +33,7 @@ public class ThingAction extends ThingInteraction<ThingAction> {
     /**
      * Allows building new {@link ThingAction} objects.
      */
-    public static class Builder extends ThingInteraction.Builder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder> {
         private DataSchema input;
         private DataSchema output;
 

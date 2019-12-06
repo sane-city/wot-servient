@@ -29,4 +29,13 @@ public abstract class AbstractRoute implements Route {
             return null;
         }
     }
+
+    protected void logRequest(Request request) {
+        if (InvokeActionRoute.log.isInfoEnabled()) {
+            InvokeActionRoute.log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+            if (request.raw().getQueryString() != null && !request.raw().getQueryString().isEmpty()) {
+                InvokeActionRoute.log.info("Request parameters: {}", request.raw().getQueryString());
+            }
+        }
+    }
 }

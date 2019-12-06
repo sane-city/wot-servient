@@ -64,6 +64,16 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     /**
      * Defines the JSON-LD datatype.
      *

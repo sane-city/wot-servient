@@ -428,12 +428,11 @@ public class Servient {
      */
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
         if (filter.getMethod() == DiscoveryMethod.DIRECTORY) {
-            return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+            return discoverDirectory(filter);
         }
         else {
             Set<Thing> discoveredThings = new HashSet<>();
             AtomicBoolean atLeastOneImplementation = new AtomicBoolean(false);
-            List<CompletableFuture> discoverFutures = new ArrayList<>();
 
             // get local Things with or without filter query
             if (filter.getQuery() != null) {
@@ -444,48 +443,62 @@ public class Servient {
             }
 
             if (filter.getMethod() == DiscoveryMethod.LOCAL) {
-                CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
-                future.complete(discoveredThings);
-                return future;
+                return discoverLocal(discoveredThings);
             }
 
-            for (ProtocolClientFactory factory : clientFactories.values()) {
-                try {
-                    ProtocolClient client = factory.getClient();
-                    CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
-                        if (e == null) {
-                            discoveredThings.addAll(clientThings);
-                            atLeastOneImplementation.set(true);
-                        }
-                        else if (!(e instanceof ProtocolClientNotImplementedException)) {
-                            throw new CompletionException(e);
-                        }
-                        return null;
-                    });
-                    discoverFutures.add(future);
-
-                }
-                catch (ProtocolClientException e) {
-                    return CompletableFuture.failedFuture(e);
-                }
+            try {
+                return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
             }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+    }
 
-            CompletableFuture<Void> discoveryDone = CompletableFuture
-                    .allOf(discoverFutures.toArray(CompletableFuture[]::new));
-            return discoveryDone.handle((r, e) -> {
+    private CompletableFuture<Collection<Thing>> discoverDirectory(ThingFilter filter) {
+        return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+    }
+
+    private CompletableFuture<Collection<Thing>> discoverLocal(Set<Thing> discoveredThings) {
+        CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
+        future.complete(discoveredThings);
+        return future;
+    }
+
+    private CompletableFuture<Collection<Thing>> discoverUsingProtocolBindings(ThingFilter filter,
+                                                                               Set<Thing> discoveredThings,
+                                                                               AtomicBoolean atLeastOneImplementation) throws ProtocolClientException {
+        List<CompletableFuture> discoverFutures = new ArrayList<>();
+        for (ProtocolClientFactory factory : clientFactories.values()) {
+            ProtocolClient client = factory.getClient();
+            CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
                 if (e == null) {
-                    if (atLeastOneImplementation.get()) {
-                        return discoveredThings;
-                    }
-                    else {
-                        throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));
-                    }
+                    discoveredThings.addAll(clientThings);
+                    atLeastOneImplementation.set(true);
                 }
-                else {
+                else if (!(e instanceof ProtocolClientNotImplementedException)) {
                     throw new CompletionException(e);
                 }
+                return null;
             });
+            discoverFutures.add(future);
         }
+
+        CompletableFuture<Void> discoveryDone = CompletableFuture
+                .allOf(discoverFutures.toArray(CompletableFuture[]::new));
+        return discoveryDone.handle((r, e) -> {
+            if (e == null) {
+                if (atLeastOneImplementation.get()) {
+                    return discoveredThings;
+                }
+                else {
+                    throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));
+                }
+            }
+            else {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     /**
@@ -573,25 +586,9 @@ public class Servient {
                 Enumeration<InetAddress> ifaceAddresses = iface.getInetAddresses();
                 while (ifaceAddresses.hasMoreElements()) {
                     InetAddress ifaceAddress = ifaceAddresses.nextElement();
-
-                    if (ifaceAddress.isLoopbackAddress() || ifaceAddress.isLinkLocalAddress() || ifaceAddress.isMulticastAddress()) {
-                        continue;
-                    }
-
-                    if (ifaceAddress instanceof Inet4Address) {
-                        String hostAddress = ifaceAddress.getHostAddress();
-                        addresses.add(hostAddress);
-                    }
-                    else if (ifaceAddress instanceof Inet6Address) {
-                        String hostAddress = ifaceAddress.getHostAddress();
-
-                        // remove scope
-                        int percent = hostAddress.indexOf('%');
-                        if (percent != -1) {
-                            hostAddress = hostAddress.substring(0, percent);
-                        }
-
-                        addresses.add("[" + hostAddress + "]");
+                    String address = getAddressByInetAddress(ifaceAddress);
+                    if (address != null) {
+                        addresses.add(address);
                     }
                 }
             }
@@ -600,6 +597,30 @@ public class Servient {
         }
         catch (SocketException e) {
             return new HashSet<>(Collections.singletonList("127.0.0.1"));
+        }
+    }
+
+    private static String getAddressByInetAddress(InetAddress ifaceAddress) {
+        if (ifaceAddress.isLoopbackAddress() || ifaceAddress.isLinkLocalAddress() || ifaceAddress.isMulticastAddress()) {
+            return null;
+        }
+
+        if (ifaceAddress instanceof Inet4Address) {
+            return ifaceAddress.getHostAddress();
+        }
+        else if (ifaceAddress instanceof Inet6Address) {
+            String hostAddress = ifaceAddress.getHostAddress();
+
+            // remove scope
+            int percent = hostAddress.indexOf('%');
+            if (percent != -1) {
+                hostAddress = hostAddress.substring(0, percent);
+            }
+
+            return "[" + hostAddress + "]";
+        }
+        else {
+            return null;
         }
     }
 

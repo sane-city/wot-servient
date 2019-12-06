@@ -24,6 +24,11 @@ public class Cli {
 
     private static final String CONF = "wot-servient.conf";
     private static final String LOGLEVEL = "warn";
+    private static final String OPT_VERSION = "version";
+    private static final String OPT_LOGLEVEL = "loglevel";
+    private static final String OPT_CLIENTONLY = "clientonly";
+    private static final String OPT_CONFIGFILE = "configfile";
+    private static final String OPT_HELP = "help";
 
     public Cli(String[] args) throws CliException {
         ScriptingManager.addEngine(new GroovyEngine());
@@ -34,17 +39,17 @@ public class Cli {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
 
-            if (cmd.hasOption("loglevel")) {
-                setLogLevel(cmd.getOptionValue("loglevel"));
+            if (cmd.hasOption(OPT_LOGLEVEL)) {
+                setLogLevel(cmd.getOptionValue(OPT_LOGLEVEL));
             }
             else {
                 setLogLevel(LOGLEVEL);
             }
 
-            if (cmd.hasOption("help")) {
+            if (cmd.hasOption(OPT_HELP)) {
                 printHelp(options);
             }
-            else if (cmd.hasOption("version")) {
+            else if (cmd.hasOption(OPT_VERSION)) {
                 printVersion();
             }
             else {
@@ -169,21 +174,20 @@ public class Cli {
 
     private Options getOptions() {
         Options options = new Options();
-        Option.builder().argName("v").longOpt("version").desc("display version");
 
-        Option version = Option.builder("v").longOpt("version").desc("display version").build();
+        Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
         options.addOption(version);
 
-        Option loglevel = Option.builder("l").longOpt("loglevel").hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
+        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
         options.addOption(loglevel);
 
-        Option clientonly = Option.builder("c").longOpt("clientonly").desc("do not start any servers").build();
+        Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();
         options.addOption(clientonly);
 
-        Option configfile = Option.builder("f").longOpt("configfile").hasArg().argName("file").desc("load configuration from specified file").build();
+        Option configfile = Option.builder("f").longOpt(OPT_CONFIGFILE).hasArg().argName("file").desc("load configuration from specified file").build();
         options.addOption(configfile);
 
-        Option help = Option.builder("h").longOpt("help").desc("show this file").build();
+        Option help = Option.builder("h").longOpt(OPT_HELP).desc("show this file").build();
         options.addOption(help);
 
         return options;

@@ -161,7 +161,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 property.addForm(form.build());
                 log.info("Assign '{}' to Property '{}'", href, name);
 
-                PropertyResource propertyResource = new PropertyResource(server, name, property);
+                PropertyResource propertyResource = new PropertyResource(name, property);
                 propertiesResource.add(propertyResource);
 
                 // if property is observable add an additional form with a observable href

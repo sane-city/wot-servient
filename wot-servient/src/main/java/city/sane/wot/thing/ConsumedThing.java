@@ -73,6 +73,16 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     /**
      * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given <code>op</code>.
      * Throws an exception when no client can be found.
@@ -111,34 +121,9 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             // new client
             log.debug("'{}' has no client in cache", getTitle());
 
-            try {
-                for (String s : schemes) {
-                    ProtocolClient c = servient.getClientFor(s);
-                    if (c != null) {
-                        scheme = s;
-                        client = c;
-                        break;
-                    }
-                }
-            }
-            catch (ProtocolClientException e) {
-                throw new ConsumedThingException("Unable to create client: " + e.getMessage());
-            }
-
-            if (client == null) {
-                throw new ConsumedThingException("'" + getTitle() + "' missing ClientFactory for '" + schemes + "'");
-            }
-
-            // init client's security system
-            List<String> security = getSecurity();
-            if (!security.isEmpty()) {
-                log.debug("'{}' setting credentials for '{}'", getTitle(), client);
-                Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
-                List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
-                        .filter(Objects::nonNull).collect(Collectors.toList());
-
-                client.setSecurity(metadata, servient.getCredentials(id));
-            }
+            Pair<String, ProtocolClient> protocolClient = initNewClientFor(schemes);
+            scheme = protocolClient.first();
+            client = protocolClient.second();
 
             log.debug("'{}' got new client for '{}'", getTitle(), scheme);
             clients.put(scheme, client);
@@ -165,6 +150,33 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
 
         return new Pair(client, form);
+    }
+
+    private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
+        try {
+            for (String scheme : schemes) {
+                ProtocolClient client = servient.getClientFor(scheme);
+                if (client != null) {
+                    // init client's security system
+                    List<String> security = getSecurity();
+                    if (!security.isEmpty()) {
+                        log.debug("'{}' setting credentials for '{}'", getTitle(), client);
+                        Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
+                        List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
+                                .filter(Objects::nonNull).collect(Collectors.toList());
+
+                        client.setSecurity(metadata, servient.getCredentials(id));
+                    }
+
+                    return new Pair<>(scheme, client);
+                }
+            }
+
+            throw new ConsumedThingException("'" + getTitle() + "' missing ClientFactory for '" + schemes + "'");
+        }
+        catch (ProtocolClientException e) {
+            throw new ConsumedThingException("Unable to create client: " + e.getMessage());
+        }
     }
 
     /**

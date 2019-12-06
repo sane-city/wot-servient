@@ -90,7 +90,6 @@ public class MqttProtocolServer implements ProtocolServer {
                     log.info("MqttServer connected to broker at '{}'", broker);
                 }
                 catch (MqttException e) {
-                    log.error("MqttServer could not connect to broker at '{}': {}", broker, e.getMessage());
                     throw new CompletionException(e);
                 }
             }
@@ -106,7 +105,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 log.info("MqttServer disconnected from broker at '{}'", broker);
             }
             catch (MqttException e) {
-                log.error("MqttServer could not disconnect from broker at '{}': {}", broker, e.getMessage());
                 throw new CompletionException(e);
             }
         });
@@ -125,7 +123,12 @@ public class MqttProtocolServer implements ProtocolServer {
         exposeProperties(thing);
         exposeActions(thing);
         exposeEvents(thing);
+        listenOnMqttMessages();
 
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private void listenOnMqttMessages() {
         // connect incoming messages to Thing
         client.setCallback(new MqttCallback() {
             @Override
@@ -147,20 +150,7 @@ public class MqttProtocolServer implements ProtocolServer {
                         if (segments[1].equals("actions")) {
                             String actionName = segments[2];
                             ExposedThingAction action = thing.getAction(actionName);
-                            if (action != null) {
-                                Content inputContent = new Content(ContentManager.DEFAULT, message.getPayload());
-                                try {
-                                    Object input = ContentManager.contentToValue(inputContent, action.getInput());
-
-                                    action.invoke(input);
-                                }
-                                catch (ContentCodecException e) {
-                                    log.warn("Unable to parse input: {}", e);
-                                }
-                            }
-                            else {
-                                // Action not found
-                            }
+                            actionMessageArrived(message, action);
                         }
 
                     }
@@ -179,8 +169,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 // do nothing
             }
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 
     private void exposeProperties(ExposedThing thing) {
@@ -268,6 +256,23 @@ public class MqttProtocolServer implements ProtocolServer {
             event.addForm(form);
             log.info("Assign '{}' to Event '{}'", href, name);
         });
+    }
+
+    private void actionMessageArrived(MqttMessage message, ExposedThingAction action) {
+        if (action != null) {
+            Content inputContent = new Content(ContentManager.DEFAULT, message.getPayload());
+            try {
+                Object input = ContentManager.contentToValue(inputContent, action.getInput());
+
+                action.invoke(input);
+            }
+            catch (ContentCodecException e) {
+                log.warn("Unable to parse input: {}", e);
+            }
+        }
+        else {
+            // Action not found
+        }
     }
 
     @Override
