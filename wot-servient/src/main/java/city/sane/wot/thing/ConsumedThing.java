@@ -140,7 +140,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (form == null) {
             // if there no op was defined use default assignment
-            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp().isEmpty()).findFirst();
+            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp() == null || f.getOp().isEmpty()).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
             }
