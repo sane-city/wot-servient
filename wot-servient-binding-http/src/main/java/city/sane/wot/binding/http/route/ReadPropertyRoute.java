@@ -6,69 +6,49 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Endpoint for reading values from a {@link city.sane.wot.thing.property.ThingProperty}.
  */
-public class ReadPropertyRoute extends AbstractRoute {
-    static final Logger log = LoggerFactory.getLogger(ReadPropertyRoute.class);
-
-    private final Map<String, ExposedThing> things;
-
+public class ReadPropertyRoute extends AbstractInteractionRoute {
     public ReadPropertyRoute(Map<String, ExposedThing> things) {
-        this.things = things;
+        super(things);
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        logRequest(request);
+    protected Object handleInteraction(Request request,
+                                       Response response,
+                                       String requestContentType,
+                                       String name,
+                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+        ExposedThingProperty property = thing.getProperty(name);
+        if (property != null) {
+            if (!property.isWriteOnly()) {
+                Object value = property.read().get();
 
-        String requestContentType = getOrDefaultRequestContentType(request);
-
-        String unsupportedMediaTypeResponse = unsupportedMediaTypeResponse(response, requestContentType);
-        if (unsupportedMediaTypeResponse != null) {
-            return unsupportedMediaTypeResponse;
-        }
-
-        String id = request.params(":id");
-        String name = request.params(":name");
-
-        ExposedThing thing = things.get(id);
-        if (thing != null) {
-            ExposedThingProperty property = thing.getProperty(name);
-            if (property != null) {
-                if (!property.isWriteOnly()) {
-                    Object value = property.read().get();
-
-                    try {
-                        Content content = ContentManager.valueToContent(value, requestContentType);
-                        response.type(content.getType());
-                        return content;
-                    }
-                    catch (ContentCodecException e) {
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        return e;
-                    }
+                try {
+                    Content content = ContentManager.valueToContent(value, requestContentType);
+                    response.type(content.getType());
+                    return content;
                 }
-                else {
-                    response.status(HttpStatus.BAD_REQUEST_400);
-                    return "Property writeOnly";
+                catch (ContentCodecException e) {
+                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                    return e;
                 }
             }
             else {
-                response.status(HttpStatus.NOT_FOUND_404);
-                return "Property not found";
+                response.status(HttpStatus.BAD_REQUEST_400);
+                return "Property writeOnly";
             }
         }
         else {
             response.status(HttpStatus.NOT_FOUND_404);
-            return "Thing not found";
+            return "Property not found";
         }
     }
 
