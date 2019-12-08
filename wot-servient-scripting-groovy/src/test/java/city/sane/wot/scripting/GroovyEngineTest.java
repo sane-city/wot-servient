@@ -5,7 +5,7 @@ import city.sane.wot.WotException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.testng.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 public class GroovyEngineTest {
     private ScriptingEngine engine;
