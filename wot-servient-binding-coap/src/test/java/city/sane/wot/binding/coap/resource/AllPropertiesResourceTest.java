@@ -1,84 +1,79 @@
-package city.sane.wot.binding;
+package city.sane.wot.binding.coap.resource;
 
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
-import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-@RunWith(Parameterized.class)
-public class ProtocolServerTest {
-    @Parameterized.Parameter
-    public Class<? extends ProtocolServer> protocolServerClass;
+public class AllPropertiesResourceTest {
     private Servient servient;
 
     @Before
     public void setup() throws ServientException {
         Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + protocolServerClass.getName() + "\"]\n" +
-                        "wot.servient.client-factories = []")
+                .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
+                        "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")
                 .withFallback(ConfigFactory.load());
 
         servient = new Servient(config);
+        servient.start().join();
+    }
+
+    @After
+    public void teardown() {
+        servient.shutdown().join();
     }
 
     @Test
-    public void expose() {
-        try {
-            servient.start().join();
+    public void readAllProperties() {
+        ExposedThing thing = getCounterThing();
+        servient.addThing(thing);
+        servient.expose(thing.getId()).join();
 
-            ExposedThing thing = getCounterThing();
-            servient.addThing(thing);
-            thing.expose().join();
+        CoapClient client = new CoapClient("coap://localhost:5683/counter/all/properties");
+        Request request = new Request(CoAP.Code.GET);
+        CoapResponse response = client.advanced(request);
 
-            assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-            assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-            assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-        }
-        finally {
-            servient.shutdown().join();
-        }
-    }
-
-    @Test
-    public void destroy() {
-        try {
-            servient.start().join();
-
-            ExposedThing thing = getCounterThing();
-            servient.addThing(thing);
-            thing.expose().join();
-            thing.destroy().join();
-
-            assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
-            assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
-            assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
-        }
-        finally {
-            servient.shutdown().join();
-        }
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
     }
 
     private ExposedThing getCounterThing() {
+        ExposedThing thing = new ExposedThing(servient)
+                .setId("counter")
+                .setTitle("counter")
+                .setDescription("counter example Thing");
+
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
                 .setDescription("current counter value")
                 .setObservable(true)
-                .setReadOnly(true)
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
                 .build();
 
         ThingProperty lastChangeProperty = new ThingProperty.Builder()
@@ -88,17 +83,22 @@ public class ProtocolServerTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(servient)
-                .setId("counter")
-                .setTitle("counter")
-                .setDescription("counter example Thing");
-
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction.Builder()
+                .setInput(new ObjectSchema())
+                .setOutput(new NumberSchema())
+                .build(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
+                int step;
+                if ((input instanceof Map) && ((Map) input).containsKey("step")) {
+                    step = (int) ((Map) input).get("step");
+                }
+                else {
+                    step = 1;
+                }
+                int newValue = ((Integer) value) + step;
                 thing.getProperty("count").write(newValue);
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -127,12 +127,5 @@ public class ProtocolServerTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static List<Class<? extends ProtocolServer>> data() {
-        return Collections.singletonList(
-                CoapProtocolServer.class
-        );
     }
 }
