@@ -1,7 +1,6 @@
 package city.sane.wot.cli;
 
 import com.google.common.io.Files;
-import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -9,11 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import static org.testng.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 public class CliTest {
     @Test
-    public void help() throws ParseException, CliException {
+    public void help() throws CliException {
         new Cli(new String[]{ "--help" });
 
         assertTrue(true);
