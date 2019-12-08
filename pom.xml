@@ -72,7 +72,7 @@
                 </executions>
                 <configuration>
                     <excludes>
-                        <exclude>**/example/**/*</exclude>
+                        <exclude>**/examples/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
