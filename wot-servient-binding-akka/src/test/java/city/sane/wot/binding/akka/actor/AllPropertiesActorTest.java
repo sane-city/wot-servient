@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
-public class PropertiesActorTest {
+public class AllPropertiesActorTest {
     private Servient servient;
 
     @Before
