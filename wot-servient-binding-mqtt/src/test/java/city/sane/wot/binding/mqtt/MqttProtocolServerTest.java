@@ -1,76 +1,64 @@
-package city.sane.wot.binding;
+package city.sane.wot.binding.mqtt;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
-import city.sane.wot.binding.jadex.JadexProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(Parameterized.class)
-public class ProtocolServerTest {
-    @Parameterized.Parameter
-    public Class<? extends ProtocolServer> protocolServerClass;
-    private Servient servient;
+public class MqttProtocolServerTest {
+    private MqttProtocolServer server;
+    private Config config;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + protocolServerClass.getName() + "\"]\n" +
-                        "wot.servient.client-factories = []")
-                .withFallback(ConfigFactory.load());
+    public void setUp() throws ProtocolServerException {
+        config = ConfigFactory.load();
+        server = new MqttProtocolServer(config);
+        server.start().join();
+    }
 
-        servient = new Servient(config);
+    @After
+    public void tearDown() {
+        server.stop().join();
     }
 
     @Test
     public void expose() {
-        try {
-            servient.start().join();
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
 
-            ExposedThing thing = getCounterThing();
-            servient.addThing(thing);
-            thing.expose().join();
-
-            assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-            assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-            assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-        }
-        finally {
-            servient.shutdown().join();
-        }
+        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
+        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
+        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
     @Test
-    public void destroy() {
-        try {
-            servient.start().join();
+    public void invokeAction() throws MqttException, ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
 
-            ExposedThing thing = getCounterThing();
-            servient.addThing(thing);
-            thing.expose().join();
-            thing.destroy().join();
+        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId());
+        client.connect();
+        client.publish("counter/actions/increment", new MqttMessage());
 
-            assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
-            assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
-            assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
-        }
-        finally {
-            servient.shutdown().join();
-        }
+        // Invoked action is executed asynchronously. Wait some time to make sure that the execution has finished.
+        Thread.sleep(1 * 1000L);
+
+        assertEquals(43, thing.getProperty("count").read().get());
     }
 
     private ExposedThing getCounterThing() {
@@ -88,7 +76,7 @@ public class ProtocolServerTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");
@@ -127,10 +115,5 @@ public class ProtocolServerTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static List<Class<? extends ProtocolServer>> data() {
-        return Collections.singletonList(JadexProtocolServer.class);
     }
 }

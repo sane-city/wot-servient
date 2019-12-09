@@ -1,13 +1,12 @@
-package city.sane.wot.thing;
+package city.sane.wot.binding.jadex;
 
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
-import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
-import city.sane.wot.binding.mqtt.MqttProtocolServer;
-import city.sane.wot.thing.action.ConsumedThingAction;
+import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.observer.Subscription;
+import city.sane.wot.thing.property.ConsumedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -15,24 +14,25 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
-public class MqttProtocolTest {
+@Ignore("Jadex platform discovery is unstable")
+public class ThingAgentTest {
     private Servient servient;
 
     @Before
     public void setup() throws ServientException {
         Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + MqttProtocolServer.class.getName() + "\"]\n" +
-                        "wot.servient.client-factories = [\"" + MqttProtocolClientFactory.class.getName() + "\"]")
+                .parseString("wot.servient.servers = [\"" + JadexProtocolServer.class.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + JadexProtocolClientFactory.class.getName() + "\"]")
                 .withFallback(ConfigFactory.load());
 
         servient = new Servient(config);
@@ -44,124 +44,55 @@ public class MqttProtocolTest {
         servient.shutdown().join();
     }
 
-//    @Test
-//    public void readProperty() throws ExecutionException, InterruptedException {
-//        ExposedThing exposedThing = getExposedCounterThing();
-//        servient.addThing(exposedThing);
-//        exposedThing.expose().join();
-//
-//        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
-//
-//        ConsumedThingProperty counter = thing.getProperty("count");
-//        assertEquals(42, counter.read().get());
-//    }
-//
-//    @Test
-//    public void writeProperty() throws ExecutionException, InterruptedException {
-//        ExposedThing exposedThing = getExposedCounterThing();
-//        servient.addThing(exposedThing);
-//        exposedThing.expose().join();
-//
-//        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
-//
-//        ConsumedThingProperty counter = thing.getProperty("count");
-//        counter.write(1337).join();
-//        assertEquals(1337, counter.read().get());
-//    }
-
-    @Test(timeout = 20 * 1000)
-    public void observeProperty() throws ConsumedThingException, InterruptedException, ExecutionException {
-        ExposedThing exposedThing = getExposedCounterThing();
-        servient.addThing(exposedThing);
-        exposedThing.expose().join();
-
-        ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
-
-        AtomicInteger counter1 = new AtomicInteger();
-        Subscription subscription1 = consumedThing.getProperty("count").subscribe(
-                next -> counter1.getAndIncrement()
-        ).get();
-
-        AtomicInteger counter2 = new AtomicInteger();
-        Subscription subscription2 = consumedThing.getProperty("count").subscribe(
-                next -> counter2.getAndIncrement()
-        ).get();
-
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
-
-        exposedThing.getProperty("count").write(1337).join();
-
-        // wait until client fires next subscribe-request to server
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
-
-        exposedThing.getProperty("count").write(1338).join();
-
-        // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-        // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(5 * 1000L);
-
-        subscription1.unsubscribe();
-        subscription2.unsubscribe();
-
-        assertEquals(2, counter1.get());
-        assertEquals(2, counter2.get());
-    }
-
     @Test
-    public void invokeAction() throws ExecutionException, InterruptedException {
+    public void readProperty() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
 
         ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        ConsumedThingAction increment = thing.getAction("increment");
-
-        assertNull(increment.invoke(Map.of("step", 3)).get());
+        ConsumedThingProperty counter = thing.getProperty("count");
+        assertEquals(42, counter.read().get());
     }
 
-    @Test(timeout = 20 * 1000)
-    public void emitEvent() throws ConsumedThingException, InterruptedException, ExecutionException {
+    @Test
+    public void writeProperty() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
 
-        ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
+        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        AtomicInteger counter1 = new AtomicInteger();
-        Subscription subscription1 = consumedThing.getEvent("change").subscribe(
-                next -> counter1.getAndIncrement()
-        ).get();
+        ConsumedThingProperty counter = thing.getProperty("count");
+        counter.write(1337).join();
+        assertEquals(1337, counter.read().get());
+    }
 
-        AtomicInteger counter2 = new AtomicInteger();
-        Subscription subscription2 = consumedThing.getEvent("change").subscribe(
-                next -> counter2.getAndIncrement()
-        ).get();
+    @Test
+    public void readProperties() throws ExecutionException, InterruptedException {
+        ExposedThing exposedThing = getExposedCounterThing();
+        servient.addThing(exposedThing);
+        exposedThing.expose().join();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
+        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        exposedThing.getEvent("change").emit();
+        Map values = thing.readProperties().get();
+        assertEquals(2, values.size());
+        assertEquals(42, values.get("count"));
+    }
 
-        // wait until client fires next subscribe-request to server
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
+    @Test
+    public void readMultipleProperties() throws ExecutionException, InterruptedException {
+        ExposedThing exposedThing = getExposedCounterThing();
+        servient.addThing(exposedThing);
+        exposedThing.expose().join();
 
-        exposedThing.getEvent("change").emit();
+        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-        // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(5 * 1000L);
-
-        subscription1.unsubscribe();
-        subscription2.unsubscribe();
-
-        assertEquals(2, counter1.get());
-        assertEquals(2, counter2.get());
+        Map values = thing.readProperties(Collections.singletonList("count")).get();
+        assertEquals(1, values.size());
+        assertEquals(42, values.get("count"));
     }
 
     private ExposedThing getExposedCounterThing() {

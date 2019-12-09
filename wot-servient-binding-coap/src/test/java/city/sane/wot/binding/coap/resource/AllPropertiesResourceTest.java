@@ -1,53 +1,70 @@
-package city.sane.wot.binding.coap;
+package city.sane.wot.binding.coap.resource;
 
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
-import com.typesafe.config.ConfigFactory;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.ObjectSchema;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-public class CoapProtocolServerTest {
-    private CoapProtocolServer server;
+public class AllPropertiesResourceTest {
+    private CoapServer server;
 
     @Before
-    public void setUp() {
-        server = new CoapProtocolServer(ConfigFactory.load());
-        server.start().join();
+    public void setup() {
+        ExposedThing thing = getCounterThing();
+
+        server = new CoapServer(5683);
+        server.add(new AllPropertiesResource(thing));
+        server.start();
     }
 
     @After
-    public void tearDown() {
-        server.stop().join();
+    public void teardown() {
+        server.stop();
     }
 
     @Test
-    public void expose() {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
+    public void readAllProperties() {
+        CoapClient client = new CoapClient("coap://localhost:5683/properties");
+        Request request = new Request(CoAP.Code.GET);
+        CoapResponse response = client.advanced(request);
 
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
     }
 
-//    @Test
-//    public void getDirectoryUrl() throws URISyntaxException {
-//        assertEquals(new URI("coap://[2003:c3:a70a:fd00:cc7:9138:794d:e803]:5683"), server.getDirectoryUrl());
-//    }
-
     private ExposedThing getCounterThing() {
+        ExposedThing thing = new ExposedThing(null)
+                .setId("counter")
+                .setTitle("counter")
+                .setDescription("counter example Thing");
+
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
                 .setDescription("current counter value")
                 .setObservable(true)
-                .setReadOnly(true)
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
                 .build();
 
         ThingProperty lastChangeProperty = new ThingProperty.Builder()
@@ -57,17 +74,22 @@ public class CoapProtocolServerTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(null)
-                .setId("counter")
-                .setTitle("counter")
-                .setDescription("counter example Thing");
-
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction.Builder()
+                .setInput(new ObjectSchema())
+                .setOutput(new NumberSchema())
+                .build(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
+                int step;
+                if ((input instanceof Map) && ((Map) input).containsKey("step")) {
+                    step = (int) ((Map) input).get("step");
+                }
+                else {
+                    step = 1;
+                }
+                int newValue = ((Integer) value) + step;
                 thing.getProperty("count").write(newValue);
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();

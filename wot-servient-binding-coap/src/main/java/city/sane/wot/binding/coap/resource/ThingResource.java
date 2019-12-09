@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -17,12 +16,10 @@ import org.slf4j.LoggerFactory;
 public class ThingResource extends AbstractResource {
     static final Logger log = LoggerFactory.getLogger(ThingResource.class);
 
-    private final WotCoapServer server;
     private final ExposedThing thing;
 
-    public ThingResource(WotCoapServer server, ExposedThing thing) {
+    public ThingResource(ExposedThing thing) {
         super(thing.getId());
-        this.server = server;
         this.thing = thing;
     }
 
