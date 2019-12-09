@@ -29,6 +29,13 @@
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>city.sane.wot-servient</groupId>
+            <artifactId>wot-servient</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
 
         <!-- JADEX -->
         <dependency>
@@ -42,7 +49,8 @@
             <version>${jadex.version}</version>
         </dependency>
 
-        <!-- we need the UriComponentsBuilder to build sanitized URIs from any Strings -->
+        <!-- we need the UriComponentsBuilder to build sanitized URIs from 
+            any Strings -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
