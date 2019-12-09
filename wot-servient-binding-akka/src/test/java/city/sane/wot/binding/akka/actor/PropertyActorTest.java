@@ -1,71 +1,70 @@
 package city.sane.wot.binding.akka.actor;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
-import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
-import city.sane.wot.binding.akka.AkkaProtocolServer;
-import city.sane.wot.thing.ConsumedThing;
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.testkit.javadsl.TestKit;
+import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.akka.Messages;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.property.ConsumedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
 public class PropertyActorTest {
-    private Servient servient;
+    private ActorSystem system;
+    private ProtocolClient client;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + AkkaProtocolServer.class.getName() + "\"]\n" +
-                        "wot.servient.client-factories = [\"" + AkkaProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-
-        servient = new Servient(config);
-        servient.start().join();
+    public void setUp() {
+        system = ActorSystem.create();
     }
 
     @After
-    public void teardown() {
-        servient.shutdown().join();
+    public void tearDown() {
+        TestKit.shutdownActorSystem(system);
+        system = null;
     }
 
     @Test
-    public void readProperty() throws ExecutionException, InterruptedException {
-        ExposedThing exposedThing = getExposedCounterThing();
-        servient.addThing(exposedThing);
-        exposedThing.expose().join();
+    public void readProperty() throws ContentCodecException {
+        TestKit testKit = new TestKit(system);
 
-        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
+        ExposedThing thing = getExposedCounterThing();
+        Props props = PropertyActor.props("count", thing.getProperty("count"));
+        ActorRef actorRef = system.actorOf(props);
 
-        ConsumedThingProperty counter = thing.getProperty("count");
-        assertEquals(42, counter.read().get());
+        actorRef.tell(new Messages.Read(), testKit.getRef());
+
+        Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
+        int count = ContentManager.contentToValue(msg.content, new IntegerSchema());
+
+        assertEquals(42, count);
     }
 
     @Test
-    public void writeProperty() throws ExecutionException, InterruptedException {
-        ExposedThing exposedThing = getExposedCounterThing();
-        servient.addThing(exposedThing);
-        exposedThing.expose().join();
+    public void writeProperty() throws ContentCodecException {
+        TestKit testKit = new TestKit(system);
 
-        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
+        ExposedThing thing = getExposedCounterThing();
+        Props props = PropertyActor.props("count", thing.getProperty("count"));
+        ActorRef actorRef = system.actorOf(props);
 
-        ConsumedThingProperty counter = thing.getProperty("count");
-        counter.write(1337).join();
-        assertEquals(1337, counter.read().get());
+        actorRef.tell(new Messages.Write(ContentManager.valueToContent(1337)), testKit.getRef());
+
+        testKit.expectMsgClass(Messages.Written.class);
     }
 
     private ExposedThing getExposedCounterThing() {
@@ -82,7 +81,7 @@ public class PropertyActorTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter");
 

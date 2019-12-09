@@ -1,71 +1,55 @@
 package city.sane.wot.binding.akka.actor;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
-import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
-import city.sane.wot.binding.akka.AkkaProtocolServer;
-import city.sane.wot.thing.ConsumedThing;
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.testkit.javadsl.TestKit;
+import city.sane.wot.binding.akka.Messages;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
 public class AllPropertiesActorTest {
-    private Servient servient;
+    private ActorSystem system;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + AkkaProtocolServer.class.getName() + "\"]\n" +
-                        "wot.servient.client-factories = [\"" + AkkaProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-
-        servient = new Servient(config);
-        servient.start().join();
+    public void setUp() {
+        system = ActorSystem.create();
     }
 
     @After
-    public void teardown() {
-        servient.shutdown().join();
+    public void tearDown() {
+        TestKit.shutdownActorSystem(system);
+        system = null;
     }
 
     @Test
-    public void readProperties() throws ExecutionException, InterruptedException {
-        ExposedThing exposedThing = getExposedCounterThing();
-        servient.addThing(exposedThing);
-        exposedThing.expose().join();
+    public void readProperties() throws ContentCodecException {
+        TestKit testKit = new TestKit(system);
 
-        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
+        ExposedThing thing = getExposedCounterThing();
+        Props props = AllPropertiesActor.props(thing);
+        ActorRef actorRef = system.actorOf(props);
 
-        Map values = thing.readProperties().get();
+        actorRef.tell(new Messages.Read(), testKit.getRef());
+
+        Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
+        Map values = ContentManager.contentToValue(msg.content, new ObjectSchema());
+
         assertEquals(2, values.size());
-        assertEquals(42, values.get("count"));
-    }
-
-    @Test
-    public void readMultipleProperties() throws ExecutionException, InterruptedException {
-        ExposedThing exposedThing = getExposedCounterThing();
-        servient.addThing(exposedThing);
-        exposedThing.expose().join();
-
-        ConsumedThing thing = new ConsumedThing(servient, exposedThing);
-
-        Map values = thing.readProperties(Collections.singletonList("count")).get();
-        assertEquals(1, values.size());
         assertEquals(42, values.get("count"));
     }
 
@@ -83,7 +67,7 @@ public class AllPropertiesActorTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter");
 
