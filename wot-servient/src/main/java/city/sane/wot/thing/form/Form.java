@@ -13,19 +13,19 @@ import java.util.*;
  * See also: https://www.w3.org/TR/wot-thing-description/#form
  */
 public class Form implements Serializable {
-    protected String href;
+    private String href;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected List<Operation> op;
+    private List<Operation> op;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String subprotocol;
+    private String subprotocol;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String contentType;
+    private String contentType;
 
-    protected Map<String, Object> optionalProperties = new HashMap<>();
+    private Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getHref() {
         return href;
