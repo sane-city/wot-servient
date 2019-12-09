@@ -1,22 +1,18 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -32,31 +28,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ActionResourceTest {
-    private Servient servient;
+    private CoapServer server;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
-                        "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")
-                .withFallback(ConfigFactory.load());
+    public void setup() {
+        ExposedThing thing = getCounterThing();
 
-        servient = new Servient(config);
-        servient.start().join();
+        server = new CoapServer(5683);
+        server.add(new ActionResource("increment", thing.getAction("increment")));
+        server.start();
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        server.stop();
     }
 
     @Test
     public void invokeAction() throws ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/actions/increment");
+        CoapClient client = new CoapClient("coap://localhost:5683/increment");
         CoapResponse response = client.post("", MediaTypeRegistry.APPLICATION_JSON);
 
         assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
@@ -73,11 +63,7 @@ public class ActionResourceTest {
 
     @Test
     public void invokeActionWithCustomContentType() throws ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/actions/increment");
+        CoapClient client = new CoapClient("coap://localhost:5683/increment");
         Request request = new Request(CoAP.Code.POST);
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
@@ -88,7 +74,7 @@ public class ActionResourceTest {
         assertEquals(MediaTypeRegistry.APPLICATION_CBOR, responseContentType);
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
-        Object responseValue = ContentManager.contentToValue(content, new IntegerSchema());
+        int responseValue = ContentManager.contentToValue(content, new IntegerSchema());
         assertThat(responseValue, instanceOf(Integer.class));
 
         assertEquals(43, responseValue);
@@ -96,12 +82,7 @@ public class ActionResourceTest {
 
     @Test
     public void invokeActionWithParameters() throws ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/actions/increment");
-        ExposedThingAction action = thing.getAction("increment");
+        CoapClient client = new CoapClient("coap://localhost:5683/increment");
         Content inputContent = ContentManager.valueToContent(Map.of("step", 3), "application/json");
         CoapResponse response = client.post(inputContent.getBody(), MediaTypeRegistry.APPLICATION_JSON);
 
@@ -111,14 +92,14 @@ public class ActionResourceTest {
         assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
 
         Content outputContent = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
-        Object responseValue = ContentManager.contentToValue(outputContent, action.getOutput());
+        int responseValue = ContentManager.contentToValue(outputContent, new IntegerSchema());
         assertThat(responseValue, instanceOf(Integer.class));
 
         assertEquals(45, responseValue);
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");

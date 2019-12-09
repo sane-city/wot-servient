@@ -1,7 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -12,10 +10,9 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -31,31 +28,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class PropertyResourceTest {
-    private Servient servient;
+    private CoapServer server;
+    private ExposedThing thing;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
-                        "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")
-                .withFallback(ConfigFactory.load());
+    public void setup() {
+        thing = getCounterThing();
 
-        servient = new Servient(config);
-        servient.start().join();
+        server = new CoapServer(5683);
+        server.add(new PropertyResource("count", thing.getProperty("count")));
+        server.start();
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        server.stop();
     }
 
     @Test
     public void readProperty() throws ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/properties/count");
+        CoapClient client = new CoapClient("coap://localhost:5683/count");
         CoapResponse response = client.get();
 
         int responseContentType = response.getOptions().getContentFormat();
@@ -70,11 +62,7 @@ public class PropertyResourceTest {
 
     @Test
     public void readPropertyWithCustomContentType() throws ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/properties/count");
+        CoapClient client = new CoapClient("coap://localhost:5683/count");
         Request request = new Request(CoAP.Code.GET);
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
@@ -93,11 +81,7 @@ public class PropertyResourceTest {
 
     @Test
     public void writeProperty() {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/properties/count");
+        CoapClient client = new CoapClient("coap://localhost:5683/count");
         CoapResponse response = client.put("1337", MediaTypeRegistry.APPLICATION_JSON);
 
         assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
@@ -106,11 +90,7 @@ public class PropertyResourceTest {
 
     @Test
     public void writePropertyWithCustomContentType() {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/properties/count");
+        CoapClient client = new CoapClient("coap://localhost:5683/count");
         Request request = new Request(CoAP.Code.PUT);
         request.setPayload("1337");
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
@@ -121,7 +101,7 @@ public class PropertyResourceTest {
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");

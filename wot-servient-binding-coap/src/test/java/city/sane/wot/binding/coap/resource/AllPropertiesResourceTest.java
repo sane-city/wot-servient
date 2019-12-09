@@ -1,17 +1,14 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -25,31 +22,25 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class AllPropertiesResourceTest {
-    private Servient servient;
+    private CoapServer server;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
-                        "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")
-                .withFallback(ConfigFactory.load());
+    public void setup() {
+        ExposedThing thing = getCounterThing();
 
-        servient = new Servient(config);
-        servient.start().join();
+        server = new CoapServer(5683);
+        server.add(new AllPropertiesResource(thing));
+        server.start();
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        server.stop();
     }
 
     @Test
     public void readAllProperties() {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/all/properties");
+        CoapClient client = new CoapClient("coap://localhost:5683/properties");
         Request request = new Request(CoAP.Code.GET);
         CoapResponse response = client.advanced(request);
 
@@ -58,7 +49,7 @@ public class AllPropertiesResourceTest {
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");

@@ -1,7 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -10,11 +8,10 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,32 +24,27 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertNull;
 
 public class EventResourceTest {
-    private Servient servient;
+    private CoapServer server;
+    private ExposedThing thing;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.coap.CoapProtocolServer\"]\n" +
-                        "wot.servient.client-factories = [\"city.sane.wot.binding.coap.CoapProtocolClientFactory\"]")
-                .withFallback(ConfigFactory.load());
+    public void setup() {
+        thing = getCounterThing();
 
-        servient = new Servient(config);
-        servient.start().join();
+        server = new CoapServer(5683);
+        server.add(new EventResource("change", thing.getEvent("change")));
+        server.start();
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        server.stop();
     }
 
     @Test
     public void subscribeEvent() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         CompletableFuture<Void> result = new CompletableFuture<>();
-        CoapClient client = new CoapClient("coap://localhost:5683/counter/events/change");
+        CoapClient client = new CoapClient("coap://localhost:5683/change");
         client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
@@ -80,7 +72,7 @@ public class EventResourceTest {
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");
