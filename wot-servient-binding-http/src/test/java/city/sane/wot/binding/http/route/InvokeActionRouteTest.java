@@ -1,7 +1,6 @@
 package city.sane.wot.binding.http.route;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
+import city.sane.wot.binding.http.ContentResponseTransformer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -11,9 +10,6 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -24,6 +20,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import spark.Service;
 
 import java.io.IOException;
 import java.util.Date;
@@ -32,31 +29,25 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class InvokeActionRouteTest {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
-    private Servient servient;
+    private Service service;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.http.HttpProtocolServer\"]\n" +
-                        "wot.servient.client-factories = []")
-                .withFallback(ConfigFactory.load());
-        servient = new Servient(config);
-        servient.start().join();
+    public void setup() {
+        service = Service.ignite().ipAddress("127.0.0.1").port(8080);
+        service.defaultResponseTransformer(new ContentResponseTransformer());
+        service.init();
+        service.awaitInitialization();
+        service.post(":id/actions/:name", new InvokeActionRoute(Map.of("counter", getCounterThing())));
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        service.stop();
+        service.awaitStop();
     }
 
     @Test
     public void invokeAction() throws IOException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -67,10 +58,6 @@ public class InvokeActionRouteTest {
 
     @Test
     public void invokeActionWithUrlParameters() throws IOException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment?step=3");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -81,10 +68,6 @@ public class InvokeActionRouteTest {
 
     @Test
     public void invokeActionWithEntityParameters() throws IOException, ContentCodecException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         Map<String, Integer> parameters = Map.of("step", 3);
         Content content = ContentManager.valueToContent(parameters, "application/json");
 
@@ -99,7 +82,7 @@ public class InvokeActionRouteTest {
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");

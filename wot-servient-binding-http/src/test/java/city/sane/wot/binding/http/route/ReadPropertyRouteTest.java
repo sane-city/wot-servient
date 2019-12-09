@@ -1,7 +1,6 @@
 package city.sane.wot.binding.http.route;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
+import city.sane.wot.binding.http.ContentResponseTransformer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -9,8 +8,6 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -20,6 +17,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import spark.Service;
 
 import java.io.IOException;
 import java.util.Date;
@@ -30,29 +28,25 @@ import static org.junit.Assert.assertEquals;
 public class ReadPropertyRouteTest {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-    private Servient servient;
+    private Service service;
 
     @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"city.sane.wot.binding.http.HttpProtocolServer\"]\n" +
-                        "wot.servient.client-factories = []")
-                .withFallback(ConfigFactory.load());
-        servient = new Servient(config);
-        servient.start().join();
+    public void setup() {
+        service = Service.ignite().ipAddress("127.0.0.1").port(8080);
+        service.defaultResponseTransformer(new ContentResponseTransformer());
+        service.init();
+        service.awaitInitialization();
+        service.get(":id/properties/:name", new ReadPropertyRoute(Map.of("counter", getCounterThing())));
     }
 
     @After
     public void teardown() {
-        servient.shutdown().join();
+        service.stop();
+        service.awaitStop();
     }
 
     @Test
     public void readProperty() throws IOException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
@@ -63,10 +57,6 @@ public class ReadPropertyRouteTest {
 
     @Test
     public void readPropertyWithCustomContentType() throws IOException {
-        ExposedThing thing = getCounterThing();
-        servient.addThing(thing);
-        servient.expose(thing.getId()).join();
-
         HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
         request.addHeader("Content-Type", "text/plain");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
@@ -77,7 +67,7 @@ public class ReadPropertyRouteTest {
     }
 
     private ExposedThing getCounterThing() {
-        ExposedThing thing = new ExposedThing(servient)
+        ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
                 .setDescription("counter example Thing");
