@@ -76,7 +76,7 @@ public class HttpProtocolClient implements ProtocolClient {
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form, content);
+            HttpUriRequest request = generateRequest(form, "POST", content);
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
