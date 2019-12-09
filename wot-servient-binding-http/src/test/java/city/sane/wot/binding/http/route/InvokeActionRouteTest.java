@@ -9,6 +9,8 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -97,11 +99,15 @@ public class InvokeActionRouteTest {
     }
 
     private ExposedThing getCounterThing() {
+        ExposedThing thing = new ExposedThing(servient)
+                .setId("counter")
+                .setTitle("counter")
+                .setDescription("counter example Thing");
+
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
                 .setDescription("current counter value")
                 .setObservable(true)
-                .setReadOnly(true)
                 .build();
 
         ThingProperty lastChangeProperty = new ThingProperty.Builder()
@@ -111,17 +117,33 @@ public class InvokeActionRouteTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(null)
-                .setId("counter")
-                .setTitle("counter")
-                .setDescription("counter example Thing");
-
         thing.addProperty("count", counterProperty, 42);
-        thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
+        thing.addProperty("lastChange", lastChangeProperty, "2019-07-25 00:35:36");
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction.Builder()
+                .setInput(new ObjectSchema())
+                .setOutput(new NumberSchema())
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
+                .build(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
+                int step;
+                if (input != null && ((Map) input).containsKey("step")) {
+                    step = (Integer) ((Map) input).get("step");
+                }
+                else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                    step = (int) ((Map) options.get("uriVariables")).get("step");
+                }
+                else {
+                    step = 1;
+                }
+
+                int newValue = ((Integer) value) + step;
                 thing.getProperty("count").write(newValue);
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
