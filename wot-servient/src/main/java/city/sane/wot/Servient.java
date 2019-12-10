@@ -372,7 +372,7 @@ public class Servient {
      */
     public CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new RuntimeException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -398,7 +398,7 @@ public class Servient {
      */
     public CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new RuntimeException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**

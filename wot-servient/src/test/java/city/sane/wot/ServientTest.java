@@ -5,7 +5,9 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.DiscoveryMethod;
+import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
+import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -145,7 +147,7 @@ public class ServientTest {
         servient.addThing(new ExposedThing(servient).setId("counter"));
 
         try {
-            assertThat(servient.destroy("counter").get(), instanceOf(ExposedThing.class));
+            servient.destroy("counter").get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -156,7 +158,19 @@ public class ServientTest {
     public void fetch() throws ServientException, URISyntaxException, ExecutionException, InterruptedException {
         Servient servient = getServientWithClient();
 
-        assertThat(servient.fetch(new URI("test:/counter")).get(), instanceOf(Thing.class));
+        assertThat(servient.fetch("test:/counter").get(), instanceOf(Thing.class));
+    }
+
+    @Test(expected = ServientException.class)
+    public void fetchMissingScheme() throws Throwable {
+        Servient servient = getServientWithNoClient();
+
+        try {
+            servient.fetch("test:/counter").get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test
@@ -181,6 +195,15 @@ public class ServientTest {
     }
 
     @Test
+    public void discoverWithQuery() throws ServientException, ExecutionException, InterruptedException, ThingQueryException {
+        Servient servient = getServientWithClient();
+
+        ThingFilter filter = new ThingFilter();
+        filter.setQuery(new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> ."));
+        assertThat(servient.discover(filter).get(), instanceOf(Collection.class));
+    }
+
+    @Test
     public void discoverLocal() throws ServientException, ExecutionException, InterruptedException {
         Servient servient = getServientWithClient();
 
@@ -201,7 +224,7 @@ public class ServientTest {
         Servient servient = getServientWithNoClient();
 
         try {
-            assertThat(servient.discover().get(), instanceOf(Collection.class));
+            servient.discover().get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -274,6 +297,30 @@ public class ServientTest {
         Servient servient = new Servient();
 
         assertNull(servient.getClientFor("test"));
+    }
+
+    @Test(expected = ServientException.class)
+    public void register() throws Throwable {
+        Servient servient = new Servient();
+
+        try {
+            servient.register("test://foo/bar", null).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected = ServientException.class)
+    public void unregister() throws Throwable {
+        Servient servient = new Servient();
+
+        try {
+            servient.unregister("test://foo/bar", null).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     static class MyProtocolServer implements ProtocolServer {
