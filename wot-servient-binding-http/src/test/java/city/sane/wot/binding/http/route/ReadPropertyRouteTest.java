@@ -66,6 +66,22 @@ public class ReadPropertyRouteTest {
         assertEquals("2019-07-25 00:35:36", EntityUtils.toString(response.getEntity()));
     }
 
+    @Test
+    public void readPropertyUnknownThing() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/zaehler/properties/lastChange");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void readPropertyUnknownProperty() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/county");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")

@@ -92,12 +92,7 @@ public class Cli {
 
         for (File script : scripts) {
             log.info("Servient is running script '{}'", script);
-            try {
-                servient.runScript(script, wot);
-            }
-            catch (ServientException e) {
-                log.error("Servient experienced error while reading script", e);
-            }
+            servient.runScript(script, wot);
         }
     }
 

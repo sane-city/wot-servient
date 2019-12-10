@@ -3,8 +3,6 @@ package city.sane.wot.binding.http.route;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
@@ -14,8 +12,6 @@ import java.util.Map;
  * Endpoint for listing all Things from the {@link city.sane.wot.Servient}.
  */
 public class ThingsRoute extends AbstractRoute {
-    static final Logger log = LoggerFactory.getLogger(ThingsRoute.class);
-
     private final Map<String, ExposedThing> things;
 
     public ThingsRoute(Map<String, ExposedThing> things) {
