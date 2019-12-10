@@ -54,7 +54,8 @@ public class ObservePropertyRoute extends AbstractRoute {
                                     Content content = ContentManager.valueToContent(data, requestContentType);
                                     response.type(content.getType());
                                     result.complete(content);
-                                } catch (ContentCodecException e) {
+                                }
+                                catch (ContentCodecException e) {
                                     log.warn("Cannot process data for Property '{}': {}", name, e.toString());
                                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                                     result.complete("Invalid Property Data");
@@ -76,15 +77,18 @@ public class ObservePropertyRoute extends AbstractRoute {
                     Object output = result.get();
 
                     return output;
-                } else {
+                }
+                else {
                     response.status(HttpStatus.BAD_REQUEST_400);
                     return "Property writeOnly/not observable";
                 }
-            } else {
+            }
+            else {
                 response.status(HttpStatus.NOT_FOUND_404);
                 return "Property not found";
             }
-        } else {
+        }
+        else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }

@@ -13,9 +13,11 @@ public class ContentResponseTransformer implements ResponseTransformer {
         if (model instanceof Content) {
             Content content = (Content) model;
             return new String(content.getBody());
-        } else if (model != null) {
+        }
+        else if (model != null) {
             return model.toString();
-        } else {
+        }
+        else {
             return null;
         }
     }
