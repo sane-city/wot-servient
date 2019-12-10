@@ -121,6 +121,7 @@ public class ThingsActor extends AbstractActor {
         String id = m.id;
         ActorRef actorRef = children.remove(id);
         if (actorRef != null) {
+            log.info("Destroy Thing '{}'. Stop Actor '{}'", id, actorRef);
             getContext().stop(actorRef);
             getContext().watchWith(actorRef, new Deleted<>(new Pair<>(getSender(), id)));
         }

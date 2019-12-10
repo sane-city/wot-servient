@@ -104,6 +104,14 @@ public class ConsumedThingTest {
         assertEquals("http://192.168.178.24:8080/counter/actions/increment?step=3&direction=up", result.getHref());
     }
 
+    @Test
+    public void testEquals() {
+        ConsumedThing thingA = new ConsumedThing(null, new Thing.Builder().setId("counter").build());
+        ConsumedThing thingB = new ConsumedThing(null, new Thing.Builder().setId("counter").build());
+
+        assertEquals(thingA, thingB);
+    }
+
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
         public MyProtocolClientFactory(Config config) {
 

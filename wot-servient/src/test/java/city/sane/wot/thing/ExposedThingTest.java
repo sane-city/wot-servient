@@ -310,6 +310,14 @@ public class ExposedThingTest {
         return thing;
     }
 
+    @Test
+    public void testEquals() {
+        ExposedThing thingA = new ExposedThing(null, new Thing.Builder().setId("counter").build());
+        ExposedThing thingB = new ExposedThing(null, new Thing.Builder().setId("counter").build());
+
+        assertEquals(thingA, thingB);
+    }
+
     public static class MyProtocolServer implements ProtocolServer {
         public MyProtocolServer(Config config) {
 
