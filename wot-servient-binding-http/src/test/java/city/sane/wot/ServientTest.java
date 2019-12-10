@@ -32,13 +32,6 @@ public class ServientTest {
     public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
-                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
-        );
-    }
-
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -107,9 +100,11 @@ public class ServientTest {
                         int step;
                         if (input != null && ((Map) input).containsKey("step")) {
                             step = (Integer) ((Map) input).get("step");
-                        } else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                        }
+                        else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
                             step = (int) ((Map) options.get("uriVariables")).get("step");
-                        } else {
+                        }
+                        else {
                             step = 1;
                         }
                         int newValue = ((Integer) value) + step;
@@ -141,5 +136,12 @@ public class ServientTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
+        return Arrays.asList(
+                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class)
+        );
     }
 }

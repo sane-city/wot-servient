@@ -63,22 +63,27 @@ public class InvokeActionRoute extends AbstractRoute {
                         if (value != null) {
                             response.type(content.getType());
                             return outputContent;
-                        } else {
+                        }
+                        else {
                             return "";
                         }
-                    } catch (ContentCodecException e) {
+                    }
+                    catch (ContentCodecException e) {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                         return e;
                     }
-                } catch (ContentCodecException e) {
+                }
+                catch (ContentCodecException e) {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                     return e;
                 }
-            } else {
+            }
+            else {
                 response.status(HttpStatus.NOT_FOUND_404);
                 return "Action not found";
             }
-        } else {
+        }
+        else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }
@@ -99,7 +104,8 @@ public class InvokeActionRoute extends AbstractRoute {
                     if (type.equals("integer") || type.equals("number")) {
                         Integer value = Integer.valueOf(urlValue[0]);
                         params.put(name, value);
-                    } else if (type.equals("string")) {
+                    }
+                    else if (type.equals("string")) {
                         String value = urlValue[0];
                         params.put(name, value);
                     }
@@ -107,7 +113,8 @@ public class InvokeActionRoute extends AbstractRoute {
                         log.warn("Not able to read variable '{}' because variable type '{}' is unknown", name, type);
                     }
                 }
-            } else {
+            }
+            else {
                 continue;
             }
         }

@@ -52,7 +52,8 @@ public class SubscribeEventRoute extends AbstractRoute {
                             try {
                                 Content content = ContentManager.valueToContent(data, requestContentType);
                                 result.complete(content);
-                            } catch (ContentCodecException e) {
+                            }
+                            catch (ContentCodecException e) {
                                 log.warn("Cannot process data for Event '{}': {}", name, e.toString());
                                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                                 result.complete("Invalid Event Data");
@@ -75,11 +76,13 @@ public class SubscribeEventRoute extends AbstractRoute {
                 Object output = result.get();
 
                 return output;
-            } else {
+            }
+            else {
                 response.status(HttpStatus.NOT_FOUND_404);
                 return "Event not found";
             }
-        } else {
+        }
+        else {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Thing not found";
         }

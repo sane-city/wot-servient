@@ -25,13 +25,6 @@ public class ProtocolServerTest {
     public Class<? extends ProtocolServer> protocolServerClass;
     private Servient servient;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static List<Class<? extends ProtocolServer>> data() {
-        return Arrays.asList(
-                HttpProtocolServer.class
-        );
-    }
-
     @Before
     public void setup() {
         Config config = ConfigFactory
@@ -54,7 +47,8 @@ public class ProtocolServerTest {
             assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
             assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
             assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-        } finally {
+        }
+        finally {
             servient.shutdown().join();
         }
     }
@@ -72,7 +66,8 @@ public class ProtocolServerTest {
             assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
             assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
             assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
-        } finally {
+        }
+        finally {
             servient.shutdown().join();
         }
     }
@@ -131,5 +126,12 @@ public class ProtocolServerTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static List<Class<? extends ProtocolServer>> data() {
+        return Arrays.asList(
+                HttpProtocolServer.class
+        );
     }
 }
