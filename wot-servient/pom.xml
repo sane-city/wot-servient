@@ -29,6 +29,13 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- URI Templating (RFC6570 https://tools.ietf.org/html/rfc6570 -->
         <dependency>
             <groupId>com.damnhandy</groupId>

@@ -4,13 +4,22 @@ import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.property.ThingProperty;
+import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.Assert.*;
 
 public class ThingTest {
     @Test
@@ -29,10 +38,63 @@ public class ThingTest {
     }
 
     @Test
+    public void toJsonPretty() {
+        Thing thing = new Thing.Builder()
+                .setId("Foo")
+                .setDescription("Bar")
+                .setObjectType("Thing")
+                .setObjectContext(new Context("http://www.w3.org/ns/td"))
+                .build();
+
+        assertEquals(
+                "{\n" +
+                        "  \"id\" : \"Foo\",\n" +
+                        "  \"description\" : \"Bar\",\n" +
+                        "  \"@type\" : \"Thing\",\n" +
+                        "  \"@context\" : \"http://www.w3.org/ns/td\"\n" +
+                        "}",
+                thing.toJson(true)
+        );
+    }
+
+    @Test
     public void fromJson() {
         String json = "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":[\"http://www.w3.org/ns/td\"]}";
 
         Thing thing = Thing.fromJson(json);
+
+        assertEquals("Foo", thing.getId());
+        assertEquals("Bar", thing.getDescription());
+        assertEquals("Thing", thing.getObjectType());
+        assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
+    }
+
+    @Test
+    public void fromJsonFile() throws IOException {
+        String json = "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":[\"http://www.w3.org/ns/td\"]}";
+
+        TemporaryFolder folder = new TemporaryFolder();
+        folder.create();
+        File file = folder.newFile("counter.json");
+        Files.write(json, file, Charset.defaultCharset());
+
+        Thing thing = Thing.fromJson(file);
+
+        assertEquals("Foo", thing.getId());
+        assertEquals("Bar", thing.getDescription());
+        assertEquals("Thing", thing.getObjectType());
+        assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
+    }
+
+    @Test
+    public void fromMap() {
+        Map map = Map.of(
+                "id", "Foo",
+                "description", "Bar",
+                "@type", "Thing",
+                "@context", Arrays.asList("http://www.w3.org/ns/td")
+        );
+        Thing thing = Thing.fromMap(map);
 
         assertEquals("Foo", thing.getId());
         assertEquals("Bar", thing.getDescription());
@@ -123,11 +185,18 @@ public class ThingTest {
                 .setObjectContext(new Context("http://www.w3.org/ns/td"))
                 .setId("counter")
                 .setTitle("Counter")
+                .setTitles(Map.of("de", "Zähler"))
                 .setDescription("This is a counter")
+                .setDescriptions(Map.of("de", "Zähler Ding"))
+                .setProperties(new HashMap<>(Map.of("lastChange", new ThingProperty.Builder().build())))
                 .addProperty("count", new ThingProperty.Builder().build())
+                .setActions(new HashMap<>(Map.of("decrement", new ThingAction.Builder().build())))
                 .addAction("increment", new ThingAction.Builder().build())
+                .setEvents(new HashMap<>(Map.of("ping", new ThingEvent.Builder().build())))
                 .addEvent("change", new ThingEvent.Builder().build())
-                .addForm(new Form.Builder().build())
+                .setForms(Lists.newArrayList(new Form.Builder().setHref("http://eins").build()))
+                .addForm(new Form.Builder().setHref("http://zwei").build())
+                .setBase("http://sane.city")
                 .build();
 
         assertEquals("saref:Temperature", thing.getObjectType());
@@ -135,9 +204,48 @@ public class ThingTest {
         assertEquals("counter", thing.getId());
         assertEquals("Counter", thing.getTitle());
         assertEquals("This is a counter", thing.getDescription());
-        assertEquals(Map.of("count", new ThingProperty.Builder().build()), thing.getProperties());
-        assertEquals(Map.of("increment", new ThingAction.Builder().build()), thing.getActions());
-        assertEquals(Map.of("change", new ThingEvent.Builder().build()), thing.getEvents());
-        assertEquals(new ArrayList<>(Arrays.asList(new Form.Builder().build())), thing.getForms());
+        assertEquals("http://sane.city", thing.getBase());
+
+        assertThat((Map<String, String>) thing.getTitles(), hasEntry("de", "Zähler"));
+        assertThat((Map<String, String>) thing.getDescriptions(), hasEntry("de", "Zähler Ding"));
+
+        assertThat((Map<String, ThingProperty>) thing.getProperties(), hasEntry("lastChange", new ThingProperty.Builder().build()));
+        assertThat((Map<String, ThingProperty>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
+        assertEquals(new ThingProperty.Builder().build(), thing.getProperty("count"));
+
+        assertThat((Map<String, ThingAction>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
+        assertThat((Map<String, ThingAction>) thing.getActions(), hasEntry("decrement", new ThingAction.Builder().build()));
+        assertEquals(new ThingAction.Builder().build(), thing.getAction("increment"));
+
+        assertThat((Map<String, ThingEvent>) thing.getEvents(), hasEntry("change", new ThingEvent.Builder().build()));
+        assertThat((Map<String, ThingEvent>) thing.getEvents(), hasEntry("ping", new ThingEvent.Builder().build()));
+        assertEquals(new ThingEvent.Builder().build(), thing.getEvent("ping"));
+
+        assertThat((Collection<Form>) thing.getForms(), contains(new Form.Builder().setHref("http://eins").build(), new Form.Builder().setHref("http://zwei").build()));
+    }
+
+    @Test
+    public void testEquals() {
+        Thing thingA = new Thing.Builder().setId("counter").build();
+        Thing thingB = new Thing.Builder().setId("counter").build();
+
+        assertEquals(thingA, thingB);
+    }
+
+    @Test
+    public void getExpandedObjectType() {
+        Thing thing = new Thing.Builder()
+                .setId("Foo")
+                .setDescription("Bar")
+                .setObjectType("Thing")
+                .setObjectContext(new Context("http://www.w3.org/ns/td").addContext("saref", "https://w3id.org/saref#"))
+                .build();
+
+        assertEquals("https://w3id.org/saref#Temperature", thing.getExpandedObjectType("saref:Temperature"));
+    }
+
+    @Test
+    public void randomId() {
+        assertNotEquals(Thing.randomId(), Thing.randomId());
     }
 }

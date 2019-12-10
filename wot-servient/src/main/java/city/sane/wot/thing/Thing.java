@@ -147,7 +147,9 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return securityDefinitions;
     }
 
-    public String getBase() { return base; }
+    public String getBase() {
+        return base;
+    }
 
     @Override
     public int hashCode() {
@@ -218,6 +220,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
      * Returns a map of the properties and their keys that have the non-expanded JSON-LD type <code>objectType</code>.
      *
      * @param objectType
+     *
      * @return
      */
     public Map<String, P> getPropertiesByObjectType(String objectType) {
@@ -228,6 +231,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
      * Returns a map of the properties and their keys that have the expanded JSON-LD type <code>objectType</code>.
      *
      * @param objectType
+     *
      * @return
      */
     public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
@@ -242,11 +246,6 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
     public static String randomId() {
         return "urn:uuid:" + UUID.randomUUID();
-    }
-
-    public static String sanitizeFilename(String filename) {
-        // https://stackoverflow.com/a/15075907/1074188
-        return filename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
     }
 
     public static Thing fromJson(String json) {
