@@ -4,6 +4,8 @@ import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -66,5 +68,11 @@ public class DefaultWotTest {
         Wot wot = DefaultWot.clientOnly();
 
         assertThat(wot, instanceOf(Wot.class));
+    }
+
+    @Test(expected = WotException.class)
+    public void clientOnlyBadServient() throws WotException {
+        Config config = ConfigFactory.parseString("wot.servient.client-factories = [foo.bar.MyClientFactory]").withFallback(ConfigFactory.load());
+        DefaultWot.clientOnly(config);
     }
 }
