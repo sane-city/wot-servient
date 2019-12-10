@@ -34,7 +34,7 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via HTTP.
  */
 public class HttpProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    final static Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
 
     private String authorizationHeader = HttpHeaders.AUTHORIZATION;
     private String authorization = null;
@@ -50,7 +50,8 @@ public class HttpProtocolClient implements ProtocolClient {
 
             }
             catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
+                e.printStackTrace();
+                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
         });
     }
@@ -67,7 +68,8 @@ public class HttpProtocolClient implements ProtocolClient {
 
             }
             catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
+                e.printStackTrace();
+                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
         });
     }
@@ -84,7 +86,8 @@ public class HttpProtocolClient implements ProtocolClient {
 
             }
             catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
+                e.printStackTrace();
+                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.toString()));
             }
         });
     }
@@ -126,7 +129,8 @@ public class HttpProtocolClient implements ProtocolClient {
                 }
                 catch (IOException | ProtocolClientException e) {
                     if (!subscription.isClosed()) {
-                        log.warn("Error received for Event connection: {}", e);
+                        log.debug("Error received for Event connection");
+                        e.printStackTrace();
 
                         observer.error(e);
                         subscription.unsubscribe();
@@ -228,7 +232,8 @@ public class HttpProtocolClient implements ProtocolClient {
 
             }
             catch (IOException e) {
-                throw new ProtocolClientException("Error during http request: " + e.getMessage());
+                e.printStackTrace();
+                throw new ProtocolClientException("Error during http request: " + e.toString());
             }
         }
         else if (statusCode < 400) {
