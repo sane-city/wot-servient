@@ -67,7 +67,7 @@ public class Servient {
                 ProtocolServer server = constructor.newInstance(config);
                 servers.add(server);
             }
-            catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ServientException(e);
             }
         }
@@ -81,7 +81,7 @@ public class Servient {
                 ProtocolClientFactory factory = constructor.newInstance(config);
                 clientFactories.put(factory.getScheme(), factory);
             }
-            catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new ServientException(e);
             }
         }
@@ -156,13 +156,11 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            log.warn("Servient has no servers to expose Things");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to expose Things"));
         }
 
         if (thing == null) {
-            log.warn("Thing must be added to the servient first");
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.failedFuture(new ServientException("Thing must be added to the servient first"));
         }
 
         log.info("Servient exposing '{}'", id);
@@ -191,8 +189,7 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            log.warn("Servient has no servers to stop exposure Things");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
         }
 
         log.info("Servient stop exposing '{}'", thing);
@@ -555,6 +552,7 @@ public class Servient {
      *
      * @param file
      * @param wot
+     *
      * @throws ServientException
      */
     public void runScript(File file, Wot wot) throws ServientException {

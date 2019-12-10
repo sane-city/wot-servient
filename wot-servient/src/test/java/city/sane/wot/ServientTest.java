@@ -9,8 +9,7 @@ import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.junit.After;
-import org.junit.Before;
+import com.typesafe.config.ConfigValue;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,14 +25,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 public class ServientTest {
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
     @Test
     public void constructorInstantiatedServer() throws ServientException, ExecutionException, InterruptedException {
         Servient servient = getServientWithServer();
@@ -48,6 +39,49 @@ public class ServientTest {
 
         assertNull(servient.start().get());
         assertNotNull(servient.getClientFor("test"));
+    }
+
+    @Test(expected = ServientException.class)
+    public void constructorBadServerWithoutImplementation() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + MyBadMissingImplementationProtocolServer.class.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        new Servient(config);
+    }
+
+    @Test(expected = ServientException.class)
+    public void constructorBadServerMissingConstructor() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + MyBadMissingConstructorProtocolServer.class.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        new Servient(config);
+    }
+
+    @Test(expected = ServientException.class)
+    public void constructorBadClientWithoutImplementation() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = [\"" + MyBadMissingImplementationProtocolClientFactory.class.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        new Servient(config);
+    }
+
+    @Test(expected = ServientException.class)
+    public void constructorBadClientMissingConstructor() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = [\"" + MyBadMissingConstructorProtocolClientFactory.class.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        new Servient(config);
+    }
+
+    @Test
+    public void constructorWithCredentials() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.credentials { \"counter\" = \"mySecret\" }")
+                .withFallback(ConfigFactory.load());
+        Servient servient = new Servient(config);
+
+        assertEquals("mySecret",
+                ((ConfigValue) servient.getCredentials("counter")).unwrapped());
     }
 
     @Test
@@ -72,12 +106,50 @@ public class ServientTest {
         assertThat(servient.expose("counter").get(), instanceOf(ExposedThing.class));
     }
 
+    @Test(expected = ServientException.class)
+    public void exposeWithoutServers() throws Throwable {
+        Servient servient = getServientWithNoServer();
+        servient.addThing(new ExposedThing(servient).setId("counter"));
+
+        try {
+            servient.expose("counter").get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected = ServientException.class)
+    public void exposeUnknownThing() throws Throwable {
+        Servient servient = getServientWithServer();
+
+        try {
+            servient.expose("counter").get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
     @Test
     public void destroy() throws ServientException, ExecutionException, InterruptedException {
         Servient servient = getServientWithServer();
         servient.addThing(new ExposedThing(servient).setId("counter"));
 
         assertThat(servient.destroy("counter").get(), instanceOf(ExposedThing.class));
+    }
+
+    @Test(expected = ServientException.class)
+    public void destroyWithoutServers() throws Throwable {
+        Servient servient = getServientWithNoServer();
+        servient.addThing(new ExposedThing(servient).setId("counter"));
+
+        try {
+            assertThat(servient.destroy("counter").get(), instanceOf(ExposedThing.class));
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test
@@ -139,7 +211,7 @@ public class ServientTest {
     @Test(expected = ServientException.class)
     public void runScriptWithNoEngine() throws ServientException {
         Servient servient = new Servient();
-        servient.runScript(new File("foo.bar"),null);
+        servient.runScript(new File("foo.bar"), null);
     }
 
     @Test
@@ -181,6 +253,13 @@ public class ServientTest {
         return new Servient(config);
     }
 
+    private Servient getServientWithNoServer() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = []")
+                .withFallback(ConfigFactory.load());
+        return new Servient(config);
+    }
+
     @Test
     public void addThingWithoutId() throws ServientException {
         Servient servient = new Servient();
@@ -188,6 +267,13 @@ public class ServientTest {
         servient.addThing(thing);
 
         assertNotNull(thing.getId());
+    }
+
+    @Test
+    public void getClientForNegative() throws ProtocolClientException, ServientException {
+        Servient servient = new Servient();
+
+        assertNull(servient.getClientFor("test"));
     }
 
     static class MyProtocolServer implements ProtocolServer {
@@ -251,6 +337,76 @@ public class ServientTest {
         @Override
         public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
             return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+    }
+
+    static class MyBadMissingImplementationProtocolServer {
+        public MyBadMissingImplementationProtocolServer(Config config) {
+
+        }
+    }
+
+    static class MyBadMissingConstructorProtocolServer implements ProtocolServer {
+        /**
+         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
+         *
+         * @return
+         */
+        @Override
+        public CompletableFuture<Void> start() {
+            return null;
+        }
+
+        /**
+         * Stops the server (e.g. HTTP server) and ends the exposure of the Things
+         *
+         * @return
+         */
+        @Override
+        public CompletableFuture<Void> stop() {
+            return null;
+        }
+
+        /**
+         * Exposes <code>thing</code> and allows interaction with it.
+         *
+         * @param thing
+         *
+         * @return
+         */
+        @Override
+        public CompletableFuture<Void> expose(ExposedThing thing) {
+            return null;
+        }
+
+        /**
+         * Stops the exposure of <code>thing</code> and allows no further interaction with the thing.
+         *
+         * @param thing
+         *
+         * @return
+         */
+        @Override
+        public CompletableFuture<Void> destroy(ExposedThing thing) {
+            return null;
+        }
+    }
+
+    static class MyBadMissingImplementationProtocolClientFactory {
+        public MyBadMissingImplementationProtocolClientFactory(Config config) {
+
+        }
+    }
+
+    static class MyBadMissingConstructorProtocolClientFactory implements ProtocolClientFactory {
+        @Override
+        public String getScheme() {
+            return null;
+        }
+
+        @Override
+        public ProtocolClient getClient() {
+            return null;
         }
     }
 }
