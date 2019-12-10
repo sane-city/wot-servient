@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
@@ -40,6 +41,9 @@ public class AkkaProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> readResource(Form form) {
         Read message = new Read();
         String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
@@ -53,6 +57,9 @@ public class AkkaProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         Write message = new Write(content);
         String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
@@ -69,7 +76,7 @@ public class AkkaProtocolClient implements ProtocolClient {
 
         Duration timeout = Duration.ofSeconds(10);
         return ask(discoveryActor, message, timeout)
-                .thenApply(m -> ((Collection<Thing>) (((Things) m).entities.values())))
+                .thenApply(m -> ((Things) m).entities.values())
                 .toCompletableFuture();
     }
 }

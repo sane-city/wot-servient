@@ -1,4 +1,4 @@
-package city.sane.wot.binding.http;
+package city.sane.wot.binding.coap;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
@@ -8,13 +8,14 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
 import com.typesafe.config.ConfigFactory;
+import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Service;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -24,37 +25,36 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class HttpProtocolClientTest {
-    private HttpProtocolClientFactory clientFactory;
+public class CoapProtocolClientTest {
+    private CoapProtocolClientFactory clientFactory;
     private ProtocolClient client;
-    private Service service;
+    private CoapServer server;
 
     @Before
     public void setUp() {
-        clientFactory = new HttpProtocolClientFactory(ConfigFactory.load());
+        clientFactory = new CoapProtocolClientFactory(ConfigFactory.load());
         clientFactory.init().join();
 
         client = clientFactory.getClient();
-        service = Service.ignite().ipAddress("127.0.0.1").port(8080);
-        service.init();
-        service.awaitInitialization();
-        service.get("read", new MyReadRoute());
-        service.put("write", new MyWriteRoute());
-        service.post("invoke", new MyInvokeRoute());
-        service.get("subscribe", new MySubscribeRoute());
+
+        server = new CoapServer(5683);
+        server.add(new MyReadResource());
+        server.add(new MyWriteResource());
+        server.add(new MyInvokeResource());
+        server.add(new MySubscribeResource());
+        server.start();
     }
 
     @After
     public void tearDown() {
         clientFactory.destroy().join();
 
-        service.stop();
-        service.awaitStop();
+        server.stop();
     }
 
     @Test
     public void readResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "http://localhost:8080/read";
+        String href = "coap://localhost/read";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
@@ -62,7 +62,7 @@ public class HttpProtocolClientTest {
 
     @Test
     public void writeResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "http://localhost:8080/write";
+        String href = "coap://localhost/write";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(42), client.writeResource(form, ContentManager.valueToContent(1337)).get());
@@ -70,7 +70,7 @@ public class HttpProtocolClientTest {
 
     @Test
     public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "http://localhost:8080/invoke";
+        String href = "coap://localhost/invoke";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(42), client.invokeResource(form, ContentManager.valueToContent(1337)).get());
@@ -78,7 +78,7 @@ public class HttpProtocolClientTest {
 
     @Test(timeout = 5 * 1000)
     public void subscribeResource() throws ProtocolClientNotImplementedException, ExecutionException, InterruptedException {
-        String href = "http://localhost:8080/subscribe";
+        String href = "coap://localhost/subscribe";
         Form form = new Form.Builder().setHref(href).build();
 
         CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
@@ -89,39 +89,55 @@ public class HttpProtocolClientTest {
         assertNull(nextCalledFuture.get());
     }
 
-    @Test
-    public void setSecurity() {
-    }
+    class MyReadResource extends CoapResource {
+        public MyReadResource() {
+            super("read");
+        }
 
-    private class MyReadRoute implements Route {
         @Override
-        public Object handle(Request request, Response response) {
-            response.type("application/json");
-            return 1337;
+        public void handleGET(CoapExchange exchange) {
+            int contentFormat = MediaTypeRegistry.parse("application/json");
+            exchange.respond(CoAP.ResponseCode.CONTENT, "1337", contentFormat);
         }
     }
 
-    private class MyWriteRoute implements Route {
+    class MyWriteResource extends CoapResource {
+        public MyWriteResource() {
+            super("write");
+        }
+
         @Override
-        public Object handle(Request request, Response response) {
-            response.type("application/json");
-            return 42;
+        public void handlePUT(CoapExchange exchange) {
+            int contentFormat = MediaTypeRegistry.parse("application/json");
+            exchange.respond(CoAP.ResponseCode.CONTENT, "42", contentFormat);
         }
     }
 
-    private class MyInvokeRoute implements Route {
+    class MyInvokeResource extends CoapResource {
+        public MyInvokeResource() {
+            super("invoke");
+        }
+
         @Override
-        public Object handle(Request request, Response response) {
-            response.type("application/json");
-            return 42;
+        public void handlePOST(CoapExchange exchange) {
+            int contentFormat = MediaTypeRegistry.parse("application/json");
+            exchange.respond(CoAP.ResponseCode.CONTENT, "42", contentFormat);
         }
     }
 
-    private class MySubscribeRoute implements Route {
+    class MySubscribeResource extends CoapResource {
+        public MySubscribeResource() {
+            super("subscribe");
+
+            setObservable(true); // enable observing
+            setObserveType(CoAP.Type.CON); // configure the notification type to CONs
+            getAttributes().setObservable(); // mark observable in the Link-Format
+        }
+
         @Override
-        public Object handle(Request request, Response response) {
-            response.type("application/json");
-            return "Hallo Welt";
+        public void handleGET(CoapExchange exchange) {
+            int contentFormat = MediaTypeRegistry.parse("application/json");
+            exchange.respond(CoAP.ResponseCode.CONTENT, "42", contentFormat);
         }
     }
 }

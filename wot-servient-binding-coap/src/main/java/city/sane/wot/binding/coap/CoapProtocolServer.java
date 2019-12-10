@@ -99,7 +99,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 thing.getTitle(), bindPort, thing.getId());
         things.put(thing.getId(), thing);
 
-        CoapResource thingResource = new ThingResource(server, thing);
+        CoapResource thingResource = new ThingResource(thing);
         resources.put(thing.getId(), thingResource);
 
         Resource root = server.getRoot();
@@ -137,7 +137,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 thing.addForm(form);
                 log.info("Assign '{}' for reading all properties", href);
 
-                allResource.add(new AllPropertiesResource(server, thing));
+                allResource.add(new AllPropertiesResource(thing));
             }
 
             CoapResource propertiesResource = new CoapResource("properties");
@@ -200,7 +200,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 action.addForm(form);
                 log.info("Assign '{}' to Action '{}'", href, name);
 
-                actionsResource.add(new ActionResource(server, name, action));
+                actionsResource.add(new ActionResource(name, action));
             });
         }
     }
