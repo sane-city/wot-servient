@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.Objects;
+
 /**
  * This class represents a read-only model of a thing action.
  * The class {@link Builder} can be used to build new thing action models.
@@ -28,6 +30,28 @@ public class ThingAction extends ThingInteraction<ThingAction> {
 
     public DataSchema getOutput() {
         return output;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingAction)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ThingAction that = (ThingAction) o;
+        return super.equals(that) &&
+                Objects.equals(input, that.input) &&
+                Objects.equals(output, that.output);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), input, output);
     }
 
     /**

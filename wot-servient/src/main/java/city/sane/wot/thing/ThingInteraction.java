@@ -5,10 +5,7 @@ import city.sane.wot.thing.form.Form;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract representation of a Thing Interaction (inherited from {@link city.sane.wot.thing.action.ThingAction}, {@link city.sane.wot.thing.event.ThingEvent}
@@ -50,6 +47,26 @@ public abstract class ThingInteraction<T> implements Serializable {
     public T addForm(Form form) {
         forms.add(form);
         return (T) this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingInteraction)) {
+            return false;
+        }
+        ThingInteraction<?> that = (ThingInteraction<?>) o;
+        return Objects.equals(description, that.description) &&
+                Objects.equals(descriptions, that.descriptions) &&
+                Objects.equals(forms, that.forms) &&
+                Objects.equals(uriVariables, that.uriVariables);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, descriptions, forms, uriVariables);
     }
 
     public abstract static class AbstractBuilder<T extends ObjectBuilder> implements ObjectBuilder {

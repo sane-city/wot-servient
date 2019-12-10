@@ -78,6 +78,27 @@ public class Form implements Serializable {
         return optionalProperties.get(name);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Form)) {
+            return false;
+        }
+        Form form = (Form) o;
+        return Objects.equals(href, form.href) &&
+                Objects.equals(op, form.op) &&
+                Objects.equals(subprotocol, form.subprotocol) &&
+                Objects.equals(contentType, form.contentType) &&
+                Objects.equals(optionalProperties, form.optionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(href, op, subprotocol, contentType, optionalProperties);
+    }
+
     /**
      * Allows building new {@link Form} objects.
      */

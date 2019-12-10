@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class represents a read-only model of a thing property.
@@ -67,6 +68,32 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
 
     public Object getOptional(String name) {
         return optionalProperties.get(name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingProperty)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ThingProperty that = (ThingProperty) o;
+        return super.equals(that) &&
+                observable == that.observable &&
+                readOnly == that.readOnly &&
+                writeOnly == that.writeOnly &&
+                Objects.equals(objectType, that.objectType) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(optionalProperties, that.optionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), objectType, type, observable, readOnly, writeOnly, optionalProperties);
     }
 
     /**

@@ -1,6 +1,14 @@
 package city.sane.wot.thing;
 
+import city.sane.wot.thing.action.ThingAction;
+import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.form.Form;
+import city.sane.wot.thing.property.ThingProperty;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -106,5 +114,30 @@ public class ThingTest {
         Thing thing = Thing.fromJson(json);
 
         assertEquals(1, thing.getPropertiesByExpandedObjectType("https://w3id.org/saref#Temperature").size());
+    }
+
+    @Test
+    public void builder() {
+        Thing thing = new Thing.Builder()
+                .setObjectType("saref:Temperature")
+                .setObjectContext(new Context("http://www.w3.org/ns/td"))
+                .setId("counter")
+                .setTitle("Counter")
+                .setDescription("This is a counter")
+                .addProperty("count", new ThingProperty.Builder().build())
+                .addAction("increment", new ThingAction.Builder().build())
+                .addEvent("change", new ThingEvent.Builder().build())
+                .addForm(new Form.Builder().build())
+                .build();
+
+        assertEquals("saref:Temperature", thing.getObjectType());
+        assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
+        assertEquals("counter", thing.getId());
+        assertEquals("Counter", thing.getTitle());
+        assertEquals("This is a counter", thing.getDescription());
+        assertEquals(Map.of("count", new ThingProperty.Builder().build()), thing.getProperties());
+        assertEquals(Map.of("increment", new ThingAction.Builder().build()), thing.getActions());
+        assertEquals(Map.of("change", new ThingEvent.Builder().build()), thing.getEvents());
+        assertEquals(new ArrayList<>(Arrays.asList(new Form.Builder().build())), thing.getForms());
     }
 }
