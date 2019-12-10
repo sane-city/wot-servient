@@ -223,7 +223,8 @@ public class HttpProtocolClient implements ProtocolClient {
                 else {
                     body = new byte[0];
                 }
-                return new Content(type, body);
+                Content content = new Content(type, body);
+                return content;
 
             }
             catch (IOException e) {
