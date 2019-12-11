@@ -42,13 +42,12 @@ import java.util.stream.Stream;
  * should contain a map which uses the thing ids as key.
  */
 public class Servient {
-    static final Logger log = LoggerFactory.getLogger(Servient.class);
+    private static final Logger log = LoggerFactory.getLogger(Servient.class);
 
-    private final Config config;
     private final List<ProtocolServer> servers = new ArrayList<>();
     private final Map<String, ProtocolClientFactory> clientFactories = new HashMap<>();
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private Map<String, Object> credentialStore = new HashMap<>();
+    private final Map<String, Object> credentialStore = new HashMap<>();
 
     /**
      * Creates a servient with the given <code>config</code>.
@@ -56,10 +55,8 @@ public class Servient {
      * @param config
      */
     public Servient(Config config) throws ServientException {
-        this.config = config;
-
         // read servers from config
-        List<String> requiredServers = this.config.getStringList("wot.servient.servers");
+        List<String> requiredServers = config.getStringList("wot.servient.servers");
         for (String serverName : requiredServers) {
             try {
                 Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
@@ -73,11 +70,17 @@ public class Servient {
         }
 
         // read client factories from config
-        List<String> requiredFactories = this.config.getStringList("wot.servient.client-factories");
+        List<String> requiredFactories = config.getStringList("wot.servient.client-factories");
         for (String factoryName : requiredFactories) {
             try {
                 Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
-                Constructor<ProtocolClientFactory> constructor = factoryKlass.getConstructor(Config.class);
+                Constructor<ProtocolClientFactory> constructor;
+                if (Servient.hasConstructor(factoryKlass, Config.class)) {
+                    constructor = factoryKlass.getConstructor(Config.class);
+                }
+                else {
+                    constructor = factoryKlass.getConstructor();
+                }
                 ProtocolClientFactory factory = constructor.newInstance(config);
                 clientFactories.put(factory.getScheme(), factory);
             }
@@ -88,8 +91,8 @@ public class Servient {
 
         // read credentials from config
         String credentialsPath = "wot.servient.credentials";
-        if (this.config.hasPath(credentialsPath)) {
-            addCredentials(this.config.getObject(credentialsPath));
+        if (config.hasPath(credentialsPath)) {
+            addCredentials(config.getObject(credentialsPath));
         }
     }
 
@@ -248,7 +251,7 @@ public class Servient {
      *
      * @return
      */
-    public Map<String, ExposedThing> getThings() {
+    private Map<String, ExposedThing> getThings() {
         return things;
     }
 
@@ -370,7 +373,7 @@ public class Servient {
      *
      * @return
      */
-    public CompletableFuture<Void> register(URI directory, ExposedThing thing) {
+    private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
         return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
@@ -396,7 +399,7 @@ public class Servient {
      *
      * @return
      */
-    public CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
+    private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
         // FIXME: implement
         return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
@@ -528,7 +531,7 @@ public class Servient {
      *
      * @param credentials
      */
-    public void addCredentials(Map credentials) {
+    private void addCredentials(Map credentials) {
         log.debug("Servient storing credentials for '{}'", credentials.keySet());
         credentialStore.putAll(credentials);
     }
@@ -633,5 +636,15 @@ public class Servient {
                 .parseString("wot.servient.servers = []")
                 .withFallback(config);
         return new Servient(clientOnlyConfig);
+    }
+
+    private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {
+        try {
+            clazz.getConstructor(parameterTypes);
+            return true;
+        }
+        catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 }

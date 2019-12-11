@@ -3,9 +3,7 @@ package city.sane.wot.thing.event;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
@@ -41,13 +39,13 @@ public class ConsumedThingEventTest {
 
         CompletableFuture<Object> future = new CompletableFuture<>();
 
-        consumedThingEvent.subscribe(data -> future.complete(data)).get();
+        consumedThingEvent.subscribe(future::complete).get();
 
         assertEquals(1337, future.get());
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        public MyProtocolClientFactory(Config config) {
+        MyProtocolClientFactory() {
 
         }
 
@@ -57,19 +55,17 @@ public class ConsumedThingEventTest {
         }
 
         @Override
-        public ProtocolClient getClient() throws ProtocolClientException {
+        public ProtocolClient getClient() {
             return new ConsumedThingEventTest.MyProtocolClient();
         }
     }
 
     static class MyProtocolClient implements ProtocolClient {
         @Override
-        public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+        public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/myEvent":
-                    json = "1337";
-                    break;
+            if ("test:/myEvent".equals(form.getHref())) {
+                json = "1337";
             }
             observer.next(new Content("application/json", json.getBytes()));
             Subscription subscription = new Subscription();

@@ -21,12 +21,12 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingProperty}.
  */
-public class PropertyActor extends AbstractActor {
+class PropertyActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingProperty property;
 
-    public PropertyActor(String name, ExposedThingProperty property) {
+    private PropertyActor(String name, ExposedThingProperty property) {
         this.name = name;
         this.property = property;
     }
@@ -65,13 +65,13 @@ public class PropertyActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Read.class, this::read)
+                .match(Read.class, m -> read())
                 .match(Write.class, this::write)
-                .match(Subscribe.class, this::subscribe)
+                .match(Subscribe.class, m1 -> subscribe())
                 .build();
     }
 
-    private void read(Read m) {
+    private void read() {
         ActorRef sender = getSender();
 
         property.read().whenComplete((value, e) -> {
@@ -112,7 +112,7 @@ public class PropertyActor extends AbstractActor {
         }
     }
 
-    private void subscribe(Subscribe m) {
+    private void subscribe() {
         // FIXME: Implement
     }
 
@@ -120,7 +120,7 @@ public class PropertyActor extends AbstractActor {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
     }
 
-    public static class Subscribe implements Serializable {
+    private static class Subscribe implements Serializable {
         // FIXME: Implement
     }
 }

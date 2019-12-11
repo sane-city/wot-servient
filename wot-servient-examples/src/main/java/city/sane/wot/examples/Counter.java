@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * Produces and exposes a counter thing.
  */
-public class Counter {
+class Counter {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

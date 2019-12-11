@@ -36,7 +36,7 @@ import static jadex.commons.future.IFuture.DONE;
         @ProvidedService(type = ThingService.class, scope = ServiceScope.GLOBAL)
 })
 public class ThingAgent implements ThingService {
-    static final Logger log = LoggerFactory.getLogger(ThingAgent.class);
+    private static final Logger log = LoggerFactory.getLogger(ThingAgent.class);
 
     @Agent
     private IInternalAccess agent;
@@ -149,7 +149,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read properties: {}", e);
+                log.warn("Unable to read properties", e);
                 return null;
             }
         });
@@ -166,7 +166,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read property: {}", e);
+                log.warn("Unable to read property", e);
                 return null;
             }
         });
@@ -187,7 +187,7 @@ public class ThingAgent implements ThingService {
                     return new JadexContent(outputContent);
                 }
                 catch (ContentCodecException e) {
-                    log.warn("Unable to write property: {}", e);
+                    log.warn("Unable to write property", e);
                     return null;
                 }
             });
@@ -199,7 +199,7 @@ public class ThingAgent implements ThingService {
         }
     }
 
-    public static URI buildInteractionURI(String serviceId, String type, String name) {
+    private static URI buildInteractionURI(String serviceId, String type, String name) {
         return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceId, type, name).build().encode().toUri();
     }
 }

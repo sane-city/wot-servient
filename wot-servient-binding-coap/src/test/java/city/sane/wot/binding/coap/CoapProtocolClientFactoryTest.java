@@ -9,11 +9,11 @@ import static org.junit.Assert.assertEquals;
 public class CoapProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("coap", new CoapProtocolClientFactory(null).getScheme());
+        assertEquals("coap", new CoapProtocolClientFactory().getScheme());
     }
 
     @Test
     public void getClient() {
-        assertThat(new CoapProtocolClientFactory(null).getClient(), instanceOf(CoapProtocolClient.class));
+        assertThat(new CoapProtocolClientFactory().getClient(), instanceOf(CoapProtocolClient.class));
     }
 }

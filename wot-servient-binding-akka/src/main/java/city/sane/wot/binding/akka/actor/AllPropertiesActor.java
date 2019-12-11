@@ -19,11 +19,11 @@ import static city.sane.wot.binding.akka.Messages.RespondRead;
 /**
  * This Actor is responsible for reading all {@link city.sane.wot.thing.property.ExposedThingProperty} at the same time.
  */
-public class AllPropertiesActor extends AbstractActor {
+class AllPropertiesActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ExposedThing thing;
 
-    public AllPropertiesActor(ExposedThing thing) {
+    private AllPropertiesActor(ExposedThing thing) {
         this.thing = thing;
     }
 
@@ -52,11 +52,11 @@ public class AllPropertiesActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(city.sane.wot.binding.akka.Messages.Read.class, this::read)
+                .match(city.sane.wot.binding.akka.Messages.Read.class, m -> read())
                 .build();
     }
 
-    private void read(city.sane.wot.binding.akka.Messages.Read m) {
+    private void read() {
         ActorRef sender = getSender();
 
         thing.readProperties().whenComplete((value, e) -> {

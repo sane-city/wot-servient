@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
 public class ConsumedThingProperty extends ThingProperty {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
 
     private final String name;
     private final ConsumedThing thing;
@@ -111,7 +111,7 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();

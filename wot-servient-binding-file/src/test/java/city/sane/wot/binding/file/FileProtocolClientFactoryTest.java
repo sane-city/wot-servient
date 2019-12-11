@@ -9,11 +9,11 @@ import static org.junit.Assert.assertEquals;
 public class FileProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("file", new FileProtocolClientFactory(null).getScheme());
+        assertEquals("file", new FileProtocolClientFactory().getScheme());
     }
 
     @Test
     public void getClient() {
-        assertThat(new FileProtocolClientFactory(null).getClient(), instanceOf(FileProtocolClient.class));
+        assertThat(new FileProtocolClientFactory().getClient(), instanceOf(FileProtocolClient.class));
     }
 }

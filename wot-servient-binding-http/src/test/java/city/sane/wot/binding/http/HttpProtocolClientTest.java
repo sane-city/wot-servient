@@ -7,7 +7,6 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
-import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +30,7 @@ public class HttpProtocolClientTest {
 
     @Before
     public void setUp() {
-        clientFactory = new HttpProtocolClientFactory(ConfigFactory.load());
+        clientFactory = new HttpProtocolClientFactory();
         clientFactory.init().join();
 
         client = clientFactory.getClient();
@@ -82,15 +81,9 @@ public class HttpProtocolClientTest {
         Form form = new Form.Builder().setHref(href).build();
 
         CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
-        assertThat(client.subscribeResource(form, new Observer<>(next -> {
-            nextCalledFuture.complete(null);
-        })).get(), instanceOf(Subscription.class));
+        assertThat(client.subscribeResource(form, new Observer<>(next -> nextCalledFuture.complete(null))).get(), instanceOf(Subscription.class));
 
         assertNull(nextCalledFuture.get());
-    }
-
-    @Test
-    public void setSecurity() {
     }
 
     private class MyReadRoute implements Route {

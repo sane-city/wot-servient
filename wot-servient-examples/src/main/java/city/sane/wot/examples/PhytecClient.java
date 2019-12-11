@@ -13,8 +13,8 @@ import java.util.concurrent.ExecutionException;
 /**
  * This examples read properties from a phyNODE.
  */
-public class PhytecClient {
-    public PhytecClient() throws URISyntaxException, WotException {
+class PhytecClient {
+    private PhytecClient() throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

@@ -2,7 +2,6 @@ package city.sane.wot.binding.coap;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
-import com.typesafe.config.Config;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.util.concurrent.ExecutorService;
@@ -20,7 +19,7 @@ public class CoapProtocolClientFactory implements ProtocolClientFactory {
 
     private final ExecutorService executor;
 
-    public CoapProtocolClientFactory(Config config) {
+    public CoapProtocolClientFactory() {
         executor = Executors.newFixedThreadPool(10);
     }
 

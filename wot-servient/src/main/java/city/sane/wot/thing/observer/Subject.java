@@ -16,9 +16,9 @@ import java.util.concurrent.CompletableFuture;
  * @param <T>
  */
 public class Subject<T> implements Subscribable<T> {
-    static final Logger log = LoggerFactory.getLogger(Subject.class);
+    private static final Logger log = LoggerFactory.getLogger(Subject.class);
     private final Map<Subscription, Observer> observers = new HashMap<>();
-    protected boolean closed = false;
+    private boolean closed = false;
 
     public Map<Subscription, Observer> getObservers() {
         return observers;

@@ -9,8 +9,8 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MqttProtocolSettings {
-    static final Logger log = LoggerFactory.getLogger(MqttProtocolSettings.class);
+class MqttProtocolSettings {
+    private static final Logger log = LoggerFactory.getLogger(MqttProtocolSettings.class);
 
     private final String broker;
     private final String clientId;
@@ -51,15 +51,15 @@ public class MqttProtocolSettings {
         return broker;
     }
 
-    public String getClientId() {
+    private String getClientId() {
         return clientId;
     }
 
-    public String getUsername() {
+    private String getUsername() {
         return username;
     }
 
-    public String getPassword() {
+    private String getPassword() {
         return password;
     }
 

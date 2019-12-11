@@ -26,7 +26,7 @@ public class SubjectTest {
         AtomicReference<Throwable> result = new AtomicReference<>();
         Subject<String> subject = new Subject();
         subject.subscribe(next -> {
-        }, e -> result.set(e), () -> {
+        }, result::set, () -> {
         });
         subject.error(new Exception("Fatal Error")).join();
 

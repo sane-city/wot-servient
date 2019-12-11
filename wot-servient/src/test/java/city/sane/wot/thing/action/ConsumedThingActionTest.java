@@ -3,7 +3,6 @@ package city.sane.wot.thing.action;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.ConsumedThing;
@@ -39,7 +38,7 @@ public class ConsumedThingActionTest {
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        public MyProtocolClientFactory(Config config) {
+        MyProtocolClientFactory() {
 
         }
 
@@ -49,7 +48,7 @@ public class ConsumedThingActionTest {
         }
 
         @Override
-        public ProtocolClient getClient() throws ProtocolClientException {
+        public ProtocolClient getClient() {
             return new ConsumedThingActionTest.MyProtocolClient();
         }
     }
@@ -58,10 +57,8 @@ public class ConsumedThingActionTest {
         @Override
         public CompletableFuture<Content> invokeResource(Form form, Content content) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/myAction":
-                    json = "1337";
-                    break;
+            if ("test:/myAction".equals(form.getHref())) {
+                json = "1337";
             }
             return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
         }

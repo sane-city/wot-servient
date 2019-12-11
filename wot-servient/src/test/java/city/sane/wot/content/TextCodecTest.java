@@ -48,9 +48,8 @@ public class TextCodecTest {
         Number value = codec.bytesToValue(bytes, new NumberSchema());
 
         assertNotNull("Should be instance of Number", value);
-        Number number = value;
 
-        assertEquals(13.37, number);
+        assertEquals(13.37, value);
     }
 
     @Test
@@ -59,9 +58,8 @@ public class TextCodecTest {
         Number value = codec.bytesToValue(bytes, new NumberSchema());
 
         assertNotNull("Should be instance of Number", value);
-        Number number = value;
 
-        assertEquals(1337L, number);
+        assertEquals(1337L, value);
     }
 
     @Test
@@ -70,9 +68,8 @@ public class TextCodecTest {
         String value = codec.bytesToValue(bytes, new StringSchema());
 
         assertNotNull("Should be instance of String", value);
-        String string = value;
 
-        assertEquals("Hallo Welt", string);
+        assertEquals("Hallo Welt", value);
     }
 
     @Test

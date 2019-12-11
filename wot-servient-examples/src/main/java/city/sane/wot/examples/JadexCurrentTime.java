@@ -16,7 +16,7 @@ import java.util.TimerTask;
 /**
  * Creates and exposes a thing that returns the current time.
  */
-public class JadexCurrentTime {
+class JadexCurrentTime {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

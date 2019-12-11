@@ -9,7 +9,7 @@ import city.sane.wot.thing.Thing;
 /**
  * This example exposes a Thing that can be discovered by other Actor Systems.
  */
-public class AkkaDiscovery {
+class AkkaDiscovery {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

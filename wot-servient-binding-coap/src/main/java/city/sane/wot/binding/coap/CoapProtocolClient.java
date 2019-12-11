@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
  * Allows consuming Things via CoAP.
  */
 public class CoapProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;
 
     public CoapProtocolClient(ExecutorService executor) {
@@ -160,7 +160,7 @@ public class CoapProtocolClient implements ProtocolClient {
     class FutureCoapHandler implements CoapHandler {
         private final CompletableFuture future;
 
-        public FutureCoapHandler(CompletableFuture future) {
+        FutureCoapHandler(CompletableFuture future) {
             this.future = future;
         }
 

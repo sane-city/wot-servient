@@ -324,7 +324,7 @@ public class ServientTest {
     }
 
     static class MyProtocolServer implements ProtocolServer {
-        public MyProtocolServer(Config config) {
+        MyProtocolServer(Config config) {
 
         }
 
@@ -350,7 +350,7 @@ public class ServientTest {
     }
 
     static class MyProtocolClientFactory implements ProtocolClientFactory {
-        public MyProtocolClientFactory(Config config) {
+        MyProtocolClientFactory(Config config) {
 
         }
 
@@ -360,7 +360,7 @@ public class ServientTest {
         }
 
         @Override
-        public ProtocolClient getClient() throws ProtocolClientException {
+        public ProtocolClient getClient() {
             return new MyProtocolClient();
         }
     }
@@ -388,7 +388,7 @@ public class ServientTest {
     }
 
     static class MyBadMissingImplementationProtocolServer {
-        public MyBadMissingImplementationProtocolServer(Config config) {
+        MyBadMissingImplementationProtocolServer(Config config) {
 
         }
     }
@@ -440,7 +440,7 @@ public class ServientTest {
     }
 
     static class MyBadMissingImplementationProtocolClientFactory {
-        public MyBadMissingImplementationProtocolClientFactory(Config config) {
+        MyBadMissingImplementationProtocolClientFactory(Config config) {
 
         }
     }

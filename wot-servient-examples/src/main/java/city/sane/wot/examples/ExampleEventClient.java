@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 /**
  * Fetch thing description exposes by {@link ExampleEvent} and then subscribe to the event.
  */
-public class ExampleEventClient {
+class ExampleEventClient {
     public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();

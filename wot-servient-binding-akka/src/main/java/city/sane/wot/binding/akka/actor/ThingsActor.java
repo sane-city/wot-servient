@@ -36,7 +36,7 @@ public class ThingsActor extends AbstractActor {
     private final Map<String, ActorRef> children = new HashMap<>();
     private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
 
-    public ThingsActor(Map<String, ExposedThing> things) {
+    private ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
     }
 
@@ -58,7 +58,7 @@ public class ThingsActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DistributedPubSubMediator.SubscribeAck.class, this::subscriptionAcknowledged)
-                .match(Read.class, this::getThings)
+                .match(Read.class, m -> getThings())
                 .match(Discover.class, this::discover)
                 .match(Expose.class, this::expose)
                 .match(Created.class, this::exposed)
@@ -85,7 +85,7 @@ public class ThingsActor extends AbstractActor {
         requester.tell(new Created(getSender()), getSelf());
     }
 
-    private void getThings(Read m) throws ContentCodecException {
+    private void getThings() throws ContentCodecException {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
@@ -157,7 +157,7 @@ public class ThingsActor extends AbstractActor {
     }
 
     public static class Expose implements Serializable {
-        public final String entity;
+        final String entity;
 
         public Expose(String entity) {
             this.entity = entity;
@@ -173,7 +173,7 @@ public class ThingsActor extends AbstractActor {
     }
 
     public static class Destroy implements Serializable {
-        public final String id;
+        final String id;
 
         public Destroy(String id) {
             this.id = id;

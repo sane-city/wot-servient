@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract resource for exposing Things. Inherited from all other resources.
  */
-public abstract class AbstractResource extends CoapResource {
-    static final Logger log = LoggerFactory.getLogger(AbstractResource.class);
+abstract class AbstractResource extends CoapResource {
+    private static final Logger log = LoggerFactory.getLogger(AbstractResource.class);
 
-    public AbstractResource(String name) {
+    AbstractResource(String name) {
         super(name);
     }
 
-    protected String getOrDefaultRequestContentType(CoapExchange exchange) {
+    String getOrDefaultRequestContentType(CoapExchange exchange) {
         int requestContentFormatNum = exchange.getRequestOptions().getContentFormat();
         if (requestContentFormatNum != -1) {
             return MediaTypeRegistry.toString(requestContentFormatNum);
@@ -28,7 +28,7 @@ public abstract class AbstractResource extends CoapResource {
         }
     }
 
-    protected boolean ensureSupportedContentFormat(CoapExchange exchange, String requestContentFormat) {
+    boolean ensureSupportedContentFormat(CoapExchange exchange, String requestContentFormat) {
         if (ContentManager.isSupportedMediaType(requestContentFormat)) {
             return true;
         }

@@ -59,7 +59,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
 
     // CrudMessages
     public static class Discover implements Serializable {
-        public final ThingFilter filter;
+        final ThingFilter filter;
 
         public Discover(ThingFilter filter) {
             this.filter = filter;

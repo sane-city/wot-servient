@@ -319,7 +319,7 @@ public class ExposedThingTest {
     }
 
     public static class MyProtocolServer implements ProtocolServer {
-        public MyProtocolServer(Config config) {
+        public MyProtocolServer() {
 
         }
 

@@ -60,9 +60,7 @@ public class MqttProtocolClientTest {
         Form form = new Form.Builder().setHref(href).build();
 
         CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
-        assertThat(client.subscribeResource(form, new Observer<>(next -> {
-            nextCalledFuture.complete(null);
-        })).get(), instanceOf(Subscription.class));
+        assertThat(client.subscribeResource(form, new Observer<>(next -> nextCalledFuture.complete(null))).get(), instanceOf(Subscription.class));
 
         MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId());
         client.connect();

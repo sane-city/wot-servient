@@ -24,10 +24,8 @@ import java.util.Map;
 /**
  * Produces and exposes every Klimabotschafter's weather stations as a thing.
  */
-public class Klimabotschafter {
-    private final Map<String, ExposedThing> things = new HashMap();
-
-    public Klimabotschafter() throws InterruptedException, WotException {
+class Klimabotschafter {
+    private Klimabotschafter() throws InterruptedException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -47,6 +45,7 @@ public class Klimabotschafter {
                     JsonNode station = stations.next();
                     String stName = station.get("st_name").asText();
 
+                    Map<String, ExposedThing> things = new HashMap();
                     ExposedThing exposedThing = things.get(stName);
 
                     if (exposedThing == null) {

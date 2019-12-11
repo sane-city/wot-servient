@@ -3,9 +3,7 @@ package city.sane.wot.thing.property;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
@@ -108,13 +106,13 @@ public class ConsumedThingPropertyTest {
 
         CompletableFuture<Object> future = new CompletableFuture<>();
 
-        consumedThingProperty.subscribe(data -> future.complete(data)).get();
+        consumedThingProperty.subscribe(future::complete).get();
 
         assertEquals(42, future.get());
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        public MyProtocolClientFactory(Config config) {
+        MyProtocolClientFactory() {
 
         }
 
@@ -124,7 +122,7 @@ public class ConsumedThingPropertyTest {
         }
 
         @Override
-        public ProtocolClient getClient() throws ProtocolClientException {
+        public ProtocolClient getClient() {
             return new ConsumedThingPropertyTest.MyProtocolClient();
         }
     }
@@ -133,10 +131,8 @@ public class ConsumedThingPropertyTest {
         @Override
         public CompletableFuture<Content> readResource(Form form) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/count/read":
-                    json = "1337";
-                    break;
+            if ("test:/count/read".equals(form.getHref())) {
+                json = "1337";
             }
             return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
         }
@@ -144,21 +140,17 @@ public class ConsumedThingPropertyTest {
         @Override
         public CompletableFuture<Content> writeResource(Form form, Content content) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/count/write":
-                    json = "true";
-                    break;
+            if ("test:/count/write".equals(form.getHref())) {
+                json = "true";
             }
             return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
         }
 
         @Override
-        public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+        public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/count/observe":
-                    json = "42";
-                    break;
+            if ("test:/count/observe".equals(form.getHref())) {
+                json = "42";
             }
             observer.next(new Content("application/json", json.getBytes()));
             Subscription subscription = new Subscription();

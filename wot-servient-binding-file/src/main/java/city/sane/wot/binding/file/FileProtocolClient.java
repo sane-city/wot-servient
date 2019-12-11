@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via local files.
  */
 public class FileProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
     private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = Map.of(
         ".json", "application/json",
         ".jsonld", "application/ld+json"

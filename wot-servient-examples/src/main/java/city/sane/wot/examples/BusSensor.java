@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * Receives data from a The Things Network-connected LoRa Sensor deployed on a HOCHBAHN bus.
  */
-public class BusSensor {
+class BusSensor {
     public static void main(String[] args) throws ConsumedThingException, WotException {
         // create wot
         Wot wot = new DefaultWot();

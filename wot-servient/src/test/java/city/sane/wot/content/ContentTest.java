@@ -2,7 +2,7 @@ package city.sane.wot.content;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class ContentTest {
     @Test
@@ -10,6 +10,6 @@ public class ContentTest {
         Content contentA = new Content("application/json", "Hallo Welt".getBytes());
         Content contentB = new Content("application/json", "Hallo Welt".getBytes());
 
-        assertTrue(contentA.equals(contentB));
+        assertEquals(contentA, contentB);
     }
 }

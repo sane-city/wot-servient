@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  *   }
  * }
  */
-public class HttpBasicAuthClient {
+class HttpBasicAuthClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         Wot wot = DefaultWot.clientOnly();
 

@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Fetch thing description exposes by {@link CounterUriVariables} and then interact with it.
  */
-public class CounterUriVariablesClient {
+class CounterUriVariablesClient {
     public static void main(String[] args) throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();

@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Produces and exposes a counter thing with variables for interaction.
  */
-public class CounterUriVariables {
+class CounterUriVariables {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

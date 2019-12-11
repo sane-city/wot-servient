@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for displaying a Thing Description.
  */
 public class ThingResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(ThingResource.class);
+    private static final Logger log = LoggerFactory.getLogger(ThingResource.class);
 
     private final ExposedThing thing;
 
@@ -41,7 +41,7 @@ public class ThingResource extends AbstractResource {
             exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
         }
         catch (ContentCodecException e) {
-            log.warn("Exception: {}", e);
+            log.warn("Exception", e);
             exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
         }
     }

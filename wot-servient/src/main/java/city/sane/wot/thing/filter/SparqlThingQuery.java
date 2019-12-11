@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
  * ?x &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; &lt;https://www.w3.org/2019/wot/td#Thing&gt; .
  */
 public class SparqlThingQuery implements ThingQuery {
-    static final Logger log = LoggerFactory.getLogger(SparqlThingQuery.class);
+    private static final Logger log = LoggerFactory.getLogger(SparqlThingQuery.class);
 
     // FIXME use tag: or urn: instead (see https://github.com/jsonld-java/jsonld-java/issues/232)
-    static final String DEFAULT_BASE_IRI = "https://sane.city/";
+    private static final String DEFAULT_BASE_IRI = "https://sane.city/";
     private static final RDFFormat FORMAT = Rio.getParserFormatForMIMEType("application/td+json").orElse(RDFFormat.JSONLD);
 
     private final String query;

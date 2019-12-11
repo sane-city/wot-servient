@@ -76,7 +76,7 @@ public class AkkaProtocolClientTest {
         assertThat(client.discover(new ThingFilter()).get(), instanceOf(Collection.class));
     }
 
-    class MyReadActor extends AbstractActor {
+    private class MyReadActor extends AbstractActor {
         @Override
         public Receive createReceive() {
             return receiveBuilder().match(Messages.Read.class, m -> {
@@ -86,7 +86,7 @@ public class AkkaProtocolClientTest {
         }
     }
 
-    class MyWriteActor extends AbstractActor {
+    private class MyWriteActor extends AbstractActor {
         @Override
         public Receive createReceive() {
             return receiveBuilder().match(Messages.Write.class, m -> {
@@ -96,12 +96,10 @@ public class AkkaProtocolClientTest {
         }
     }
 
-    class MyDiscoverActor extends AbstractActor {
+    private class MyDiscoverActor extends AbstractActor {
         @Override
         public Receive createReceive() {
-            return receiveBuilder().match(DiscoveryDispatcherActor.Discover.class, m -> {
-                getSender().tell(new ThingsActor.Things(Collections.emptyMap()), getSelf());
-            }).build();
+            return receiveBuilder().match(DiscoveryDispatcherActor.Discover.class, m -> getSender().tell(new ThingsActor.Things(Collections.emptyMap()), getSelf())).build();
         }
     }
 }

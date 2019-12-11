@@ -12,9 +12,7 @@ import jadex.bridge.service.search.ServiceQuery;
 import jadex.bridge.service.types.cms.CreationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,11 +24,10 @@ import java.util.concurrent.CompletableFuture;
  * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.server".
  */
 public class JadexProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final IPlatformConfiguration platformConfig;
-    private String serviceInteractionId;
     private IExternalAccess platform;
     private ThingsService thingsService;
 
@@ -57,8 +54,8 @@ public class JadexProtocolServer implements ProtocolServer {
 
         CompletableFuture<ThingsService> start = createPlatform
                 .thenCombine(searchThingsService, (ia, service) -> {
-                    this.platform = ia;
-                    this.thingsService = service;
+                    platform = ia;
+                    thingsService = service;
                     return thingsService;
                 });
 
@@ -88,21 +85,9 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("JadexServer stop exposing '{}' at {}", thing.getId(), buildJadexURI(serviceInteractionId, thing.getId()));
         things.remove(thing.getId());
 
         return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
     }
 
-    public Map<String, ExposedThing> getThings() {
-        return things;
-    }
-
-    public void setServiceInteractionId(String serviceInteractionId) {
-        this.serviceInteractionId = serviceInteractionId;
-    }
-
-    public static URI buildJadexURI(String serviceId, String thingId) {
-        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceId, thingId).build().encode().toUri();
-    }
 }

@@ -7,6 +7,6 @@ import static org.junit.Assert.assertEquals;
 public class HttpsProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("https", new HttpsProtocolClientFactory(null).getScheme());
+        assertEquals("https", new HttpsProtocolClientFactory().getScheme());
     }
 }

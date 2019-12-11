@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Allows exposing Things via HTTP.
  */
 public class HttpProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
     private static final String HTTP_METHOD_NAME = "htv:methodName";
 
     private final String bindHost;
@@ -201,7 +201,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to create directory url: {}", e);
+            log.warn("Unable to create directory url", e);
             return null;
         }
     }
@@ -212,7 +212,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to thing url: {}", e);
+            log.warn("Unable to thing url", e);
             return null;
         }
     }
@@ -225,9 +225,5 @@ public class HttpProtocolServer implements ProtocolServer {
         }
 
         return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
-    }
-
-    public Service getHTTPServer () {
-        return this.server;
     }
 }
