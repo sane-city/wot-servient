@@ -2,7 +2,6 @@ package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,10 +20,6 @@ public class ExposedThingPropertyTest {
         thing = new ExposedThing(null, new Thing.Builder().setId("ThingA").build());
         thing.addProperty("foo", new ThingProperty());
         property = thing.getProperty("foo");
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test

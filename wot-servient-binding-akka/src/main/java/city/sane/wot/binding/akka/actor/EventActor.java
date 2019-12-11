@@ -14,12 +14,12 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingEvent}.
  */
-public class EventActor extends AbstractActor {
+class EventActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingEvent event;
 
-    public EventActor(String name, ExposedThingEvent event) {
+    private EventActor(String name, ExposedThingEvent event) {
         this.name = name;
         this.event = event;
     }

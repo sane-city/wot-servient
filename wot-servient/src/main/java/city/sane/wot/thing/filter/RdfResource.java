@@ -28,8 +28,8 @@ import java.util.UUID;
  * DCAT RDF vocabulary
  * </a>
  */
-public class RdfResource {
-    static final Logger log = LoggerFactory.getLogger(RdfResource.class);
+class RdfResource {
+    private static final Logger log = LoggerFactory.getLogger(RdfResource.class);
 
     /**
      * DCAT meta-data
@@ -77,7 +77,7 @@ public class RdfResource {
      *
      * @return a UUID URN
      */
-    static IRI generate(Model g) {
+    private static IRI generate(Model g) {
         // TODO normalize graph and always return the same id for a fixed graph
         return SimpleValueFactory.getInstance().createIRI("urn:uuid:" + UUID.randomUUID());
     }

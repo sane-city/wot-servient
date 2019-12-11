@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingEvent}.
  */
 public class ConsumedThingEvent extends ThingEvent {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
 
     private final String name;
     private final ConsumedThing thing;
@@ -34,7 +34,7 @@ public class ConsumedThingEvent extends ThingEvent {
         this.thing = thing;
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.SUBSCRIBE_EVENT);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
@@ -44,7 +44,7 @@ public class ConsumedThingEvent extends ThingEvent {
             return client.subscribeResource(form,
                     new Observer<>(content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, this.getData());
+                            Object value = ContentManager.contentToValue(content, getData());
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {

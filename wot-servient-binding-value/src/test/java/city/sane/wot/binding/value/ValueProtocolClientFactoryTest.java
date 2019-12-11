@@ -9,11 +9,11 @@ import static org.junit.Assert.assertEquals;
 public class ValueProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("value", new ValueProtocolClientFactory(null).getScheme());
+        assertEquals("value", new ValueProtocolClientFactory().getScheme());
     }
 
     @Test
     public void getClient() {
-        assertThat(new ValueProtocolClientFactory(null).getClient(), instanceOf(ValueProtocolClient.class));
+        assertThat(new ValueProtocolClientFactory().getClient(), instanceOf(ValueProtocolClient.class));
     }
 }

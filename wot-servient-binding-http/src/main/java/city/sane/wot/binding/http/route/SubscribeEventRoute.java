@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
  * Endpoint for interaction with a {@link city.sane.wot.thing.event.ThingEvent}.
  */
 public class SubscribeEventRoute extends AbstractInteractionRoute {
-    static final Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
+    private static final Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
 
     public SubscribeEventRoute(Map<String, ExposedThing> things) {
         super(things);

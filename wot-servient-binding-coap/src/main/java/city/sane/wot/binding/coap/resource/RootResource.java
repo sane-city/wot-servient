@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for listing all Things from the {@link city.sane.wot.Servient}.
  */
 public class RootResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(RootResource.class);
+    private static final Logger log = LoggerFactory.getLogger(RootResource.class);
 
     private final WotCoapServer server;
 
@@ -37,7 +37,7 @@ public class RootResource extends AbstractResource {
                 exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
             }
             catch (ContentCodecException e) {
-                log.warn("Exception: {}", e);
+                log.warn("Exception", e);
                 exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
             }
         }

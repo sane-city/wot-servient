@@ -13,12 +13,12 @@ import java.util.Set;
 /**
  * This Actor creates the {@link AllPropertiesActor} (and maybe more "all" actors in the future).
  */
-public class AllActor extends AbstractActor {
+class AllActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ExposedThing thing;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public AllActor(ExposedThing thing) {
+    private AllActor(ExposedThing thing) {
         this.thing = thing;
     }
 
@@ -38,11 +38,11 @@ public class AllActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(ThingsActor.Created.class, this::exposed)
+                .match(ThingsActor.Created.class, m -> exposed())
                 .build();
     }
 
-    private void exposed(ThingsActor.Created m) {
+    private void exposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }

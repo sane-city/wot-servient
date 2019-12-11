@@ -18,11 +18,11 @@ import java.util.Objects;
 public class ThingAction extends ThingInteraction<ThingAction> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema input;
+    DataSchema input;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema output;
+    DataSchema output;
 
     public DataSchema getInput() {
         return input;

@@ -7,7 +7,6 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
@@ -25,8 +24,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class WritePropertyRouteTest {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private Service service;
 
     @Before
@@ -52,6 +49,33 @@ public class WritePropertyRouteTest {
 
         assertEquals(204, response.getStatusLine().getStatusCode());
         assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
+    }
+
+    @Test
+    public void writePropertyUnknownThing() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/zaehler/properties/count");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void writePropertyUnknownProperty() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/county");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void writePropertyReadOnly() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/lastChange");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(400, response.getStatusLine().getStatusCode());
     }
 
     private ExposedThing getCounterThing() {

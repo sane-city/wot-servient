@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
  * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.client".
  */
 public class JadexProtocolClientFactory implements ProtocolClientFactory {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolClientFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolClientFactory.class);
 
     private final IPlatformConfiguration platformConfig;
 

@@ -12,8 +12,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,7 +92,7 @@ public class ThingTest {
                 "id", "Foo",
                 "description", "Bar",
                 "@type", "Thing",
-                "@context", Arrays.asList("http://www.w3.org/ns/td")
+                "@context", Collections.singletonList("http://www.w3.org/ns/td")
         );
         Thing thing = Thing.fromMap(map);
 

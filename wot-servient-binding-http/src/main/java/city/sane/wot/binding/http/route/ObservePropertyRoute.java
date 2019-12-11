@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ObservePropertyRoute extends AbstractInteractionRoute {
-    static final Logger log = LoggerFactory.getLogger(ObservePropertyRoute.class);
+    private static final Logger log = LoggerFactory.getLogger(ObservePropertyRoute.class);
 
     public ObservePropertyRoute(Map<String, ExposedThing> things) {
         super(things);

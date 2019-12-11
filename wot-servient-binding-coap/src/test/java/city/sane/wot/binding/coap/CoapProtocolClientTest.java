@@ -7,7 +7,6 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
@@ -32,7 +31,7 @@ public class CoapProtocolClientTest {
 
     @Before
     public void setUp() {
-        clientFactory = new CoapProtocolClientFactory(ConfigFactory.load());
+        clientFactory = new CoapProtocolClientFactory();
         clientFactory.init().join();
 
         client = clientFactory.getClient();
@@ -50,6 +49,17 @@ public class CoapProtocolClientTest {
         clientFactory.destroy().join();
 
         server.stop();
+
+        // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
+        //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
+        //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
+        //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
+        try {
+            Thread.sleep(1 * 1000L);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Test
@@ -82,15 +92,13 @@ public class CoapProtocolClientTest {
         Form form = new Form.Builder().setHref(href).build();
 
         CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
-        assertThat(client.subscribeResource(form, new Observer<>(next -> {
-            nextCalledFuture.complete(null);
-        })).get(), instanceOf(Subscription.class));
+        assertThat(client.subscribeResource(form, new Observer<>(next -> nextCalledFuture.complete(null))).get(), instanceOf(Subscription.class));
 
         assertNull(nextCalledFuture.get());
     }
 
     class MyReadResource extends CoapResource {
-        public MyReadResource() {
+        MyReadResource() {
             super("read");
         }
 
@@ -102,7 +110,7 @@ public class CoapProtocolClientTest {
     }
 
     class MyWriteResource extends CoapResource {
-        public MyWriteResource() {
+        MyWriteResource() {
             super("write");
         }
 
@@ -114,7 +122,7 @@ public class CoapProtocolClientTest {
     }
 
     class MyInvokeResource extends CoapResource {
-        public MyInvokeResource() {
+        MyInvokeResource() {
             super("invoke");
         }
 
@@ -126,7 +134,7 @@ public class CoapProtocolClientTest {
     }
 
     class MySubscribeResource extends CoapResource {
-        public MySubscribeResource() {
+        MySubscribeResource() {
             super("subscribe");
 
             setObservable(true); // enable observing

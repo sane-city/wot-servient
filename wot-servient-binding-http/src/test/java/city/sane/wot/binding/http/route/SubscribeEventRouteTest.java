@@ -2,8 +2,6 @@ package city.sane.wot.binding.http.route;
 
 import city.sane.wot.binding.http.ContentResponseTransformer;
 import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
-import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
@@ -52,7 +50,7 @@ public class SubscribeEventRouteTest {
     }
 
     @Test
-    public void subscribeEvent() throws InterruptedException, ExecutionException, ContentCodecException {
+    public void subscribeEvent() throws InterruptedException, ExecutionException {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
@@ -76,7 +74,7 @@ public class SubscribeEventRouteTest {
         event.emit().get();
 
         // future should complete within a few seconds
-        Number value = ContentManager.contentToValue(result.get(), new NumberSchema());
+        result.get();
 
         assertThat(result.get(), instanceOf(Content.class));
     }

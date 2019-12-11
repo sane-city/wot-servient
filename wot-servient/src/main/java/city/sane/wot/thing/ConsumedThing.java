@@ -33,10 +33,10 @@ import java.util.stream.Stream;
  * https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
 public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
 
-    public static final String DEFAULT_OBJECT_TYPE = "Thing";
-    public static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
+    private static final String DEFAULT_OBJECT_TYPE = "Thing";
+    private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
 
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();
@@ -149,7 +149,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             }
         }
 
-        return new Pair(client, form);
+        return new Pair<>(client, form);
     }
 
     private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {

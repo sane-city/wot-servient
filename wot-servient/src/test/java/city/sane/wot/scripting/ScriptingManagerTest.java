@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ScriptingManagerTest {
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ScriptingManager.addEngine(new MyScriptingEngine());
     }
 
@@ -56,7 +56,7 @@ public class ScriptingManagerTest {
         }
 
         @Override
-        public void runScript(String script, Wot wot) throws ScriptingEngineException {
+        public void runScript(String script, Wot wot) {
 
         }
     }

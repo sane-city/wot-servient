@@ -15,7 +15,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class FileProtocolClientTest {
     @Rule
-    public TemporaryFolder thingDirectory = new TemporaryFolder();
+    public final TemporaryFolder thingDirectory = new TemporaryFolder();
     private File thing;
 
     @Before

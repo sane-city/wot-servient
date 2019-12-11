@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.action.ThingAction}.
  */
 public class ActionResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(ActionResource.class);
+    private static final Logger log = LoggerFactory.getLogger(ActionResource.class);
 
     private final ExposedThingAction action;
 

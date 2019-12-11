@@ -35,7 +35,7 @@ import static jadex.commons.future.IFuture.DONE;
  * platforms.
  */
 public class JadexProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
 
     private final IExternalAccess platform;
 
@@ -216,7 +216,7 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
-    public CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
+    private CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
         log.debug("Search ThingService with id '{}'", serviceId);
         ServiceQuery<ThingService> query = new ServiceQuery(ThingService.class)
                 .setScope(ServiceScope.GLOBAL)

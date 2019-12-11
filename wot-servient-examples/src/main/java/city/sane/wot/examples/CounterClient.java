@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Fetch thing description exposes by {@link Counter} and then interact with it.
  */
-public class CounterClient {
+class CounterClient {
     public static void main(String[] args) throws URISyntaxException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();

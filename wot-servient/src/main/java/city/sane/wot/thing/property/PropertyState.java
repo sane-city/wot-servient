@@ -16,7 +16,7 @@ public class PropertyState {
     private Supplier readHandler;
     private Function<Object, CompletableFuture<Object>> writeHandler;
 
-    public PropertyState(Object value) {
+    private PropertyState(Object value) {
         this.subject = new Subject();
         this.value = value;
     }

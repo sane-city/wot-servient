@@ -13,7 +13,7 @@ import java.util.TimerTask;
 /**
  * Interacts with the thing produces by {@link MqttSubscribe}. Reads the counter and resets it periodically.
  */
-public class MqttSubscribe {
+class MqttSubscribe {
     public static void main(String[] args) throws ConsumedThingException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();

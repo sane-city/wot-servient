@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingProperty}.
  */
 public class ExposedThingProperty extends ThingProperty implements Subscribable<Object> {
-    static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
 
     private final String name;
     private final ExposedThing thing;

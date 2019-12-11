@@ -27,10 +27,8 @@ import java.util.stream.StreamSupport;
 /**
  * Produces and exposes luftdaten.info's sensors in given area as things.
  */
-public class Luftdaten {
-    private final Map<Integer, ExposedThing> things = new HashMap();
-
-    public Luftdaten() throws InterruptedException, WotException {
+class Luftdaten {
+    private Luftdaten() throws InterruptedException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -57,6 +55,7 @@ public class Luftdaten {
                             .collect(Collectors
                                     .toMap(v -> v.get("value_type").asText(), v -> v.get("value").asDouble()));
 
+                    Map<Integer, ExposedThing> things = new HashMap();
                     ExposedThing exposedThing = things.get(sensorId);
 
                     if (exposedThing == null) {

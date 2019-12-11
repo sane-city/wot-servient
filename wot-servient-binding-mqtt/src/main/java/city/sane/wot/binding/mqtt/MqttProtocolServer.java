@@ -26,7 +26,7 @@ import java.util.concurrent.CompletionException;
  * Allows exposing Things via MQTT.
  */
 public class MqttProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 
     private final MqttProtocolSettings settings;
     private final Map<String, ExposedThing> things = new HashMap<>();
@@ -215,7 +215,7 @@ public class MqttProtocolServer implements ProtocolServer {
                 action.invoke(input);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to parse input: {}", e);
+                log.warn("Unable to parse input", e);
             }
         }
         else {

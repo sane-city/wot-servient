@@ -28,7 +28,7 @@ import static akka.pattern.Patterns.ask;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;
@@ -109,7 +109,7 @@ public class AkkaProtocolServer implements ProtocolServer {
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to create directory url: {}", e);
+            log.warn("Unable to create directory url", e);
             return null;
         }
     }

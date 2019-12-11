@@ -4,7 +4,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.akka.Messages;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -25,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 
 public class PropertyActorTest {
     private ActorSystem system;
-    private ProtocolClient client;
 
     @Before
     public void setUp() {

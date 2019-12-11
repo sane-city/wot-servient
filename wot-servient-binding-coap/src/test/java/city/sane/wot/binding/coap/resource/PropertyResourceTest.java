@@ -29,11 +29,10 @@ import static org.junit.Assert.assertEquals;
 
 public class PropertyResourceTest {
     private CoapServer server;
-    private ExposedThing thing;
 
     @Before
     public void setup() {
-        thing = getCounterThing();
+        ExposedThing thing = getCounterThing();
 
         server = new CoapServer(5683);
         server.add(new PropertyResource("count", thing.getProperty("count")));

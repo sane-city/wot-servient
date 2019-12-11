@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
 public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
-    static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
 
     private final Servient servient;
 
@@ -81,7 +81,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setObjectType(String objectType) {
+    private ExposedThing setObjectType(String objectType) {
         this.objectType = objectType;
         return this;
     }
@@ -93,7 +93,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setObjectContexts(Context objectContexts) {
+    private ExposedThing setObjectContexts(Context objectContexts) {
         objectContext = objectContexts;
         return this;
     }
@@ -108,7 +108,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setTitles(Map<String, String> titles) {
+    private ExposedThing setTitles(Map<String, String> titles) {
         this.titles = titles;
         return this;
     }
@@ -118,7 +118,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setDescriptions(Map<String, String> descriptions) {
+    private ExposedThing setDescriptions(Map<String, String> descriptions) {
         this.descriptions = descriptions;
         return this;
     }
@@ -128,7 +128,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setForms(List<Form> forms) {
+    private ExposedThing setForms(List<Form> forms) {
         this.forms = forms;
         return this;
     }
@@ -141,7 +141,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setSecurity(List<String> security) {
+    private ExposedThing setSecurity(List<String> security) {
         this.security = security;
         return this;
     }
@@ -154,7 +154,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
+    private ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
         this.securityDefinitions = securityDefinitions;
         return this;
     }
@@ -235,7 +235,11 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler, Object init) {
+    private ExposedThing addProperty(String name,
+                                     ThingProperty property,
+                                     Supplier<CompletableFuture<Object>> readHandler,
+                                     Function<Object, CompletableFuture<Object>> writeHandler,
+                                     Object init) {
         addProperty(name, property, readHandler, writeHandler);
 
         ExposedThingProperty exposedProperty = properties.get(name);
@@ -417,7 +421,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addAction(String name, ThingAction action) {
+    private ExposedThing addAction(String name, ThingAction action) {
         return addAction(name, action, () -> {
         });
     }
@@ -455,7 +459,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addEvent(String name, ThingEvent event) {
-        ExposedThingEvent exposedEvent = new ExposedThingEvent(name, event, this);
+        ExposedThingEvent exposedEvent = new ExposedThingEvent(name, event);
         events.put(name, exposedEvent);
 
         return this;

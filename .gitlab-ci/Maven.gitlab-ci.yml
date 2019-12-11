@@ -51,8 +51,8 @@ build-dist:
 check-code:
   stage: test
   script:
-      - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
-      - /bin/bash coverage-jacoco.sh
+    - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
+    - /bin/bash coverage-jacoco.sh
   coverage: '/\d+.\d+ \% covered/'
   artifacts:
     reports:

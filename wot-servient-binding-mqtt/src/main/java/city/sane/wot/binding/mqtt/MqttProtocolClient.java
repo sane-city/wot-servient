@@ -9,7 +9,9 @@ import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subject;
 import city.sane.wot.thing.observer.Subscription;
 import com.typesafe.config.Config;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  * Allows consuming Things via MQTT.
  */
 public class MqttProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
 
     private final MqttProtocolSettings settings;
     private final Map<String, Subject<Content>> topicSubjects = new HashMap<>();
@@ -91,8 +93,7 @@ public class MqttProtocolClient implements ProtocolClient {
             topic = new URI(form.getHref()).getPath().substring(1);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to subscribe resource: {}", e);
-            return null;
+            return CompletableFuture.failedFuture(new ProtocolClientException("Unable to subscribe resource: " + e.getMessage()));
         }
 
         Subject<Content> newSubject = new Subject<>();

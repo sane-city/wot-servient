@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Discover thing description exposes by {@link JadexCurrentTime} and then interact with it.
  */
-public class JadexCurrentTimeClient {
+class JadexCurrentTimeClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, ThingQueryException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
