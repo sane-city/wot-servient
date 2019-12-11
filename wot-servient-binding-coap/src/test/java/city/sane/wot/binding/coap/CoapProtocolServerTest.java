@@ -10,8 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.*;
 
 public class CoapProtocolServerTest {
     private CoapProtocolServer server;
@@ -48,10 +50,27 @@ public class CoapProtocolServerTest {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-//    @Test
-//    public void getDirectoryUrl() throws URISyntaxException {
-//        assertEquals(new URI("coap://[2003:c3:a70a:fd00:cc7:9138:794d:e803]:5683"), server.getDirectoryUrl());
-//    }
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
+
+    @Test
+    public void getDirectoryUrl() {
+        String url = server.getDirectoryUrl().toString();
+
+        assertThat(url, matchesPattern("coap://.*:5683"));
+    }
+
+    @Test
+    public void getThingUrl() {
+        String url = server.getThingUrl("counter").toString();
+
+        assertThat(url, matchesPattern("coap://.*:5683/counter"));
+    }
 
     private ExposedThing getCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
