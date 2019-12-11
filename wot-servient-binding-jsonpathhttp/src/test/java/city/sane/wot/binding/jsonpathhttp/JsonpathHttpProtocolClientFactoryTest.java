@@ -9,11 +9,11 @@ import static org.junit.Assert.assertEquals;
 public class JsonpathHttpProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("jsonpath+http", new JsonpathHttpProtocolClientFactory(null).getScheme());
+        assertEquals("jsonpath+http", new JsonpathHttpProtocolClientFactory().getScheme());
     }
 
     @Test
     public void getClient() {
-        assertThat(new JsonpathHttpProtocolClientFactory(null).getClient(), instanceOf(JsonpathHttpProtocolClient.class));
+        assertThat(new JsonpathHttpProtocolClientFactory().getClient(), instanceOf(JsonpathHttpProtocolClient.class));
     }
 }

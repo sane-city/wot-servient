@@ -2,7 +2,7 @@ package city.sane.wot.thing.observer;
 
 import org.junit.Test;
 
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,7 +26,7 @@ public class SubjectTest {
         AtomicReference<Throwable> result = new AtomicReference<>();
         Subject<String> subject = new Subject();
         subject.subscribe(next -> {
-        }, e -> result.set(e), () -> {
+        }, result::set, () -> {
         });
         subject.error(new Exception("Fatal Error")).join();
 
@@ -45,25 +45,43 @@ public class SubjectTest {
         assertTrue("Subject should be completed", completed.get());
     }
 
-    @Test(expected = CompletionException.class)
-    public void nextAfterComplete() {
+    @Test(expected = SubjectClosedException.class)
+    public void nextAfterComplete() throws Throwable {
         Subject subject = new Subject();
         subject.complete().join();
-        subject.next(null).join();
+
+        try {
+            subject.next(null).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
-    @Test(expected = CompletionException.class)
-    public void duplicateError() {
+    @Test(expected = SubjectClosedException.class)
+    public void duplicateError() throws Throwable {
         Subject subject = new Subject();
         subject.error(null).join();
-        subject.error(null).join();
+
+        try {
+            subject.error(null).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
-    @Test(expected = CompletionException.class)
-    public void duplicateComplete() {
+    @Test(expected = SubjectClosedException.class)
+    public void duplicateComplete() throws Throwable {
         Subject subject = new Subject();
         subject.complete().join();
-        subject.complete().join();
+
+        try {
+            subject.complete().get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test

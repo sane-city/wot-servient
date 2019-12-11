@@ -27,7 +27,7 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
  * systems.
  */
 public class AkkaProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
 
     private final ActorSystem system;
     private final ActorRef discoveryActor;

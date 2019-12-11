@@ -3,14 +3,12 @@ package city.sane.wot.thing;
 import city.sane.Pair;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,10 +41,6 @@ public class ConsumedThingTest {
                 ))
                 .build();
         consumedThing = new ConsumedThing(servient, thing);
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     @Test
@@ -113,17 +107,13 @@ public class ConsumedThingTest {
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        public MyProtocolClientFactory(Config config) {
-
-        }
-
         @Override
         public String getScheme() {
             return "test";
         }
 
         @Override
-        public ProtocolClient getClient() throws ProtocolClientException {
+        public ProtocolClient getClient() {
             return new MyProtocolClient();
         }
     }
@@ -132,10 +122,8 @@ public class ConsumedThingTest {
         @Override
         public CompletableFuture<Content> readResource(Form form) {
             String json = null;
-            switch (form.getHref()) {
-                case "test:/all":
-                    json = "{\"count\": 1337}";
-                    break;
+            if ("test:/all".equals(form.getHref())) {
+                json = "{\"count\": 1337}";
             }
             return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
         }

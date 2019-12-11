@@ -9,12 +9,12 @@ import java.util.concurrent.CompletableFuture;
 public class ProtocolServerTest {
     @Test(expected = ProtocolServerNotImplementedException.class)
     public void getDirectoryUrl() throws ProtocolServerException {
-        new ExposedThingTest.MyProtocolServer(null).getDirectoryUrl();
+        new ExposedThingTest.MyProtocolServer().getDirectoryUrl();
     }
 
     @Test(expected = ProtocolServerNotImplementedException.class)
     public void getThingUrl() throws ProtocolServerException {
-        new ExposedThingTest.MyProtocolServer(null).getThingUrl(null);
+        new ExposedThingTest.MyProtocolServer().getThingUrl(null);
     }
 
     class MyProtocolServer implements ProtocolServer {

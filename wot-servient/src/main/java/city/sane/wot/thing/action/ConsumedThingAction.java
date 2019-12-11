@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionException;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingAction}.
  */
 public class ConsumedThingAction extends ThingAction {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
 
     private final String name;
     private final ConsumedThing thing;

@@ -5,11 +5,11 @@ import city.sane.wot.content.Content;
 /**
  * This class is needed so that Jadex can correctly (de)serialize {@link Content} objects and send them to other Jadex platforms.
  */
-public class JadexContent {
+class JadexContent {
     private String type;
     private byte[] body;
 
-    public JadexContent(String type, byte[] body) {
+    private JadexContent(String type, byte[] body) {
         this.type = type;
         this.body = body;
     }

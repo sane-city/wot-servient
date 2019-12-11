@@ -10,6 +10,7 @@ import com.typesafe.config.ConfigFactory;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class MqttProtocolServerTest {
         ExposedThing thing = getCounterThing();
         server.expose(thing).join();
 
-        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId());
+        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId(), new MemoryPersistence());
         client.connect();
         client.publish("counter/actions/increment", new MqttMessage());
 

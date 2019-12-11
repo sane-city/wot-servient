@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class PropertyResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
+    private static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
 
     private final ExposedThingProperty property;
 
@@ -38,12 +38,12 @@ public class PropertyResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        log.warn("Unable to serialize new property value: {}", ex);
+                        log.warn("Unable to serialize new property value", ex);
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    log.warn("Unable to read property value: {}", e);
+                    log.warn("Unable to read property value", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
@@ -95,7 +95,7 @@ public class PropertyResource extends AbstractResource {
                     }
                 }
                 else {
-                    log.warn("Unable to write property value: {}", e);
+                    log.warn("Unable to write property value", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.getMessage());
                 }
             });

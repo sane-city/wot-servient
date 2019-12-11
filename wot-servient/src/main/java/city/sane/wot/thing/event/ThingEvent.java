@@ -18,10 +18,10 @@ import java.util.Objects;
 public class ThingEvent extends ThingInteraction<ThingEvent> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema data;
+    DataSchema data;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String type;
+    String type;
 
     public String getType() {
         return type;

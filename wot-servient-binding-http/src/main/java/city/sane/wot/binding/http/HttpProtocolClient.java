@@ -34,10 +34,9 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via HTTP.
  */
 public class HttpProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
     private static final String HTTP_METHOD_NAME = "htv:methodName";
 
-    private String authorizationHeader = HttpHeaders.AUTHORIZATION;
     private String authorization = null;
 
     @Override
@@ -127,7 +126,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 }
                 catch (IOException | ProtocolClientException e) {
                     if (!subscription.isClosed()) {
-                        log.warn("Error received for Event connection: {}", e);
+                        log.warn("Error received for Event connection", e);
 
                         observer.error(e);
                         subscription.unsubscribe();
@@ -178,6 +177,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 .setUri(href);
 
         if (authorization != null) {
+            String authorizationHeader = HttpHeaders.AUTHORIZATION;
             builder.addHeader(authorizationHeader, authorization);
         }
 

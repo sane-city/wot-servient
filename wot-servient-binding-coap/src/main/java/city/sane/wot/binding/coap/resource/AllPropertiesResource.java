@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * Endpoint for reading all properties from a Thing
  */
 public class AllPropertiesResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(AllPropertiesResource.class);
+    private static final Logger log = LoggerFactory.getLogger(AllPropertiesResource.class);
     private final ExposedThing thing;
 
     public AllPropertiesResource(ExposedThing thing) {
@@ -41,12 +41,12 @@ public class AllPropertiesResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        log.warn("Exception: {}", ex);
+                        log.warn("Exception", ex);
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    log.warn("Exception: {}", e);
+                    log.warn("Exception", e);
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });

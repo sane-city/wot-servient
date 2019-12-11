@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link AkkaDiscovery}.
  */
-public class AkkaDiscoveryClient {
+class AkkaDiscoveryClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException, ThingQueryException {
         Wot wot = DefaultWot.clientOnly();
 

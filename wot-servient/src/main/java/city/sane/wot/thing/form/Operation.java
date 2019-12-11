@@ -40,7 +40,7 @@ public enum Operation {
     }
 
     @JsonValue
-    public String toJsonValue() {
+    private String toJsonValue() {
         return tdValue;
     }
 

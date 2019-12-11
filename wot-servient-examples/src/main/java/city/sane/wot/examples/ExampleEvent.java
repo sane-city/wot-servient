@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Produces and exposes a thing that will fire an event every few seconds.
  */
-public class ExampleEvent {
+class ExampleEvent {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

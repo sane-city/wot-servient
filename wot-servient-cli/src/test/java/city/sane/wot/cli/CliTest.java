@@ -68,4 +68,18 @@ public class CliTest {
 
         assertTrue(true);
     }
+
+    @Test(expected = CliException.class)
+    public void runBrokenScript() throws CliException, IOException {
+        String script = "1/0";
+
+        TemporaryFolder folder = new TemporaryFolder();
+        folder.create();
+        File file = folder.newFile("my-thing.groovy");
+        Files.write(script, file, Charset.defaultCharset());
+
+        new Cli(new String[]{
+                file.getAbsolutePath()
+        });
+    }
 }

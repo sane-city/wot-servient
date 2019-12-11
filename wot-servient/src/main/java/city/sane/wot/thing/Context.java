@@ -73,7 +73,7 @@ public class Context implements Serializable {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public Map<String, String> getUrls() {
+    private Map<String, String> getUrls() {
         return urls;
     }
 }

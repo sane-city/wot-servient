@@ -11,7 +11,7 @@ import city.sane.wot.thing.property.ThingProperty;
 /**
  * Produces and exposes a thing with change its description on interaction.
  */
-public class ExampleDynamic {
+class ExampleDynamic {
     public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();

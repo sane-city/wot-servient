@@ -70,10 +70,10 @@ public abstract class ThingInteraction<T> implements Serializable {
     }
 
     public abstract static class AbstractBuilder<T extends ObjectBuilder> implements ObjectBuilder {
-        protected String description;
-        protected Map<String, String> descriptions;
-        protected List<Form> forms = new ArrayList<>();
-        protected Map<String, Map> uriVariables = new HashMap<>();
+        String description;
+        Map<String, String> descriptions;
+        List<Form> forms = new ArrayList<>();
+        Map<String, Map> uriVariables = new HashMap<>();
 
         public T setDescription(String description) {
             this.description = description;

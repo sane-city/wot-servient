@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Cli {
-    static final Logger log = LoggerFactory.getLogger(Cli.class);
+class Cli {
+    private static final Logger log = LoggerFactory.getLogger(Cli.class);
 
     private static final String CONF = "wot-servient.conf";
     private static final String LOGLEVEL = "warn";
@@ -86,17 +86,20 @@ public class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
-        Servient servient = getServient(cmd);
-        servient.start().join();
-        Wot wot = new DefaultWot(servient);
+        Servient servient = null;
+        try {
+            servient = getServient(cmd);
+            servient.start().join();
+            Wot wot = new DefaultWot(servient);
 
-        for (File script : scripts) {
-            log.info("Servient is running script '{}'", script);
-            try {
+            for (File script : scripts) {
+                log.info("Servient is running script '{}'", script);
                 servient.runScript(script, wot);
             }
-            catch (ServientException e) {
-                log.error("Servient experienced error while reading script", e);
+        }
+        finally {
+            if (servient != null) {
+                servient.shutdown().join();
             }
         }
     }

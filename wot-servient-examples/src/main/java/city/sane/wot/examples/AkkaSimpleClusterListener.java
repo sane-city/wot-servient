@@ -24,9 +24,9 @@ import com.typesafe.config.ConfigFactory;
 /**
  * This example lists the members found in the Akka Cluster.
  */
-public class AkkaSimpleClusterListener extends AbstractActor {
-    LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    Cluster cluster = Cluster.get(getContext().getSystem());
+class AkkaSimpleClusterListener extends AbstractActor {
+    private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private Cluster cluster = Cluster.get(getContext().getSystem());
 
     // subscribe to cluster changes
     @Override

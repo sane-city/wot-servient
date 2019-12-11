@@ -20,7 +20,7 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
  */
-public class DiscoverActor extends AbstractActor {
+class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Cancellable timer;
     private final ActorRef requester;
@@ -28,7 +28,7 @@ public class DiscoverActor extends AbstractActor {
     private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     private final Map<String, Thing> things = new HashMap<>();
 
-    public DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
+    private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
 
@@ -61,7 +61,7 @@ public class DiscoverActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Things.class, this::foundThings)
-                .match(DiscoverTimeout.class, this::stop)
+                .match(DiscoverTimeout.class, m -> stop())
                 .build();
     }
 
@@ -70,7 +70,7 @@ public class DiscoverActor extends AbstractActor {
         things.putAll(m.entities);
     }
 
-    private void stop(DiscoverTimeout m) {
+    private void stop() {
         log.info("AkkaDiscovery timed out. Send all Things collected so far to parent");
         getContext().getParent().tell(new Done(requester, things), getSelf());
         getContext().stop(getSelf());
@@ -81,7 +81,7 @@ public class DiscoverActor extends AbstractActor {
     }
 
     // CrudMessages
-    public static class DiscoverTimeout {
+    static class DiscoverTimeout {
 
     }
 

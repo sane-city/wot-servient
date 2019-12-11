@@ -1,6 +1,6 @@
 package city.sane.wot.thing.schema;
 
-public abstract class AbstractDataSchema<T> implements DataSchema<T> {
+abstract class AbstractDataSchema<T> implements DataSchema<T> {
     @Override
     public int hashCode() {
         return getType().hashCode();

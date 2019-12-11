@@ -16,12 +16,12 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 /**
  * This Actor creates a {@link ActionActor} for each {@link ExposedThingAction}.
  */
-public class ActionsActor extends AbstractActor {
+class ActionsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThingAction> actions;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public ActionsActor(Map<String, ExposedThingAction> actions) {
+    private ActionsActor(Map<String, ExposedThingAction> actions) {
         this.actions = actions;
     }
 
@@ -48,11 +48,11 @@ public class ActionsActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::actionExposed)
+                .match(Created.class, m -> actionExposed())
                 .build();
     }
 
-    private void actionExposed(Created m) {
+    private void actionExposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }

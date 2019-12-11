@@ -20,13 +20,13 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
  * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link city.sane.wot.thing.action.ExposedThingAction}, or
  * {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
-public class ThingActor extends AbstractActor {
+class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ActorRef requestor;
     private final ExposedThing thing;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public ThingActor(ActorRef requester, ExposedThing thing) {
+    private ThingActor(ActorRef requester, ExposedThing thing) {
         requestor = requester;
         this.thing = thing;
     }
@@ -56,11 +56,11 @@ public class ThingActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::created)
+                .match(Created.class, m -> created())
                 .build();
     }
 
-    private void created(Created m) {
+    private void created() {
         if (children.remove(getSender()) && children.isEmpty()) {
             log.info("Thing has been exposed");
             getContext().getParent().tell(new Created<>(new Pair<>(requestor, thing.getId())), getSelf());

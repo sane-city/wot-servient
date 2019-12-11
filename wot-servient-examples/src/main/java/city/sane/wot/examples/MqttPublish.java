@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Produces a thing that sends a ascending counter to an MQTT topic.
  */
-public class MqttPublish {
+class MqttPublish {
     public static void main(String[] args) throws WotException {
         System.out.println("Setup MQTT broker address/port details in application.json!");
 

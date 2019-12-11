@@ -7,7 +7,7 @@ import spark.Response;
 
 import java.util.Map;
 
-public abstract class AbstractInteractionRoute extends AbstractRoute {
+abstract class AbstractInteractionRoute extends AbstractRoute {
     protected final Map<String, ExposedThing> things;
 
     public AbstractInteractionRoute(Map<String, ExposedThing> things) {

@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingAction}.
  */
 public class ExposedThingAction extends ThingAction {
-    static final Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
 
     private final String name;
     private final ExposedThing thing;

@@ -10,6 +10,7 @@ import com.typesafe.config.ConfigFactory;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,20 +42,45 @@ public class MqttProtocolClientTest {
         assertEquals(new Content("application/json", new byte[0]), client.invokeResource(form).get());
     }
 
+    @Test(expected = ProtocolClientException.class)
+    public void invokeResourceBrokenUri() throws Throwable {
+        String href = broker + "/co unter/actions/increment";
+        Form form = new Form.Builder().setHref(href).build();
+
+        try {
+            client.invokeResource(form).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
     @Test(timeout = 5 * 1000)
     public void subscribeResource() throws ExecutionException, InterruptedException, MqttException {
         String href = broker + "/counter/events/change";
         Form form = new Form.Builder().setHref(href).build();
 
         CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
-        assertThat(client.subscribeResource(form, new Observer<>(next -> {
-            nextCalledFuture.complete(null);
-        })).get(), instanceOf(Subscription.class));
+        assertThat(client.subscribeResource(form, new Observer<>(next -> nextCalledFuture.complete(null))).get(), instanceOf(Subscription.class));
 
-        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId());
+        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId(), new MemoryPersistence());
         client.connect();
         client.publish("counter/events/change", new MqttMessage());
 
         assertNull(nextCalledFuture.get());
+    }
+
+    @Test(expected = ProtocolClientException.class)
+    public void subscribeResourceBrokenUri() throws Throwable {
+        String href = broker + "/cou nter/events/change";
+        Form form = new Form.Builder().setHref(href).build();
+
+        try {
+            client.subscribeResource(form, new Observer<>(next -> {
+            })).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 }

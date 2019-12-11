@@ -25,7 +25,7 @@ import static jadex.commons.future.IFuture.DONE;
         @ProvidedService(type = ThingsService.class, scope = ServiceScope.PLATFORM)
 })
 public class ThingsAgent implements ThingsService {
-    static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
+    private static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
     private final Map<String, IExternalAccess> children = new HashMap<>();
     @Agent
     private IInternalAccess agent;

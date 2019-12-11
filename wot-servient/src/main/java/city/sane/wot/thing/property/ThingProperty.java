@@ -19,21 +19,21 @@ import java.util.Objects;
 public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema {
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String objectType;
+    String objectType;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String type;
+    String type;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean observable;
+    boolean observable;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean readOnly;
+    boolean readOnly;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean writeOnly;
+    boolean writeOnly;
 
-    protected Map<String, Object> optionalProperties = new HashMap<>();
+    Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getObjectType() {
         return objectType;

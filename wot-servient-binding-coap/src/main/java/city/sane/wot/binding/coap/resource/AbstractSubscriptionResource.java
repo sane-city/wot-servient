@@ -12,16 +12,16 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractSubscriptionResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(AbstractSubscriptionResource.class);
+abstract class AbstractSubscriptionResource extends AbstractResource {
+    private static final Logger log = LoggerFactory.getLogger(AbstractSubscriptionResource.class);
 
     private final String name;
-    protected final Subscribable<Object> subscribable;
-    protected Subscription subscription = null;
-    protected Object data;
-    protected Throwable e;
+    private final Subscribable<Object> subscribable;
+    private Subscription subscription = null;
+    private Object data;
+    private Throwable e;
 
-    public AbstractSubscriptionResource(String resourceName, String name, Subscribable<Object> subscribable) {
+    AbstractSubscriptionResource(String resourceName, String name, Subscribable<Object> subscribable) {
         super(resourceName);
 
         this.name = name;
@@ -100,7 +100,7 @@ public abstract class AbstractSubscriptionResource extends AbstractResource {
         }
     }
 
-    protected synchronized void changeResource(Object data, Throwable e) {
+    private synchronized void changeResource(Object data, Throwable e) {
         this.data = data;
         this.e = e;
         changed();

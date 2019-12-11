@@ -9,8 +9,8 @@ import spark.Route;
 /**
  * Abstract route for exposing Things. Inherited from all other routes.
  */
-public abstract class AbstractRoute implements Route {
-    protected String getOrDefaultRequestContentType(Request request) {
+abstract class AbstractRoute implements Route {
+    String getOrDefaultRequestContentType(Request request) {
         if (request.contentType() != null) {
             return request.contentType();
         }
@@ -19,7 +19,7 @@ public abstract class AbstractRoute implements Route {
         }
     }
 
-    protected String unsupportedMediaTypeResponse(Response response, String requestContentType) {
+    String unsupportedMediaTypeResponse(Response response, String requestContentType) {
         if (!ContentManager.isSupportedMediaType(requestContentType)) {
             ReadAllPropertiesRoute.log.warn("Unsupported media type: {}", requestContentType);
             response.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415);
@@ -30,7 +30,7 @@ public abstract class AbstractRoute implements Route {
         }
     }
 
-    protected void logRequest(Request request) {
+    void logRequest(Request request) {
         if (InvokeActionRoute.log.isInfoEnabled()) {
             InvokeActionRoute.log.info("Handle {} to '{}'", request.requestMethod(), request.url());
             if (request.raw().getQueryString() != null && !request.raw().getQueryString().isEmpty()) {
