@@ -36,6 +36,17 @@ public class AllPropertiesResourceTest {
     @After
     public void teardown() {
         server.stop();
+
+        // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
+        //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
+        //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
+        //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
+        try {
+            Thread.sleep(1 * 1000L);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Test
