@@ -28,7 +28,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final WebSocketClient cc;
-    private Subject<Content> newSubject;
 
 
     WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
@@ -105,7 +104,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
     public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
         try {
             String topic = new URI(form.getHref()).getPath().substring(1);
-            newSubject = new Subject<>();
+            Subject<Content> newSubject = new Subject<>();
             Subscription subscription = newSubject.subscribe(observer);
             return CompletableFuture.runAsync(() -> {
                 try {
