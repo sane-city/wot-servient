@@ -39,9 +39,13 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private final List<String> addresses;
 
     public WebsocketProtocolServer(Config config) {
-        server = new MyServer(new InetSocketAddress(8080));
-        addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":8080").collect(Collectors.toList());
-
+        int bindPort = config.getInt("wot.servient.websocket.bind-port");
+        server = new MyServer(new InetSocketAddress(bindPort));
+        if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
+            addresses = config.getStringList("wot.servient.websocket.addresses");
+        } else {
+            addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":" + bindPort + "").collect(Collectors.toList());
+        }
         things = new HashMap<>();
     }
 
