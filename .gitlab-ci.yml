@@ -1,5 +1,5 @@
-services:
-  - eclipse-mosquitto:1.6 # for mqtt client/server tests
+#services:
+#  - eclipse-mosquitto:1.6 # for mqtt client/server tests
 
 include:
   - local: /.gitlab-ci/Maven.gitlab-ci.yml # we have to use our own template, since GitLab's template uses JDK8, but we need JDK11

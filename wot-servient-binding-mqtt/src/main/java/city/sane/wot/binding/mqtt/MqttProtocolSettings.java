@@ -47,6 +47,13 @@ class MqttProtocolSettings {
         }
     }
 
+    MqttProtocolSettings(String broker, String clientId, String username, String password) {
+        this.broker = broker;
+        this.clientId = clientId;
+        this.username = username;
+        this.password = password;
+    }
+
     public String getBroker() {
         return broker;
     }
