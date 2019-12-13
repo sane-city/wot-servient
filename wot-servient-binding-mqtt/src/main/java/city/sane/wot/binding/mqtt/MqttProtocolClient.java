@@ -3,7 +3,6 @@ package city.sane.wot.binding.mqtt;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subject;
@@ -72,7 +71,7 @@ public class MqttProtocolClient implements ProtocolClient {
             client.publish(topic, new MqttMessage(payload));
 
             // MQTT does not support the request-response pattern. return empty message
-            future.complete(new Content(ContentManager.DEFAULT, new byte[0]));
+            future.complete(Content.EMPTY_CONTENT);
         }
         catch (MqttException e) {
             future.completeExceptionally(new ProtocolClientException(

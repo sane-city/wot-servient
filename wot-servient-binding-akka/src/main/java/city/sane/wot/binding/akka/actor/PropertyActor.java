@@ -102,7 +102,7 @@ class PropertyActor extends AbstractActor {
                 }
                 else {
                     // TODO: return output if available
-                    sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                    sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
                 }
             });
 
