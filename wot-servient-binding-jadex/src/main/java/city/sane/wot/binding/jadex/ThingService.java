@@ -18,4 +18,6 @@ public interface ThingService {
     IFuture<JadexContent> readProperty(String name);
 
     IFuture<JadexContent> writeProperty(String name, JadexContent content);
+
+    String getThingServiceId();
 }

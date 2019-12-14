@@ -1,90 +1,81 @@
 package city.sane.wot.binding.jadex;
 
-import city.sane.wot.content.ContentCodecException;
-import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
+import jadex.bridge.IExternalAccess;
 import jadex.bridge.IInternalAccess;
-import org.json.JSONException;
+import jadex.commons.future.IFunctionalResultListener;
+import jadex.commons.future.IFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.*;
 
-public class ThingAgentTest {
+public class ThingsAgentTest {
     private ExposedThing thing;
     @Mock
     private IInternalAccess ia;
-    private ThingAgent agent;
+    private ThingsAgent agent;
+    private Map<String, IExternalAccess> children;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        ThingService thingService = mock(ThingService.class);
-        when(thingService.getThingServiceId()).thenReturn("foo-bar");
-        when(ia.getProvidedService(ThingService.class)).thenReturn(thingService);
+        when(ia.createComponent(anyObject())).thenReturn(mock(IFuture.class));
 
         thing = getExposedCounterThing();
-        agent = new ThingAgent(ia, thing);
+        Map<String, ExposedThing> things = Map.of("counter", thing);
+        children = new HashMap<>();
+        agent = new ThingsAgent(ia, things, children);
     }
 
     @Test
     public void created() {
         agent.created().get();
 
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void killed() {
-        agent.killed().get();
-
         // shot not fail
         assertTrue(true);
     }
 
     @Test
-    public void get() throws JSONException {
-        JSONAssert.assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"properties\":{\"count\":{\"description\":\"current counter content\",\"type\":\"integer\",\"observable\":true},\"lastChange\":{\"description\":\"last change of counter content\",\"type\":\"string\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{\"description\":\"Incrementing counter content with optional step content as uriVariable\",\"uriVariables\":{\"step\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":250}},\"input\":{\"type\":\"object\"},\"output\":{\"type\":\"integer\"}},\"reset\":{}},\"events\":{\"change\":{}}}", agent.get().get(), JSONCompareMode.LENIENT);
+    public void expose() {
+        agent.expose("counter").get();
+
+        // CreateionInfo ist not comparable
+//        CreationInfo info = new CreationInfo()
+//                .setFilenameClass(ThingAgent.class)
+//                .addArgument("thing", thing);
+        verify(ia).createComponent(anyObject());
     }
 
     @Test
-    public void readProperties() throws ContentCodecException {
-        Map values = ContentManager.contentToValue(agent.readProperties().get().fromJadex(), new ObjectSchema());
+    public void destroy() {
+        IExternalAccess ea = mock(IExternalAccess.class);
+        IFuture killFuture = mock(IFuture.class);
+        doAnswer(invocation -> {
+            IFunctionalResultListener listener = invocation.getArgumentAt(0, IFunctionalResultListener.class);
+            listener.resultAvailable(null);
+            return null;
+        }).when(killFuture).addResultListener(anyObject(), anyObject());
+        when(ea.killComponent()).thenReturn(killFuture);
+        children.put("counter", ea);
 
-        assertEquals(2, values.size());
-        assertEquals(42, values.get("count"));
-    }
+        agent.destroy("counter").get();
 
-    @Test
-    public void readProperty() throws ContentCodecException {
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(42, value);
-    }
-
-    @Test
-    public void writeProperty() throws ContentCodecException {
-        agent.writeProperty("count",new JadexContent("application/json", "1337".getBytes())).get();
-
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(1337, value);
+        verify(ea).killComponent();
     }
 
     private ExposedThing getExposedCounterThing() {

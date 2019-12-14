@@ -33,7 +33,7 @@ public class MqttProtocolClientTest {
     private MqttClient mqttClient;
 
     @Before
-    public void setUp() throws ProtocolClientException, MqttException {
+    public void setUp() throws MqttException {
         MockitoAnnotations.initMocks(this);
 
         doNothing().when(mqttClient).publish(anyString(), anyObject());
