@@ -49,7 +49,12 @@ public class ExposedThingAction extends ThingAction {
 
         if (getState().getHandler() != null) {
             log.info("'{}' calls registered handler for Action '{}' with input '{}' and options '{}'", thing.getId(), name, input, options);
-            return getState().getHandler().apply(input, options);
+            CompletableFuture<Object> output = getState().getHandler().apply(input, options);
+            if (output == null) {
+                log.warn("'{}': Called registered handler for Action '{}' returned null. This can cause problems. Give Future with null result back.", thing.getId(), name);
+                output = CompletableFuture.completedFuture(null);
+            }
+            return output;
         }
         else {
             log.info("'{}' has no handler for Action '{}'", thing.getId(), name);
