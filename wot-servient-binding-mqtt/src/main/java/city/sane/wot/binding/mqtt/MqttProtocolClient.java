@@ -41,6 +41,11 @@ public class MqttProtocolClient implements ProtocolClient {
         }
     }
 
+    MqttProtocolClient(MqttProtocolSettings settings, MqttClient client) {
+        this.settings = settings;
+        this.client = client;
+    }
+
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         CompletableFuture<Content> future = new CompletableFuture<>();

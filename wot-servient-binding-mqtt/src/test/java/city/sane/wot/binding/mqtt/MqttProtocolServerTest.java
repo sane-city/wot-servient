@@ -1,33 +1,44 @@
 package city.sane.wot.binding.mqtt;
 
-import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 public class MqttProtocolServerTest {
     private MqttProtocolServer server;
-    private Config config;
 
     @Before
-    public void setUp() throws ProtocolServerException {
-        config = ConfigFactory.load();
-        server = new MqttProtocolServer(config);
+    public void setUp() throws MqttProtocolException {
+        MockitoAnnotations.initMocks(this);
+
+        MqttClient mqttClient = mock(MqttClient.class);
+
+        doAnswer(invocation -> {
+            MqttCallback callback = invocation.getArgumentAt(0, MqttCallback.class);
+            callback.messageArrived("counter/actions/increment", new MqttMessage());
+            return null;
+        }).when(mqttClient).setCallback(anyObject());
+
+        MqttProtocolSettings settings = mock(MqttProtocolSettings.class);
+        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
+        when(settings.createConnectedMqttClient()).thenReturn(mqttClient);
+        server = new MqttProtocolServer(settings);
         server.start().join();
     }
 
@@ -55,16 +66,9 @@ public class MqttProtocolServerTest {
     }
 
     @Test
-    public void invokeAction() throws MqttException, ExecutionException, InterruptedException {
+    public void invokeAction() throws ExecutionException, InterruptedException {
         ExposedThing thing = getCounterThing();
         server.expose(thing).join();
-
-        MqttClient client = new MqttClient(config.getString("wot.servient.mqtt.broker"), MqttClient.generateClientId(), new MemoryPersistence());
-        client.connect();
-        client.publish("counter/actions/increment", new MqttMessage());
-
-        // Invoked action is executed asynchronously. Wait some time to make sure that the execution has finished.
-        Thread.sleep(1 * 1000L);
 
         assertEquals(43, thing.getProperty("count").read().get());
     }

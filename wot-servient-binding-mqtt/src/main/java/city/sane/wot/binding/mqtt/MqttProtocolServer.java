@@ -42,6 +42,10 @@ public class MqttProtocolServer implements ProtocolServer {
         }
     }
 
+    MqttProtocolServer(MqttProtocolSettings settings) {
+        this.settings = settings;
+    }
+
     @Override
     public CompletableFuture<Void> start() {
         return CompletableFuture.runAsync(() -> {
