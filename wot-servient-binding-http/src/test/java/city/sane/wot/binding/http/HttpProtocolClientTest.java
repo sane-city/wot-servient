@@ -1,6 +1,7 @@
 package city.sane.wot.binding.http;
 
 import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -41,6 +42,9 @@ public class HttpProtocolClientTest {
         service.put("write", new MyWriteRoute());
         service.post("invoke", new MyInvokeRoute());
         service.get("subscribe", new MySubscribeRoute());
+        service.get("status/300", new MyStatusRoute());
+        service.get("status/400", new MyStatusRoute());
+        service.get("status/500", new MyStatusRoute());
     }
 
     @After
@@ -57,6 +61,45 @@ public class HttpProtocolClientTest {
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
+    }
+
+    @Test(expected = ProtocolClientException.class)
+    public void readResourceRedirection() throws Throwable {
+        String href = "http://localhost:8080/status/300";
+        Form form = new Form.Builder().setHref(href).build();
+
+        try {
+            client.readResource(form).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected = ProtocolClientException.class)
+    public void readResourceClientError() throws Throwable {
+        String href = "http://localhost:8080/status/400";
+        Form form = new Form.Builder().setHref(href).build();
+
+        try {
+            client.readResource(form).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected = ProtocolClientException.class)
+    public void readResourceServerError() throws Throwable {
+        String href = "http://localhost:8080/status/500";
+        Form form = new Form.Builder().setHref(href).build();
+
+        try {
+            client.readResource(form).get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test
@@ -115,6 +158,15 @@ public class HttpProtocolClientTest {
         public Object handle(Request request, Response response) {
             response.type("application/json");
             return "Hallo Welt";
+        }
+    }
+
+    private class MyStatusRoute implements Route {
+        @Override
+        public Object handle(Request request, Response response) throws Exception {
+            int statusCode = Integer.parseInt(request.pathInfo().split("/", 3)[2]);
+            response.status(statusCode);
+            return "";
         }
     }
 }

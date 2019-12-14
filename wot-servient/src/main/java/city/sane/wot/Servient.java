@@ -60,8 +60,16 @@ public class Servient {
         for (String serverName : requiredServers) {
             try {
                 Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
-                Constructor<ProtocolServer> constructor = serverKlass.getConstructor(Config.class);
-                ProtocolServer server = constructor.newInstance(config);
+                Constructor<ProtocolServer> constructor;
+                ProtocolServer server;
+                if (Servient.hasConstructor(serverKlass, Config.class)) {
+                    constructor = serverKlass.getConstructor(Config.class);
+                    server = constructor.newInstance(config);
+                }
+                else {
+                    constructor = serverKlass.getConstructor();
+                    server = constructor.newInstance();
+                }
                 servers.add(server);
             }
             catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -75,13 +83,15 @@ public class Servient {
             try {
                 Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
                 Constructor<ProtocolClientFactory> constructor;
+                ProtocolClientFactory factory;
                 if (Servient.hasConstructor(factoryKlass, Config.class)) {
                     constructor = factoryKlass.getConstructor(Config.class);
+                    factory = constructor.newInstance(config);
                 }
                 else {
                     constructor = factoryKlass.getConstructor();
+                    factory = constructor.newInstance();
                 }
-                ProtocolClientFactory factory = constructor.newInstance(config);
                 clientFactories.put(factory.getScheme(), factory);
             }
             catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {

@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class JadexProtocolServerTest {
@@ -37,10 +39,13 @@ public class JadexProtocolServerTest {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-//    @Test
-//    public void getDirectoryUrl() throws URISyntaxException {
-//        assertEquals(new URI("http://[2003:c3:a70a:fd00:cc7:9138:794d:e803]:8080"), server.getDirectoryUrl());
-//    }
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
 
     private ExposedThing getCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()

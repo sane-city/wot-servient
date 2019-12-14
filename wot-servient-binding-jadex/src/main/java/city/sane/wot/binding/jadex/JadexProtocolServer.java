@@ -66,7 +66,12 @@ public class JadexProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> stop() {
         log.info("JadexServer is stopping Jadex Platform '{}'", platform);
 
-        return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> null);
+        if (platform != null) {
+            return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> null);
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override

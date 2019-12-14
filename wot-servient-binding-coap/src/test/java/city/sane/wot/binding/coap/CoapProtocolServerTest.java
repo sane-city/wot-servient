@@ -10,8 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.*;
 
 public class CoapProtocolServerTest {
     private CoapProtocolServer server;
@@ -25,6 +27,17 @@ public class CoapProtocolServerTest {
     @After
     public void tearDown() {
         server.stop().join();
+
+        // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
+        //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
+        //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
+        //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
+        try {
+            Thread.sleep(1 * 1000L);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Test
@@ -37,10 +50,27 @@ public class CoapProtocolServerTest {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-//    @Test
-//    public void getDirectoryUrl() throws URISyntaxException {
-//        assertEquals(new URI("coap://[2003:c3:a70a:fd00:cc7:9138:794d:e803]:5683"), server.getDirectoryUrl());
-//    }
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
+
+    @Test
+    public void getDirectoryUrl() {
+        String url = server.getDirectoryUrl().toString();
+
+        assertThat(url, matchesPattern("coap://.*:5683"));
+    }
+
+    @Test
+    public void getThingUrl() {
+        String url = server.getThingUrl("counter").toString();
+
+        assertThat(url, matchesPattern("coap://.*:5683/counter"));
+    }
 
     private ExposedThing getCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()

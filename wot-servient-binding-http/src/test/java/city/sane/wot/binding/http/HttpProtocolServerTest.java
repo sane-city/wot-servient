@@ -13,8 +13,11 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.text.MatchesPattern.matchesPattern;
+import static org.junit.Assert.*;
+
 
 public class HttpProtocolServerTest {
     private HttpProtocolServer server;
@@ -40,10 +43,27 @@ public class HttpProtocolServerTest {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-//    @Test
-//    public void getDirectoryUrl() throws URISyntaxException {
-//        assertEquals(new URI("http://[2003:c3:a70a:fd00:cc7:9138:794d:e803]:8080"), server.getDirectoryUrl());
-//    }
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
+
+    @Test
+    public void getDirectoryUrl() {
+        String url = server.getDirectoryUrl().toString();
+
+        assertThat(url, matchesPattern("http://.*:8080"));
+    }
+
+    @Test
+    public void getThingUrl() {
+        String url = server.getThingUrl("counter").toString();
+
+        assertThat(url, matchesPattern("http://.*:8080/counter"));
+    }
 
     @Test
     public void setSecurity() {
@@ -74,6 +94,12 @@ public class HttpProtocolServerTest {
                 .setReadOnly(true)
                 .build();
 
+        ThingProperty sinkProperty = new ThingProperty.Builder()
+                .setType("string")
+                .setDescription("write only property")
+                .setWriteOnly(true)
+                .build();
+
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
                 .setTitle("counter")
@@ -81,6 +107,7 @@ public class HttpProtocolServerTest {
 
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
+        thing.addProperty("sink", sinkProperty, "Hello");
 
         thing.addAction("increment", new ThingAction(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {

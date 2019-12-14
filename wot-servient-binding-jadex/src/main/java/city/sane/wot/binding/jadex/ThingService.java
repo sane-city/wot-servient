@@ -5,7 +5,7 @@ import jadex.commons.future.IFuture;
 /**
  * Defines the Jadex Service interface for interaction with a Thing.
  */
-interface ThingService {
+public interface ThingService {
     /**
      * Return Thing as string because Jadex is not able to (de)serialize it properly without additional adjustments.
      *

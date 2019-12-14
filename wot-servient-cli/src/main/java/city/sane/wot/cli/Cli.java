@@ -86,13 +86,21 @@ class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
-        Servient servient = getServient(cmd);
-        servient.start().join();
-        Wot wot = new DefaultWot(servient);
+        Servient servient = null;
+        try {
+            servient = getServient(cmd);
+            servient.start().join();
+            Wot wot = new DefaultWot(servient);
 
-        for (File script : scripts) {
-            log.info("Servient is running script '{}'", script);
-            servient.runScript(script, wot);
+            for (File script : scripts) {
+                log.info("Servient is running script '{}'", script);
+                servient.runScript(script, wot);
+            }
+        }
+        finally {
+            if (servient != null) {
+                servient.shutdown().join();
+            }
         }
     }
 

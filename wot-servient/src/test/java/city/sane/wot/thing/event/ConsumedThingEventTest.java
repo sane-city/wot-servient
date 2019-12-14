@@ -45,10 +45,6 @@ public class ConsumedThingEventTest {
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        MyProtocolClientFactory() {
-
-        }
-
         @Override
         public String getScheme() {
             return "test";

@@ -41,7 +41,7 @@ public class MqttProtocolClient implements ProtocolClient {
         }
     }
 
-    MqttProtocolClient(MqttProtocolSettings settings, MqttClient client) throws ProtocolClientException {
+    MqttProtocolClient(MqttProtocolSettings settings, MqttClient client) {
         this.settings = settings;
         this.client = client;
     }

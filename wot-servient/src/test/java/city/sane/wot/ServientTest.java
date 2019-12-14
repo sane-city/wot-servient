@@ -323,11 +323,7 @@ public class ServientTest {
         }
     }
 
-    static class MyProtocolServer implements ProtocolServer {
-        MyProtocolServer(Config config) {
-
-        }
-
+    public static class MyProtocolServer implements ProtocolServer {
         @Override
         public CompletableFuture<Void> start() {
             return CompletableFuture.completedFuture(null);
@@ -349,11 +345,7 @@ public class ServientTest {
         }
     }
 
-    static class MyProtocolClientFactory implements ProtocolClientFactory {
-        MyProtocolClientFactory(Config config) {
-
-        }
-
+    public static class MyProtocolClientFactory implements ProtocolClientFactory {
         @Override
         public String getScheme() {
             return "test";
@@ -366,6 +358,9 @@ public class ServientTest {
     }
 
     static class MyProtocolClient implements ProtocolClient {
+        public MyProtocolClient() {
+        }
+
         @Override
         public CompletableFuture<Content> readResource(Form form) {
             String json = null;

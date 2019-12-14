@@ -44,7 +44,7 @@ public class ConsumedThingPropertyTest {
 
         assertEquals("http://example.com/properties/count", consumedProperty.getForms().get(0).getHref());
     }
-    
+
     @Test
     public void normalizeAbsoluteHrefWithBase() {
         Thing thing = new Thing.Builder().setBase("http://example.com").build();
@@ -112,10 +112,6 @@ public class ConsumedThingPropertyTest {
     }
 
     public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        MyProtocolClientFactory() {
-
-        }
-
         @Override
         public String getScheme() {
             return "test";
