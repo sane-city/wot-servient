@@ -11,7 +11,6 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import jadex.bridge.IInternalAccess;
 import jadex.bridge.service.IService;
-import jadex.bridge.service.IServiceIdentifier;
 import jadex.bridge.service.ServiceScope;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
@@ -46,13 +45,17 @@ public class ThingAgent implements ThingService {
 
     private String thingServiceId;
 
+    ThingAgent(IInternalAccess agent, ExposedThing thing) {
+        this.agent = agent;
+        this.thing = thing;
+    }
+
     @AgentCreated
     public IFuture<Void> created() {
         log.debug("Agent created");
 
         ThingService thingService = agent.getProvidedService(ThingService.class);
-        IServiceIdentifier serviceId = ((IService) thingService).getServiceId();
-        thingServiceId = serviceId.toString();
+        thingServiceId = thingService.getThingServiceId();
 
         log.debug("Agent has ThingService with id '{}'", thingServiceId);
 
@@ -197,6 +200,11 @@ public class ThingAgent implements ThingService {
         catch (ContentCodecException e) {
             return new Future<>(e);
         }
+    }
+
+    @Override
+    public String getThingServiceId() {
+        return ((IService) this).getServiceId().toString();
     }
 
     private static URI buildInteractionURI(String serviceId, String type, String name) {

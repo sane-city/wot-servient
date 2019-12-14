@@ -9,7 +9,7 @@ class JadexContent {
     private String type;
     private byte[] body;
 
-    private JadexContent(String type, byte[] body) {
+    public JadexContent(String type, byte[] body) {
         this.type = type;
         this.body = body;
     }

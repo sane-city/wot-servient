@@ -26,11 +26,21 @@ import static jadex.commons.future.IFuture.DONE;
 })
 public class ThingsAgent implements ThingsService {
     private static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
-    private final Map<String, IExternalAccess> children = new HashMap<>();
+    private Map<String, IExternalAccess> children;
     @Agent
     private IInternalAccess agent;
     @AgentArgument("things")
     private Map<String, ExposedThing> things;
+
+    public ThingsAgent() {
+        children = new HashMap<>();
+    }
+
+    ThingsAgent(IInternalAccess agent, Map<String, ExposedThing> things, Map<String, IExternalAccess> children) {
+        this.agent = agent;
+        this.things = things;
+        this.children = children;
+    }
 
     @AgentCreated
     public IFuture<Void> created() {
