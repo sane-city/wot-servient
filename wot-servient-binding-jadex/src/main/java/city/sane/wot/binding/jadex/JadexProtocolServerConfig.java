@@ -37,6 +37,6 @@ public class JadexProtocolServerConfig {
                 .fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class))));
 
         return createPlatform
-                .thenCombine(searchThingsService, (ia, service) -> new Pair(ia, service));
+                .thenCombine(searchThingsService, Pair::new);
     }
 }
