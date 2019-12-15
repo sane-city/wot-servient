@@ -44,9 +44,7 @@ public class ThingAction extends ThingInteraction<ThingAction> {
             return false;
         }
         ThingAction that = (ThingAction) o;
-        return super.equals(that) &&
-                Objects.equals(input, that.input) &&
-                Objects.equals(output, that.output);
+        return Objects.equals(input, that.input) && Objects.equals(output, that.output);
     }
 
     @Override

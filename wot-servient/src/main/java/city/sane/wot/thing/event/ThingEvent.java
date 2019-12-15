@@ -43,9 +43,7 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
             return false;
         }
         ThingEvent that = (ThingEvent) o;
-        return super.equals(that) &&
-                Objects.equals(data, that.data) &&
-                Objects.equals(type, that.type);
+        return Objects.equals(data, that.data) && Objects.equals(type, that.type);
     }
 
     @Override

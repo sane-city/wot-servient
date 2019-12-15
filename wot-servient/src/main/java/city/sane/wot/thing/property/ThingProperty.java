@@ -82,8 +82,7 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
             return false;
         }
         ThingProperty that = (ThingProperty) o;
-        return super.equals(that) &&
-                observable == that.observable &&
+        return observable == that.observable &&
                 readOnly == that.readOnly &&
                 writeOnly == that.writeOnly &&
                 Objects.equals(objectType, that.objectType) &&
