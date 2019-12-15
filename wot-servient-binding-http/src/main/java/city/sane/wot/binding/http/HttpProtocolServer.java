@@ -18,7 +18,10 @@ import spark.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -102,7 +105,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     Form form = new Form.Builder()
                             .setHref(href)
                             .setContentType(contentType)
-                            .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                            .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                             .build();
 
                     thing.addForm(form);
@@ -135,7 +138,7 @@ public class HttpProtocolServer implements ProtocolServer {
                 form.setOptional(HTTP_METHOD_NAME, "PUT");
             }
             else {
-                form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
+                form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
             }
 
             property.addForm(form.build());

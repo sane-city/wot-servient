@@ -13,7 +13,6 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import static city.sane.wot.binding.akka.Messages.*;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
@@ -46,7 +45,7 @@ class PropertyActor extends AbstractActor {
             builder.setOp(Operation.WRITE_PROPERTY);
         }
         else {
-            builder.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
+            builder.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
         }
 
         property.addForm(builder.build());

@@ -222,6 +222,10 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         });
     }
 
+    public CompletableFuture<Map<String, Object>> readProperties(String ... names) {
+        return readProperties(Arrays.asList(names));
+    }
+
     /**
      * Creates new form (if needed) for URI Variables
      * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
