@@ -13,26 +13,23 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-
-public class AllPropertiesResourceTest {
+public class ThingResourceTest {
     private CoapServer server;
 
     @Before
     public void setup() {
-        ExposedThing thing = getCounterThing();
-
         server = new CoapServer(5683);
-        server.add(new AllPropertiesResource(thing));
+        server.add(new ThingResource(getCounterThing()));
         server.start();
     }
-
+    
     @After
     public void teardown() {
         server.stop();
@@ -50,13 +47,23 @@ public class AllPropertiesResourceTest {
     }
 
     @Test
-    public void readAllProperties() {
-        CoapClient client = new CoapClient("coap://localhost:5683/properties");
+    public void getThing() {
+        CoapClient client = new CoapClient("coap://localhost:5683/counter");
+        CoapResponse response = client.get();
+
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+    }
+
+    @Test
+    public void getThingWithCustomContentType() {
+        CoapClient client = new CoapClient("coap://localhost:5683/counter");
         Request request = new Request(CoAP.Code.GET);
+        request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
     }
 
     private ExposedThing getCounterThing() {

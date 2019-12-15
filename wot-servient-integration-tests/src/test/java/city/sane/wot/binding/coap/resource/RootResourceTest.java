@@ -14,6 +14,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +22,6 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 
 public class RootResourceTest {
     private CoapServer server;
@@ -53,10 +53,10 @@ public class RootResourceTest {
         CoapClient client = new CoapClient("coap://localhost:5683");
         CoapResponse response = client.get();
 
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 
         int responseContentType = response.getOptions().getContentFormat();
-        assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new ObjectSchema());
@@ -70,10 +70,10 @@ public class RootResourceTest {
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 
         int responseContentType = response.getOptions().getContentFormat();
-        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new ObjectSchema());

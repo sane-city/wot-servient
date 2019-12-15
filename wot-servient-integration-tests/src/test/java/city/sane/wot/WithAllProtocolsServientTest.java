@@ -1,113 +1,102 @@
-package city.sane.wot.binding.akka.actor;
+package city.sane.wot;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.testkit.javadsl.TestKit;
-import city.sane.wot.binding.akka.Messages;
-import city.sane.wot.content.ContentCodecException;
-import city.sane.wot.content.ContentManager;
+import city.sane.Pair;
+import city.sane.wot.binding.ProtocolClientFactory;
+import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
+import city.sane.wot.binding.ProtocolServerNotImplementedException;
+import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
+import city.sane.wot.binding.akka.AkkaProtocolServer;
+import city.sane.wot.binding.coap.CoapProtocolClientFactory;
+import city.sane.wot.binding.coap.CoapProtocolServer;
+import city.sane.wot.binding.http.HttpProtocolClientFactory;
+import city.sane.wot.binding.http.HttpProtocolServer;
+import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
+import city.sane.wot.binding.jadex.JadexProtocolServer;
+import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
+import city.sane.wot.binding.mqtt.MqttProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class ThingsActorTest {
-    private ActorSystem system;
+@RunWith(Parameterized.class)
+public class WithAllProtocolsServientTest {
+    @Parameterized.Parameter
+    public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
+    private Servient servient;
 
     @Before
-    public void setUp() {
-        Config config = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(ConfigFactory.load());
-        system = ActorSystem.create("my-system", config);
+    public void setup() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+
+        servient = new Servient(config);
+        servient.start().join();
     }
 
     @After
-    public void tearDown() {
-        TestKit.shutdownActorSystem(system);
-        system = null;
+    public void teardown() {
+        servient.shutdown().join();
     }
 
     @Test
-    public void getThings() throws ContentCodecException {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+    public void fetch() throws ProtocolServerException {
+        try {
+            ExposedThing exposedThing = getExposedCounterThing();
+            servient.addThing(exposedThing);
+            exposedThing.expose().join();
 
-        actorRef.tell(new Messages.Read(), testKit.getRef());
+            URI url = servient.getServer(servientClasses.first()).getThingUrl(exposedThing.getId());
 
-        Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
-        Map things = ContentManager.contentToValue(msg.content, new ObjectSchema());
+            Thing thing = servient.fetch(url).join();
 
-        assertThat((Map<String, Thing>) things, hasKey("counter"));
+            assertEquals("counter", thing.getId());
+        }
+        catch (ProtocolServerNotImplementedException e) {
+
+        }
     }
 
     @Test
-    public void discover() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+    public void fetchDirectory() throws ProtocolServerException {
+        try {
+            ExposedThing exposedThing = getExposedCounterThing();
+            servient.addThing(exposedThing);
+            exposedThing.expose().join();
 
-        ThingFilter filter = new ThingFilter();
-        actorRef.tell(new ThingsActor.Discover(filter), testKit.getRef());
+            URI url = servient.getServer(servientClasses.first()).getDirectoryUrl();
 
-        ThingsActor.Things msg = testKit.expectMsgClass(ThingsActor.Things.class);
+            Map things = servient.fetchDirectory(url).join();
 
-        assertThat(msg.entities, hasKey("counter"));
+            assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
+        }
+        catch (ProtocolServerNotImplementedException e) {
+
+        }
     }
-
-    @Test
-    public void expose() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-
-        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
-
-        testKit.expectMsgClass(ThingsActor.Created.class);
-    }
-
-//    @Test
-//    public void created() {
-//        TestKit testKit = new TestKit(system);
-//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-//
-//        actorRef.tell(new ThingsActor.Created<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
-//
-//        testKit.expectMsgClass(ThingsActor.Created.class);
-//    }
-
-    @Test
-    public void destroy() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
-        testKit.expectMsgClass(ThingsActor.Created.class);
-
-        actorRef.tell(new ThingsActor.Destroy("counter"), testKit.getRef());
-
-        testKit.expectMsgClass(ThingsActor.Deleted.class);
-    }
-
-//    @Test
-//    public void deleted() {
-//        TestKit testKit = new TestKit(system);
-//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-//
-//        actorRef.tell(new ThingsActor.Deleted<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
-//
-//        testKit.expectMsgClass(ThingsActor.Deleted.class);
-//    }
 
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
@@ -123,7 +112,7 @@ public class ThingsActorTest {
                 .setReadOnly(true)
                 .build();
 
-        ExposedThing thing = new ExposedThing(null)
+        ExposedThing thing = new ExposedThing(servient)
                 .setId("counter")
                 .setTitle("counter");
 
@@ -184,5 +173,16 @@ public class ThingsActorTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
+        return Arrays.asList(
+                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
+                new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
+                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
+                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
+                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class)
+        );
     }
 }

@@ -5,6 +5,7 @@ import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.ConfigFactory;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.*;
 
 public class CoapProtocolServerTest {
@@ -62,14 +62,14 @@ public class CoapProtocolServerTest {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, matchesPattern("coap://.*:5683"));
+        assertThat(url, Matchers.matchesPattern("coap://.*:5683"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, matchesPattern("coap://.*:5683/counter"));
+        assertThat(url, Matchers.matchesPattern("coap://.*:5683/counter"));
     }
 
     private ExposedThing getCounterThing() {
