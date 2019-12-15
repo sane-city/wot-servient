@@ -12,8 +12,6 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 
-import java.util.Arrays;
-
 import static city.sane.wot.binding.akka.Messages.RespondRead;
 
 /**
@@ -35,7 +33,7 @@ class AllPropertiesActor extends AbstractActor {
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
-                .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                 .build();
 
         thing.addForm(form);

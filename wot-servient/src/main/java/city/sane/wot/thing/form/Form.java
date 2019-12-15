@@ -132,6 +132,10 @@ public class Form implements Serializable {
             return this;
         }
 
+        public Builder setOp(Operation ... op) {
+            return setOp(Arrays.asList(op));
+        }
+
         public Builder setOp(Operation op) {
             return setOp(Collections.singletonList(op));
         }

@@ -16,7 +16,6 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -144,7 +143,7 @@ public class MqttProtocolServer implements ProtocolServer {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY))
+                    .setOp(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY)
                     .build();
             property.addForm(form);
             log.info("Assign '{}' to Property '{}'", href, name);
@@ -187,7 +186,7 @@ public class MqttProtocolServer implements ProtocolServer {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.SUBSCRIBE_EVENT, Operation.UNSUBSCRIBE_EVENT))
+                    .setOp(Operation.SUBSCRIBE_EVENT, Operation.UNSUBSCRIBE_EVENT)
                     .setOptional("mqtt:qos", 0)
                     .setOptional("mqtt:retain", false)
                     .build();

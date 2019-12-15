@@ -19,7 +19,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +130,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(contentType)
-                        .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                        .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                         .build();
 
                 thing.addForm(form);
@@ -155,7 +154,7 @@ public class CoapProtocolServer implements ProtocolServer {
                     form.setOp(Operation.WRITE_PROPERTY);
                 }
                 else {
-                    form.setOp(Arrays.asList(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY));
+                    form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
                 }
 
                 property.addForm(form.build());
