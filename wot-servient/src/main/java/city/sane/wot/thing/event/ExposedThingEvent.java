@@ -29,6 +29,16 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
         data = event.getData();
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     public EventState getState() {
         return state;
     }

@@ -23,16 +23,26 @@ public class ExposedThingAction extends ThingAction {
 
     public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
         this.name = name;
-        this.description = action.getDescription();
-        this.descriptions = action.getDescriptions();
-        this.uriVariables = action.getUriVariables();
-        this.input = action.getInput();
-        this.output = action.getOutput();
+        description = action.getDescription();
+        descriptions = action.getDescriptions();
+        uriVariables = action.getUriVariables();
+        input = action.getInput();
+        output = action.getOutput();
         this.thing = thing;
     }
 
     public ActionState getState() {
         return state;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     /**

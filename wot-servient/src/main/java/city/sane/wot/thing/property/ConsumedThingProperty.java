@@ -33,25 +33,36 @@ public class ConsumedThingProperty extends ThingProperty {
     public ConsumedThingProperty(String name, ThingProperty property, ConsumedThing thing) {
         this.name = name;
 
-        this.objectType = property.getObjectType();
-        this.description = property.getDescription();
-        this.type = property.getType();
-        this.observable = property.isObservable();
-        this.readOnly = property.isReadOnly();
-        this.writeOnly = property.isWriteOnly();
-        this.forms = normalizeHrefs(property.getForms(), thing);
-        this.uriVariables = property.getUriVariables();
-        this.optionalProperties = property.getOptionalProperties();
+        objectType = property.getObjectType();
+        description = property.getDescription();
+        type = property.getType();
+        observable = property.isObservable();
+        readOnly = property.isReadOnly();
+        writeOnly = property.isWriteOnly();
+        forms = normalizeHrefs(property.getForms(), thing);
+        uriVariables = property.getUriVariables();
+        optionalProperties = property.getOptionalProperties();
 
         this.thing = thing;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
         return forms.stream().map(f -> normalizeHref(f, thing)).collect(Collectors.toList());
     }
 
     private Form normalizeHref(Form form, ConsumedThing thing) {
         String base = thing.getBase();
-        if(base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
+        if (base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
             String normalizedHref = base + form.getHref();
             return new Form.Builder(form).setHref(normalizedHref).build();
         }

@@ -34,6 +34,16 @@ public class ConsumedThingAction extends ThingAction {
         this.thing = thing;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     public CompletableFuture invoke(Map<String, Object> parameters) {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.INVOKE_ACTION);

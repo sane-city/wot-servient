@@ -26,18 +26,28 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
         this.name = name;
 
         if (property != null) {
-            this.objectType = property.getObjectType();
-            this.description = property.getDescription();
-            this.descriptions = property.getDescriptions();
-            this.type = property.getType();
-            this.observable = property.isObservable();
-            this.readOnly = property.isReadOnly();
-            this.writeOnly = property.isWriteOnly();
-            this.uriVariables = property.getUriVariables();
-            this.optionalProperties = property.getOptionalProperties();
+            objectType = property.getObjectType();
+            description = property.getDescription();
+            descriptions = property.getDescriptions();
+            type = property.getType();
+            observable = property.isObservable();
+            readOnly = property.isReadOnly();
+            writeOnly = property.isWriteOnly();
+            uriVariables = property.getUriVariables();
+            optionalProperties = property.getOptionalProperties();
         }
 
         this.thing = thing;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     public CompletableFuture<Object> read() {
