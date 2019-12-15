@@ -27,7 +27,7 @@ public class JadexProtocolServer implements ProtocolServer {
     private ThingsService thingsService;
 
     public JadexProtocolServer(Config wotConfig) {
-        config = new JadexProtocolServerConfig(wotConfig);
+        this(new JadexProtocolServerConfig(wotConfig));
     }
 
     JadexProtocolServer(JadexProtocolServerConfig config) {

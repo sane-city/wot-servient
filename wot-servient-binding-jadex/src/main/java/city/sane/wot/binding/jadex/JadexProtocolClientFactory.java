@@ -3,10 +3,6 @@ package city.sane.wot.binding.jadex;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
-import jadex.base.IPlatformConfiguration;
-import jadex.base.PlatformConfigurationHandler;
-import jadex.base.Starter;
 import jadex.bridge.IExternalAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,16 +18,16 @@ import java.util.concurrent.CompletableFuture;
 public class JadexProtocolClientFactory implements ProtocolClientFactory {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolClientFactory.class);
 
-    private final IPlatformConfiguration platformConfig;
+    private final JadexProtocolClientConfig config;
 
     private IExternalAccess platform;
 
-    public JadexProtocolClientFactory(Config config) {
-        platformConfig = PlatformConfigurationHandler.getDefault();
-        if (config.hasPath("wot.servient.jadex.client")) {
-            ConfigObject objects = config.getObject("wot.servient.jadex.client");
-            objects.forEach((key, value) -> platformConfig.setValue(key, value.unwrapped()));
-        }
+    public JadexProtocolClientFactory(Config wotConfig) {
+        this(new JadexProtocolClientConfig(wotConfig));
+    }
+
+    public JadexProtocolClientFactory(JadexProtocolClientConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -52,9 +48,9 @@ public class JadexProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> init() {
         log.debug("Create Jadex Platform");
-        CompletableFuture<IExternalAccess> result = FutureConverters.fromJadex(Starter.createPlatform(platformConfig));
+        CompletableFuture<IExternalAccess> result = config.createPlatform();
         return result.thenApply(ia -> {
-            this.platform = ia;
+            platform = ia;
             return null;
         });
     }

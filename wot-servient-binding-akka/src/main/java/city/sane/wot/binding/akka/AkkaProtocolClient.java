@@ -17,7 +17,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-import static akka.pattern.Patterns.ask;
 import static city.sane.wot.binding.akka.Messages.*;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
@@ -31,10 +30,16 @@ public class AkkaProtocolClient implements ProtocolClient {
 
     private final ActorSystem system;
     private final ActorRef discoveryActor;
+    private final AkkaProtocolPattern pattern;
 
     public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor) {
+        this(system, discoveryActor, new AkkaProtocolPattern());
+    }
+
+    AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, AkkaProtocolPattern pattern) {
         this.system = system;
         this.discoveryActor = discoveryActor;
+        this.pattern = pattern;
     }
 
     @Override
@@ -48,7 +53,7 @@ public class AkkaProtocolClient implements ProtocolClient {
 
         ActorSelection selection = system.actorSelection(href);
         Duration timeout = Duration.ofSeconds(10);
-        return ask(selection, message, timeout)
+        return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((RespondRead) m).content)
                 .toCompletableFuture();
     }
@@ -64,7 +69,7 @@ public class AkkaProtocolClient implements ProtocolClient {
 
         ActorSelection selection = system.actorSelection(href);
         Duration timeout = Duration.ofSeconds(10);
-        return ask(selection, message, timeout)
+        return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((Written) m).content)
                 .toCompletableFuture();
     }
@@ -75,7 +80,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(discoveryActor, message, timeout)
+        return pattern.ask(discoveryActor, message, timeout)
                 .thenApply(m -> ((Things) m).entities.values())
                 .toCompletableFuture();
     }

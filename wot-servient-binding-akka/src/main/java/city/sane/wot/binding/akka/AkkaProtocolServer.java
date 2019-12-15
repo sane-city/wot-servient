@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static akka.pattern.Patterns.ask;
-
 /**
  * Allows exposing Things via Akka Actors.<br>
  * Starts an Actor System with an {@link ThingsActor} actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use in
@@ -33,12 +31,22 @@ public class AkkaProtocolServer implements ProtocolServer {
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;
     private final Config actorSystemConfig;
+    private final AkkaProtocolPattern pattern;
     private ActorSystem system;
     private ActorRef thingsActor;
 
     public AkkaProtocolServer(Config config) {
-        actorSystemName = config.getString("wot.servient.akka.server.system-name");
-        actorSystemConfig = config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        this(
+                config.getString("wot.servient.akka.server.system-name"),
+                config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides()),
+                new AkkaProtocolPattern()
+        );
+    }
+
+    AkkaProtocolServer(String actorSystemName, Config actorSystemConfig, AkkaProtocolPattern pattern) {
+        this.actorSystemName = actorSystemName;
+        this.actorSystemConfig = actorSystemConfig;
+        this.pattern = pattern;
     }
 
     @Override
@@ -78,7 +86,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         }
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
@@ -93,7 +101,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         things.remove(thing.getId());
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
