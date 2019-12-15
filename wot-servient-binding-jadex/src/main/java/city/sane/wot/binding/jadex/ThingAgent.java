@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -45,6 +44,8 @@ public class ThingAgent implements ThingService {
 
     private String thingServiceId;
 
+    public ThingAgent() {}
+
     ThingAgent(IInternalAccess agent, ExposedThing thing) {
         this.agent = agent;
         this.thing = thing;
@@ -54,8 +55,7 @@ public class ThingAgent implements ThingService {
     public IFuture<Void> created() {
         log.debug("Agent created");
 
-        ThingService thingService = agent.getProvidedService(ThingService.class);
-        thingServiceId = thingService.getThingServiceId();
+        thingServiceId = getThingServiceId();
 
         log.debug("Agent has ThingService with id '{}'", thingServiceId);
 
@@ -71,7 +71,7 @@ public class ThingAgent implements ThingService {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(ContentManager.DEFAULT)
-                        .setOp(Arrays.asList(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                        .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                         .build();
 
                 thing.addForm(form);
@@ -84,7 +84,7 @@ public class ThingAgent implements ThingService {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Operation.READ_PROPERTY)
+                    .setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY)
                     .build();
             property.addForm(form);
 
@@ -204,7 +204,7 @@ public class ThingAgent implements ThingService {
 
     @Override
     public String getThingServiceId() {
-        return ((IService) this).getServiceId().toString();
+        return ((IService) agent.getProvidedService(ThingService.class)).getServiceId().toString();
     }
 
     private static URI buildInteractionURI(String serviceId, String type, String name) {

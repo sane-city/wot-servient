@@ -1,13 +1,9 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
-import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
-import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import org.eclipse.californium.core.CoapClient;
@@ -17,17 +13,14 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-
-public class ActionResourceTest {
+public class AllPropertiesResourceTest {
     private CoapServer server;
 
     @Before
@@ -35,7 +28,7 @@ public class ActionResourceTest {
         ExposedThing thing = getCounterThing();
 
         server = new CoapServer(5683);
-        server.add(new ActionResource("increment", thing.getAction("increment")));
+        server.add(new AllPropertiesResource(thing));
         server.start();
     }
 
@@ -56,57 +49,13 @@ public class ActionResourceTest {
     }
 
     @Test
-    public void invokeAction() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
-        CoapResponse response = client.post("", MediaTypeRegistry.APPLICATION_JSON);
-
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-
-        int responseContentType = response.getOptions().getContentFormat();
-        assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
-
-        Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
-        Object responseValue = ContentManager.contentToValue(content, new IntegerSchema());
-        assertThat(responseValue, instanceOf(Integer.class));
-
-        assertEquals(43, responseValue);
-    }
-
-    @Test
-    public void invokeActionWithCustomContentType() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
-        Request request = new Request(CoAP.Code.POST);
-        request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
+    public void readAllProperties() {
+        CoapClient client = new CoapClient("coap://localhost:5683/properties");
+        Request request = new Request(CoAP.Code.GET);
         CoapResponse response = client.advanced(request);
 
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-
-        int responseContentType = response.getOptions().getContentFormat();
-        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, responseContentType);
-
-        Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
-        int responseValue = ContentManager.contentToValue(content, new IntegerSchema());
-        assertThat(responseValue, instanceOf(Integer.class));
-
-        assertEquals(43, responseValue);
-    }
-
-    @Test
-    public void invokeActionWithParameters() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
-        Content inputContent = ContentManager.valueToContent(Map.of("step", 3), "application/json");
-        CoapResponse response = client.post(inputContent.getBody(), MediaTypeRegistry.APPLICATION_JSON);
-
-        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-
-        int responseContentType = response.getOptions().getContentFormat();
-        assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
-
-        Content outputContent = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
-        int responseValue = ContentManager.contentToValue(outputContent, new IntegerSchema());
-        assertThat(responseValue, instanceOf(Integer.class));
-
-        assertEquals(45, responseValue);
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
     }
 
     private ExposedThing getCounterThing() {

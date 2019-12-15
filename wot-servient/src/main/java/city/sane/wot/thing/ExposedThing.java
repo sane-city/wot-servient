@@ -81,7 +81,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    private ExposedThing setObjectType(String objectType) {
+    public ExposedThing setObjectType(String objectType) {
         this.objectType = objectType;
         return this;
     }
@@ -93,7 +93,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    private ExposedThing setObjectContexts(Context objectContexts) {
+    public ExposedThing setObjectContexts(Context objectContexts) {
         objectContext = objectContexts;
         return this;
     }

@@ -6,6 +6,7 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.typesafe.config.ConfigFactory;
+import org.hamcrest.text.MatchesPattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,14 +56,14 @@ public class HttpProtocolServerTest {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, matchesPattern("http://.*:8080"));
+        assertThat(url, MatchesPattern.matchesPattern("http://.*:8080"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, matchesPattern("http://.*:8080/counter"));
+        assertThat(url, MatchesPattern.matchesPattern("http://.*:8080/counter"));
     }
 
     @Test

@@ -1,92 +1,113 @@
-package city.sane.wot.binding.jadex;
+package city.sane.wot.binding.akka.actor;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.testkit.javadsl.TestKit;
+import city.sane.wot.binding.akka.Messages;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import jadex.bridge.IInternalAccess;
-import jadex.bridge.service.IService;
-import jadex.bridge.service.IServiceIdentifier;
-import org.json.JSONException;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
 
-public class ThingAgentTest {
-    private ExposedThing thing;
-    @Mock
-    private IInternalAccess ia;
-    private ThingAgent agent;
+public class ThingsActorTest {
+    private ActorSystem system;
 
     @Before
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
+    public void setUp() {
+        Config config = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(ConfigFactory.load());
+        system = ActorSystem.create("my-system", config);
+    }
 
-        ThingService thingService = mock(ThingService.class, withSettings().extraInterfaces(IService.class));
-        when(((IService) thingService).getServiceId()).thenReturn(mock(IServiceIdentifier.class));
-        when(ia.getProvidedService(ThingService.class)).thenReturn(thingService);
-
-        thing = getExposedCounterThing();
-        agent = new ThingAgent(ia, thing);
+    @After
+    public void tearDown() {
+        TestKit.shutdownActorSystem(system);
+        system = null;
     }
 
     @Test
-    public void created() {
-        agent.created().get();
+    public void getThings() throws ContentCodecException {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
 
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
+        actorRef.tell(new Messages.Read(), testKit.getRef());
+
+        Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
+        Map things = ContentManager.contentToValue(msg.content, new ObjectSchema());
+
+        assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
     }
 
     @Test
-    public void killed() {
-        agent.killed().get();
+    public void discover() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
 
-        // shot not fail
-        assertTrue(true);
+        ThingFilter filter = new ThingFilter();
+        actorRef.tell(new ThingsActor.Discover(filter), testKit.getRef());
+
+        ThingsActor.Things msg = testKit.expectMsgClass(ThingsActor.Things.class);
+
+        assertThat(msg.entities, Matchers.hasKey("counter"));
     }
 
     @Test
-    public void get() throws JSONException {
-        JSONAssert.assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"properties\":{\"count\":{\"description\":\"current counter content\",\"type\":\"integer\",\"observable\":true},\"lastChange\":{\"description\":\"last change of counter content\",\"type\":\"string\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{\"description\":\"Incrementing counter content with optional step content as uriVariable\",\"uriVariables\":{\"step\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":250}},\"input\":{\"type\":\"object\"},\"output\":{\"type\":\"integer\"}},\"reset\":{}},\"events\":{\"change\":{}}}", agent.get().get(), JSONCompareMode.LENIENT);
+    public void expose() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+
+        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
+
+        testKit.expectMsgClass(ThingsActor.Created.class);
     }
+
+//    @Test
+//    public void created() {
+//        TestKit testKit = new TestKit(system);
+//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+//
+//        actorRef.tell(new ThingsActor.Created<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
+//
+//        testKit.expectMsgClass(ThingsActor.Created.class);
+//    }
 
     @Test
-    public void readProperties() throws ContentCodecException {
-        Map values = ContentManager.contentToValue(agent.readProperties().get().fromJadex(), new ObjectSchema());
+    public void destroy() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
+        testKit.expectMsgClass(ThingsActor.Created.class);
 
-        assertEquals(2, values.size());
-        assertEquals(42, values.get("count"));
+        actorRef.tell(new ThingsActor.Destroy("counter"), testKit.getRef());
+
+        testKit.expectMsgClass(ThingsActor.Deleted.class);
     }
 
-    @Test
-    public void readProperty() throws ContentCodecException {
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(42, value);
-    }
-
-    @Test
-    public void writeProperty() throws ContentCodecException {
-        agent.writeProperty("count",new JadexContent("application/json", "1337".getBytes())).get();
-
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(1337, value);
-    }
+//    @Test
+//    public void deleted() {
+//        TestKit testKit = new TestKit(system);
+//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+//
+//        actorRef.tell(new ThingsActor.Deleted<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
+//
+//        testKit.expectMsgClass(ThingsActor.Deleted.class);
+//    }
 
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()

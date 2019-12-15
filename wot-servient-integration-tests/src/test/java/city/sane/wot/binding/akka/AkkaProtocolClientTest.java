@@ -16,6 +16,7 @@ import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +25,6 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class AkkaProtocolClientTest {
@@ -57,7 +57,7 @@ public class AkkaProtocolClientTest {
         String href = actorRef.path().toStringWithAddress(system.provider().getDefaultAddress());
         Form form = new Form.Builder().setHref(href).build();
 
-        assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
+        Assert.assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class AkkaProtocolClientTest {
         String href = actorRef.path().toStringWithAddress(system.provider().getDefaultAddress());
         Form form = new Form.Builder().setHref(href).build();
 
-        assertEquals(ContentManager.valueToContent(42), client.writeResource(form, ContentManager.valueToContent(1337)).get());
+        Assert.assertEquals(ContentManager.valueToContent(42), client.writeResource(form, ContentManager.valueToContent(1337)).get());
     }
 
     @Test
