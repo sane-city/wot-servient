@@ -7,10 +7,6 @@ import city.sane.wot.binding.ProtocolClientFactory;
  * Creates new {@link ValueProtocolClient} instances.
  */
 public class ValueProtocolClientFactory implements ProtocolClientFactory {
-    public ValueProtocolClientFactory() {
-
-    }
-
     @Override
     public String getScheme() {
         return "value";

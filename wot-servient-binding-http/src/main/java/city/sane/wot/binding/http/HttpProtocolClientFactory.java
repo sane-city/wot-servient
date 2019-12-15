@@ -7,9 +7,6 @@ import city.sane.wot.binding.ProtocolClientFactory;
  * Creates new {@link HttpProtocolClient} instances.
  */
 public class HttpProtocolClientFactory implements ProtocolClientFactory {
-    public HttpProtocolClientFactory() {
-    }
-
     @Override
     public String toString() {
         return "HttpClient";

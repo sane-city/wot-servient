@@ -7,9 +7,6 @@ import city.sane.wot.binding.ProtocolClientFactory;
  * Creates new {@link JsonpathHttpProtocolClient} instances.
  */
 public class JsonpathHttpProtocolClientFactory implements ProtocolClientFactory {
-    public JsonpathHttpProtocolClientFactory() {
-    }
-
     @Override
     public String getScheme() {
         return "jsonpath+http";
