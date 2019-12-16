@@ -10,6 +10,9 @@ include:
   - template: License-Management.gitlab-ci.yml
   - template: SAST.gitlab-ci.yml
 
+variables:
+  SAST_JAVA_VERSION: 11
+
 license_management:
   variables:
     MAVEN_CLI_OPTS: -DskipTests
