@@ -5,7 +5,7 @@
     <parent>
         <artifactId>master</artifactId>
         <groupId>city.sane.wot-servient</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -22,23 +22,17 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.1.1</version>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar</goal>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- URI Templating (RFC6570 https://tools.ietf.org/html/rfc6570 -->
         <dependency>
             <groupId>com.damnhandy</groupId>

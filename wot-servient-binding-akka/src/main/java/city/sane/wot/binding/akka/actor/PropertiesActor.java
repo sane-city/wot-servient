@@ -11,17 +11,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor creates a {@link PropertyActor} for each {@link ExposedThingProperty}.
  */
-public class PropertiesActor extends AbstractActor {
+class PropertiesActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThingProperty> properties;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public PropertiesActor(Map<String, ExposedThingProperty> properties) {
+    private PropertiesActor(Map<String, ExposedThingProperty> properties) {
         this.properties = properties;
     }
 
@@ -48,11 +48,11 @@ public class PropertiesActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::propertyExposed)
+                .match(Created.class, m -> propertyExposed())
                 .build();
     }
 
-    private void propertyExposed(Created m) {
+    private void propertyExposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }

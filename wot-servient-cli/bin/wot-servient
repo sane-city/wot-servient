@@ -6,20 +6,6 @@
 ##
 ##############################################################################
 
-# Add default JVM options here. You can also use JAVA_OPTS to pass JVM options to this script.
-
-# If you're deploying and undeploying a lot of verticles with dynamic languages it's recommended to enable GC'ing
-# of generated classes and prevent OOM due to a lot of gc
-# JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:-UseGCOverheadLimit"
-JVM_OPTS=""
-
-APP_NAME="wot-servient"
-APP_BASE_NAME=`basename "$0"`
-
-warn ( ) {
-    echo "$*"
-}
-
 die ( ) {
     echo
     echo "$*"
@@ -66,8 +52,6 @@ cd "`dirname \"$PRG\"`/.."
 SERVIENT_HOME="`pwd -P`"
 cd "$SAVED"
 
-CLASSPATH=${CLASSPATH}:${SERVIENT_HOME}/lib/*
-
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
@@ -90,57 +74,4 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
-# For Cygwin, switch paths to Windows format before running java
-if $cygwin ; then
-    SERVIENT_HOME=`cygpath --path --mixed "$SERVIENT_HOME"`
-    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
-
-    # We build the pattern for arguments to be converted via cygpath
-    ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
-    SEP=""
-    for dir in $ROOTDIRSRAW ; do
-        ROOTDIRS="$ROOTDIRS$SEP$dir"
-        SEP="|"
-    done
-    OURCYGPATTERN="(^($ROOTDIRS))"
-    # Add a user-defined pattern to the cygpath arguments
-    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
-        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
-    fi
-    # Now convert the arguments - kludge to limit ourselves to /bin/sh
-    i=0
-    for arg in "$@" ; do
-        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
-        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
-
-        if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
-            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
-        else
-            eval `echo args$i`="\"$arg\""
-        fi
-        i=$((i+1))
-    done
-    case $i in
-        (0) set -- ;;
-        (1) set -- "$args0" ;;
-        (2) set -- "$args0" "$args1" ;;
-        (3) set -- "$args0" "$args1" "$args2" ;;
-        (4) set -- "$args0" "$args1" "$args2" "$args3" ;;
-        (5) set -- "$args0" "$args1" "$args2" "$args3" "$args4" ;;
-        (6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" ;;
-        (7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" ;;
-        (8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" ;;
-        (9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8" ;;
-    esac
-fi
-
-# Split up the JVM_OPTS values into an array, following the shell quoting and substitution rules
-function splitJvmOpts ( ) {
-    JVM_OPTS=("$@")
-}
-eval splitJvmOpts $JVM_OPTS $JAVA_OPTS
-
-exec "$JAVACMD" \
-    "${JVM_OPTS[@]}" \
-    -classpath "$CLASSPATH" \
-    city.sane.wot.cli.Cli "$@"
+exec "$JAVACMD" -jar "${SERVIENT_HOME}/wot-servient.jar" "$@"

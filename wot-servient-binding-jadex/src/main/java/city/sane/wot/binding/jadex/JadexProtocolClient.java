@@ -14,7 +14,6 @@ import jadex.bridge.SFuture;
 import jadex.bridge.service.ServiceScope;
 import jadex.bridge.service.search.ServiceQuery;
 import jadex.commons.TimeoutException;
-import jadex.commons.future.Future;
 import jadex.commons.future.ITerminableIntermediateFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +27,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static jadex.commons.future.IFuture.DONE;
+
 /**
  * Allows consuming Things via Jadex Micro Agents.
  * The Jadex Platform created by {@link JadexProtocolClientFactory} is used for this purpose and thus enables interaction with exposed Things on other
  * platforms.
  */
 public class JadexProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
 
     private final IExternalAccess platform;
 
@@ -54,7 +55,7 @@ public class JadexProtocolClient implements ProtocolClient {
             platform.scheduleStep(ia -> {
                 getThingService(ia, serviceId).whenComplete((service, e) -> {
                     if (e == null) {
-                        log.trace("Found service " + service);
+                        log.trace("Found service {}", service);
 
                         JadexContent content;
                         if (type.equals("all")) {
@@ -73,7 +74,7 @@ public class JadexProtocolClient implements ProtocolClient {
                         result.completeExceptionally(e);
                     }
                 });
-                return Future.DONE;
+                return DONE;
             });
             return result;
         }
@@ -94,7 +95,7 @@ public class JadexProtocolClient implements ProtocolClient {
             platform.scheduleStep(ia -> {
                 getThingService(ia, serviceId).whenComplete((service, e) -> {
                     if (e == null) {
-                        log.trace("Found service " + service);
+                        log.trace("Found service {}", service);
 
                         JadexContent input = new JadexContent(content);
                         JadexContent output = service.writeProperty(name, input).get();
@@ -104,7 +105,7 @@ public class JadexProtocolClient implements ProtocolClient {
                         result.completeExceptionally(e);
                     }
                 });
-                return Future.DONE;
+                return DONE;
             });
             return result;
         }
@@ -123,26 +124,22 @@ public class JadexProtocolClient implements ProtocolClient {
             AtomicInteger ai = new AtomicInteger();
             ai.incrementAndGet(); // start searchServices()
             ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-            search.addResultListener(services -> {
-                Collection<Thing> things = new ArrayList<>();
-                services.forEach(service -> {
-                    ai.incrementAndGet(); // start get()
-                    service.get().addResultListener(json -> {
-                        Thing thing = Thing.fromJson(json);
-                        things.add(thing);
-                        if (ai.decrementAndGet() < 1) { // end get()
-                            if (filter.getQuery() != null) {
-                                // TODO: move filter to server-side
-                                List<Thing> filtered = filter.getQuery().filter(things);
-                                result.complete(filtered);
-                            }
-                            else {
-                                result.complete(things);
-                            }
-                        }
-                    }, result::completeExceptionally);
-                });
-                if (ai.decrementAndGet() < 1) { // end searchServices()
+            search.addResultListener(services -> discoverThingServices(filter, result, ai, services), result::completeExceptionally);
+
+            return DONE;
+        });
+
+        return result;
+    }
+
+    private void discoverThingServices(ThingFilter filter, CompletableFuture<Collection<Thing>> result, AtomicInteger ai, Collection<ThingService> services) {
+        Collection<Thing> things = new ArrayList<>();
+        services.forEach(service -> {
+            ai.incrementAndGet(); // start get()
+            service.get().addResultListener(json -> {
+                Thing thing = Thing.fromJson(json);
+                things.add(thing);
+                if (ai.decrementAndGet() < 1) { // end get()
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side
                         List<Thing> filtered = filter.getQuery().filter(things);
@@ -153,10 +150,17 @@ public class JadexProtocolClient implements ProtocolClient {
                     }
                 }
             }, result::completeExceptionally);
-            return Future.DONE;
         });
-
-        return result;
+        if (ai.decrementAndGet() < 1) { // end searchServices()
+            if (filter.getQuery() != null) {
+                // TODO: move filter to server-side
+                List<Thing> filtered = filter.getQuery().filter(things);
+                result.complete(filtered);
+            }
+            else {
+                result.complete(things);
+            }
+        }
     }
 
     private Triple<String, String, String> parseAsReadResourceHref(String href) throws ProtocolClientException {
@@ -212,7 +216,7 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
-    public CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
+    private CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
         log.debug("Search ThingService with id '{}'", serviceId);
         ServiceQuery<ThingService> query = new ServiceQuery(ThingService.class)
                 .setScope(ServiceScope.GLOBAL)

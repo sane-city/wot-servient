@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Describes data of type <a href="https://www.w3.org/TR/wot-thing-description/#arrayschema">Array</a>.
  */
-public class ArraySchema implements DataSchema<List> {
+public class ArraySchema extends AbstractDataSchema<List> {
     @Override
     public String getType() {
         return "array";

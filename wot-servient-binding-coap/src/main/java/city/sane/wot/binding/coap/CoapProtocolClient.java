@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
  * Allows consuming Things via CoAP.
  */
 public class CoapProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;
 
     public CoapProtocolClient(ExecutorService executor) {
@@ -108,17 +108,17 @@ public class CoapProtocolClient implements ProtocolClient {
                     byte[] body = response.getPayload();
                     Content output = new Content(type, body);
                     if (response.isSuccess()) {
-                        log.debug("Next data received for subcription '{}'", url);
+                        log.debug("Next data received for subscription '{}'", url);
                         observer.next(output);
                     }
                     else {
                         subscription.unsubscribe();
                         try {
                             String error = ContentManager.contentToValue(output, new StringSchema());
-                            log.debug("Error received for subcription '{}': ", url, error);
+                            log.debug("Error received for subscription '{}': {}", url, error);
                         }
                         catch (ContentCodecException e) {
-                            log.debug("Error received for subcription '{}': ", url, e.getMessage());
+                            log.debug("Error received for subscription '{}': {}", url, e.getMessage());
                         }
                     }
                 }
@@ -128,7 +128,7 @@ public class CoapProtocolClient implements ProtocolClient {
             public void onError() {
                 if (!subscription.isClosed()) {
                     subscription.unsubscribe();
-                    log.debug("Error received for subcription '{}'", url);
+                    log.debug("Error received for subscription '{}'", url);
                 }
             }
         });
@@ -160,7 +160,7 @@ public class CoapProtocolClient implements ProtocolClient {
     class FutureCoapHandler implements CoapHandler {
         private final CompletableFuture future;
 
-        public FutureCoapHandler(CompletableFuture future) {
+        FutureCoapHandler(CompletableFuture future) {
             this.future = future;
         }
 

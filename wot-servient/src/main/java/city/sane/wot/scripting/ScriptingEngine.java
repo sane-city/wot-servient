@@ -5,7 +5,7 @@ import city.sane.wot.Wot;
 /**
  * A ScriptingEngine describes how a WoT script can be executed in a certain scripting language.
  */
-public interface ScriptingEngine {
+interface ScriptingEngine {
     /**
      * Returns the media type supported by the codec (e.g. application/javascript).
      *
@@ -20,5 +20,5 @@ public interface ScriptingEngine {
      */
     String getFileExtension();
 
-    void runScript(String script, Wot wot);
+    void runScript(String script, Wot wot) throws ScriptingEngineException;
 }

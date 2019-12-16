@@ -5,10 +5,7 @@ import city.sane.wot.thing.form.Form;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract representation of a Thing Interaction (inherited from {@link city.sane.wot.thing.action.ThingAction}, {@link city.sane.wot.thing.event.ThingEvent}
@@ -52,19 +49,34 @@ public abstract class ThingInteraction<T> implements Serializable {
         return (T) this;
     }
 
-    public abstract static class Builder<T extends ObjectBuilder> implements ObjectBuilder {
-        protected String description;
-        protected Map<String, String> descriptions;
-        protected List<Form> forms = new ArrayList<>();
-        protected Map<String, Map> uriVariables = new HashMap<>();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingInteraction)) {
+            return false;
+        }
+        ThingInteraction<?> that = (ThingInteraction<?>) o;
+        return Objects.equals(description, that.description) &&
+                Objects.equals(descriptions, that.descriptions) &&
+                Objects.equals(forms, that.forms) &&
+                Objects.equals(uriVariables, that.uriVariables);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, descriptions, forms, uriVariables);
+    }
+
+    public abstract static class AbstractBuilder<T extends ObjectBuilder> implements ObjectBuilder {
+        String description;
+        Map<String, String> descriptions;
+        List<Form> forms = new ArrayList<>();
+        Map<String, Map> uriVariables = new HashMap<>();
 
         public T setDescription(String description) {
             this.description = description;
-            return (T) this;
-        }
-
-        public T setDescriptions(Map<String, String> descriptions) {
-            this.descriptions = descriptions;
             return (T) this;
         }
 

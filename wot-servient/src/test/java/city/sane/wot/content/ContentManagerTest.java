@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ContentManagerTest {
     @Test
@@ -41,6 +41,13 @@ public class ContentManagerTest {
         assertEquals("Hello World", value);
     }
 
+    @Test(expected = ContentCodecException.class)
+    public void contentToValueBrokenByteArray() throws ContentCodecException {
+        Content content = new Content("application/xml", new byte[] { 0x4f });
+
+        ContentManager.contentToValue(content, new StringSchema());
+    }
+
     @Test
     public void valueToContentWithUnsupportedFormat() throws ContentCodecException, IOException, ClassNotFoundException {
         Content content = ContentManager.valueToContent(42, "none/none");
@@ -50,5 +57,17 @@ public class ContentManagerTest {
         ObjectInputStream ois = new ObjectInputStream(bis);
 
         assertEquals(42, ois.readObject());
+    }
+
+    @Test
+    public void removeCodec() {
+        try {
+            assertTrue(ContentManager.isSupportedMediaType("text/plain"));
+            ContentManager.removeCodec("text/plain");
+            assertFalse(ContentManager.isSupportedMediaType("text/plain"));
+        }
+        finally {
+            ContentManager.addCodec(new TextCodec());
+        }
     }
 }

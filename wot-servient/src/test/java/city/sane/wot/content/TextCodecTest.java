@@ -45,34 +45,31 @@ public class TextCodecTest {
     @Test
     public void bytesToNumberFloatValue() throws ContentCodecException {
         byte[] bytes = "13.37".getBytes();
-        Object value = codec.bytesToValue(bytes, new NumberSchema());
+        Number value = codec.bytesToValue(bytes, new NumberSchema());
 
-        assertTrue("Should be instance of Number", value instanceof Number);
-        Number number = (Number) value;
+        assertNotNull("Should be instance of Number", value);
 
-        assertEquals(13.37, number);
+        assertEquals(13.37, value);
     }
 
     @Test
     public void bytesToNumberLongValue() throws ContentCodecException {
         byte[] bytes = "1337".getBytes();
-        Object value = codec.bytesToValue(bytes, new NumberSchema());
+        Number value = codec.bytesToValue(bytes, new NumberSchema());
 
-        assertTrue("Should be instance of Number", value instanceof Number);
-        Number number = (Number) value;
+        assertNotNull("Should be instance of Number", value);
 
-        assertEquals(1337L, number);
+        assertEquals(1337L, value);
     }
 
     @Test
     public void bytesToStringValue() throws ContentCodecException {
         byte[] bytes = "Hallo Welt".getBytes();
-        Object value = codec.bytesToValue(bytes, new StringSchema());
+        String value = codec.bytesToValue(bytes, new StringSchema());
 
-        assertTrue("Should be instance of String", value instanceof String);
-        String string = (String) value;
+        assertNotNull("Should be instance of String", value);
 
-        assertEquals("Hallo Welt", string);
+        assertEquals("Hallo Welt", value);
     }
 
     @Test

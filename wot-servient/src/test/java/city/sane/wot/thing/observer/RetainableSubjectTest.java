@@ -5,11 +5,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class RetainableSubjectTest {
-
-    @Test
-    public void next() {
-    }
-
     @Test
     public void subscribe() {
         Subject<String> subject = new RetainableSubject<>();
@@ -19,9 +14,7 @@ public class RetainableSubjectTest {
         subject.next("Awesome").join();
 
         StringBuilder sb = new StringBuilder();
-        subject.subscribe(next -> {
-            sb.append(next);
-        });
+        subject.subscribe(sb::append);
 
         assertEquals("BeerisAwesome", sb.toString());
 

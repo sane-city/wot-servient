@@ -33,15 +33,20 @@ public class DefaultWot implements Wot {
      *
      * @param config
      */
-    public DefaultWot(Config config) {
-        servient = new Servient(config);
-        servient.start().join();
+    private DefaultWot(Config config) throws WotException {
+        try {
+            servient = new Servient(config);
+            servient.start().join();
+        }
+        catch (ServientException e) {
+            throw new WotException(e);
+        }
     }
 
     /**
      * Creates and starts a {@link Servient}.
      */
-    public DefaultWot() {
+    public DefaultWot() throws WotException {
         this(ConfigFactory.load());
     }
 
@@ -64,8 +69,7 @@ public class DefaultWot implements Wot {
 
     @Override
     public ConsumedThing consume(Thing thing) {
-        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
-        return consumedThing;
+        return new ConsumedThing(servient, thing);
     }
 
     @Override
@@ -92,7 +96,7 @@ public class DefaultWot implements Wot {
      * Creates and starts a {@link Servient}. The servient will not start any servers and can therefore only consume things
      * and not expose any things.
      */
-    public static Wot clientOnly() {
+    public static Wot clientOnly() throws WotException {
         return clientOnly(ConfigFactory.load());
     }
 
@@ -102,9 +106,14 @@ public class DefaultWot implements Wot {
      *
      * @param config
      */
-    public static Wot clientOnly(Config config) {
-        Servient servient = Servient.clientOnly(config);
-        servient.start().join();
-        return new DefaultWot(servient);
+    public static Wot clientOnly(Config config) throws WotException {
+        try {
+            Servient servient = Servient.clientOnly(config);
+            servient.start().join();
+            return new DefaultWot(servient);
+        }
+        catch (ServientException e) {
+            throw new WotException(e);
+        }
     }
 }

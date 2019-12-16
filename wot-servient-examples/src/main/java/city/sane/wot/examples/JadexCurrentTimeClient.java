@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.JsonThingQuery;
@@ -17,8 +18,8 @@ import java.util.concurrent.ExecutionException;
 /**
  * Discover thing description exposes by {@link JadexCurrentTime} and then interact with it.
  */
-public class JadexCurrentTimeClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, ThingQueryException {
+class JadexCurrentTimeClient {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, ThingQueryException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

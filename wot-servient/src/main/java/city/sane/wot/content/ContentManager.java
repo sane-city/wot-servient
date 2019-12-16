@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class ContentManager {
     public static final String DEFAULT = "application/json";
-    static final Logger log = LoggerFactory.getLogger(ContentManager.class);
+    private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
     private static final Map<String, ContentCodec> CODECS = new HashMap();
     private static final Set<String> OFFERED = new HashSet<>();
@@ -23,7 +23,11 @@ public class ContentManager {
     static {
         addCodec(new JsonCodec(), true);
         addCodec(new TextCodec());
+        addCodec(new HtmlCodec());
         addCodec(new CborCodec());
+    }
+
+    private ContentManager() {
     }
 
     /**
@@ -32,7 +36,7 @@ public class ContentManager {
      * @param codec
      * @param offered
      */
-    public static void addCodec(ContentCodec codec, boolean offered) {
+    private static void addCodec(ContentCodec codec, boolean offered) {
         CODECS.put(codec.getMediaType(), codec);
         if (offered) {
             OFFERED.add(codec.getMediaType());
@@ -103,6 +107,7 @@ public class ContentManager {
         if (contentType == null) {
             // default to text/plain
             contentType = DEFAULT;
+            log.warn("No content type given. Use default one: {}", DEFAULT);
         }
 
         String mediaType = getMediaType(contentType);
@@ -170,8 +175,7 @@ public class ContentManager {
             }
         }
 
-        Content content = new Content(contentType, bytes);
-        return content;
+        return new Content(contentType, bytes);
     }
 
     /**
@@ -234,7 +238,7 @@ public class ContentManager {
         String[] parts = contentType.split(";");
         for (int i = 1; i < parts.length; i++) {
             String part = parts[i];
-            int eq = part.indexOf("=");
+            int eq = part.indexOf('=');
 
             String name;
             String value;

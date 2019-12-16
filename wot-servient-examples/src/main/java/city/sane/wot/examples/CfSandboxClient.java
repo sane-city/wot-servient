@@ -2,16 +2,16 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.Thing;
 
 import java.util.concurrent.ExecutionException;
 
 /**
  * Consume thing description from string and then interact with the thing via coap.
  */
-public class CfSandboxClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+class CfSandboxClient {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

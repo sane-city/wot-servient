@@ -13,7 +13,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -22,11 +21,11 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via local files.
  */
 public class FileProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
-    private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = new HashMap() {{
-        put(".json", "application/json");
-        put(".jsonld", "application/ld+json");
-    }};
+    private static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
+    private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = Map.of(
+        ".json", "application/json",
+        ".jsonld", "application/ld+json"
+    );
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
@@ -43,8 +42,7 @@ public class FileProtocolClient implements ProtocolClient {
                 }
 
                 byte[] body = Files.readAllBytes(path);
-                Content content = new Content(contentType, body);
-                return content;
+                return new Content(contentType, body);
             }
             catch (IOException e) {
                 throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e.getMessage()));
@@ -59,7 +57,7 @@ public class FileProtocolClient implements ProtocolClient {
     private String pathToExtension(Path path) {
         String pathStr = path.toString();
         if (pathStr.contains(".")) {
-            return pathStr.substring(pathStr.lastIndexOf("."));
+            return pathStr.substring(pathStr.lastIndexOf('.'));
         }
         else {
             return "";

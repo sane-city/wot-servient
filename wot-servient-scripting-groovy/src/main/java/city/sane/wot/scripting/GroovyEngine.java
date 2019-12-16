@@ -19,11 +19,17 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public void runScript(String script, Wot wot) {
+    public void runScript(String script, Wot wot) throws ScriptingEngineException {
         Binding binding = new Binding();
         binding.setVariable("wot", wot);
 
         GroovyShell shell = new GroovyShell(binding);
-        shell.evaluate(script);
+
+        try {
+            shell.evaluate(script);
+        }
+        catch (RuntimeException e) {
+            throw new ScriptingEngineException(e);
+        }
     }
 }

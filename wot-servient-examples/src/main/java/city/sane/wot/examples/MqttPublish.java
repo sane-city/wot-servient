@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.event.ThingEvent;
@@ -13,8 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Produces a thing that sends a ascending counter to an MQTT topic.
  */
-public class MqttPublish {
-    public static void main(String[] args) {
+class MqttPublish {
+    public static void main(String[] args) throws WotException {
         System.out.println("Setup MQTT broker address/port details in application.json!");
 
         // create wot

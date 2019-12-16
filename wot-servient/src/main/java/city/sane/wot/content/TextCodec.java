@@ -15,7 +15,7 @@ public class TextCodec implements ContentCodec {
     }
 
     @Override
-    public <T> T bytesToValue(byte[] body, DataSchema<T> schema, Map<String, String> parameters) throws ContentCodecException {
+    public <T> T bytesToValue(byte[] body, DataSchema<T> schema, Map<String, String> parameters) {
         String charset = parameters.get("charset");
 
         String parsed;
@@ -28,25 +28,22 @@ public class TextCodec implements ContentCodec {
 
         String type = schema.getType();
         // TODO: array, object
-        if (type.equals("boolean")) {
-            return (T) Boolean.valueOf(parsed);
-        }
-        else if (type.equals("integer")) {
-            return (T) Integer.valueOf(parsed);
-        }
-        else if (type.equals("number")) {
-            if (parsed.contains(".")) {
-                return (T) Double.valueOf(parsed);
-            }
-            else {
-                return (T) Long.valueOf(parsed);
-            }
-        }
-        else if (type.equals("string")) {
-            return (T) parsed;
-        }
-        else {
-            return null;
+        switch (type) {
+            case "boolean":
+                return (T) Boolean.valueOf(parsed);
+            case "integer":
+                return (T) Integer.valueOf(parsed);
+            case "number":
+                if (parsed.contains(".")) {
+                    return (T) Double.valueOf(parsed);
+                }
+                else {
+                    return (T) Long.valueOf(parsed);
+                }
+            case "string":
+                return (T) parsed;
+            default:
+                return null;
         }
     }
 
