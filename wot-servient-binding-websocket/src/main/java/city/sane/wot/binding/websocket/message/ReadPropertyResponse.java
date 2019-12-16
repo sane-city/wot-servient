@@ -1,5 +1,7 @@
 package city.sane.wot.binding.websocket.message;
 
+import java.util.Objects;
+
 public class ReadPropertyResponse extends AbstractMessage {
     private Object value;
 
@@ -8,7 +10,7 @@ public class ReadPropertyResponse extends AbstractMessage {
     }
 
     public ReadPropertyResponse(Object value) {
-        this.value = value;
+        this.value = Objects.requireNonNull(value);
     }
 
     public Object getValue() {

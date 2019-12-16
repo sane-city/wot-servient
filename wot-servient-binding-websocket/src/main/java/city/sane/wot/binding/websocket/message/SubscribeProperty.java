@@ -1,5 +1,7 @@
 package city.sane.wot.binding.websocket.message;
 
+import java.util.Objects;
+
 public class SubscribeProperty extends AbstractMessage {
     private String thingId;
     private String name;
@@ -10,8 +12,8 @@ public class SubscribeProperty extends AbstractMessage {
     }
 
     public SubscribeProperty(String thingId, String name) {
-        this.thingId = thingId;
-        this.name = name;
+        this.thingId = Objects.requireNonNull(thingId);
+        this.name = Objects.requireNonNull(name);
     }
 
     public String getThingId() {

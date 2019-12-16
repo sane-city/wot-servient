@@ -1,6 +1,7 @@
 package city.sane.wot.binding.websocket.message;
 
 import java.io.Reader;
+import java.util.Objects;
 
 public class ReadProperty extends AbstractMessage {
     private String thingId;
@@ -12,8 +13,8 @@ public class ReadProperty extends AbstractMessage {
     }
 
     public ReadProperty(String thingId, String name) {
-        this.thingId = thingId;
-        this.name = name;
+        this.thingId = Objects.requireNonNull(thingId);
+        this.name = Objects.requireNonNull(name);
     }
 
 

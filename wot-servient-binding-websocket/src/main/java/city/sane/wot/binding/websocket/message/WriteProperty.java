@@ -2,6 +2,8 @@ package city.sane.wot.binding.websocket.message;
 
 import city.sane.wot.content.Content;
 
+import java.util.Objects;
+
 public class WriteProperty extends AbstractMessage {
 
     private String thingId;
@@ -16,9 +18,9 @@ public class WriteProperty extends AbstractMessage {
 
 
     public WriteProperty(String thingId, String name, Content payload) {
-        this.thingId = thingId;
-        this.name = name;
-        this.payload = payload;
+        this.thingId = Objects.requireNonNull(thingId);
+        this.name = Objects.requireNonNull(name);
+        this.payload = Objects.requireNonNull(payload);
     }
 
     public String getThingId() {
