@@ -3,6 +3,8 @@ package city.sane.wot.binding;
 import city.sane.Pair;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
+import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
+import city.sane.wot.binding.akka.AkkaProtocolServer;
 import city.sane.wot.binding.coap.CoapProtocolClientFactory;
 import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
