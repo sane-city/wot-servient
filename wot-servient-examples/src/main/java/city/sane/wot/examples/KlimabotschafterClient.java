@@ -2,7 +2,9 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.property.ConsumedThingProperty;
 
 import java.io.IOException;
@@ -15,8 +17,8 @@ import java.util.concurrent.ExecutionException;
 /**
  * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
  */
-public class KlimabotschafterClient {
-    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, IOException {
+class KlimabotschafterClient {
+    public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
@@ -24,7 +26,7 @@ public class KlimabotschafterClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -44,7 +46,10 @@ public class KlimabotschafterClient {
                 }
 
             }
-            catch (Throwable ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException | ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

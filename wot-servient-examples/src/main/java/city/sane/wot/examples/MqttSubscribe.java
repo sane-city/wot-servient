@@ -2,9 +2,9 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
-import city.sane.wot.thing.Thing;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -13,8 +13,8 @@ import java.util.TimerTask;
 /**
  * Interacts with the thing produces by {@link MqttSubscribe}. Reads the counter and resets it periodically.
  */
-public class MqttSubscribe {
-    public static void main(String[] args) throws ConsumedThingException, IOException {
+class MqttSubscribe {
+    public static void main(String[] args) throws ConsumedThingException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

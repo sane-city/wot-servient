@@ -4,22 +4,23 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingEvent}.
  */
-public class EventActor extends AbstractActor {
+class EventActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingEvent event;
 
-    public EventActor(String name, ExposedThingEvent event) {
+    private EventActor(String name, ExposedThingEvent event) {
         this.name = name;
         this.event = event;
     }
@@ -28,12 +29,12 @@ public class EventActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
+        String href = MediatorActor.remoteOverlayPath(getSelf().path()).toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
                 .setSubprotocol("longpoll")
-                .setOp(Operation.subscribeevent)
+                .setOp(Operation.SUBSCRIBE_EVENT)
                 .build();
 
         event.addForm(form);

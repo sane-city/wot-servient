@@ -15,40 +15,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Cli {
-    static final Logger log = LoggerFactory.getLogger(Cli.class);
+class Cli {
+    private static final Logger log = LoggerFactory.getLogger(Cli.class);
 
-    private final String CONF = "wot-servient.conf";
-    private final String LOGLEVEL = "warn";
+    private static final String CONF = "wot-servient.conf";
+    private static final String LOGLEVEL = "warn";
+    private static final String OPT_VERSION = "version";
+    private static final String OPT_LOGLEVEL = "loglevel";
+    private static final String OPT_CLIENTONLY = "clientonly";
+    private static final String OPT_CONFIGFILE = "configfile";
+    private static final String OPT_HELP = "help";
 
-    public Cli(String[] args) throws ParseException {
+    public Cli(String[] args) throws CliException {
         ScriptingManager.addEngine(new GroovyEngine());
 
         Options options = getOptions();
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
+        try {
+            CommandLineParser parser = new DefaultParser();
+            CommandLine cmd = parser.parse(options, args);
 
-        if (cmd.hasOption("loglevel")) {
-            setLogLevel(cmd.getOptionValue("loglevel"));
-        }
-        else {
-            setLogLevel(LOGLEVEL);
-        }
+            if (cmd.hasOption(OPT_LOGLEVEL)) {
+                setLogLevel(cmd.getOptionValue(OPT_LOGLEVEL));
+            }
+            else {
+                setLogLevel(LOGLEVEL);
+            }
 
-        if (cmd.hasOption("help")) {
-            printHelp(options);
+            if (cmd.hasOption(OPT_HELP)) {
+                printHelp(options);
+            }
+            else if (cmd.hasOption(OPT_VERSION)) {
+                printVersion();
+            }
+            else {
+                runScripts(cmd);
+            }
         }
-        else if (cmd.hasOption("version")) {
-            printVersion();
-        }
-        else {
-            runScripts(cmd);
+        catch (ServientException | ParseException e) {
+            throw new CliException(e);
         }
     }
 
@@ -65,7 +74,7 @@ public class Cli {
         System.out.println(version);
     }
 
-    private void runScripts(CommandLine cmd) {
+    private void runScripts(CommandLine cmd) throws ServientException {
         List<File> scripts = cmd.getArgList().stream().map(File::new).collect(Collectors.toList());
         if (!scripts.isEmpty()) {
             log.info("Servient is loading {} command line script(s)", scripts.size());
@@ -77,22 +86,25 @@ public class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
-        Servient servient = getServient(cmd);
-        servient.start().join();
-        Wot wot = new DefaultWot(servient);
+        Servient servient = null;
+        try {
+            servient = getServient(cmd);
+            servient.start().join();
+            Wot wot = new DefaultWot(servient);
 
-        for (File script : scripts) {
-            log.info("Servient is running script '{}'", script);
-            try {
+            for (File script : scripts) {
+                log.info("Servient is running script '{}'", script);
                 servient.runScript(script, wot);
             }
-            catch (ServientException e) {
-                log.error("Servient experienced error while reading script", e);
+        }
+        finally {
+            if (servient != null) {
+                servient.shutdown().join();
             }
         }
     }
 
-    private Servient getServient(CommandLine cmd) {
+    private Servient getServient(CommandLine cmd) throws ServientException {
         Config config;
         if (!cmd.hasOption("f")) {
             File defaultFile = new File(CONF);
@@ -165,27 +177,26 @@ public class Cli {
 
     private Options getOptions() {
         Options options = new Options();
-        Option.builder().argName("v").longOpt("version").desc("display version");
 
-        Option version = Option.builder("v").longOpt("version").desc("display version").build();
+        Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
         options.addOption(version);
 
-        Option loglevel = Option.builder("l").longOpt("loglevel").hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
+        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
         options.addOption(loglevel);
 
-        Option clientonly = Option.builder("c").longOpt("clientonly").desc("do not start any servers").build();
+        Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();
         options.addOption(clientonly);
 
-        Option configfile = Option.builder("f").longOpt("configfile").hasArg().argName("file").desc("load configuration from specified file").build();
+        Option configfile = Option.builder("f").longOpt(OPT_CONFIGFILE).hasArg().argName("file").desc("load configuration from specified file").build();
         options.addOption(configfile);
 
-        Option help = Option.builder("h").longOpt("help").desc("show this file").build();
+        Option help = Option.builder("h").longOpt(OPT_HELP).desc("show this file").build();
         options.addOption(help);
 
         return options;
     }
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws CliException {
         new Cli(args);
     }
 }

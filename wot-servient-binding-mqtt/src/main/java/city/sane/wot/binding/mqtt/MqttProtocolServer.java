@@ -1,6 +1,7 @@
 package city.sane.wot.binding.mqtt;
 
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -12,11 +13,9 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.typesafe.config.Config;
 import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,73 +25,34 @@ import java.util.concurrent.CompletionException;
  * Allows exposing Things via MQTT.
  */
 public class MqttProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 
-    private final String broker;
-    private final String clientId;
-    private final String username;
-    private final String password;
+    private final MqttProtocolSettings settings;
     private final Map<String, ExposedThing> things = new HashMap<>();
     private MqttClient client;
 
-    public MqttProtocolServer(Config config) {
-        if (config.hasPath("wot.servient.mqtt.broker")) {
-            broker = config.getString("wot.servient.mqtt.broker");
+    public MqttProtocolServer(Config config) throws ProtocolServerException {
+        settings = new MqttProtocolSettings(config);
+        try {
+            settings.validate();
         }
-        else {
-            broker = null;
+        catch (MqttProtocolException e) {
+            throw new ProtocolServerException(e);
         }
+    }
 
-        if (config.hasPath("wot.servient.mqtt.client-id")) {
-            clientId = config.getString("wot.servient.mqtt.client-id");
-        }
-        else {
-            clientId = MqttClient.generateClientId();
-        }
-
-        if (config.hasPath("wot.servient.mqtt.username")) {
-            username = config.getString("wot.servient.mqtt.username");
-        }
-        else {
-            username = null;
-        }
-
-        if (config.hasPath("wot.servient.mqtt.password")) {
-            password = config.getString("wot.servient.mqtt.password");
-        }
-        else {
-            password = null;
-        }
+    MqttProtocolServer(MqttProtocolSettings settings) {
+        this.settings = settings;
     }
 
     @Override
     public CompletableFuture<Void> start() {
         return CompletableFuture.runAsync(() -> {
-            if (broker == null || broker.isEmpty()) {
-                log.warn("No broker defined for MQTT server binding - skipping");
+            try {
+                client = settings.createConnectedMqttClient();
             }
-            else {
-                try {
-                    MqttClientPersistence persistence = new MemoryPersistence();
-                    client = new MqttClient(broker, clientId, persistence);
-
-                    MqttConnectOptions options = new MqttConnectOptions();
-                    options.setCleanSession(true);
-                    if (username != null) {
-                        options.setUserName(username);
-                    }
-                    if (password != null) {
-                        options.setPassword(password.toCharArray());
-                    }
-
-                    log.info("MqttServer trying to connect to broker at '{}' with client ID '{}'", broker, clientId);
-                    client.connect(options);
-                    log.info("MqttServer connected to broker at '{}'", broker);
-                }
-                catch (MqttException e) {
-                    log.error("MqttServer could not connect to broker at '{}': {}", broker, e.getMessage());
-                    throw new CompletionException(e);
-                }
+            catch (MqttProtocolException e) {
+                throw new CompletionException(e);
             }
         });
     }
@@ -101,12 +61,11 @@ public class MqttProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> stop() {
         return CompletableFuture.runAsync(() -> {
             try {
-                log.info("MqttServer try to disconnect from broker at '{}'", broker);
+                log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
                 client.disconnect();
-                log.info("MqttServer disconnected from broker at '{}'", broker);
+                log.info("MqttServer disconnected from broker at '{}'", settings.getBroker());
             }
             catch (MqttException e) {
-                log.error("MqttServer could not disconnect from broker at '{}': {}", broker, e.getMessage());
                 throw new CompletionException(e);
             }
         });
@@ -118,44 +77,80 @@ public class MqttProtocolServer implements ProtocolServer {
             return CompletableFuture.completedFuture(null);
         }
 
-        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", broker, thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
 
         things.put(thing.getId(), thing);
 
-        //
-        // properties
-        //
+        exposeProperties(thing);
+        exposeActions(thing);
+        exposeEvents(thing);
+        listenOnMqttMessages();
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private void listenOnMqttMessages() {
+        // connect incoming messages to Thing
+        client.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+                log.info("MqttServer at '{}' lost connection to broker: {}", settings.getBroker(), cause.getMessage());
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+                log.info("MqttServer at '{}' received message for '{}'", settings.getBroker(), topic);
+
+                String[] segments = topic.split("/", 3);
+
+                if (segments.length == 3) {
+                    String thingId = segments[0];
+
+                    ExposedThing thing = things.get(thingId);
+                    if (thing != null) {
+                        if (segments[1].equals("actions")) {
+                            String actionName = segments[2];
+                            ExposedThingAction action = thing.getAction(actionName);
+                            actionMessageArrived(message, action);
+                        }
+
+                    }
+                    else {
+                        // Thing not found
+                    }
+                }
+                else {
+                    // topic not found
+                    log.info("MqttServer at '{}' received message for invalid topic '{}'", settings.getBroker(), topic);
+                }
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+                // do nothing
+            }
+        });
+    }
+
+    private void exposeProperties(ExposedThing thing) {
         Map<String, ExposedThingProperty> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
-            property.subscribe((data) -> {
-                try {
-                    Content content = ContentManager.valueToContent(data);
-                    log.info("MqttServer at '{}' publishing new data to Property topic '{}'", broker, topic);
-                    client.publish(topic, new MqttMessage(content.getBody()));
-                }
-                catch (ContentCodecException e) {
-                    log.warn("MqttServer at '{}' cannot process data for Property '{}': {}", broker, name, e.getMessage());
-                }
-                catch (MqttException e) {
-                    log.warn("MqttServer at '{}' cannot publish data for Property '{}': {}", broker, name, e.getMessage());
-                }
-            });
+            property.subscribe(data -> handleSubscriptionData(topic, data));
 
             String href = createUrl() + topic;
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.observeproperty, Operation.unobserveproperty))
+                    .setOp(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY)
                     .build();
             property.addForm(form);
             log.info("Assign '{}' to Property '{}'", href, name);
         });
+    }
 
-        //
-        // actions
-        //
+    private void exposeActions(ExposedThing thing) {
         Map<String, ExposedThingAction> actions = thing.getActions();
         for (Map.Entry<String, ExposedThingAction> entry : actions.entrySet()) {
             String name = entry.getKey();
@@ -169,7 +164,7 @@ public class MqttProtocolServer implements ProtocolServer {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(ContentManager.DEFAULT)
-                        .setOp(Operation.invokeaction)
+                        .setOp(Operation.INVOKE_ACTION)
                         .build();
                 action.addForm(form);
                 log.info("Assign '{}' to Action '{}'", href, name);
@@ -178,107 +173,69 @@ public class MqttProtocolServer implements ProtocolServer {
                 throw new CompletionException(e);
             }
         }
+    }
 
-        // connect incoming messages to Thing
-        client.setCallback(new MqttCallback() {
-            @Override
-            public void connectionLost(Throwable cause) {
-                log.info("MqttServer at '{}' lost connection to broker: {}", broker, cause.getMessage());
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) {
-                log.info("MqttServer at '{}' received message for '{}'", broker, topic);
-
-                String[] segments = topic.split("/", 3);
-
-                if (segments.length == 3) {
-                    String thingId = segments[0];
-
-                    ExposedThing thing = things.get(thingId);
-                    if (thing != null) {
-                        if (segments[1].equals("actions")) {
-                            String actionName = segments[2];
-                            ExposedThingAction action = thing.getAction(actionName);
-                            if (action != null) {
-                                Content inputContent = new Content(ContentManager.DEFAULT, message.getPayload());
-                                try {
-                                    Object input = ContentManager.contentToValue(inputContent, action.getInput());
-
-                                    action.invoke(input);
-                                }
-                                catch (ContentCodecException e) {
-                                    log.info("Unable to parse input: {}", e.getMessage());
-                                }
-                            }
-                            else {
-                                // Action not found
-                            }
-                        }
-
-                    }
-                    else {
-                        // Thing not found
-                    }
-                }
-                else {
-                    // topic not found
-                    log.info("MqttServer at '{}' received message for invalid topic '{}'", broker, topic);
-                }
-            }
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-                // do nothing
-            }
-        });
-
-        //
-        // events
-        //
+    private void exposeEvents(ExposedThing thing) {
         Map<String, ExposedThingEvent> events = thing.getEvents();
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
 
-            event.subscribe((data) -> {
-                try {
-                    Content content = ContentManager.valueToContent(data);
-                    log.info("MqttServer at '{}' publishing new data to Event topic '{}'", broker, topic);
-                    client.publish(topic, new MqttMessage(content.getBody()));
-                }
-                catch (ContentCodecException e) {
-                    log.warn("MqttServer at '{}' cannot process data for Event '{}': {}", broker, name, e.getMessage());
-                }
-                catch (MqttException e) {
-                    log.warn("MqttServer at '{}' cannot publish data for Event '{}': {}", broker, name, e.getMessage());
-                }
-            });
+            event.subscribe(data -> handleSubscriptionData(topic, data));
 
             String href = createUrl() + topic;
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Arrays.asList(Operation.subscribeevent, Operation.unsubscribeevent))
+                    .setOp(Operation.SUBSCRIBE_EVENT, Operation.UNSUBSCRIBE_EVENT)
                     .setOptional("mqtt:qos", 0)
                     .setOptional("mqtt:retain", false)
                     .build();
             event.addForm(form);
             log.info("Assign '{}' to Event '{}'", href, name);
         });
+    }
 
-        return CompletableFuture.completedFuture(null);
+    private void handleSubscriptionData(String topic, Object data) {
+        try {
+            Content content = ContentManager.valueToContent(data);
+            log.info("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
+            client.publish(topic, new MqttMessage(content.getBody()));
+        }
+        catch (ContentCodecException e) {
+            log.warn("MqttServer at '{}' cannot process data for topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+        }
+        catch (MqttException e) {
+            log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+        }
+    }
+
+    private void actionMessageArrived(MqttMessage message, ExposedThingAction action) {
+        if (action != null) {
+            Content inputContent = new Content(ContentManager.DEFAULT, message.getPayload());
+            try {
+                Object input = ContentManager.contentToValue(inputContent, action.getInput());
+
+                action.invoke(input);
+            }
+            catch (ContentCodecException e) {
+                log.warn("Unable to parse input", e);
+            }
+        }
+        else {
+            // Action not found
+        }
     }
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", broker, thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
         things.remove(thing.getId());
 
         return CompletableFuture.completedFuture(null);
     }
 
     private String createUrl() {
-        String base = "mqtt" + broker.substring(broker.indexOf("://"));
+        String base = "mqtt" + settings.getBroker().substring(settings.getBroker().indexOf("://"));
         if (!base.endsWith("/")) {
             base = base + "/";
         }

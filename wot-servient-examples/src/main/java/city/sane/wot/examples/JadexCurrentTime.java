@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -15,8 +16,8 @@ import java.util.TimerTask;
 /**
  * Creates and exposes a thing that returns the current time.
  */
-public class JadexCurrentTime {
-    public static void main(String[] args) {
+class JadexCurrentTime {
+    public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();
 

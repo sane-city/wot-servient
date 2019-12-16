@@ -6,29 +6,26 @@ import com.fasterxml.jackson.annotation.*;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A form contains all the information from an endpoint for communication.<br>
  * See also: https://www.w3.org/TR/wot-thing-description/#form
  */
 public class Form implements Serializable {
-    protected String href;
+    private String href;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected List<Operation> op;
+    private List<Operation> op;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String subprotocol;
+    private String subprotocol;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String contentType;
+    private String contentType;
 
-    protected Map<String, Object> optionalProperties = new HashMap<>();
+    private Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getHref() {
         return href;
@@ -44,7 +41,7 @@ public class Form implements Serializable {
         try {
             // remove uri variables first
             String sanitizedHref = href;
-            int index = href.indexOf("{");
+            int index = href.indexOf('{');
             if (index != -1) {
                 sanitizedHref = sanitizedHref.substring(0, index);
             }
@@ -81,6 +78,27 @@ public class Form implements Serializable {
         return optionalProperties.get(name);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Form)) {
+            return false;
+        }
+        Form form = (Form) o;
+        return Objects.equals(href, form.href) &&
+                Objects.equals(op, form.op) &&
+                Objects.equals(subprotocol, form.subprotocol) &&
+                Objects.equals(contentType, form.contentType) &&
+                Objects.equals(optionalProperties, form.optionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(href, op, subprotocol, contentType, optionalProperties);
+    }
+
     /**
      * Allows building new {@link Form} objects.
      */
@@ -114,8 +132,12 @@ public class Form implements Serializable {
             return this;
         }
 
-        public Builder setOp(Operation op) {
+        public Builder setOp(Operation ... op) {
             return setOp(Arrays.asList(op));
+        }
+
+        public Builder setOp(Operation op) {
+            return setOp(Collections.singletonList(op));
         }
 
         public Builder setSubprotocol(String subprotocol) {

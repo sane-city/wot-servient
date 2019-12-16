@@ -1,0 +1,12 @@
+# Maven
+**/target/
+
+# IntelliJ IDEA
+.idea
+**/*.iml
+
+# Git
+.git
+
+# macOS
+.DS_Store

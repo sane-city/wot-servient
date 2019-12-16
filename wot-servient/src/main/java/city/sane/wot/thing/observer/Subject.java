@@ -16,9 +16,9 @@ import java.util.concurrent.CompletableFuture;
  * @param <T>
  */
 public class Subject<T> implements Subscribable<T> {
-    static final Logger log = LoggerFactory.getLogger(Subject.class);
+    private static final Logger log = LoggerFactory.getLogger(Subject.class);
     private final Map<Subscription, Observer> observers = new HashMap<>();
-    protected boolean closed = false;
+    private boolean closed = false;
 
     public Map<Subscription, Observer> getObservers() {
         return observers;
@@ -34,14 +34,14 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> next(T value) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about next value '{}'", observers.size(), value);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.next(value))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
@@ -57,15 +57,15 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> error(Throwable e) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about error '{}'", observers.size(), e);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.error(e))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
@@ -79,16 +79,16 @@ public class Subject<T> implements Subscribable<T> {
      */
     public CompletableFuture<Void> complete() {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return CompletableFuture.failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about completion", observers.size());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        log.info("Inform {} observer(s) about completion", observersSnapshot.size());
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
-                .map(o -> CompletableFuture.runAsync(() -> o.complete())).toArray(CompletableFuture[]::new);
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
+                .map(o -> CompletableFuture.runAsync(o::complete)).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
     }
