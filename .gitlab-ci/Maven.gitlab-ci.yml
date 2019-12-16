@@ -26,55 +26,58 @@ cache:
   paths:
     - .m2/repository
 
-build-dist:
-  stage: build
-  script:
-    - mvn -DskipTests --batch-mode -pl wot-servient-cli -am package
-    - mkdir -p dist/wot-servient
-    - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
-    - cp wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
-  artifacts:
-    paths:
-      - dist/wot-servient
-  only:
-    - master
-
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
-.verify: &verify
+maven-verify:
   stage: test
+  services:
+    - eclipse-mosquitto:1.6 # for mqtt client/server tests
   script:
-    - 'mvn $MAVEN_CLI_OPTS verify'
+    - 'mvn $MAVEN_CLI_OPTS verify sonar:sonar'
+  after_script:
+    - '/bin/bash coverage-jacoco.sh'
+  coverage: '/\d+.\d+ \% covered/'
   except:
     - master
-
-check-code:
-  stage: test
-  script:
-    - mvn $MAVEN_CLI_OPTS clean verify sonar:sonar
-    - /bin/bash coverage-jacoco.sh
-  coverage: '/\d+.\d+ \% covered/'
   artifacts:
     reports:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
 
-
-# Verify merge requests using JDK11
-verify:jdk11:
-  <<: *verify
-
 # To deploy packages from CI, create a ci_settings.xml file
 # For deploying packages to GitLab's Maven Repository: See https://docs.gitlab.com/ee/user/project/packages/maven_repository.html#creating-maven-packages-with-gitlab-cicd for more details.
 # Please note: The GitLab Maven Repository is currently only available in GitLab Premium / Ultimate.
 # For `master` branch run `mvn deploy` automatically.
-deploy:jdk11:
+maven-deploy:
   stage: deploy
+  services:
+    - eclipse-mosquitto:1.6 # for mqtt client/server tests
   script:
     - if [ ! -f ci_settings.xml ];
       then echo "CI settings missing\! If deploying to GitLab Maven Repository, please see https://docs.gitlab.com/ee/user/project/packages/maven_repository.html#creating-maven-packages-with-gitlab-cicd for instructions.";
       fi
-    - 'mvn $MAVEN_CLI_OPTS deploy'
+    - 'mvn $MAVEN_CLI_OPTS deploy sonar:sonar'
+  after_script:
+    - '/bin/bash coverage-jacoco.sh'
+  coverage: '/\d+.\d+ \% covered/'
+  only:
+    - master
+  artifacts:
+    reports:
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
+        - "*/target/failsafe-reports/TEST-*.xml"
+
+build-dist:
+  stage: deploy
+  script:
+    - 'mvn $MAVEN_CLI_OPTS -DskipTests -pl wot-servient-cli -am package'
+    - mkdir -p dist/wot-servient
+    - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
+    - cp wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
+  artifacts:
+    paths:
+      - dist/wot-servient
   only:
     - master
