@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
-    private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
+    private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
 
     private Map<String, ExposedThing> things;
 
