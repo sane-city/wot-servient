@@ -37,8 +37,8 @@ public class AkkaProtocolClientIT {
 
         client = clientFactory.getClient();
 
-        Config config = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(ConfigFactory.load());
-        system = ActorSystem.create("my-server", config);
+        Config systemConfig = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        system = ActorSystem.create("my-server", systemConfig);
     }
 
     @After
