@@ -4,9 +4,9 @@ import city.sane.wot.content.Content;
 
 public class WriteProperty extends AbstractMessage {
 
-    private final String thingId;
-    private final String name;
-    private final Content payload;
+    private String thingId;
+    private String name;
+    private Content payload;
 
     private WriteProperty() {
         this.thingId = null;

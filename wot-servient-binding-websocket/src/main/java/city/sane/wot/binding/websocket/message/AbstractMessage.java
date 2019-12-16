@@ -17,7 +17,7 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = SubscribePropertyResponse.class, name = "subscribePropertyResponse")
 })
 public abstract class AbstractMessage {
-    private final String id;
+    private String id;
 
     public AbstractMessage() {
         id = UUID.randomUUID().toString();

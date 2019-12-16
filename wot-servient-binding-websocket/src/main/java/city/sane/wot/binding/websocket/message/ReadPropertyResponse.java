@@ -1,7 +1,7 @@
 package city.sane.wot.binding.websocket.message;
 
 public class ReadPropertyResponse extends AbstractMessage {
-    private final Object value;
+    private Object value;
 
     private ReadPropertyResponse() {
         this.value = null;

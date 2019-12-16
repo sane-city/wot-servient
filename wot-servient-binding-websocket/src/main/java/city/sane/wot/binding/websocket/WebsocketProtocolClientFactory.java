@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
  * Creates new {@link WebsocketProtocolClient} instances.
  */
 public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
-    private final Config config;
+    private Config config;
 
     public WebsocketProtocolClientFactory(Config config) {
         this.config = config;

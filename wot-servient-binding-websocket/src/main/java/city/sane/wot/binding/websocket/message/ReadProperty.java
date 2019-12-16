@@ -3,8 +3,8 @@ package city.sane.wot.binding.websocket.message;
 import java.io.Reader;
 
 public class ReadProperty extends AbstractMessage {
-    private final String thingId;
-    private final String name;
+    private String thingId;
+    private String name;
 
     private ReadProperty() {
         this.thingId = null;

@@ -1,8 +1,8 @@
 package city.sane.wot.binding.websocket.message;
 
 public class SubscribeProperty extends AbstractMessage {
-    private final String thingId;
-    private final String name;
+    private String thingId;
+    private String name;
 
     public SubscribeProperty() {
         this.thingId = null;

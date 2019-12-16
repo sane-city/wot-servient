@@ -33,13 +33,15 @@ import java.util.stream.Collectors;
 public class WebsocketProtocolServer implements ProtocolServer {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
 
-    private final Map<String, ExposedThing> things;
+    private Map<String, ExposedThing> things;
 
-    private final MyServer server;
-    private final List<String> addresses;
+    private MyServer server;
+    private List<String> addresses;
+    private int bindPort;
+
 
     public WebsocketProtocolServer(Config config) {
-        int bindPort = config.getInt("wot.servient.websocket.bind-port");
+        bindPort = config.getInt("wot.servient.websocket.bind-port");
         server = new MyServer(new InetSocketAddress(bindPort));
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");

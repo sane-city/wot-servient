@@ -26,8 +26,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
-    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-    private final WebSocketClient cc;
+    private static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private WebSocketClient cc;
 
 
     WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
@@ -76,6 +76,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String json = JSON_MAPPER.writeValueAsString(form);
+                // TODO: need return value for test
                 cc.send(json);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
