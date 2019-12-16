@@ -1,7 +1,6 @@
 .docker: &docker
   # Official docker image.
   image: docker:latest
-  stage: build
   services:
     - docker:dind
   before_script:
@@ -9,6 +8,7 @@
 
 docker-build-master:
   <<: *docker
+  stage: build
   script:
     - docker build --pull --tag "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
@@ -17,6 +17,7 @@ docker-build-master:
 
 docker-build:
   <<: *docker
+  stage: build
   script:
     - docker build --pull --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
@@ -25,6 +26,7 @@ docker-build:
 
 docker-test-master:
   <<: *docker
+  stage: test
   script:
     - docker run --rm "$CI_REGISTRY_IMAGE" --help
   only:
@@ -32,6 +34,7 @@ docker-test-master:
 
 docker-test:
   <<: *docker
+  stage: test
   script:
     - docker run --rm "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --help
   except:
