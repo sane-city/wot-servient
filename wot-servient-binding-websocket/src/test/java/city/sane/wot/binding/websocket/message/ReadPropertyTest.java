@@ -1,5 +1,6 @@
 package city.sane.wot.binding.websocket.message;
 
+import com.typesafe.config.ConfigException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +17,21 @@ public class ReadPropertyTest {
     @Before
     public void setUp() throws Exception {
         rp = new ReadProperty("123456","test");
-        rp2 = new ReadProperty(null,"test");
+        //rp2 = new ReadProperty(null,"test");
+
 
 
     }
 
     @After
     public void tearDown() throws Exception {
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorNullParama() {
+        rp2 = new ReadProperty(null, null);
+        rp3 = new ReadProperty("123456", null);
+        rp4 = new ReadProperty(null, "test");
     }
 
     @Test
