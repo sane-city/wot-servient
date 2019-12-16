@@ -13,76 +13,64 @@ import spark.Response;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Endpoint for invoking a {@link city.sane.wot.thing.action.ThingAction}.
  */
-public class InvokeActionRoute extends AbstractRoute {
-    final static Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
-
-    private final Map<String, ExposedThing> things;
+public class InvokeActionRoute extends AbstractInteractionRoute {
+    static final Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
 
     public InvokeActionRoute(Map<String, ExposedThing> things) {
-        this.things = things;
+        super(things);
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+    protected Object handleInteraction(Request request,
+                                       Response response,
+                                       String requestContentType,
+                                       String name,
+                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+        ExposedThingAction action = thing.getAction(name);
+        if (action != null) {
+            try {
+                Content content = new Content(requestContentType, request.bodyAsBytes());
+                Object input = ContentManager.contentToValue(content, action.getInput());
 
-        String requestContentType = getOrDefaultRequestContentType(request);
-        if (!ContentManager.isSupportedMediaType(requestContentType)) {
-            log.warn("Unsupported media type: {}", requestContentType);
-            response.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415);
-            return "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
-        }
+                Map<String, Object> options = Map.of(
+                        "uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables())
+                );
 
-        String id = request.params(":id");
-        String name = request.params(":name");
+                Object value = action.invoke(input, options).get();
 
-        ExposedThing thing = things.get(id);
-        if (thing != null) {
-            ExposedThingAction action = thing.getAction(name);
-            if (action != null) {
-                try {
-                    Content content = new Content(requestContentType, request.bodyAsBytes());
-                    Object input = ContentManager.contentToValue(content, action.getInput());
-
-                    Map<String, Object> options = new HashMap<>() {{
-                        put("uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables()));
-                    }};
-
-                    Object value = action.invoke(input, options).get();
-
-                    try {
-                        Content outputContent = ContentManager.valueToContent(value, requestContentType);
-
-                        if (value != null) {
-                            response.type(content.getType());
-                            return outputContent;
-                        }
-                        else {
-                            return "";
-                        }
-                    }
-                    catch (ContentCodecException e) {
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        return e;
-                    }
-                }
-                catch (ContentCodecException e) {
-                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                    return e;
-                }
+                return respondWithValue(response, requestContentType, content, value);
             }
-            else {
-                response.status(HttpStatus.NOT_FOUND_404);
-                return "Action not found";
+            catch (ContentCodecException e) {
+                response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                return e;
             }
         }
         else {
             response.status(HttpStatus.NOT_FOUND_404);
-            return "Thing not found";
+            return "Action not found";
+        }
+    }
+
+    private Object respondWithValue(Response response, String requestContentType, Content content, Object value) {
+        try {
+            Content outputContent = ContentManager.valueToContent(value, requestContentType);
+
+            if (value != null) {
+                response.type(content.getType());
+                return outputContent;
+            }
+            else {
+                return "";
+            }
+        }
+        catch (ContentCodecException e) {
+            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+            return e;
         }
     }
 
@@ -106,10 +94,10 @@ public class InvokeActionRoute extends AbstractRoute {
                         String value = urlValue[0];
                         params.put(name, value);
                     }
+                    else {
+                        log.warn("Not able to read variable '{}' because variable type '{}' is unknown", name, type);
+                    }
                 }
-            }
-            else {
-                continue;
             }
         }
         return params;

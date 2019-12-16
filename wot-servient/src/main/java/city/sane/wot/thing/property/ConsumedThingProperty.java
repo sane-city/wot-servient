@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
 public class ConsumedThingProperty extends ThingProperty {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
 
     private final String name;
     private final ConsumedThing thing;
@@ -33,25 +33,36 @@ public class ConsumedThingProperty extends ThingProperty {
     public ConsumedThingProperty(String name, ThingProperty property, ConsumedThing thing) {
         this.name = name;
 
-        this.objectType = property.getObjectType();
-        this.description = property.getDescription();
-        this.type = property.getType();
-        this.observable = property.isObservable();
-        this.readOnly = property.isReadOnly();
-        this.writeOnly = property.isWriteOnly();
-        this.forms = normalizeHrefs(property.getForms(), thing);
-        this.uriVariables = property.getUriVariables();
-        this.optionalProperties = property.getOptionalProperties();
+        objectType = property.getObjectType();
+        description = property.getDescription();
+        type = property.getType();
+        observable = property.isObservable();
+        readOnly = property.isReadOnly();
+        writeOnly = property.isWriteOnly();
+        forms = normalizeHrefs(property.getForms(), thing);
+        uriVariables = property.getUriVariables();
+        optionalProperties = property.getOptionalProperties();
 
         this.thing = thing;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
         return forms.stream().map(f -> normalizeHref(f, thing)).collect(Collectors.toList());
     }
 
     private Form normalizeHref(Form form, ConsumedThing thing) {
         String base = thing.getBase();
-        if(base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
+        if (base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
             String normalizedHref = base + form.getHref();
             return new Form.Builder(form).setHref(normalizedHref).build();
         }
@@ -62,7 +73,7 @@ public class ConsumedThingProperty extends ThingProperty {
 
     public CompletableFuture<Object> read() {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.readproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.READ_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -71,11 +82,9 @@ public class ConsumedThingProperty extends ThingProperty {
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this);
-                    return value;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });
@@ -87,7 +96,7 @@ public class ConsumedThingProperty extends ThingProperty {
 
     public CompletableFuture<Object> write(Object value) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.writeproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.WRITE_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -98,11 +107,9 @@ public class ConsumedThingProperty extends ThingProperty {
             CompletableFuture<Content> result = client.writeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object output = ContentManager.contentToValue(content, this);
-                    return output;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });
@@ -115,8 +122,8 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
-        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.observeproperty);
+    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 

@@ -18,9 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static akka.pattern.Patterns.ask;
-import static city.sane.wot.binding.akka.CrudMessages.*;
-
 /**
  * Allows exposing Things via Akka Actors.<br>
  * Starts an Actor System with an {@link ThingsActor} actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use in
@@ -29,17 +26,27 @@ import static city.sane.wot.binding.akka.CrudMessages.*;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
-    final static Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;
     private final Config actorSystemConfig;
+    private final AkkaProtocolPattern pattern;
     private ActorSystem system;
     private ActorRef thingsActor;
 
     public AkkaProtocolServer(Config config) {
-        actorSystemName = config.getString("wot.servient.akka.server.system-name");
-        actorSystemConfig = config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        this(
+                config.getString("wot.servient.akka.server.system-name"),
+                config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides()),
+                new AkkaProtocolPattern()
+        );
+    }
+
+    AkkaProtocolServer(String actorSystemName, Config actorSystemConfig, AkkaProtocolPattern pattern) {
+        this.actorSystemName = actorSystemName;
+        this.actorSystemConfig = actorSystemConfig;
+        this.pattern = pattern;
     }
 
     @Override
@@ -60,7 +67,13 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> stop() {
         log.info("Stop AkkaServer");
-        return FutureConverters.toJava(system.terminate()).toCompletableFuture().thenApply(r -> null);
+
+        if (system != null) {
+            return FutureConverters.toJava(system.terminate()).toCompletableFuture().thenApply(r -> null);
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override
@@ -73,9 +86,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         }
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Create<>(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Created) m).entity;
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
@@ -88,9 +101,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         things.remove(thing.getId());
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Delete<>(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Deleted) m).id;
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
@@ -104,7 +117,7 @@ public class AkkaProtocolServer implements ProtocolServer {
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.warn("Unable to create directory url", e);
             return null;
         }
     }

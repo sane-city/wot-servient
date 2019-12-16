@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
 public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
-    final static Logger log = LoggerFactory.getLogger(ExposedThing.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
 
     private final Servient servient;
 
@@ -43,7 +43,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
 
     public ExposedThing(Servient servient) {
         this.servient = servient;
-        this.subject = new Subject();
+        subject = new Subject();
     }
 
     public ExposedThing(Servient servient, Thing thing) {
@@ -59,9 +59,19 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         setSecurity(thing.getSecurity());
         setSecurityDefinitions(thing.getSecurityDefinitions());
         setBase(thing.getBase());
-        ((Map<String, ThingProperty>) thing.getProperties()).forEach((n, p) -> addProperty(n, p));
-        ((Map<String, ThingAction>) thing.getActions()).forEach((n, a) -> addAction(n, a));
-        ((Map<String, ThingEvent>) thing.getEvents()).forEach((n, e) -> addEvent(n, e));
+        ((Map<String, ThingProperty>) thing.getProperties()).forEach(this::addProperty);
+        ((Map<String, ThingAction>) thing.getActions()).forEach(this::addAction);
+        ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     /**
@@ -84,7 +94,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing setObjectContexts(Context objectContexts) {
-        this.objectContext = objectContexts;
+        objectContext = objectContexts;
         return this;
     }
 
@@ -98,7 +108,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setTitles(Map<String, String> titles) {
+    private ExposedThing setTitles(Map<String, String> titles) {
         this.titles = titles;
         return this;
     }
@@ -108,7 +118,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setDescriptions(Map<String, String> descriptions) {
+    private ExposedThing setDescriptions(Map<String, String> descriptions) {
         this.descriptions = descriptions;
         return this;
     }
@@ -118,7 +128,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return this;
     }
 
-    public ExposedThing setForms(List<Form> forms) {
+    private ExposedThing setForms(List<Form> forms) {
         this.forms = forms;
         return this;
     }
@@ -131,7 +141,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setSecurity(List<String> security) {
+    private ExposedThing setSecurity(List<String> security) {
         this.security = security;
         return this;
     }
@@ -144,7 +154,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
+    private ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
         this.securityDefinitions = securityDefinitions;
         return this;
     }
@@ -225,7 +235,11 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler, Object init) {
+    private ExposedThing addProperty(String name,
+                                     ThingProperty property,
+                                     Supplier<CompletableFuture<Object>> readHandler,
+                                     Function<Object, CompletableFuture<Object>> writeHandler,
+                                     Object init) {
         addProperty(name, property, readHandler, writeHandler);
 
         ExposedThingProperty exposedProperty = properties.get(name);
@@ -233,9 +247,11 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
             // wait until init value has been written
             exposedProperty.write(init).get();
         }
-        catch (InterruptedException | ExecutionException e) {
-            log.warn("'{}' unable to write initial value for Property '{}'", getId(), name);
-            e.printStackTrace();
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            log.warn("'{}' unable to write initial value for Property '{}': {}", getId(), name, e.getMessage());
         }
 
         return this;
@@ -326,9 +342,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, Runnable handler) {
-        return addAction(name, action, (input, options) -> {
-            handler.run();
-        });
+        return addAction(name, action, (BiConsumer<Object, Map<String, Object>>) (input, options) -> handler.run());
     }
 
     /**
@@ -342,9 +356,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, Supplier<CompletableFuture<Object>> handler) {
-        return addAction(name, action, (input, options) -> {
-            return handler.get();
-        });
+        return addAction(name, action, (BiFunction<Object, Map<String, Object>, CompletableFuture<Object>>) (input, options) -> handler.get());
     }
 
     /**
@@ -409,7 +421,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addAction(String name, ThingAction action) {
+    private ExposedThing addAction(String name, ThingAction action) {
         return addAction(name, action, () -> {
         });
     }
@@ -447,7 +459,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addEvent(String name, ThingEvent event) {
-        ExposedThingEvent exposedEvent = new ExposedThingEvent(name, event, this);
+        ExposedThingEvent exposedEvent = new ExposedThingEvent(name, event);
         events.put(name, exposedEvent);
 
         return this;
@@ -487,7 +499,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         log.info("Expose all Interactions and TD for '{}'", getId());
 
         // let servient forward exposure to the servers
-        return servient.expose(this.getId()).whenComplete((thing, e) -> {
+        return servient.expose(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
                 subject.next(thing);
@@ -504,7 +516,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         log.info("Stop exposing all Interactions and TD for '{}'", getId());
 
         // let servient forward destroy to the servers
-        return servient.destroy(this.getId()).whenComplete((thing, e) -> {
+        return servient.destroy(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
                 subject.next(thing);

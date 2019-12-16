@@ -13,20 +13,19 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingProperty}.
  */
-public class PropertyActor extends AbstractActor {
+class PropertyActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingProperty property;
 
-    public PropertyActor(String name, ExposedThingProperty property) {
+    private PropertyActor(String name, ExposedThingProperty property) {
         this.name = name;
         this.property = property;
     }
@@ -40,13 +39,13 @@ public class PropertyActor extends AbstractActor {
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT);
         if (property.isReadOnly()) {
-            builder.setOp(Operation.readproperty);
+            builder.setOp(Operation.READ_PROPERTY);
         }
         else if (property.isWriteOnly()) {
-            builder.setOp(Operation.writeproperty);
+            builder.setOp(Operation.WRITE_PROPERTY);
         }
         else {
-            builder.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+            builder.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
         }
 
         property.addForm(builder.build());
@@ -65,26 +64,27 @@ public class PropertyActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Read.class, this::read)
+                .match(Read.class, m -> read())
                 .match(Write.class, this::write)
-                .match(Subscribe.class, this::subscribe)
+                .match(Subscribe.class, m1 -> subscribe())
                 .build();
     }
 
-    private void read(Read m) {
+    private void read() {
         ActorRef sender = getSender();
 
         property.read().whenComplete((value, e) -> {
             if (e != null) {
-                e.printStackTrace();
+                log.warning("Unable to read property: {}", e.getMessage());
             }
-
-            try {
-                Content content = ContentManager.valueToContent(value);
-                sender.tell(new RespondRead(content), getSelf());
-            }
-            catch (ContentCodecException ex) {
-                ex.printStackTrace();
+            else {
+                try {
+                    Content content = ContentManager.valueToContent(value);
+                    sender.tell(new RespondRead(content), getSelf());
+                }
+                catch (ContentCodecException ex) {
+                    log.warning("Unable to read property: {}", ex.getMessage());
+                }
             }
         });
     }
@@ -97,28 +97,29 @@ public class PropertyActor extends AbstractActor {
 
             property.write(input).whenComplete((output, e) -> {
                 if (e != null) {
-                    e.printStackTrace(); // TODO: better exception handling?
+                    log.warning("Unable to write property: {}", e.getMessage());
                 }
-
-                // TODO: return output if available
-                sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                else {
+                    // TODO: return output if available
+                    sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
+                }
             });
 
         }
         catch (ContentCodecException e) {
-            e.printStackTrace(); // TODO: better exception handling?
+            log.warning("Unable to write property: {}", e.getMessage());
         }
     }
 
-    private void subscribe(Subscribe m) {
+    private void subscribe() {
         // FIXME: Implement
     }
 
-    static public Props props(String name, ExposedThingProperty property) {
+    public static Props props(String name, ExposedThingProperty property) {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
     }
 
-    static public class Subscribe implements Serializable {
+    private static class Subscribe implements Serializable {
         // FIXME: Implement
     }
 }

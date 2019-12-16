@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.util.Map;
 
-import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolClient} and is responsible for serving of discovery requests.
@@ -20,10 +20,6 @@ import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
  */
 public class DiscoveryDispatcherActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-
-    public DiscoveryDispatcherActor() {
-
-    }
 
     @Override
     public void preStart() {
@@ -54,16 +50,16 @@ public class DiscoveryDispatcherActor extends AbstractActor {
         Map<String, Thing> things = m.things;
 
         log.info("AkkaDiscovery finished. Send result requester '{}'", requester);
-        requester.tell(new RespondGetAll<>(things), getSelf());
+        requester.tell(new Things(things), getSelf());
     }
 
-    static public Props props() {
-        return Props.create(DiscoveryDispatcherActor.class, () -> new DiscoveryDispatcherActor());
+    public static Props props() {
+        return Props.create(DiscoveryDispatcherActor.class, DiscoveryDispatcherActor::new);
     }
 
     // CrudMessages
-    static public class Discover implements Serializable {
-        public final ThingFilter filter;
+    public static class Discover implements Serializable {
+        final ThingFilter filter;
 
         public Discover(ThingFilter filter) {
             this.filter = filter;

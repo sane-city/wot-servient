@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <T>
  */
 public class RetainableSubject<T> extends Subject<T> {
-    final static Logger log = LoggerFactory.getLogger(RetainableSubject.class);
+    private static final Logger log = LoggerFactory.getLogger(RetainableSubject.class);
     // Todo: add size limit to prevent memory leaks
     private final ArrayList<T> storedValues = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public class RetainableSubject<T> extends Subject<T> {
     }
 
     @Override
-    public Subscription subscribe(Observer observer) {
+    public synchronized Subscription subscribe(Observer observer) {
         Subscription subscribe = super.subscribe(observer);
         log.debug("Inform new observer about {} retained value(s)", storedValues.size());
         storedValues.forEach(observer::next);

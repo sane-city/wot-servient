@@ -9,17 +9,17 @@ import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingAction}.
  */
-public class ActionActor extends AbstractActor {
+class ActionActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingAction action;
 
-    public ActionActor(String name, ExposedThingAction action) {
+    private ActionActor(String name, ExposedThingAction action) {
         this.name = name;
         this.action = action;
     }
@@ -32,7 +32,7 @@ public class ActionActor extends AbstractActor {
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
-                .setOp(Operation.invokeaction)
+                .setOp(Operation.INVOKE_ACTION)
                 .build();
 
         action.addForm(form);
@@ -53,7 +53,7 @@ public class ActionActor extends AbstractActor {
                 .build();
     }
 
-    static public Props props(String name, ExposedThingAction action) {
+    public static Props props(String name, ExposedThingAction action) {
         return Props.create(ActionActor.class, () -> new ActionActor(name, action));
     }
 }

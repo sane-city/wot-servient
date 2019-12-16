@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -20,17 +21,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
  * Produces and exposes luftdaten.info's sensors in given area as things.
  */
-public class Luftdaten {
-    private final Map<Integer, ExposedThing> things = new HashMap();
-
-    public Luftdaten() throws InterruptedException {
+class Luftdaten {
+    private Luftdaten() throws InterruptedException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -57,6 +55,7 @@ public class Luftdaten {
                             .collect(Collectors
                                     .toMap(v -> v.get("value_type").asText(), v -> v.get("value").asDouble()));
 
+                    Map<Integer, ExposedThing> things = new HashMap();
                     ExposedThing exposedThing = things.get(sensorId);
 
                     if (exposedThing == null) {
@@ -197,14 +196,14 @@ public class Luftdaten {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                // ignore
             }
 
-            Thread.sleep(60 * 1000);
+            Thread.sleep(60 * 1000L);
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, WotException {
         new Luftdaten();
     }
 }

@@ -11,7 +11,7 @@ import city.sane.wot.thing.ExposedThing;
 import java.util.HashSet;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
@@ -20,14 +20,14 @@ import static city.sane.wot.binding.akka.CrudMessages.Created;
  * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link city.sane.wot.thing.action.ExposedThingAction}, or
  * {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
-public class ThingActor extends AbstractActor {
+class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ActorRef requestor;
     private final ExposedThing thing;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public ThingActor(ActorRef requester, ExposedThing thing) {
-        this.requestor = requester;
+    private ThingActor(ActorRef requester, ExposedThing thing) {
+        requestor = requester;
         this.thing = thing;
     }
 
@@ -56,18 +56,18 @@ public class ThingActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::created)
+                .match(Created.class, m -> created())
                 .build();
     }
 
-    private void created(Created m) {
+    private void created() {
         if (children.remove(getSender()) && children.isEmpty()) {
             log.info("Thing has been exposed");
             getContext().getParent().tell(new Created<>(new Pair<>(requestor, thing.getId())), getSelf());
         }
     }
 
-    static public Props props(ActorRef requestor, ExposedThing thing) {
+    public static Props props(ActorRef requestor, ExposedThing thing) {
         return Props.create(ThingActor.class, () -> new ThingActor(requestor, thing));
     }
 }

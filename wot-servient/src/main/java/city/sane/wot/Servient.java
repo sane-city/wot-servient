@@ -3,8 +3,8 @@ package city.sane.wot;
 import city.sane.wot.binding.*;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
+import city.sane.wot.scripting.ScriptingException;
 import city.sane.wot.scripting.ScriptingManager;
-import city.sane.wot.scripting.ScriptingManagerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ExposedThingAction;
@@ -42,61 +42,74 @@ import java.util.stream.Stream;
  * should contain a map which uses the thing ids as key.
  */
 public class Servient {
-    final static Logger log = LoggerFactory.getLogger(Servient.class);
+    private static final Logger log = LoggerFactory.getLogger(Servient.class);
 
-    private final Config config;
     private final List<ProtocolServer> servers = new ArrayList<>();
     private final Map<String, ProtocolClientFactory> clientFactories = new HashMap<>();
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private Map<String, Object> credentialStore = new HashMap<>();
+    private final Map<String, Object> credentialStore = new HashMap<>();
 
     /**
      * Creates a servient with the given <code>config</code>.
      *
      * @param config
      */
-    public Servient(Config config) {
-        this.config = config;
-
+    public Servient(Config config) throws ServientException {
         // read servers from config
-        List<String> requiredServers = this.config.getStringList("wot.servient.servers");
-        requiredServers.forEach(serverName -> {
+        List<String> requiredServers = config.getStringList("wot.servient.servers");
+        for (String serverName : requiredServers) {
             try {
                 Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
-                Constructor<ProtocolServer> constructor = serverKlass.getConstructor(Config.class);
-                ProtocolServer server = constructor.newInstance(config);
+                Constructor<ProtocolServer> constructor;
+                ProtocolServer server;
+                if (Servient.hasConstructor(serverKlass, Config.class)) {
+                    constructor = serverKlass.getConstructor(Config.class);
+                    server = constructor.newInstance(config);
+                }
+                else {
+                    constructor = serverKlass.getConstructor();
+                    server = constructor.newInstance();
+                }
                 servers.add(server);
             }
-            catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new ServientException(e);
             }
-        });
+        }
 
         // read client factories from config
-        List<String> requiredFactories = this.config.getStringList("wot.servient.client-factories");
-        requiredFactories.forEach(factoryName -> {
+        List<String> requiredFactories = config.getStringList("wot.servient.client-factories");
+        for (String factoryName : requiredFactories) {
             try {
                 Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
-                Constructor<ProtocolClientFactory> constructor = factoryKlass.getConstructor(Config.class);
-                ProtocolClientFactory factory = constructor.newInstance(config);
+                Constructor<ProtocolClientFactory> constructor;
+                ProtocolClientFactory factory;
+                if (Servient.hasConstructor(factoryKlass, Config.class)) {
+                    constructor = factoryKlass.getConstructor(Config.class);
+                    factory = constructor.newInstance(config);
+                }
+                else {
+                    constructor = factoryKlass.getConstructor();
+                    factory = constructor.newInstance();
+                }
                 clientFactories.put(factory.getScheme(), factory);
             }
-            catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new ServientException(e);
             }
-        });
+        }
 
         // read credentials from config
         String credentialsPath = "wot.servient.credentials";
-        if (this.config.hasPath(credentialsPath)) {
-            addCredentials(this.config.getObject(credentialsPath));
+        if (config.hasPath(credentialsPath)) {
+            addCredentials(config.getObject(credentialsPath));
         }
     }
 
     /**
      * Creates a servient.
      */
-    public Servient() {
+    public Servient() throws ServientException {
         this(ConfigFactory.load());
     }
 
@@ -156,13 +169,11 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            log.warn("Servient has no servers to expose Things");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to expose Things"));
         }
 
         if (thing == null) {
-            log.warn("Thing must be added to the servient first");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.failedFuture(new ServientException("Thing must be added to the servient first"));
         }
 
         log.info("Servient exposing '{}'", id);
@@ -176,7 +187,7 @@ public class Servient {
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.expose(thing)).toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(serverFutures).thenApply((result) -> thing);
+        return CompletableFuture.allOf(serverFutures).thenApply(result -> thing);
     }
 
     /**
@@ -191,8 +202,7 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            log.warn("Servient has no servers to stop exposure Things");
-            return CompletableFuture.completedFuture(thing);
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
         }
 
         log.info("Servient stop exposing '{}'", thing);
@@ -206,7 +216,7 @@ public class Servient {
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.destroy(thing)).toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(serverFutures).thenApply((result) -> thing);
+        return CompletableFuture.allOf(serverFutures).thenApply(result -> thing);
     }
 
     /**
@@ -241,7 +251,7 @@ public class Servient {
             return factory.getClient();
         }
         else {
-            log.warn("Servient has no ClientFactory for scheme '" + scheme + "'");
+            log.warn("Servient has no ClientFactory for scheme '{}'", scheme);
             return null;
         }
     }
@@ -251,7 +261,7 @@ public class Servient {
      *
      * @return
      */
-    public Map<String, ExposedThing> getThings() {
+    private Map<String, ExposedThing> getThings() {
         return things;
     }
 
@@ -272,14 +282,12 @@ public class Servient {
                 Form form = new Form.Builder()
                         .setHref(url.toString())
                         .build();
-                return client.readResource(form).thenApply((content) -> {
+                return client.readResource(form).thenApply(content -> {
                     try {
                         Map map = ContentManager.contentToValue(content, new ObjectSchema());
-                        Thing thing = Thing.fromMap(map);
-                        return thing;
+                        return Thing.fromMap(map);
                     }
                     catch (ContentCodecException e) {
-                        e.printStackTrace();
                         throw new CompletionException(new ServientException("Error while fetching TD: " + e.toString()));
                     }
                 });
@@ -326,16 +334,18 @@ public class Servient {
                     try {
                         Map<String, Map> value = ContentManager.contentToValue(content, new ObjectSchema());
 
-                        Map<String, Thing> things = new HashMap<>();
-                        for (Map.Entry<String, Map> entry : value.entrySet()) {
-                            String id = entry.getKey();
-                            Map map = entry.getValue();
-                            Thing thing = Thing.fromMap(map);
+                        Map<String, Thing> directoryThings = new HashMap<>();
+                        if (value != null) {
+                            for (Map.Entry<String, Map> entry : value.entrySet()) {
+                                String id = entry.getKey();
+                                Map map = entry.getValue();
+                                Thing thing = Thing.fromMap(map);
 
-                            things.put(id, thing);
+                                directoryThings.put(id, thing);
+                            }
                         }
 
-                        return things;
+                        return directoryThings;
                     }
                     catch (ContentCodecException e2) {
                         throw new CompletionException(new ServientException("Error while fetching TD directory: " + e2.toString()));
@@ -373,9 +383,9 @@ public class Servient {
      *
      * @return
      */
-    public CompletableFuture<Void> register(URI directory, ExposedThing thing) {
+    private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new RuntimeException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -399,9 +409,9 @@ public class Servient {
      *
      * @return
      */
-    public CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
+    private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new RuntimeException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -428,64 +438,77 @@ public class Servient {
      */
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
         if (filter.getMethod() == DiscoveryMethod.DIRECTORY) {
-            return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+            return discoverDirectory(filter);
         }
         else {
-            Set<Thing> things = new HashSet<>();
+            Set<Thing> discoveredThings = new HashSet<>();
             AtomicBoolean atLeastOneImplementation = new AtomicBoolean(false);
-            List<CompletableFuture> discoverFutures = new ArrayList<>();
 
             // get local Things with or without filter query
             if (filter.getQuery() != null) {
-                things.addAll(filter.getQuery().filter(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList())));
+                discoveredThings.addAll(filter.getQuery().filter(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList())));
             }
             else {
-                things.addAll(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList()));
+                discoveredThings.addAll(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList()));
             }
 
             if (filter.getMethod() == DiscoveryMethod.LOCAL) {
-                CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
-                future.complete(things);
-                return future;
+                return discoverLocal(discoveredThings);
             }
 
-            for (ProtocolClientFactory factory : clientFactories.values()) {
-                try {
-                    ProtocolClient client = factory.getClient();
-                    CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
-                        if (e == null) {
-                            things.addAll(clientThings);
-                            atLeastOneImplementation.set(true);
-                        }
-                        else if (!(e instanceof ProtocolClientNotImplementedException)) {
-                            throw new CompletionException(e);
-                        }
-                        return null;
-                    });
-                    discoverFutures.add(future);
-
-                }
-                catch (ProtocolClientException e) {
-                    return CompletableFuture.failedFuture(e);
-                }
+            try {
+                return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
             }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+    }
 
-            CompletableFuture<Void> discoveryDone = CompletableFuture
-                    .allOf(discoverFutures.toArray(CompletableFuture[]::new));
-            return discoveryDone.handle((r, e) -> {
+    private CompletableFuture<Collection<Thing>> discoverDirectory(ThingFilter filter) {
+        return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+    }
+
+    private CompletableFuture<Collection<Thing>> discoverLocal(Set<Thing> discoveredThings) {
+        CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
+        future.complete(discoveredThings);
+        return future;
+    }
+
+    private CompletableFuture<Collection<Thing>> discoverUsingProtocolBindings(ThingFilter filter,
+                                                                               Set<Thing> discoveredThings,
+                                                                               AtomicBoolean atLeastOneImplementation) throws ProtocolClientException {
+        List<CompletableFuture> discoverFutures = new ArrayList<>();
+        for (ProtocolClientFactory factory : clientFactories.values()) {
+            ProtocolClient client = factory.getClient();
+            CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
                 if (e == null) {
-                    if (atLeastOneImplementation.get()) {
-                        return things;
-                    }
-                    else {
-                        throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));
-                    }
+                    discoveredThings.addAll(clientThings);
+                    atLeastOneImplementation.set(true);
                 }
-                else {
+                else if (!(e instanceof ProtocolClientNotImplementedException)) {
                     throw new CompletionException(e);
                 }
+                return null;
             });
+            discoverFutures.add(future);
         }
+
+        CompletableFuture<Void> discoveryDone = CompletableFuture
+                .allOf(discoverFutures.toArray(CompletableFuture[]::new));
+        return discoveryDone.handle((r, e) -> {
+            if (e == null) {
+                if (atLeastOneImplementation.get()) {
+                    return discoveredThings;
+                }
+                else {
+                    throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));
+                }
+            }
+            else {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     /**
@@ -509,12 +532,7 @@ public class Servient {
      */
     public <T extends ProtocolServer> T getServer(Class<T> server) {
         Optional<T> optional = (Optional<T>) servers.stream().filter(server::isInstance).findFirst();
-        if (optional.isPresent()) {
-            return optional.get();
-        }
-        else {
-            return null;
-        }
+        return optional.orElse(null);
     }
 
     /**
@@ -523,7 +541,7 @@ public class Servient {
      *
      * @param credentials
      */
-    public void addCredentials(Map credentials) {
+    private void addCredentials(Map credentials) {
         log.debug("Servient storing credentials for '{}'", credentials.keySet());
         credentialStore.putAll(credentials);
     }
@@ -547,13 +565,14 @@ public class Servient {
      *
      * @param file
      * @param wot
+     *
      * @throws ServientException
      */
     public void runScript(File file, Wot wot) throws ServientException {
         try {
             ScriptingManager.runScript(file, wot);
         }
-        catch (ScriptingManagerException e) {
+        catch (ScriptingException e) {
             throw new ServientException(e);
         }
     }
@@ -578,25 +597,9 @@ public class Servient {
                 Enumeration<InetAddress> ifaceAddresses = iface.getInetAddresses();
                 while (ifaceAddresses.hasMoreElements()) {
                     InetAddress ifaceAddress = ifaceAddresses.nextElement();
-
-                    if (ifaceAddress.isLoopbackAddress() || ifaceAddress.isLinkLocalAddress() || ifaceAddress.isMulticastAddress()) {
-                        continue;
-                    }
-
-                    if (ifaceAddress instanceof Inet4Address) {
-                        String hostAddress = ifaceAddress.getHostAddress();
-                        addresses.add(hostAddress);
-                    }
-                    else if (ifaceAddress instanceof Inet6Address) {
-                        String hostAddress = ifaceAddress.getHostAddress();
-
-                        // remove scope
-                        int percent = hostAddress.indexOf("%");
-                        if (percent != -1) {
-                            hostAddress = hostAddress.substring(0, percent);
-                        }
-
-                        addresses.add("[" + hostAddress + "]");
+                    String address = getAddressByInetAddress(ifaceAddress);
+                    if (address != null) {
+                        addresses.add(address);
                     }
                 }
             }
@@ -604,7 +607,31 @@ public class Servient {
             return addresses;
         }
         catch (SocketException e) {
-            return new HashSet<>(Arrays.asList("127.0.0.1"));
+            return new HashSet<>(Collections.singletonList("127.0.0.1"));
+        }
+    }
+
+    private static String getAddressByInetAddress(InetAddress ifaceAddress) {
+        if (ifaceAddress.isLoopbackAddress() || ifaceAddress.isLinkLocalAddress() || ifaceAddress.isMulticastAddress()) {
+            return null;
+        }
+
+        if (ifaceAddress instanceof Inet4Address) {
+            return ifaceAddress.getHostAddress();
+        }
+        else if (ifaceAddress instanceof Inet6Address) {
+            String hostAddress = ifaceAddress.getHostAddress();
+
+            // remove scope
+            int percent = hostAddress.indexOf('%');
+            if (percent != -1) {
+                hostAddress = hostAddress.substring(0, percent);
+            }
+
+            return "[" + hostAddress + "]";
+        }
+        else {
+            return null;
         }
     }
 
@@ -614,10 +641,20 @@ public class Servient {
      *
      * @param config
      */
-    public static Servient clientOnly(Config config) {
+    public static Servient clientOnly(Config config) throws ServientException {
         Config clientOnlyConfig = ConfigFactory
                 .parseString("wot.servient.servers = []")
                 .withFallback(config);
         return new Servient(clientOnlyConfig);
+    }
+
+    private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {
+        try {
+            clazz.getConstructor(parameterTypes);
+            return true;
+        }
+        catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 }

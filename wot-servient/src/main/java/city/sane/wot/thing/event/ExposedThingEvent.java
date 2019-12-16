@@ -14,21 +14,29 @@ import java.util.concurrent.CompletableFuture;
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingEvent}.
  */
 public class ExposedThingEvent extends ThingEvent implements Subscribable<Object> {
-    final static Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
 
     private final String name;
-    private final ExposedThing thing;
     @JsonIgnore
     private final EventState state = new EventState();
 
-    public ExposedThingEvent(String name, ThingEvent event, ExposedThing thing) {
+    public ExposedThingEvent(String name, ThingEvent event) {
         this.name = name;
-        this.description = event.getDescription();
-        this.descriptions = event.getDescriptions();
-        this.uriVariables = event.getUriVariables();
-        this.type = event.getType();
-        this.data = event.getData();
-        this.thing = thing;
+        description = event.getDescription();
+        descriptions = event.getDescriptions();
+        uriVariables = event.getUriVariables();
+        type = event.getType();
+        data = event.getData();
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     public EventState getState() {

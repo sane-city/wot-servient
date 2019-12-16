@@ -8,10 +8,14 @@ import java.io.Serializable;
  * This class contains the message types sent between the actors during Thing Interaction.
  */
 public class Messages {
-    static public class Read implements Serializable {
+    private Messages() {
+
     }
 
-    static public class RespondRead implements Serializable {
+    public static class Read implements Serializable {
+    }
+
+    public static class RespondRead implements Serializable {
         public final Content content;
 
         public RespondRead(Content content) {
@@ -19,7 +23,7 @@ public class Messages {
         }
     }
 
-    static public class Write implements Serializable {
+    public static class Write implements Serializable {
         public final Content content;
 
         public Write(Content content) {
@@ -27,7 +31,7 @@ public class Messages {
         }
     }
 
-    static public class Written implements Serializable {
+    public static class Written implements Serializable {
         public final Content content;
 
         public Written(Content content) {

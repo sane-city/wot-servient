@@ -2,18 +2,19 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ConsumedThingException;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Fetch thing description exposes by {@link ExampleEvent} and then subscribe to the event.
  */
-public class ExampleEventClient {
-    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, IOException {
+class ExampleEventClient {
+    public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
@@ -21,7 +22,7 @@ public class ExampleEventClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -39,7 +40,7 @@ public class ExampleEventClient {
                 System.out.println("ExampleDynamicClient: Subscribed");
 
             }
-            catch (Throwable ex) {
+            catch (ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

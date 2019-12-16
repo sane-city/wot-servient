@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.Objects;
+
 /**
  * This class represents a read-only model of a thing action.
  * The class {@link Builder} can be used to build new thing action models.
@@ -16,11 +18,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class ThingAction extends ThingInteraction<ThingAction> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema input;
+    DataSchema input;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema output;
+    DataSchema output;
 
     public DataSchema getInput() {
         return input;
@@ -30,10 +32,30 @@ public class ThingAction extends ThingInteraction<ThingAction> {
         return output;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingAction)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ThingAction that = (ThingAction) o;
+        return Objects.equals(input, that.input) && Objects.equals(output, that.output);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), input, output);
+    }
+
     /**
      * Allows building new {@link ThingAction} objects.
      */
-    public static class Builder extends ThingInteraction.Builder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder> {
         private DataSchema input;
         private DataSchema output;
 

@@ -9,10 +9,11 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class SparqlThingQueryTest {
     @Test
-    public void testToString() {
+    public void testToString() throws ThingQueryException {
         String queryString = "?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .";
         SparqlThingQuery query = new SparqlThingQuery(queryString);
 
@@ -20,7 +21,7 @@ public class SparqlThingQueryTest {
     }
 
     @Test
-    public void filterId() {
+    public void filterById() throws ThingQueryException {
         List<Thing> things = new ArrayList<>();
         things.add(
                 new Thing.Builder()
@@ -43,5 +44,17 @@ public class SparqlThingQueryTest {
         Collection<Thing> filtered = query.filter(things);
 
         assertEquals(1, filtered.size());
+    }
+
+    @Test(expected = ThingQueryException.class)
+    public void filterWarnOnUseOfReservedWords() throws ThingQueryException {
+        new SparqlThingQuery("?__id__ ?p ?o");
+    }
+
+    @Test
+    public void filterWarnOnUseOfReservedWordsNegative() throws ThingQueryException {
+        SparqlThingQuery query = new SparqlThingQuery("?idiotype ?p ?o");
+
+        assertNotNull(query);
     }
 }

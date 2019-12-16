@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,12 +38,10 @@ public class JsonCodecTest {
 
     @Test
     public void mapToJsonToMap() throws ContentCodecException {
-        Map<String, Object> value = new HashMap<>() {{
-            put("foo", "bar");
-            put("etzdala", new HashMap<>() {{
-                put("hello", "world");
-            }});
-        }};
+        Map<String, Object> value = Map.of(
+                "foo", "bar",
+                "etzala", Map.of("hello", "world")
+        );
         byte[] bytes = codec.valueToBytes(value);
         Object newValue = codec.bytesToValue(bytes, new ObjectSchema());
 

@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.BiFunction
 
 class ExposedThingExtensions {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
 
     static ExposedThing addProperty(ExposedThing self, String name, Map map) {
         def property = JSON_MAPPER.convertValue(map, ThingProperty.class)

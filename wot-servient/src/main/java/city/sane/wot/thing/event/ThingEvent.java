@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.Objects;
+
 /**
  * This class represents a read-only model of a thing event.
  * The class {@link Builder} can be used to build new thing event models.
@@ -16,10 +18,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class ThingEvent extends ThingInteraction<ThingEvent> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    protected DataSchema data;
+    DataSchema data;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String type;
+    String type;
 
     public String getType() {
         return type;
@@ -29,10 +31,30 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
         return data;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingEvent)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ThingEvent that = (ThingEvent) o;
+        return Objects.equals(data, that.data) && Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), data, type);
+    }
+
     /**
      * Allows building new {@link ThingEvent} objects.
      */
-    public static class Builder extends ThingInteraction.Builder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder> {
         private DataSchema data;
         private String type;
 

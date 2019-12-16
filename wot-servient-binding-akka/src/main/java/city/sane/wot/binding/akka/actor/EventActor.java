@@ -9,17 +9,17 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingEvent}.
  */
-public class EventActor extends AbstractActor {
+class EventActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingEvent event;
 
-    public EventActor(String name, ExposedThingEvent event) {
+    private EventActor(String name, ExposedThingEvent event) {
         this.name = name;
         this.event = event;
     }
@@ -33,7 +33,7 @@ public class EventActor extends AbstractActor {
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)
                 .setSubprotocol("longpoll")
-                .setOp(Operation.subscribeevent)
+                .setOp(Operation.SUBSCRIBE_EVENT)
                 .build();
 
         event.addForm(form);
@@ -53,7 +53,7 @@ public class EventActor extends AbstractActor {
                 .build();
     }
 
-    static public Props props(String name, ExposedThingEvent event) {
+    public static Props props(String name, ExposedThingEvent event) {
         return Props.create(EventActor.class, () -> new EventActor(name, event));
     }
 }

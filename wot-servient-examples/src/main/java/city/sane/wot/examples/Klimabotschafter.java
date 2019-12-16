@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -19,15 +20,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Produces and exposes every Klimabotschafter's weather stations as a thing.
  */
-public class Klimabotschafter {
-    private final Map<String, ExposedThing> things = new HashMap();
-
-    public Klimabotschafter() throws InterruptedException {
+class Klimabotschafter {
+    private Klimabotschafter() throws InterruptedException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -45,15 +43,16 @@ public class Klimabotschafter {
                 Iterator<JsonNode> stations = json.elements();
                 while (stations.hasNext()) {
                     JsonNode station = stations.next();
-                    String st_name = station.get("st_name").asText();
+                    String stName = station.get("st_name").asText();
 
-                    ExposedThing exposedThing = things.get(st_name);
+                    Map<String, ExposedThing> things = new HashMap();
+                    ExposedThing exposedThing = things.get(stName);
 
                     if (exposedThing == null) {
                         // create and expose thing
                         Thing thing = new Thing.Builder()
-                                .setId("KlimabotschafterWetterstationen:" + st_name)
-                                .setTitle("KlimabotschafterWetterstationen:" + st_name)
+                                .setId("KlimabotschafterWetterstationen:" + stName)
+                                .setTitle("KlimabotschafterWetterstationen:" + stName)
                                 .setObjectContext(new Context("http://www.w3.org/ns/td")
                                         .addContext("om", "http://www.wurvoc.org/vocabularies/om-1.8/")
                                         .addContext("saref", "https://w3id.org/saref#")
@@ -221,7 +220,7 @@ public class Klimabotschafter {
                                         .build()
                         );
 
-                        things.put(st_name, exposedThing);
+                        things.put(stName, exposedThing);
 
                         exposedThing.expose();
                     }
@@ -274,14 +273,14 @@ public class Klimabotschafter {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                // ignore
             }
 
-            Thread.sleep(60 * 1000);
+            Thread.sleep(60 * 1000L);
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, WotException {
         new Klimabotschafter();
     }
 }

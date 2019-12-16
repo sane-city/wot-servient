@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -15,14 +14,12 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.action.ThingAction}.
  */
 public class ActionResource extends AbstractResource {
-    final static Logger log = LoggerFactory.getLogger(ActionResource.class);
+    private static final Logger log = LoggerFactory.getLogger(ActionResource.class);
 
-    private final CoapServer server;
     private final ExposedThingAction action;
 
-    public ActionResource(CoapServer server, String name, ExposedThingAction action) {
+    public ActionResource(String name, ExposedThingAction action) {
         super(name);
-        this.server = server;
         this.action = action;
     }
 
@@ -52,18 +49,15 @@ public class ActionResource extends AbstractResource {
                         exchange.respond(CoAP.ResponseCode.CONTENT, content.getBody(), contentFormat);
                     }
                     catch (ContentCodecException ex) {
-                        e.printStackTrace();
                         exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, ex.toString());
                     }
                 }
                 else {
-                    e.printStackTrace();
                     exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
                 }
             });
         }
         catch (ContentCodecException e) {
-            e.printStackTrace();
             exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, e.toString());
         }
     }

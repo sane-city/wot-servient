@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingAction}.
  */
 public class ExposedThingAction extends ThingAction {
-    final static Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
+    private static final Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
 
     private final String name;
     private final ExposedThing thing;
@@ -23,16 +23,26 @@ public class ExposedThingAction extends ThingAction {
 
     public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
         this.name = name;
-        this.description = action.getDescription();
-        this.descriptions = action.getDescriptions();
-        this.uriVariables = action.getUriVariables();
-        this.input = action.getInput();
-        this.output = action.getOutput();
+        description = action.getDescription();
+        descriptions = action.getDescriptions();
+        uriVariables = action.getUriVariables();
+        input = action.getInput();
+        output = action.getOutput();
         this.thing = thing;
     }
 
     public ActionState getState() {
         return state;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     /**
@@ -49,7 +59,12 @@ public class ExposedThingAction extends ThingAction {
 
         if (getState().getHandler() != null) {
             log.info("'{}' calls registered handler for Action '{}' with input '{}' and options '{}'", thing.getId(), name, input, options);
-            return getState().getHandler().apply(input, options);
+            CompletableFuture<Object> output = getState().getHandler().apply(input, options);
+            if (output == null) {
+                log.warn("'{}': Called registered handler for Action '{}' returned null. This can cause problems. Give Future with null result back.", thing.getId(), name);
+                output = CompletableFuture.completedFuture(null);
+            }
+            return output;
         }
         else {
             log.info("'{}' has no handler for Action '{}'", thing.getId(), name);

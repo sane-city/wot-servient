@@ -7,33 +7,33 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class represents a read-only model of a thing property.
  * The class {@link Builder} can be used to build new thing property models.
  * Used in combination with {@link city.sane.wot.thing.Thing}
  */
-public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema, Serializable {
+public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema {
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String objectType;
+    String objectType;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String type;
+    String type;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean observable;
+    boolean observable;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean readOnly;
+    boolean readOnly;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    protected boolean writeOnly;
+    boolean writeOnly;
 
-    protected Map<String, Object> optionalProperties = new HashMap<>();
+    Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getObjectType() {
         return objectType;
@@ -70,10 +70,35 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         return optionalProperties.get(name);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ThingProperty)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ThingProperty that = (ThingProperty) o;
+        return observable == that.observable &&
+                readOnly == that.readOnly &&
+                writeOnly == that.writeOnly &&
+                Objects.equals(objectType, that.objectType) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(optionalProperties, that.optionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), objectType, type, observable, readOnly, writeOnly, optionalProperties);
+    }
+
     /**
      * Allows building new {@link ThingProperty} objects.
      */
-    public static class Builder extends ThingInteraction.Builder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder> {
         private String objectType;
         private String type;
         private boolean observable;

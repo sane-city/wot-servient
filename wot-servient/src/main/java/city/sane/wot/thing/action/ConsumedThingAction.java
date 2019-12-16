@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionException;
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingAction}.
  */
 public class ConsumedThingAction extends ThingAction {
-    final static Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
 
     private final String name;
     private final ConsumedThing thing;
@@ -34,9 +34,19 @@ public class ConsumedThingAction extends ThingAction {
         this.thing = thing;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     public CompletableFuture invoke(Map<String, Object> parameters) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.invokeaction);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.INVOKE_ACTION);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -47,16 +57,14 @@ public class ConsumedThingAction extends ThingAction {
                 input = ContentManager.valueToContent(parameters, form.getContentType());
             }
 
-            form = thing.handleUriVariables(form, parameters);
+            form = ConsumedThing.handleUriVariables(form, parameters);
 
             CompletableFuture<Content> result = client.invokeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this.getOutput());
-                    return value;
+                    return ContentManager.contentToValue(content, getOutput());
                 }
                 catch (ContentCodecException e) {
-                    e.printStackTrace();
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
                 }
             });

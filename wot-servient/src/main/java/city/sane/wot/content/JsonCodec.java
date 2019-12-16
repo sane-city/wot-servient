@@ -38,7 +38,7 @@ public class JsonCodec implements ContentCodec {
         }
     }
 
-    protected ObjectMapper getMapper() {
+    ObjectMapper getMapper() {
         return mapper;
     }
 }

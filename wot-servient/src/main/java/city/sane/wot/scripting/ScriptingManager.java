@@ -16,6 +16,9 @@ import java.util.Optional;
 public class ScriptingManager {
     private static final Map<String, ScriptingEngine> ENGINES = new HashMap();
 
+    private ScriptingManager() {
+    }
+
     /**
      * Adds support for the script language specified in <code>engine</code>.
      *
@@ -41,7 +44,7 @@ public class ScriptingManager {
      * @param wot
      * @throws ScriptingManagerException
      */
-    public static void runScript(File file, Wot wot) throws ScriptingManagerException {
+    public static void runScript(File file, Wot wot) throws ScriptingException {
         Path path = file.toPath();
         try {
             String script = Files.readString(path);
@@ -67,7 +70,7 @@ public class ScriptingManager {
      * @param wot
      * @throws ScriptingManagerException
      */
-    public static void runScript(String script, String mediaType, Wot wot) throws ScriptingManagerException {
+    public static void runScript(String script, String mediaType, Wot wot) throws ScriptingException {
         ScriptingEngine engine = ENGINES.get(mediaType);
 
         if (engine == null) {
@@ -80,7 +83,7 @@ public class ScriptingManager {
     private static String pathToExtension(Path path) {
         String pathStr = path.toString();
         if (pathStr.contains(".")) {
-            return pathStr.substring(pathStr.lastIndexOf("."));
+            return pathStr.substring(pathStr.lastIndexOf('.'));
         }
         else {
             return null;
@@ -89,11 +92,6 @@ public class ScriptingManager {
 
     private static String extensionToMediaType(String extension) {
         Optional<ScriptingEngine> engine = ENGINES.values().stream().filter(e -> e.getFileExtension().equals(extension)).findFirst();
-        if (engine.isPresent()) {
-            return engine.get().getMediaType();
-        }
-        else {
-            return null;
-        }
+        return engine.map(ScriptingEngine::getMediaType).orElse(null);
     }
 }
