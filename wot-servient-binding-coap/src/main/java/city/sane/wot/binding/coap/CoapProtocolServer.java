@@ -17,12 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,15 +78,11 @@ public class CoapProtocolServer implements ProtocolServer {
             server.stop();
             server.destroy();
 
-            // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
-            //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
-            //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
-            //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
             try {
-                Thread.sleep(1 * 1000L);
+                waitForPort(bindPort);
             }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            catch (TimeoutException e) {
+                throw new CompletionException(e);
             }
 
             log.debug("Server stopped");
@@ -268,5 +265,35 @@ public class CoapProtocolServer implements ProtocolServer {
 
     public Map<String, ExposedThing> getThings() {
         return things;
+    }
+
+    public static void waitForPort(int port, Duration duration) throws TimeoutException {
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try (ServerSocket socket = new ServerSocket(port)) {
+                    result.complete(true);
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }, 0, 100);
+
+        try {
+            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            // ignore
+        }
+    }
+
+    public static void waitForPort(int port) throws TimeoutException {
+        waitForPort(port,Duration.ofSeconds(10));
     }
 }
