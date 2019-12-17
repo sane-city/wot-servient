@@ -1,9 +1,14 @@
 package city.sane.wot.binding.websocket.message;
 
-import java.io.Reader;
-import java.util.Objects;
+import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.property.ExposedThingProperty;
+import org.java_websocket.WebSocket;
 
-public class ReadProperty extends AbstractMessage {
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+public class ReadProperty extends AbstractClientMessage {
     private String thingId;
     private String name;
 
@@ -12,11 +17,35 @@ public class ReadProperty extends AbstractMessage {
         this.name = null;
     }
 
+    @Override
+    public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
+        String id = getThingId();
+        ExposedThing thing = things.get(id);
+
+        if (thing != null) {
+            String name = getName();
+            ExposedThingProperty property = thing.getProperty(name);
+
+            if (property != null) {
+                return property.read().thenApply(value -> new ReadPropertyResponse(this, value));
+            }
+            else {
+                // Property not found
+                // FIXME: send 400er message back
+                return CompletableFuture.failedFuture(null);
+            }
+        }
+        else {
+            // Thing not found
+            // FIXME: send 400er message back
+            return CompletableFuture.failedFuture(null);
+        }
+    }
+
     public ReadProperty(String thingId, String name) {
         this.thingId = Objects.requireNonNull(thingId);
         this.name = Objects.requireNonNull(name);
     }
-
 
     public String getThingId() {
         return thingId;
@@ -24,5 +53,13 @@ public class ReadProperty extends AbstractMessage {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return "ReadProperty [" +
+                "thingId='" + thingId + '\'' +
+                ", name='" + name + '\'' +
+                ']';
     }
 }

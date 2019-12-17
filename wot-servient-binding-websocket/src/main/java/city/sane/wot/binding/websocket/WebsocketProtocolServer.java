@@ -3,7 +3,6 @@ package city.sane.wot.binding.websocket;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.*;
-import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -21,16 +20,18 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
 
     private Map<String, ExposedThing> things;
@@ -45,7 +46,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         server = new MyServer(new InetSocketAddress(bindPort));
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
-        } else {
+        }
+        else {
             addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":" + bindPort + "").collect(Collectors.toList());
         }
         things = new HashMap<>();
@@ -61,7 +63,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.runAsync(() -> {
             try {
                 server.stop();
-            } catch (IOException | InterruptedException e) {
+            }
+            catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
@@ -72,76 +75,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
         log.info("WebsocketServer exposes '{}'", thing.getTitle());
         things.put(thing.getId(), thing);
 
-
         // TODO: add websocket forms to thing description
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
-
-                // properties
-
-                Form formA = new Form.Builder()
-                        .setHref(address)
-                        .setContentType(contentType)
-                        .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties))
-                        .build();
-                thing.addForm(formA);
-                log.info("Assign '{}' for reading all properties", address);
-
-                Map<String, ExposedThingProperty> properties = thing.getProperties();
-                properties.forEach((name, property) -> {
-                    Form.Builder formP = new Form.Builder();
-                    formP.setHref(address);
-                    formP.setContentType(contentType);
-                    if (property.isReadOnly()) {
-                        formP.setOp(Operation.readproperty);
-                    } else if (property.isWriteOnly()) {
-                        formP.setOp(Operation.writeproperty);
-                    } else {
-                        formP.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
-                    }
-
-                    property.addForm(formP.build());
-                    log.info("Assign '{}' to Property '{}'", address, name);
-
-                    // if property is observable add an additional form with a observable href
-                    if (property.isObservable()) {
-                        Form.Builder observableForm = new Form.Builder();
-                        observableForm.setHref(address);
-                        observableForm.setContentType(contentType);
-                        observableForm.setOp(Operation.observeproperty);
-
-                        property.addForm(observableForm.build());
-                        log.info("Assign '{}' to observable Property '{}'", address, name);
-                    }
-                });
-
-                // actions
-
-                Map<String, ExposedThingAction> actions = thing.getActions();
-                actions.forEach((name, action) -> {
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(address);
-                    form.setContentType(contentType);
-                    form.setOp(Operation.invokeaction);
-
-                    action.addForm(form.build());
-                    log.info("Assign '{}' to Action '{}'", address, name);
-                });
-
-                // events
-
-                Map<String, ExposedThingEvent> events = thing.getEvents();
-                events.forEach((name, event) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "events", name, event);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    form.setSubprotocol("longpoll");
-                    form.setOp(Operation.subscribeevent);
-
-                    event.addForm(form.build());
-                    log.info("Assign '{}' to Event '{}'", href, name);
-                });
+                exposeProperties(thing, address, contentType);
+                exposeActions(thing, address, contentType);
+                exposeEvents(thing, address, contentType);
             }
         }
 
@@ -158,112 +97,124 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.completedFuture(null);
     }
 
-    private String getHrefWithVariablePattern(String address, ExposedThing thing, String type, String interactionName, ThingInteraction interaction) {
-        String variables = "";
-        Set<String> uriVariables = interaction.getUriVariables().keySet();
-        if (!uriVariables.isEmpty()) {
-            variables = "{?" + String.join(",", uriVariables) + "}";
-        }
+    private void exposeEvents(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingEvent> events = thing.getEvents();
+        events.forEach((name, event) -> {
+            Form.Builder form = new Form.Builder();
+            form.setHref(address);
+            form.setContentType(contentType);
+            form.setSubprotocol("longpoll");
+            form.setOp(Operation.SUBSCRIBE_EVENT);
 
-        return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
+            event.addForm(form.build());
+            log.info("Assign '{}' to Event '{}'", address, name);
+        });
+    }
+
+    private void exposeActions(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingAction> actions = thing.getActions();
+        actions.forEach((name, action) -> {
+            Form.Builder form = new Form.Builder();
+            form.setHref(address);
+            form.setContentType(contentType);
+            form.setOp(Operation.INVOKE_ACTION);
+
+            action.addForm(form.build());
+            log.info("Assign '{}' to Action '{}'", address, name);
+        });
+    }
+
+    private void exposeProperties(ExposedThing thing, String address, String contentType) {
+        Form formA = new Form.Builder()
+                .setHref(address)
+                .setContentType(contentType)
+                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES)
+                .build();
+        thing.addForm(formA);
+        log.info("Assign '{}' for reading all properties", address);
+
+        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        properties.forEach((name, property) -> {
+            Form.Builder formP = new Form.Builder();
+            formP.setHref(address);
+            formP.setContentType(contentType);
+            if (property.isReadOnly()) {
+                formP.setOp(Operation.READ_PROPERTY);
+            }
+            else if (property.isWriteOnly()) {
+                formP.setOp(Operation.WRITE_PROPERTY);
+            }
+            else {
+                formP.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
+            }
+
+            property.addForm(formP.build());
+            log.info("Assign '{}' to Property '{}'", address, name);
+
+            // if property is observable add an additional form with a observable href
+            if (property.isObservable()) {
+                Form.Builder observableForm = new Form.Builder();
+                observableForm.setHref(address);
+                observableForm.setContentType(contentType);
+                observableForm.setOp(Operation.OBSERVE_PROPERTY);
+
+                property.addForm(observableForm.build());
+                log.info("Assign '{}' to observable Property '{}'", address, name);
+            }
+        });
     }
 
     class MyServer extends WebSocketServer {
-        private final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
         MyServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
         }
 
         @Override
-        public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-
+        public void onOpen(WebSocket conn, ClientHandshake handshake) {
+            // FIXME: log
         }
 
         @Override
-        public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-
+        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+            // FIXME: log
         }
 
         @Override
-        public void onMessage(WebSocket webSocket, String s) {
+        public void onMessage(WebSocket conn, String json) {
+            log.info("Received message: {}", json);
 
-            // TODO: implementieren
-            System.out.println("Nachricht erhalten: " + s);
-            AbstractMessage message;
             try {
-                message = JSON_MAPPER.readValue(s, AbstractMessage.class);
+                AbstractClientMessage message = JSON_MAPPER.readValue(json, AbstractClientMessage.class);
+                log.debug("Deserialized message to: {}", message);
 
-                if (message instanceof ReadProperty) {
-                    String id = ((ReadProperty) message).getThingId();
-                    String name = ((ReadProperty) message).getName();
-
-                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).read().whenComplete((value, e) -> {
-                        if (e != null) {
-                            // implement
-                        } else {
-                            ReadPropertyResponse response = new ReadPropertyResponse(value);
-
-                            try {
-                                String outputJson = JSON_MAPPER.writeValueAsString(response);
-                                webSocket.send(outputJson);
-                            } catch (JsonProcessingException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-                } else if (message instanceof WriteProperty) {
-                    String id = ((WriteProperty) message).getThingId();
-                    String name = ((WriteProperty) message).getName();
-                    Content payload = ((WriteProperty) message).getPayload();
-
-                    //TODO: Payload to Property???
-                    ByteArrayInputStream bis = new ByteArrayInputStream(payload.getBody());
-                    ObjectInput in = new ObjectInputStream(bis);
-                    Object value = in.readObject();
-
-                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).write(value).whenComplete((result, e) -> {
-                        if (e != null) {
-                        } else {
-                            WritePropertyResponse response = new WritePropertyResponse(result);
-
-                            try {
-                                String outputJson = JSON_MAPPER.writeValueAsString(response);
-                                webSocket.send(outputJson);
-                            } catch (JsonProcessingException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-                } else if (message instanceof SubscribeProperty) {
-                    String id = ((SubscribeProperty) message).getThingId();
-                    String name = ((SubscribeProperty) message).getName();
-
-                    ExposedThing thing = WebsocketProtocolServer.this.things.get(id);
-                    thing.getProperty(name).subscribe(next -> {
-                        SubscribePropertyResponse response = new SubscribePropertyResponse(next);
+                message.reply(conn, things).whenComplete((response, e) -> {
+                    if (e != null) {
+                        // FIXME: handle exception
+                    }
+                    else {
                         try {
                             String outputJson = JSON_MAPPER.writeValueAsString(response);
-                            webSocket.send(outputJson);
+                            conn.send(outputJson);
                         } catch (JsonProcessingException ex) {
-                            ex.printStackTrace();
+                            // FIXME: handle exception
                         }
-                    });
-                }
 
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                    }
+                });
+            }
+            catch (IOException e) {
+                log.warn("Error on deserialization of message: {}", json);
             }
         }
 
         @Override
-        public void onError(WebSocket webSocket, Exception e) {
+        public void onError(WebSocket conn, Exception ex) {
+            // FIXME: log
         }
 
         @Override
         public void onStart() {
+            // FIXME: log
         }
     }
 }

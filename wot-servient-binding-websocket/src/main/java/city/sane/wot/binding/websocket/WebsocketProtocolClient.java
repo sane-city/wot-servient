@@ -2,9 +2,8 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
-import city.sane.wot.binding.websocket.message.AbstractMessage;
+import city.sane.wot.binding.websocket.message.AbstractServerMessage;
 import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
-import city.sane.wot.binding.websocket.message.SubscribePropertyResponse;
 import city.sane.wot.binding.websocket.message.WritePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
@@ -22,57 +21,20 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private final Map<URI, WebSocketClient> clients;
     CompletableFuture<Content> future = new CompletableFuture<>();
-    private WebSocketClient cc;
 
-
-    WebsocketProtocolClient(Config config) throws ProtocolClientException, URISyntaxException {
-        // TODO: uri from config
-        cc = new WebSocketClient(new URI("ws://localhost:8080")) {
-            @Override
-            public void onOpen(ServerHandshake serverHandshake) {
-                cc.connect();
-                log.info("onOpen status=" + serverHandshake.getHttpStatus() + ", statusMsg=" + serverHandshake.getHttpStatusMessage());
-            }
-
-            @Override
-            public void onMessage(String json) {
-                log.info("onMessage message= " + json);
-                try {
-                    AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
-                    if (message instanceof ReadPropertyResponse) {
-                        // TODO: need to something here?
-                        ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
-                        future.complete((Content) rMessage.getValue());
-                        System.out.println("ReadPropertyResponse");
-                    } else if (message instanceof WritePropertyResponse) {
-                        // TODO: need to something here?
-                        System.out.println("WritePropertyResponse");
-                    } else if (message instanceof SubscribePropertyResponse) {
-                        // TODO: need to something here?
-                        System.out.println("SubscribePropertyResponse");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onClose(int i, String s, boolean b) {
-
-            }
-
-            @Override
-            public void onError(Exception e) {
-                log.info(e.getMessage());
-            }
-        };
+    public WebsocketProtocolClient(Map<URI, WebSocketClient> clients) {
+        this.clients = clients;
     }
 
     @Override
@@ -81,14 +43,66 @@ public class WebsocketProtocolClient implements ProtocolClient {
             try {
                 String json = JSON_MAPPER.writeValueAsString(form);
                 // TODO: need return value for test
-                cc.send(json);
+                getClientFor(form).send(json);
                 return future.get();
-            } catch (JsonProcessingException | InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            } catch (JsonProcessingException | InterruptedException | ExecutionException | ProtocolClientException e) {
+                throw new CompletionException(e);
             }
-            // TODO:
-            return null;
         });
+    }
+
+    // FIXME: create websocket clients in factory
+    private synchronized WebSocketClient getClientFor(Form form) throws ProtocolClientException {
+        try {
+            URI uri = new URI(form.getHref());
+            WebSocketClient client = clients.get(uri);
+            if (client == null) {
+                log.info("Create ne websocket client for '{}'", uri);
+                client = new WebSocketClient(uri) {
+                    @Override
+                    public void onOpen(ServerHandshake serverHandshake) {
+                        log.info("onOpen status=" + serverHandshake.getHttpStatus() + ", statusMsg=" + serverHandshake.getHttpStatusMessage());
+                    }
+
+                    @Override
+                    public void onMessage(String json) {
+                        log.info("onMessage message= " + json);
+                        try {
+                            AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
+                            if (message instanceof ReadPropertyResponse) {
+                                // TODO: need to something here?
+                                ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
+                                future.complete((Content) rMessage.getValue());
+                                System.out.println("ReadPropertyResponse");
+                            } else if (message instanceof WritePropertyResponse) {
+                                // TODO: need to something here?
+                                System.out.println("WritePropertyResponse");
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onClose(int i, String s, boolean b) {
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        log.info(e.getMessage());
+                    }
+                };
+                client.connect();
+
+                clients.put(uri, client);
+            }
+
+            return client;
+        }
+        catch (URISyntaxException e) {
+            throw new ProtocolClientException("Unable to create websocket client for href '" + form.getHref() + "': " + e.getMessage());
+        }
     }
 
     @Override
@@ -97,32 +111,19 @@ public class WebsocketProtocolClient implements ProtocolClient {
             try {
                 Form writeForm = new Form.Builder(form).setOptional("payload", content).build();
                 String json = JSON_MAPPER.writeValueAsString(writeForm);
-                cc.send(json);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                getClientFor(form).send(json);
+
+                // TODO:
+                return null;
+            } catch (JsonProcessingException | ProtocolClientException e) {
+                throw new CompletionException(e);
             }
-            // TODO:
-            return null;
         });
     }
 
-    // TODO: CompletableFuture subscribeResource(Form form, Observer<Content> observer)
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
-        try {
-            String topic = new URI(form.getHref()).getPath().substring(1);
-            Subject<Content> newSubject = new Subject<>();
-            Subscription subscription = newSubject.subscribe(observer);
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    String json = JSON_MAPPER.writeValueAsString(form);
-                    cc.send(json);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            }).thenApply(done -> subscription);
-        } catch (URISyntaxException e) {
-            log.warn("Unable to subscribe resource: {}", e.getMessage());
-            return null;
-        }
+    @Override
+    public CompletableFuture<Content> invokeResource(Form form, Content content) {
+        // FIXME: Implement
+        return CompletableFuture.completedFuture(null);
     }
 }
