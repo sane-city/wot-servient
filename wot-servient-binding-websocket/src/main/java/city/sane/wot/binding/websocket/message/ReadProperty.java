@@ -17,6 +17,11 @@ public class ReadProperty extends AbstractClientMessage {
         this.name = null;
     }
 
+    public ReadProperty(String thingId, String name) {
+        this.thingId = Objects.requireNonNull(thingId);
+        this.name = Objects.requireNonNull(name);
+    }
+
     @Override
     public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
         String id = getThingId();
@@ -28,23 +33,16 @@ public class ReadProperty extends AbstractClientMessage {
 
             if (property != null) {
                 return property.read().thenApply(value -> new ReadPropertyResponse(this, value));
-            }
-            else {
+            } else {
                 // Property not found
                 // FIXME: send 400er message back
                 return CompletableFuture.failedFuture(null);
             }
-        }
-        else {
+        } else {
             // Thing not found
             // FIXME: send 400er message back
             return CompletableFuture.failedFuture(null);
         }
-    }
-
-    public ReadProperty(String thingId, String name) {
-        this.thingId = Objects.requireNonNull(thingId);
-        this.name = Objects.requireNonNull(name);
     }
 
     public String getThingId() {

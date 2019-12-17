@@ -1,12 +1,9 @@
 package city.sane.wot.binding.websocket.message;
 
-import java.io.Writer;
-import java.util.Objects;
-
 public class WritePropertyResponse extends AbstractServerMessage {
     private Object value;
 
-    private WritePropertyResponse(){
+    private WritePropertyResponse() {
         value = null;
     }
 

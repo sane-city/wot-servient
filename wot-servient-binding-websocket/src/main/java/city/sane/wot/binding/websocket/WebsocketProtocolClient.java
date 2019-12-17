@@ -7,12 +7,8 @@ import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
 import city.sane.wot.binding.websocket.message.WritePropertyResponse;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subject;
-import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.typesafe.config.Config;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
@@ -21,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -99,8 +94,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
             }
 
             return client;
-        }
-        catch (URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new ProtocolClientException("Unable to create websocket client for href '" + form.getHref() + "': " + e.getMessage());
         }
     }

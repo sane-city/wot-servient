@@ -23,13 +23,13 @@ public abstract class AbstractClientMessage {
         id = randomId();
     }
 
+    public static String randomId() {
+        return UUID.randomUUID().toString().substring(0, 6);
+    }
+
     public String getId() {
         return id;
     }
 
     public abstract CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things);
-
-    public static String randomId(){
-        return UUID.randomUUID().toString().substring(0, 6);
-    }
 }

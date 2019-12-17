@@ -2,10 +2,9 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
-import city.sane.wot.binding.websocket.message.*;
+import city.sane.wot.binding.websocket.message.AbstractClientMessage;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.ThingInteraction;
 import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
@@ -25,7 +24,6 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -46,8 +44,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         server = new MyServer(new InetSocketAddress(bindPort));
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
-        }
-        else {
+        } else {
             addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":" + bindPort + "").collect(Collectors.toList());
         }
         things = new HashMap<>();
@@ -63,8 +60,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.runAsync(() -> {
             try {
                 server.stop();
-            }
-            catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
@@ -140,11 +136,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
             formP.setContentType(contentType);
             if (property.isReadOnly()) {
                 formP.setOp(Operation.READ_PROPERTY);
-            }
-            else if (property.isWriteOnly()) {
+            } else if (property.isWriteOnly()) {
                 formP.setOp(Operation.WRITE_PROPERTY);
-            }
-            else {
+            } else {
                 formP.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
             }
 
@@ -190,8 +184,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 message.reply(conn, things).whenComplete((response, e) -> {
                     if (e != null) {
                         // FIXME: handle exception
-                    }
-                    else {
+                    } else {
                         try {
                             String outputJson = JSON_MAPPER.writeValueAsString(response);
                             conn.send(outputJson);
@@ -201,8 +194,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
                     }
                 });
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 log.warn("Error on deserialization of message: {}", json);
             }
         }
