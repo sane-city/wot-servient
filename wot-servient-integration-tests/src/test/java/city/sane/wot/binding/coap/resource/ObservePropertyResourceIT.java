@@ -12,15 +12,13 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapHandler;
-import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,10 +47,10 @@ public class ObservePropertyResourceIT {
     }
 
     @Test(timeout = 20 * 1000)
-    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException {
+    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CoapClient client = new CoapClient("coap://localhost:5683/observable");
-        client.observe(new CoapHandler() {
+        CoapObserveRelation relation = client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
                 client.shutdown();
@@ -70,8 +68,7 @@ public class ObservePropertyResourceIT {
         });
 
         // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
 
         // write new value
         ExposedThingProperty property = thing.getProperty("count");

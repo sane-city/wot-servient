@@ -9,18 +9,21 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapHandler;
-import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.*;
+import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertNull;
@@ -45,10 +48,10 @@ public class EventResourceIT {
     }
 
     @Test
-    public void subscribeEvent() throws ExecutionException, InterruptedException {
+    public void subscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<Void> result = new CompletableFuture<>();
         CoapClient client = new CoapClient("coap://localhost:5683/change");
-        client.observe(new CoapHandler() {
+        CoapObserveRelation relation = client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
                 client.shutdown();
@@ -63,8 +66,7 @@ public class EventResourceIT {
         });
 
         // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
 
         // emit event
         ExposedThingEvent event = thing.getEvent("change");

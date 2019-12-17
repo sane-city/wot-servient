@@ -11,13 +11,16 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.typesafe.config.Config;
+import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -79,6 +82,10 @@ public class CoapProtocolServer implements ProtocolServer {
             server.destroy();
 
             try {
+                // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the
+                //  port is still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port
+                //  was already in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the
+                //  maintainer of the CoAP server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
                 waitForPort(bindPort);
             }
             catch (TimeoutException e) {
@@ -267,6 +274,14 @@ public class CoapProtocolServer implements ProtocolServer {
         return things;
     }
 
+    /**
+     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is specified with <code>duration</code>.
+     * If the port does not become available within the specified duration, a {@link TimeoutException} is thrown.
+     *
+     * @param port
+     * @param duration
+     * @throws TimeoutException
+     */
     public static void waitForPort(int port, Duration duration) throws TimeoutException {
         CompletableFuture<Boolean> result = new CompletableFuture<>();
 
@@ -293,7 +308,50 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
+    /**
+     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is 10 seconds.
+     * If the port does not become available within 10 seconds, a {@link TimeoutException} is thrown.
+     *
+     * @param port
+     * @throws TimeoutException
+     */
     public static void waitForPort(int port) throws TimeoutException {
         waitForPort(port,Duration.ofSeconds(10));
+    }
+
+    /**
+     * This methods blocks until <code>relation</code> is acknowledged. The maximum blocking time is specified with <code>duration</code>.
+     * If the relation is not acknowledged within the specified duration, a {@link TimeoutException} is thrown.
+     *
+     * @param relation
+     * @param duration
+     * @throws TimeoutException
+     */
+    public static void waitForRelationAcknowledgedObserveRelation(CoapObserveRelation relation, Duration duration) throws TimeoutException {
+        CompletableFuture<Void> result = new CompletableFuture<>();
+
+        try {
+            Field requestField = CoapObserveRelation.class.getDeclaredField("request");
+            requestField.setAccessible(true);
+            Request request = (Request) requestField.get(relation);
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (request.isAcknowledged()) {
+                        result.complete(null);
+                    }
+                }
+            }, 0, 100);
+
+            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (NoSuchFieldException | IllegalAccessException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
