@@ -2,19 +2,19 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.property.ThingProperty;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Produces and exposes a counter thing with variables for interaction.
  */
-public class CounterUriVariables {
-    public static void main(String[] args) {
+class CounterUriVariables {
+    public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -41,13 +41,13 @@ public class CounterUriVariables {
         exposedThing.addAction("increment",
                 new ThingAction.Builder()
                         .setDescription("Incrementing counter value with optional step value as uriVariable")
-                        .setUriVariables(new HashMap<>() {{
-                            put("step", new HashMap<>() {{
-                                put("type", "integer");
-                                put("minium", 1);
-                                put("maximum", 250);
-                            }});
-                        }})
+                        .setUriVariables(Map.of(
+                                "step", Map.of(
+                                        "type", "integer",
+                                        "minimum", 1,
+                                        "maximum", 250
+                                )
+                        ))
                         .build(),
                 (input, options) -> {
                     System.out.println("CounterUriVariables: Incrementing, input= " + input + ", options= " + options);
@@ -73,13 +73,13 @@ public class CounterUriVariables {
         exposedThing.addAction("decrement",
                 new ThingAction.Builder()
                         .setDescription("Decrementing counter value with optional step value as uriVariable")
-                        .setUriVariables(new HashMap<>() {{
-                            put("step", new HashMap<>() {{
-                                put("type", "integer");
-                                put("minium", 1);
-                                put("maximum", 250);
-                            }});
-                        }})
+                        .setUriVariables(Map.of(
+                                "step", Map.of(
+                                        "type", "integer",
+                                        "minimum", 1,
+                                        "maximum", 250
+                                )
+                        ))
                         .build(),
                 (input, options) -> {
                     System.out.println("CounterUriVariables: Decrementing, input= " + input + ", options= " + options);

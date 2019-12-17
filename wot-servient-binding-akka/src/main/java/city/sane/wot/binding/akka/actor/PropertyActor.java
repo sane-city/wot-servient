@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -13,20 +14,19 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingProperty}.
  */
-public class PropertyActor extends AbstractActor {
+class PropertyActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
     private final ExposedThingProperty property;
 
-    public PropertyActor(String name, ExposedThingProperty property) {
+    private PropertyActor(String name, ExposedThingProperty property) {
         this.name = name;
         this.property = property;
     }
@@ -35,18 +35,18 @@ public class PropertyActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
+        String href = MediatorActor.remoteOverlayPath(getSelf().path()).toString();
         Form.Builder builder = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT);
         if (property.isReadOnly()) {
-            builder.setOp(Operation.readproperty);
+            builder.setOp(Operation.READ_PROPERTY);
         }
         else if (property.isWriteOnly()) {
-            builder.setOp(Operation.writeproperty);
+            builder.setOp(Operation.WRITE_PROPERTY);
         }
         else {
-            builder.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+            builder.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
         }
 
         property.addForm(builder.build());
@@ -65,13 +65,13 @@ public class PropertyActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Read.class, this::read)
+                .match(Read.class, m -> read())
                 .match(Write.class, this::write)
-                .match(Subscribe.class, this::subscribe)
+                .match(Subscribe.class, m1 -> subscribe())
                 .build();
     }
 
-    private void read(Read m) {
+    private void read() {
         ActorRef sender = getSender();
 
         property.read().whenComplete((value, e) -> {
@@ -102,7 +102,7 @@ public class PropertyActor extends AbstractActor {
                 }
                 else {
                     // TODO: return output if available
-                    sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                    sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
                 }
             });
 
@@ -112,7 +112,7 @@ public class PropertyActor extends AbstractActor {
         }
     }
 
-    private void subscribe(Subscribe m) {
+    private void subscribe() {
         // FIXME: Implement
     }
 
@@ -120,7 +120,7 @@ public class PropertyActor extends AbstractActor {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
     }
 
-    public static class Subscribe implements Serializable {
+    private static class Subscribe implements Serializable {
         // FIXME: Implement
     }
 }

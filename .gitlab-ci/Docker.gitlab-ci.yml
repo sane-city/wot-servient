@@ -1,0 +1,41 @@
+.docker: &docker
+  # Official docker image.
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+docker-build-master:
+  <<: *docker
+  stage: build
+  script:
+    - docker build --pull --tag "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+
+docker-build:
+  <<: *docker
+  stage: build
+  script:
+    - docker build --pull --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+
+docker-test-master:
+  <<: *docker
+  stage: test
+  script:
+    - docker run --rm "$CI_REGISTRY_IMAGE" --help
+  only:
+    - master
+
+docker-test:
+  <<: *docker
+  stage: test
+  script:
+    - docker run --rm "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --help
+  except:
+    - master

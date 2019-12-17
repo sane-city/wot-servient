@@ -2,14 +2,15 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 
 /**
  * This example exposes a Thing that can be discovered by other Actor Systems.
  */
-public class AkkaDiscovery {
-    public static void main(String[] args) {
+class AkkaDiscovery {
+    public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();
 

@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
@@ -16,9 +17,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-import static akka.pattern.Patterns.ask;
-import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * Allows consuming Things via Akka Actors.<br>
@@ -26,25 +26,34 @@ import static city.sane.wot.binding.akka.Messages.*;
  * systems.
  */
 public class AkkaProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
 
     private final ActorSystem system;
     private final ActorRef discoveryActor;
+    private final AkkaProtocolPattern pattern;
 
     public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor) {
+        this(system, discoveryActor, new AkkaProtocolPattern());
+    }
+
+    AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, AkkaProtocolPattern pattern) {
         this.system = system;
         this.discoveryActor = discoveryActor;
+        this.pattern = pattern;
     }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
         Read message = new Read();
         String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
         Duration timeout = Duration.ofSeconds(10);
-        return ask(selection, message, timeout)
+        return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((RespondRead) m).content)
                 .toCompletableFuture();
     }
@@ -53,11 +62,14 @@ public class AkkaProtocolClient implements ProtocolClient {
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         Write message = new Write(content);
         String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
         Duration timeout = Duration.ofSeconds(10);
-        return ask(selection, message, timeout)
+        return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((Written) m).content)
                 .toCompletableFuture();
     }
@@ -68,8 +80,8 @@ public class AkkaProtocolClient implements ProtocolClient {
         log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(discoveryActor, message, timeout)
-                .thenApply(m -> ((Collection<Thing>) (((RespondGetAll) m).entities.values())))
+        return pattern.ask(discoveryActor, message, timeout)
+                .thenApply(m -> ((Things) m).entities.values())
                 .toCompletableFuture();
     }
 }

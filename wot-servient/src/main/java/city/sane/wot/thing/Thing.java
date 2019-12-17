@@ -30,53 +30,53 @@ import java.util.*;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
-    static final Logger log = LoggerFactory.getLogger(Thing.class);
+    private static final Logger log = LoggerFactory.getLogger(Thing.class);
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String objectType;
+    String objectType;
 
     @JsonProperty("@context")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Context objectContext;
+    Context objectContext;
 
-    protected String id;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String title;
+    String id;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Map<String, String> titles;
+    String title;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String description;
+    Map<String, String> titles;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Map<String, String> descriptions;
+    String description;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Map<String, String> descriptions;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, P> properties = new HashMap<>();
+    Map<String, P> properties = new HashMap<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, A> actions = new HashMap<>();
+    Map<String, A> actions = new HashMap<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, E> events = new HashMap<>();
+    Map<String, E> events = new HashMap<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<Form> forms = new ArrayList<>();
+    List<Form> forms = new ArrayList<>();
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<String> security = new ArrayList<>();
+    List<String> security = new ArrayList<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
+    Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String base;
+    String base;
 
     @Override
     public String toString() {
@@ -139,19 +139,21 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return events.get(name);
     }
 
-    public List<String> getSecurity() {
+    List<String> getSecurity() {
         return security;
     }
 
-    public Map<String, SecurityScheme> getSecurityDefinitions() {
+    Map<String, SecurityScheme> getSecurityDefinitions() {
         return securityDefinitions;
     }
 
-    public String getBase() { return base; }
+    public String getBase() {
+        return base;
+    }
 
     @Override
     public int hashCode() {
-        return this.getId().hashCode();
+        return getId().hashCode();
     }
 
     @Override
@@ -165,7 +167,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         if (!(obj instanceof Thing)) {
             return false;
         }
-        return this.getId().equals(((Thing) obj).getId());
+        return getId().equals(((Thing) obj).getId());
     }
 
     public String toJson(boolean prettyPrint) {
@@ -178,7 +180,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             }
         }
         catch (JsonProcessingException e) {
-            log.warn("Unable to create json: {}", e);
+            log.warn("Unable to create json", e);
             return null;
         }
     }
@@ -218,6 +220,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
      * Returns a map of the properties and their keys that have the non-expanded JSON-LD type <code>objectType</code>.
      *
      * @param objectType
+     *
      * @return
      */
     public Map<String, P> getPropertiesByObjectType(String objectType) {
@@ -228,6 +231,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
      * Returns a map of the properties and their keys that have the expanded JSON-LD type <code>objectType</code>.
      *
      * @param objectType
+     *
      * @return
      */
     public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
@@ -244,17 +248,12 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return "urn:uuid:" + UUID.randomUUID();
     }
 
-    public static String sanitizeFilename(String filename) {
-        // https://stackoverflow.com/a/15075907/1074188
-        return filename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
-    }
-
     public static Thing fromJson(String json) {
         try {
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            log.warn("Unable to read json: {}", e);
+            log.warn("Unable to read json", e);
             return null;
         }
     }
@@ -264,7 +263,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            log.warn("Unable to read json: {}", e);
+            log.warn("Unable to read json", e);
             return null;
         }
     }

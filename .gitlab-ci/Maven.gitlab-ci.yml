@@ -8,48 +8,49 @@ cache:
   paths:
     - .m2/repository
 
-compile:
-    stage: build
-    script:
-        - mvn $MAVEN_CLI_OPTS compile --update-snapshots
-
-build-dist:
-  stage: build
-  script:
-    - mvn -DskipTests --batch-mode -pl wot-servient-cli -am install dependency:copy-dependencies
-    - mkdir -p dist/wot-servient/lib dist/wot-servient/bin
-    - cp wot-servient-cli/bin/* dist/wot-servient/bin
-    - cp wot-servient-cli/target/dependency/*.jar dist/wot-servient/lib
-    - cp wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient/lib
-  artifacts:
-    paths:
-      - dist/wot-servient
-  only:
-    - master
-
-.verify: &verify
+maven-verify:
   stage: test
+  services:
+    - eclipse-mosquitto:1.6 # for mqtt client/server tests
   script:
-    - sh mvnreplace.sh ${CI_COMMIT_REF_NAME}
-    - mvn $MAVEN_CLI_OPTS clean compile test verify site sonar:sonar
-    - /bin/bash coverage-jacoco.sh
+    - 'mvn $MAVEN_CLI_OPTS verify sonar:sonar'
+  after_script:
+    - '/bin/bash coverage-jacoco.sh'
   coverage: '/\d+.\d+ \% covered/'
+  except:
+    - master
   artifacts:
     reports:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
 
-# Verify merge requests using JDK11
-verify:jdk11:
-  <<: *verify
+maven-deploy:
+  stage: deploy
+  services:
+    - eclipse-mosquitto:1.6 # for mqtt client/server tests
+  script:
+    - 'mvn $MAVEN_CLI_OPTS deploy sonar:sonar'
+  after_script:
+    - '/bin/bash coverage-jacoco.sh'
+  coverage: '/\d+.\d+ \% covered/'
+  only:
+    - master
+  artifacts:
+    reports:
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
+        - "*/target/failsafe-reports/TEST-*.xml"
 
-deploy:jdk11:
+build-dist:
   stage: deploy
   script:
-    - if [ ! -f ci_settings.xml ];
-      then echo "CI settings missing\! If deploying to GitLab Maven Repository, please see https://docs.gitlab.com/ee/user/project/packages/maven_repository.html#creating-maven-packages-with-gitlab-cicd for instructions.";
-      fi
-    - 'mvn $MAVEN_CLI_OPTS deploy'
+    - 'mvn $MAVEN_CLI_OPTS -DskipTests -pl wot-servient-cli -am package'
+    - mkdir -p dist/wot-servient
+    - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
+    - cp wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
+  artifacts:
+    paths:
+      - dist/wot-servient
   only:
     - master

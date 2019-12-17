@@ -15,23 +15,23 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import static city.sane.wot.binding.akka.CrudMessages.RespondGetAll;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
  */
-public class DiscoverActor extends AbstractActor {
+class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Cancellable timer;
     private final ActorRef requester;
     private final ThingFilter filter;
     private final Map<String, Thing> things = new HashMap<>();
 
-    public DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
+    private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
 
-        this.timer = getContext()
+        timer = getContext()
                 .getSystem()
                 .scheduler()
                 .scheduleOnce(
@@ -73,17 +73,17 @@ public class DiscoverActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(RespondGetAll.class, this::foundThings)
-                .match(DiscoverTimeout.class, this::stop)
+                .match(Things.class, this::foundThings)
+                .match(DiscoverTimeout.class, m -> stop())
                 .build();
     }
 
-    private void foundThings(RespondGetAll<String, Thing> m) {
+    private void foundThings(Things m) {
         log.info("Received {} thing(s) from {}", m.entities.size(), getSender());
         things.putAll(m.entities);
     }
 
-    private void stop(DiscoverTimeout m) {
+    private void stop() {
         log.info("AkkaDiscovery timed out. Send all Things collected so far to parent");
         getContext().getParent().tell(new Done(requester, things), getSelf());
         getContext().stop(getSelf());
@@ -94,7 +94,7 @@ public class DiscoverActor extends AbstractActor {
     }
 
     // CrudMessages
-    public static class DiscoverTimeout {
+    static class DiscoverTimeout {
 
     }
 

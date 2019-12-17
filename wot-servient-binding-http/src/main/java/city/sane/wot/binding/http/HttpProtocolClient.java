@@ -34,9 +34,9 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via HTTP.
  */
 public class HttpProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    private static final String HTTP_METHOD_NAME = "htv:methodName";
 
-    private String authorizationHeader = HttpHeaders.AUTHORIZATION;
     private String authorization = null;
 
     @Override
@@ -75,7 +75,7 @@ public class HttpProtocolClient implements ProtocolClient {
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form, content);
+            HttpUriRequest request = generateRequest(form, "POST", content);
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
@@ -126,7 +126,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 }
                 catch (IOException | ProtocolClientException e) {
                     if (!subscription.isClosed()) {
-                        log.warn("Error received for Event connection: {}", e);
+                        log.warn("Error received for Event connection", e);
 
                         observer.error(e);
                         subscription.unsubscribe();
@@ -169,14 +169,15 @@ public class HttpProtocolClient implements ProtocolClient {
     private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
         String href = form.getHref();
         String method = defaultMethod;
-        if (form.getOptional("htv:methodName") != null) {
-            method = (String) form.getOptional("htv:methodName");
+        if (form.getOptional(HTTP_METHOD_NAME) != null) {
+            method = (String) form.getOptional(HTTP_METHOD_NAME);
         }
 
         RequestBuilder builder = RequestBuilder.create(method)
                 .setUri(href);
 
         if (authorization != null) {
+            String authorizationHeader = HttpHeaders.AUTHORIZATION;
             builder.addHeader(authorizationHeader, authorization);
         }
 
@@ -223,9 +224,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 else {
                     body = new byte[0];
                 }
-                Content content = new Content(type, body);
-                return content;
-
+                return new Content(type, body);
             }
             catch (IOException e) {
                 throw new ProtocolClientException("Error during http request: " + e.getMessage());

@@ -2,6 +2,7 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
@@ -18,9 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static akka.pattern.Patterns.ask;
-import static city.sane.wot.binding.akka.CrudMessages.*;
-
 /**
  * Allows exposing Things via Akka Actors.<br>
  * Starts an Actor System with an {@link ThingsActor} actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use in
@@ -29,17 +27,27 @@ import static city.sane.wot.binding.akka.CrudMessages.*;
  * https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
 
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;
     private final Config actorSystemConfig;
+    private final AkkaProtocolPattern pattern;
     private ActorSystem system;
     private ActorRef thingsActor;
 
     public AkkaProtocolServer(Config config) {
-        actorSystemName = config.getString("wot.servient.akka.server.system-name");
-        actorSystemConfig = config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        this(
+                config.getString("wot.servient.akka.server.system-name"),
+                config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides()),
+                new AkkaProtocolPattern()
+        );
+    }
+
+    AkkaProtocolServer(String actorSystemName, Config actorSystemConfig, AkkaProtocolPattern pattern) {
+        this.actorSystemName = actorSystemName;
+        this.actorSystemConfig = actorSystemConfig;
+        this.pattern = pattern;
     }
 
     @Override
@@ -79,10 +87,10 @@ public class AkkaProtocolServer implements ProtocolServer {
         }
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Create<>(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Created) m).entity;
-                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
+                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
                     log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -94,10 +102,10 @@ public class AkkaProtocolServer implements ProtocolServer {
         things.remove(thing.getId());
 
         Duration timeout = Duration.ofSeconds(10);
-        return ask(thingsActor, new Delete<>(thing.getId()), timeout)
+        return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((Deleted) m).id;
-                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+                    ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
+                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
                     log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -106,11 +114,11 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            String endpoint = thingsActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+            String endpoint = MediatorActor.remoteOverlayPath(thingsActor.path()).toString();
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to create directory url: {}", e);
+            log.warn("Unable to create directory url", e);
             return null;
         }
     }

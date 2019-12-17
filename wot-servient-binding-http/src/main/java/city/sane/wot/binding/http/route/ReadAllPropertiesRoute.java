@@ -26,13 +26,13 @@ public class ReadAllPropertiesRoute extends AbstractRoute {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
-        if (!ContentManager.isSupportedMediaType(requestContentType)) {
-            log.warn("Unsupported media type: {}", requestContentType);
-            response.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415);
-            return "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
+
+        String unsupportedMediaTypeResponse = unsupportedMediaTypeResponse(response, requestContentType);
+        if (unsupportedMediaTypeResponse != null) {
+            return unsupportedMediaTypeResponse;
         }
 
         String id = request.params(":id");

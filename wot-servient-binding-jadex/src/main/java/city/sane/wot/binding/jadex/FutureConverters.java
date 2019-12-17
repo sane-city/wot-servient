@@ -8,7 +8,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Helper class for translating between jadex futures ({@link IFuture}) and java futures ({@link CompletableFuture}).
  */
-public class FutureConverters {
+class FutureConverters {
+    private FutureConverters() {}
+
     public static <T> CompletableFuture<T> fromJadex(IFuture<T> jadexFuture) {
         CompletableFuture<T> future = new CompletableFuture<>();
         jadexFuture.addResultListener(future::complete, future::completeExceptionally);

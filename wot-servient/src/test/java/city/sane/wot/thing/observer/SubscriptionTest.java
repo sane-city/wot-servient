@@ -19,7 +19,7 @@ public class SubscriptionTest {
     @Test
     public void unsubscribeOnce() {
         AtomicInteger counter = new AtomicInteger();
-        Subscription subscription = new Subscription(() -> counter.incrementAndGet());
+        Subscription subscription = new Subscription(counter::incrementAndGet);
         subscription.unsubscribe();
         subscription.unsubscribe();
 

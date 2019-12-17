@@ -14,6 +14,7 @@ public class CborCodec extends JsonCodec {
         return "application/cbor";
     }
 
+    @Override
     protected ObjectMapper getMapper() {
         return mapper;
     }

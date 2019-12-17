@@ -33,10 +33,10 @@ import java.util.stream.Stream;
  * https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
 public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
 
-    public static final String DEFAULT_OBJECT_TYPE = "Thing";
-    public static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
+    private static final String DEFAULT_OBJECT_TYPE = "Thing";
+    private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
 
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();
@@ -73,6 +73,16 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
     /**
      * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given <code>op</code>.
      * Throws an exception when no client can be found.
@@ -85,7 +95,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      */
     public Pair<ProtocolClient, Form> getClientFor(List<Form> forms, Operation op) throws ConsumedThingException {
         if (forms.isEmpty()) {
-            throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+            throw new NoFormForInteractionConsumedThingException(getTitle(), op);
         }
 
         Set<String> schemes = forms.stream().map(Form::getHrefScheme)
@@ -111,34 +121,9 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             // new client
             log.debug("'{}' has no client in cache", getTitle());
 
-            try {
-                for (String s : schemes) {
-                    ProtocolClient c = servient.getClientFor(s);
-                    if (c != null) {
-                        scheme = s;
-                        client = c;
-                        break;
-                    }
-                }
-            }
-            catch (ProtocolClientException e) {
-                throw new ConsumedThingException("Unable to create client: " + e.getMessage());
-            }
-
-            if (client == null) {
-                throw new ConsumedThingException("'" + getTitle() + "' missing ClientFactory for '" + schemes + "'");
-            }
-
-            // init client's security system
-            List<String> security = getSecurity();
-            if (!security.isEmpty()) {
-                log.debug("'{}' setting credentials for '{}'", getTitle(), client);
-                Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
-                List<SecurityScheme> metadata = security.stream().map(s -> securityDefinitions.get(s))
-                        .filter(Objects::nonNull).collect(Collectors.toList());
-
-                client.setSecurity(metadata, servient.getCredentials(id));
-            }
+            Pair<String, ProtocolClient> protocolClient = initNewClientFor(schemes);
+            scheme = protocolClient.first();
+            client = protocolClient.second();
 
             log.debug("'{}' got new client for '{}'", getTitle(), scheme);
             clients.put(scheme, client);
@@ -147,26 +132,51 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         // find right operation and corresponding scheme in the array form
         Form form = null;
         for (Form f : forms) {
-            if (f.getOp() != null) {
-                if (f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
-                    form = f;
-                    break;
-                }
+            if (f.getOp() != null && f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
+                form = f;
+                break;
             }
         }
 
         if (form == null) {
             // if there no op was defined use default assignment
-            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp().isEmpty()).findFirst();
+            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp() == null || f.getOp().isEmpty()).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
             }
             else {
-                throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+                throw new NoFormForInteractionConsumedThingException(getTitle(), op);
             }
         }
 
-        return new Pair(client, form);
+        return new Pair<>(client, form);
+    }
+
+    private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
+        try {
+            for (String scheme : schemes) {
+                ProtocolClient client = servient.getClientFor(scheme);
+                if (client != null) {
+                    // init client's security system
+                    List<String> security = getSecurity();
+                    if (!security.isEmpty()) {
+                        log.debug("'{}' setting credentials for '{}'", getTitle(), client);
+                        Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
+                        List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
+                                .filter(Objects::nonNull).collect(Collectors.toList());
+
+                        client.setSecurity(metadata, servient.getCredentials(id));
+                    }
+
+                    return new Pair<>(scheme, client);
+                }
+            }
+
+            throw new NoClientFactoryForSchemesConsumedThingException(getTitle(), schemes);
+        }
+        catch (ProtocolClientException e) {
+            throw new ConsumedThingException("Unable to create client: " + e.getMessage());
+        }
     }
 
     /**
@@ -176,7 +186,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      */
     public CompletableFuture<Map<String, Object>> readProperties() {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.readallproperties);
+            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.READ_ALL_PROPERTIES);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
@@ -185,8 +195,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
                 try {
-                    Map values = ContentManager.contentToValue(content, new ObjectSchema());
-                    return values;
+                    return ContentManager.contentToValue(content, new ObjectSchema());
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
@@ -213,12 +222,16 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         });
     }
 
+    public CompletableFuture<Map<String, Object>> readProperties(String ... names) {
+        return readProperties(Arrays.asList(names));
+    }
+
     /**
      * Creates new form (if needed) for URI Variables
      * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
      * see RFC6570 (https://tools.ietf.org/html/rfc6570) for URI Template syntax
      */
-    public Form handleUriVariables(Form form, Map<String, Object> parameters) {
+    public static Form handleUriVariables(Form form, Map<String, Object> parameters) {
         String href = form.getHref();
         UriTemplate uriTemplate = UriTemplate.fromTemplate(href);
         String updatedHref = uriTemplate.expand(parameters);
