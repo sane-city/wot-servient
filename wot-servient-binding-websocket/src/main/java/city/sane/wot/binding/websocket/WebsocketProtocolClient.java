@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    CompletableFuture<Content> future = new CompletableFuture<>();
     private WebSocketClient cc;
 
 
@@ -46,6 +48,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     AbstractMessage message = JSON_MAPPER.readValue(json, AbstractMessage.class);
                     if (message instanceof ReadPropertyResponse) {
                         // TODO: need to something here?
+                        ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
+                        future.complete((Content) rMessage.getValue());
                         System.out.println("ReadPropertyResponse");
                     } else if (message instanceof WritePropertyResponse) {
                         // TODO: need to something here?
@@ -78,7 +82,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 String json = JSON_MAPPER.writeValueAsString(form);
                 // TODO: need return value for test
                 cc.send(json);
-            } catch (JsonProcessingException e) {
+                return future.get();
+            } catch (JsonProcessingException | InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
             // TODO:
