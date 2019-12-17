@@ -17,10 +17,6 @@ public class ReadPropertyTest {
     @Before
     public void setUp() throws Exception {
         rp = new ReadProperty("123456","test");
-        //rp2 = new ReadProperty(null,"test");
-
-
-
     }
 
     @After
@@ -28,11 +24,12 @@ public class ReadPropertyTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testConstructorNullParama() {
+    public void testConstructorNullParams() {
         rp2 = new ReadProperty(null, null);
         rp3 = new ReadProperty("123456", null);
         rp4 = new ReadProperty(null, "test");
     }
+
 
     @Test
     public void getThingId() {
