@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
@@ -34,14 +35,13 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     private Map<String, ExposedThing> things;
 
-    private MyServer server;
+    private ServientWebsocketServer server;
     private List<String> addresses;
     private int bindPort;
 
-
     public WebsocketProtocolServer(Config config) {
         bindPort = config.getInt("wot.servient.websocket.bind-port");
-        server = new MyServer(new InetSocketAddress(bindPort));
+        server = new ServientWebsocketServer(new InetSocketAddress(bindPort));
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
         } else {
@@ -61,7 +61,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
             try {
                 server.stop();
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+                throw new CompletionException(e);
             }
         });
     }
@@ -71,7 +71,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
         log.info("WebsocketServer exposes '{}'", thing.getTitle());
         things.put(thing.getId(), thing);
 
-        // TODO: add websocket forms to thing description
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
                 exposeProperties(thing, address, contentType);
@@ -88,8 +87,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
         log.info("WebsocketServer stop exposing '{}'", thing.getTitle());
         things.remove(thing.getId());
 
-        // TODO: remove websocket forms from thing description
-
         return CompletableFuture.completedFuture(null);
     }
 
@@ -99,7 +96,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
             Form.Builder form = new Form.Builder();
             form.setHref(address);
             form.setContentType(contentType);
-            form.setSubprotocol("longpoll");
             form.setOp(Operation.SUBSCRIBE_EVENT);
 
             event.addForm(form.build());
@@ -158,19 +154,19 @@ public class WebsocketProtocolServer implements ProtocolServer {
         });
     }
 
-    class MyServer extends WebSocketServer {
-        MyServer(InetSocketAddress inetSocketAddress) {
+    class ServientWebsocketServer extends WebSocketServer {
+        ServientWebsocketServer(InetSocketAddress inetSocketAddress) {
             super(inetSocketAddress);
         }
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            // FIXME: log
+            log.debug("New Websocket connectione has been opened");
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            // FIXME: log
+            log.debug("WebsocketServer is closing");
         }
 
         @Override
@@ -191,7 +187,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         } catch (JsonProcessingException ex) {
                             // FIXME: handle exception
                         }
-
                     }
                 });
             } catch (IOException e) {
@@ -201,12 +196,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         @Override
         public void onError(WebSocket conn, Exception ex) {
-            // FIXME: log
+            log.warn("An error occured on websocket server", ex);
         }
 
         @Override
         public void onStart() {
-            // FIXME: log
+            log.debug("WebsocketServer has been started");
         }
     }
 }

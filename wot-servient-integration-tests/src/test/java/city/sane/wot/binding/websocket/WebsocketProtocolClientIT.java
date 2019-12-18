@@ -23,7 +23,7 @@ public class WebsocketProtocolClientIT {
 
     @Before
     public void setUp() {
-        clientFactory = new WebsocketProtocolClientFactory(ConfigFactory.load());
+        clientFactory = new WebsocketProtocolClientFactory();
         clientFactory.init().join();
 
         client = clientFactory.getClient();

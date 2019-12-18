@@ -17,20 +17,21 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * TODO: Currently a WebsocketProtocolClient and therefore also a WebSocketClient is created for each Thing. Even if each thing is reachable via the same socket. It would be better if there was only one WebSocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
+ * TODO: WebSocketClient.close() is never called!
+ */
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
-    private final Map<URI, WebSocketClient> clients;
+    private final Map<URI, WebSocketClient> clients = new HashMap<>();
     CompletableFuture<Content> future = new CompletableFuture<>();
-
-    public WebsocketProtocolClient(Map<URI, WebSocketClient> clients) {
-        this.clients = clients;
-    }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
@@ -46,22 +47,21 @@ public class WebsocketProtocolClient implements ProtocolClient {
         });
     }
 
-    // FIXME: create websocket clients in factory
     private synchronized WebSocketClient getClientFor(Form form) throws ProtocolClientException {
         try {
             URI uri = new URI(form.getHref());
             WebSocketClient client = clients.get(uri);
-            if (client == null) {
-                log.info("Create ne websocket client for '{}'", uri);
+            if (client == null || !client.isOpen()) {
+                log.info("Create new websocket client for socket '{}'", uri);
                 client = new WebSocketClient(uri) {
                     @Override
                     public void onOpen(ServerHandshake serverHandshake) {
-                        log.info("onOpen status=" + serverHandshake.getHttpStatus() + ", statusMsg=" + serverHandshake.getHttpStatusMessage());
+                        log.debug("Websocket to '{}' is ready", uri);
                     }
 
                     @Override
                     public void onMessage(String json) {
-                        log.info("onMessage message= " + json);
+                        log.debug("Received new message on websocket to '{}': {}", uri, json);
                         try {
                             AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
                             if (message instanceof ReadPropertyResponse) {
@@ -80,12 +80,12 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
                     @Override
                     public void onClose(int i, String s, boolean b) {
-
+                        log.debug("Websocket to '{}' is closed", uri);
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        log.info(e.getMessage());
+                        log.warn("An error occured on websocket to '{}': ", e);
                     }
                 };
                 client.connect();

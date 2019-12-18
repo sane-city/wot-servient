@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolClient} to {@link city.sane.wot.binding.websocket.WebsocketProtocolServer}.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
@@ -31,5 +34,12 @@ public abstract class AbstractClientMessage {
         return id;
     }
 
+    /**
+     * Creates the server's response to the request sent by the client.
+     *
+     * @param socket
+     * @param things
+     * @return
+     */
     public abstract CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things);
 }
