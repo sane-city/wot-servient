@@ -4,20 +4,20 @@ import city.sane.wot.content.Content;
 
 import java.util.Objects;
 
-public class ReadPropertyResponse extends AbstractServerMessage {
+public class InvokeActionResponse extends AbstractServerMessage {
     private final Content value;
 
-    private ReadPropertyResponse() {
+    private InvokeActionResponse() {
         super();
         value = null;
     }
 
-    public ReadPropertyResponse(String id, Content value) {
+    public InvokeActionResponse(String id, Content value) {
         super(id);
         this.value = Objects.requireNonNull(value);
     }
 
-    public ReadPropertyResponse(ReadProperty clientMessage, Content value) {
+    public InvokeActionResponse(ReadProperty clientMessage, Content value) {
         super(clientMessage);
         this.value = value;
     }

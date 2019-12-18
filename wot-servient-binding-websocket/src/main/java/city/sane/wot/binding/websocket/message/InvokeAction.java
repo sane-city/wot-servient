@@ -1,27 +1,33 @@
 package city.sane.wot.binding.websocket.message;
 
+import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import org.java_websocket.WebSocket;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
-public class ReadProperty extends AbstractClientMessage {
+public class InvokeAction extends AbstractClientMessage {
     private final String thingId;
     private final String name;
+    private Content value;
 
-    private ReadProperty() {
+    private InvokeAction() {
         this.thingId = null;
         this.name = null;
+        this.value = null;
     }
 
-    public ReadProperty(String thingId, String name) {
+    public InvokeAction(String thingId, String name, Content value) {
         this.thingId = Objects.requireNonNull(thingId);
         this.name = Objects.requireNonNull(name);
+        this.value = Objects.requireNonNull(value);
     }
 
     @Override
@@ -31,18 +37,27 @@ public class ReadProperty extends AbstractClientMessage {
 
         if (thing != null) {
             String name = getName();
-            ExposedThingProperty property = thing.getProperty(name);
+            ExposedThingAction action = thing.getAction(name);
 
-            if (property != null) {
-                return property.read().thenApply(value -> {
-                    try {
-                        return new ReadPropertyResponse(this, ContentManager.valueToContent(value));
-                    }
-                    catch (ContentCodecException e) {
-                        // FIXME: send 500er message back
-                        return null;
-                    }
-                });
+            if (action != null) {
+                Content payload = getValue();
+
+                try {
+                    Object input = ContentManager.contentToValue(payload, action.getInput());
+
+                    return action.invoke(input).thenApply(output -> {
+                        try {
+                            return new InvokeActionResponse(getId(), ContentManager.valueToContent(output));
+                        }
+                        catch (ContentCodecException e) {
+                            throw new CompletionException(e);
+                        }
+                    });
+                } catch (ContentCodecException e) {
+                    // unable to parse paylod
+                    // FIXME: send 500er error back and remove throw
+                    return CompletableFuture.failedFuture(null);
+                }
             } else {
                 // Property not found
                 // FIXME: send 400er message back
@@ -57,7 +72,7 @@ public class ReadProperty extends AbstractClientMessage {
 
     @Override
     public String toString() {
-        return "ReadProperty [" +
+        return "InvokeAction [" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
                 ']';
@@ -70,4 +85,13 @@ public class ReadProperty extends AbstractClientMessage {
     public String getName() {
         return name;
     }
+
+    public void setValue(Content value) {
+        this.value = value;
+    }
+
+    public Content getValue() {
+        return value;
+    }
 }
+

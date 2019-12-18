@@ -8,6 +8,8 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -50,28 +53,40 @@ public class WebsocketProtocolServerIT {
     }
 
     @Test(timeout = 20 * 1000)
-    public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException {
+    public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException, ContentCodecException {
         // send ReadProperty message to server and wait for ReadPropertyResponse message from server
         ReadProperty request = new ReadProperty("counter", "count");
 
         AbstractServerMessage response = ask(request);
 
         assertThat(response, instanceOf(ReadPropertyResponse.class));
-        assertEquals(request.getId(), response.getClientId());
-        assertEquals(42, ((ReadPropertyResponse) response).getValue());
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getValue());
     }
 
     @Test(timeout = 20 * 1000)
     public void testWriteProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
         // send WriteProperty message to server and wait for WritePropertyResponse message from server
-        Content payload = ContentManager.valueToContent(1337, "application/json");
-        WriteProperty request = new WriteProperty("counter", "count", payload);
+        WriteProperty request = new WriteProperty("counter", "count", ContentManager.valueToContent(1337));
 
         AbstractServerMessage response = ask(request);
 
         assertThat(response, instanceOf(WritePropertyResponse.class));
-        assertEquals(request.getId(), response.getClientId());
-        assertNull(((WritePropertyResponse) response).getValue());
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(null), ((WritePropertyResponse) response).getValue());
+    }
+
+    @Test //(timeout = 20 * 1000)
+    public void testInvokeAction() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+        // send InvokeAction message to server and wait for InvokeActionResponse message from server
+        Map<String, Integer> parameters = Map.of("step", 3);
+        InvokeAction request = new InvokeAction("counter", "increment", ContentManager.valueToContent(parameters));
+
+        AbstractServerMessage response = ask(request);
+
+        assertThat(response, instanceOf(InvokeActionResponse.class));
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(45), ((InvokeActionResponse) response).getValue());
     }
 
     private ExposedThing getCounterThing() {
@@ -97,9 +112,30 @@ public class WebsocketProtocolServerIT {
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction.Builder()
+                .setInput(new ObjectSchema())
+                .setOutput(new NumberSchema())
+                .setUriVariables(Map.of(
+                        "step", Map.of(
+                                "type", "integer",
+                                "minimum", 1,
+                                "maximum", 250
+                        )
+                ))
+                .build(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
+                int step;
+                if (input != null && ((Map) input).containsKey("step")) {
+                    step = (Integer) ((Map) input).get("step");
+                }
+                else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
+                    step = (int) ((Map) options.get("uriVariables")).get("step");
+                }
+                else {
+                    step = 1;
+                }
+
+                int newValue = ((Integer) value) + step;
                 thing.getProperty("count").write(newValue);
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -130,6 +166,15 @@ public class WebsocketProtocolServerIT {
         return thing;
     }
 
+    /**
+     * Sends the message in <code>request</code> to the server and waits for the response.
+     *
+     * @param request
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws URISyntaxException
+     */
     private AbstractServerMessage ask(AbstractClientMessage request) throws ExecutionException, InterruptedException, URISyntaxException {
         CompletableFuture<AbstractServerMessage> future = new CompletableFuture<>();
 
@@ -159,7 +204,7 @@ public class WebsocketProtocolServerIT {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-                    System.out.println("Tschüss");
+
                 }
 
                 @Override

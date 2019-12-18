@@ -39,6 +39,6 @@ public class WritePropertyTest {
 
     @Test
     public void getPayload() throws ContentCodecException {
-        assertEquals(ContentManager.valueToContent(24), message.getPayload());
+        assertEquals(ContentManager.valueToContent(24), message.getValue());
     }
 }

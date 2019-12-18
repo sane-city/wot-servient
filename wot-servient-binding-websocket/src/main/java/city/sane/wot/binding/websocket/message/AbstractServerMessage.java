@@ -11,24 +11,25 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ReadPropertyResponse.class, name = "readPropertyResponse"),
-        @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "writePropertyResponse")
+        @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "writePropertyResponse"),
+        @JsonSubTypes.Type(value = InvokeActionResponse.class, name = "invokeActionResponse")
 })
 public class AbstractServerMessage {
-    protected String clientId;
+    protected final String id;
 
-    public AbstractServerMessage() {
-        clientId = null;
-    }
-
-    public AbstractServerMessage(String clientId) {
-        this.clientId = clientId;
+    public AbstractServerMessage(String id) {
+        this.id = id;
     }
 
     public AbstractServerMessage(AbstractClientMessage message) {
         this(message.getId());
     }
 
-    public String getClientId() {
-        return clientId;
+    protected AbstractServerMessage() {
+        id = null;
+    }
+
+    public String getId() {
+        return id;
     }
 }

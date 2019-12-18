@@ -18,8 +18,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 /**
  * TODO: Currently a WebsocketProtocolClient and therefore also a WebSocketClient is created for each Thing. Even if each thing is reachable via the same socket. It would be better if there was only one WebSocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
@@ -27,22 +27,111 @@ import java.util.concurrent.ExecutionException;
  */
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
+
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Map<URI, WebSocketClient> clients = new HashMap<>();
-    CompletableFuture<Content> future = new CompletableFuture<>();
+    private final Map<String, Consumer<AbstractServerMessage>> openRequests = new HashMap<>();
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        return CompletableFuture.supplyAsync(() -> {
+        log.debug("Read resource: {}", form);
+
+        Object message = form.getOptional("websocket:message");
+        if (message != null) {
             try {
-                String json = JSON_MAPPER.writeValueAsString(form);
-                // TODO: need return value for test
-                getClientFor(form).get().send(json);
-                return future.get();
-            } catch (JsonProcessingException | InterruptedException | ExecutionException | ProtocolClientException e) {
-                throw new CompletionException(e);
+                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+
+                try {
+                    WebSocketClient client = getClientFor(form).get();
+                    AbstractServerMessage response = ask(client, clientMessage).get();
+
+                    // FIXME: cast to ReadPropertyResponse is not safe here
+                    return CompletableFuture.completedFuture(((ReadPropertyResponse) response).getValue());
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    return CompletableFuture.failedFuture(e);
+                }
             }
-        });
+            catch (IllegalArgumentException e) {
+                return CompletableFuture.failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
+            }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        else {
+            return CompletableFuture.failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
+        }
+    }
+
+    @Override
+    public CompletableFuture<Content> writeResource(Form form, Content content) {
+        log.debug("Write resource '{}' with content '{}'", form, content);
+
+        Object message = form.getOptional("websocket:message");
+        if (message != null) {
+            try {
+                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+                if (clientMessage instanceof WriteProperty) {
+                    ((WriteProperty) clientMessage).setValue(content);
+                }
+
+                try {
+                    WebSocketClient client = getClientFor(form).get();
+                    AbstractServerMessage response = ask(client, clientMessage).get();
+
+                    // FIXME: cast to WritePropertyResponse is not safe here
+                    return CompletableFuture.completedFuture(((WritePropertyResponse) response).getValue());
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    return CompletableFuture.failedFuture(e);
+                }
+            }
+            catch (IllegalArgumentException e) {
+                return CompletableFuture.failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
+            }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        else {
+            return CompletableFuture.failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
+        }
+    }
+
+    @Override
+    public CompletableFuture<Content> invokeResource(Form form, Content content) {
+        log.debug("Invoke resource '{}' with content '{}'", form, content);
+
+        Object message = form.getOptional("websocket:message");
+        if (message != null) {
+            try {
+                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+                if (clientMessage instanceof InvokeAction) {
+                    ((InvokeAction) clientMessage).setValue(content);
+                }
+
+                try {
+                    WebSocketClient client = getClientFor(form).get();
+                    AbstractServerMessage response = ask(client, clientMessage).get();
+
+                    // FIXME: cast to InvokeActionResponse is not safe here
+                    return CompletableFuture.completedFuture(((InvokeActionResponse) response).getValue());
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    return CompletableFuture.failedFuture(e);
+                }
+            }
+            catch (IllegalArgumentException e) {
+                return CompletableFuture.failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
+            }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        else {
+            return CompletableFuture.failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
+        }
     }
 
     private synchronized CompletableFuture<WebSocketClient> getClientFor(Form form) throws ProtocolClientException {
@@ -56,39 +145,46 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 client = new WebSocketClient(uri) {
                     @Override
                     public void onOpen(ServerHandshake serverHandshake) {
-                        log.debug("Websocket to '{}' is ready", uri);
+                        log.debug("Websocket client for socket '{}' is ready", uri);
                         clients.put(uri, this);
                         result.complete(this);
                     }
 
                     @Override
                     public void onMessage(String json) {
-                        log.debug("Received new message on websocket to '{}': {}", uri, json);
+                        log.debug("Received message on websocket client for socket '{}': {}", uri, json);
                         try {
                             AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
-                            if (message instanceof ReadPropertyResponse) {
-                                // TODO: need to something here?
-                                ReadPropertyResponse rMessage = (ReadPropertyResponse) message;
-                                future.complete((Content) rMessage.getValue());
-                                System.out.println("ReadPropertyResponse");
-                            } else if (message instanceof WritePropertyResponse) {
-                                // TODO: need to something here?
-                                System.out.println("WritePropertyResponse");
+
+                            if (message != null) {
+                                Consumer<AbstractServerMessage> openRequest = openRequests.get(message.getId());
+
+                                if (openRequest != null) {
+                                    log.debug("Found open request. Accept");
+                                    openRequest.accept(message);
+                                }
+                                else {
+                                    log.warn("Unexpected response. Discard!");
+                                }
                             }
-                        } catch (IOException e) {
+                            else {
+                                log.warn("Message is null. Discard!");
+                            }
+                        }
+                        catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
 
                     @Override
                     public void onClose(int i, String s, boolean b) {
-                        log.debug("Websocket to '{}' is closed", uri);
+                        log.debug("Websocket client for socket '{}' is closed", uri);
                         clients.remove(uri);
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        log.warn("An error occured on websocket to '{}': ", uri, e.getMessage());
+                        log.warn("An error occured on websocket client for socket '{}': ", uri, e.getMessage());
                         result.completeExceptionally(new ProtocolClientException(e));
                     }
                 };
@@ -99,30 +195,25 @@ public class WebsocketProtocolClient implements ProtocolClient {
             else {
                 return CompletableFuture.completedFuture(client);
             }
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             throw new ProtocolClientException("Unable to create websocket client for href '" + form.getHref() + "': " + e.getMessage());
         }
     }
 
-    @Override
-    public CompletableFuture<Content> writeResource(Form form, Content content) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Form writeForm = new Form.Builder(form).setOptional("payload", content).build();
-                String json = JSON_MAPPER.writeValueAsString(writeForm);
-                getClientFor(form).get().send(json);
+    private CompletableFuture<AbstractServerMessage> ask(WebSocketClient client, AbstractClientMessage request) {
+        log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
+        CompletableFuture<AbstractServerMessage> result = new CompletableFuture<>();
+        openRequests.put(request.getId(), result::complete);
 
-                // TODO:
-                return null;
-            } catch (JsonProcessingException | ProtocolClientException | InterruptedException | ExecutionException e) {
-                throw new CompletionException(e);
-            }
-        });
-    }
+        try {
+            String json = JSON_MAPPER.writeValueAsString(request);
+            client.send(json);
+        }
+        catch (JsonProcessingException e) {
+            return CompletableFuture.failedFuture(e);
+        }
 
-    @Override
-    public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        // FIXME: Implement
-        return CompletableFuture.completedFuture(null);
+        return result;
     }
 }

@@ -17,7 +17,8 @@ import java.util.concurrent.CompletableFuture;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ReadProperty.class, name = "readProperty"),
-        @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty")
+        @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty"),
+        @JsonSubTypes.Type(value = InvokeAction.class, name = "invokeAction")
 })
 public abstract class AbstractClientMessage {
     private final String id;

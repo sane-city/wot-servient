@@ -53,6 +53,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start() {
+        // FIXME: The server currently fails silently if it cannot be started. We need to rebuild this and throw an exception if the server can't be started.
         return CompletableFuture.runAsync(server::start);
     }
 
@@ -103,6 +104,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 property.addForm(new Form.Builder()
                         .setHref(address)
                         .setOp(Operation.READ_PROPERTY)
+                        .setOptional("websocket:message", Map.of(
+                                "type", "readProperty",
+                                "thingId", thing.getId(),
+                                "name", name
+                        ))
                         .build());
                 log.info("Assign '{}' to Property '{}'", address, name);
             }
@@ -110,6 +116,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 property.addForm(new Form.Builder()
                         .setHref(address)
                         .setOp(Operation.WRITE_PROPERTY)
+                        .setOptional("websocket:message", Map.of(
+                                "type", "writeProperty",
+                                "thingId", thing.getId(),
+                                "name", name
+                        ))
                         .build());
                 log.info("Assign '{}' to Property '{}'", address, name);
             }

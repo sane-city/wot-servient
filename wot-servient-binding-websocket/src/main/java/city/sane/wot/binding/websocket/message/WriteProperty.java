@@ -10,22 +10,23 @@ import org.java_websocket.WebSocket;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class WriteProperty extends AbstractClientMessage {
-    private String thingId;
-    private String name;
-    private Content payload;
+    private final String thingId;
+    private final String name;
+    private Content value;
 
     private WriteProperty() {
         this.thingId = null;
         this.name = null;
-        this.payload = null;
+        this.value = null;
     }
 
-    public WriteProperty(String thingId, String name, Content payload) {
+    public WriteProperty(String thingId, String name, Content value) {
         this.thingId = Objects.requireNonNull(thingId);
         this.name = Objects.requireNonNull(name);
-        this.payload = Objects.requireNonNull(payload);
+        this.value = Objects.requireNonNull(value);
     }
 
     @Override
@@ -38,12 +39,19 @@ public class WriteProperty extends AbstractClientMessage {
             ExposedThingProperty property = thing.getProperty(name);
 
             if (property != null) {
-                Content payload = getPayload();
+                Content payload = getValue();
 
                 try {
                     Object input = ContentManager.contentToValue(payload, property);
 
-                    return property.write(input).thenApply(output -> new WritePropertyResponse(this, output));
+                    return property.write(input).thenApply(output -> {
+                        try {
+                            return new WritePropertyResponse(getId(), ContentManager.valueToContent(output));
+                        }
+                        catch (ContentCodecException e) {
+                            throw new CompletionException(e);
+                        }
+                    });
                 } catch (ContentCodecException e) {
                     // unable to parse paylod
                     // FIXME: send 500er error back and remove throw
@@ -69,8 +77,12 @@ public class WriteProperty extends AbstractClientMessage {
         return name;
     }
 
-    public Content getPayload() {
-        return payload;
+    public Content getValue() {
+        return value;
+    }
+
+    public void setValue(Content value) {
+        this.value = value;
     }
 
     @Override
@@ -78,7 +90,7 @@ public class WriteProperty extends AbstractClientMessage {
         return "WriteProperty [" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ", payload=" + payload +
+                ", value=" + value +
                 ']';
     }
 }

@@ -1,18 +1,21 @@
 package city.sane.wot.binding.websocket.message;
 
+import city.sane.wot.content.Content;
+
 public class WritePropertyResponse extends AbstractServerMessage {
-    private Object value;
+    private final Content value;
 
     private WritePropertyResponse() {
+        super();
         value = null;
     }
 
-    public WritePropertyResponse(AbstractClientMessage clientMessage, Object value) {
-        super(clientMessage);
+    public WritePropertyResponse(String id, Content value) {
+        super(id);
         this.value = value;
     }
 
-    public Object getValue() {
+    public Content getValue() {
         return value;
     }
 
@@ -20,7 +23,7 @@ public class WritePropertyResponse extends AbstractServerMessage {
     public String toString() {
         return "WritePropertyResponse [" +
                 "value=" + value +
-                ", clientId='" + clientId + '\'' +
+                ", id='" + id + '\'' +
                 ']';
     }
 }
