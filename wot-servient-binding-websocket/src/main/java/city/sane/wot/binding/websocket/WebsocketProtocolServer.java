@@ -99,18 +99,20 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         Map<String, ExposedThingProperty> properties = thing.getProperties();
         properties.forEach((name, property) -> {
-            Form.Builder form = new Form.Builder();
-            form.setHref(address);
-            if (property.isReadOnly()) {
-                form.setOp(Operation.READ_PROPERTY);
-            } else if (property.isWriteOnly()) {
-                form.setOp(Operation.WRITE_PROPERTY);
-            } else {
-                form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
+            if (!property.isWriteOnly()) {
+                property.addForm(new Form.Builder()
+                        .setHref(address)
+                        .setOp(Operation.READ_PROPERTY)
+                        .build());
+                log.info("Assign '{}' to Property '{}'", address, name);
             }
-
-            property.addForm(form.build());
-            log.info("Assign '{}' to Property '{}'", address, name);
+            if (!property.isReadOnly()) {
+                property.addForm(new Form.Builder()
+                        .setHref(address)
+                        .setOp(Operation.WRITE_PROPERTY)
+                        .build());
+                log.info("Assign '{}' to Property '{}'", address, name);
+            }
 
             // if property is observable add an additional form with a observable href
 //            if (property.isObservable()) {
