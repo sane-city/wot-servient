@@ -2,9 +2,7 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
-import city.sane.wot.binding.websocket.message.AbstractServerMessage;
-import city.sane.wot.binding.websocket.message.ReadPropertyResponse;
-import city.sane.wot.binding.websocket.message.WritePropertyResponse;
+import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,7 +37,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
             try {
                 String json = JSON_MAPPER.writeValueAsString(form);
                 // TODO: need return value for test
-                getClientFor(form).send(json);
+                getClientFor(form).get().send(json);
                 return future.get();
             } catch (JsonProcessingException | InterruptedException | ExecutionException | ProtocolClientException e) {
                 throw new CompletionException(e);
@@ -47,16 +45,20 @@ public class WebsocketProtocolClient implements ProtocolClient {
         });
     }
 
-    private synchronized WebSocketClient getClientFor(Form form) throws ProtocolClientException {
+    private synchronized CompletableFuture<WebSocketClient> getClientFor(Form form) throws ProtocolClientException {
         try {
             URI uri = new URI(form.getHref());
             WebSocketClient client = clients.get(uri);
             if (client == null || !client.isOpen()) {
                 log.info("Create new websocket client for socket '{}'", uri);
+                CompletableFuture<WebSocketClient> result = new CompletableFuture<>();
+
                 client = new WebSocketClient(uri) {
                     @Override
                     public void onOpen(ServerHandshake serverHandshake) {
                         log.debug("Websocket to '{}' is ready", uri);
+                        clients.put(uri, this);
+                        result.complete(this);
                     }
 
                     @Override
@@ -81,19 +83,22 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     @Override
                     public void onClose(int i, String s, boolean b) {
                         log.debug("Websocket to '{}' is closed", uri);
+                        clients.remove(uri);
                     }
 
                     @Override
                     public void onError(Exception e) {
                         log.warn("An error occured on websocket to '{}': ", e);
+                        result.completeExceptionally(new ProtocolClientException(e));
                     }
                 };
                 client.connect();
 
-                clients.put(uri, client);
+                return result;
             }
-
-            return client;
+            else {
+                return CompletableFuture.completedFuture(client);
+            }
         } catch (URISyntaxException e) {
             throw new ProtocolClientException("Unable to create websocket client for href '" + form.getHref() + "': " + e.getMessage());
         }
@@ -105,11 +110,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
             try {
                 Form writeForm = new Form.Builder(form).setOptional("payload", content).build();
                 String json = JSON_MAPPER.writeValueAsString(writeForm);
-                getClientFor(form).send(json);
+                getClientFor(form).get().send(json);
 
                 // TODO:
                 return null;
-            } catch (JsonProcessingException | ProtocolClientException e) {
+            } catch (JsonProcessingException | ProtocolClientException | InterruptedException | ExecutionException e) {
                 throw new CompletionException(e);
             }
         });

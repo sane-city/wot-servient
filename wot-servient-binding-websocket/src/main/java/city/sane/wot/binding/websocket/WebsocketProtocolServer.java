@@ -3,6 +3,7 @@ package city.sane.wot.binding.websocket;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.AbstractClientMessage;
+import city.sane.wot.binding.websocket.message.ReadProperty;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
@@ -74,8 +75,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
                 exposeProperties(thing, address, contentType);
-                exposeActions(thing, address, contentType);
-                exposeEvents(thing, address, contentType);
+//                exposeActions(thing, address, contentType);
+//                exposeEvents(thing, address, contentType);
             }
         }
 
@@ -90,16 +91,41 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void exposeEvents(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
-        events.forEach((name, event) -> {
+    private void exposeProperties(ExposedThing thing, String address, String contentType) {
+//        Form allForm = new Form.Builder()
+//                .setHref(address)
+//                .setContentType(contentType)
+//                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES)
+//                .build();
+//        thing.addForm(allForm);
+//        log.info("Assign '{}' for reading all properties", address);
+
+        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        properties.forEach((name, property) -> {
             Form.Builder form = new Form.Builder();
             form.setHref(address);
             form.setContentType(contentType);
-            form.setOp(Operation.SUBSCRIBE_EVENT);
+            if (property.isReadOnly()) {
+                form.setOp(Operation.READ_PROPERTY);
+            } else if (property.isWriteOnly()) {
+                form.setOp(Operation.WRITE_PROPERTY);
+            } else {
+                form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
+            }
 
-            event.addForm(form.build());
-            log.info("Assign '{}' to Event '{}'", address, name);
+            property.addForm(form.build());
+            log.info("Assign '{}' to Property '{}'", address, name);
+
+            // if property is observable add an additional form with a observable href
+//            if (property.isObservable()) {
+//                Form.Builder observableForm = new Form.Builder();
+//                observableForm.setHref(address);
+//                observableForm.setContentType(contentType);
+//                observableForm.setOp(Operation.OBSERVE_PROPERTY);
+//
+//                property.addForm(observableForm.build());
+//                log.info("Assign '{}' to observable Property '{}'", address, name);
+//            }
         });
     }
 
@@ -116,41 +142,16 @@ public class WebsocketProtocolServer implements ProtocolServer {
         });
     }
 
-    private void exposeProperties(ExposedThing thing, String address, String contentType) {
-        Form formA = new Form.Builder()
-                .setHref(address)
-                .setContentType(contentType)
-                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES)
-                .build();
-        thing.addForm(formA);
-        log.info("Assign '{}' for reading all properties", address);
+    private void exposeEvents(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingEvent> events = thing.getEvents();
+        events.forEach((name, event) -> {
+            Form.Builder form = new Form.Builder();
+            form.setHref(address);
+            form.setContentType(contentType);
+            form.setOp(Operation.SUBSCRIBE_EVENT);
 
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
-        properties.forEach((name, property) -> {
-            Form.Builder formP = new Form.Builder();
-            formP.setHref(address);
-            formP.setContentType(contentType);
-            if (property.isReadOnly()) {
-                formP.setOp(Operation.READ_PROPERTY);
-            } else if (property.isWriteOnly()) {
-                formP.setOp(Operation.WRITE_PROPERTY);
-            } else {
-                formP.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
-            }
-
-            property.addForm(formP.build());
-            log.info("Assign '{}' to Property '{}'", address, name);
-
-            // if property is observable add an additional form with a observable href
-            if (property.isObservable()) {
-                Form.Builder observableForm = new Form.Builder();
-                observableForm.setHref(address);
-                observableForm.setContentType(contentType);
-                observableForm.setOp(Operation.OBSERVE_PROPERTY);
-
-                property.addForm(observableForm.build());
-                log.info("Assign '{}' to observable Property '{}'", address, name);
-            }
+            event.addForm(form.build());
+            log.info("Assign '{}' to Event '{}'", address, name);
         });
     }
 
