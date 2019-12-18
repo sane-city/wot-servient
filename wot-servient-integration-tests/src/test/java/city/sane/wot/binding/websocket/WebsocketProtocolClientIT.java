@@ -26,7 +26,7 @@ public class WebsocketProtocolClientIT {
     private WebSocketServer server;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         clientFactory = new WebsocketProtocolClientFactory();
         clientFactory.init().join();
 
@@ -34,8 +34,6 @@ public class WebsocketProtocolClientIT {
 
         server = new MyWebSocketServer(new InetSocketAddress(8080));
         server.start();
-
-        Thread.sleep(1 * 1000L);
     }
 
     @After
@@ -44,7 +42,7 @@ public class WebsocketProtocolClientIT {
         server.stop();
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void readResource() throws ContentCodecException, ExecutionException, InterruptedException {
         String href = "ws://localhost:8080";
         Form form = new Form.Builder().setHref(href).build();
@@ -52,7 +50,7 @@ public class WebsocketProtocolClientIT {
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void writeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         String href = "ws://localhost:8080";
         Form form = new Form.Builder().setHref(href).build();
@@ -60,7 +58,7 @@ public class WebsocketProtocolClientIT {
         assertEquals(ContentManager.valueToContent(42), client.writeResource(form, ContentManager.valueToContent(1337)).get());
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         String href = "ws://localhost:8080";
         Form form = new Form.Builder().setHref(href).build();
