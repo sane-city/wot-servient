@@ -45,19 +45,19 @@ public class ReadProperty extends AbstractClientMessage {
         }
     }
 
-    public String getThingId() {
-        return thingId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     @Override
     public String toString() {
         return "ReadProperty [" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
                 ']';
+    }
+
+    public String getThingId() {
+        return thingId;
+    }
+
+    public String getName() {
+        return name;
     }
 }

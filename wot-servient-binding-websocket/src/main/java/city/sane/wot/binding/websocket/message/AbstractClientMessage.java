@@ -20,18 +20,23 @@ import java.util.concurrent.CompletableFuture;
         @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty")
 })
 public abstract class AbstractClientMessage {
-    private String id;
+    private final String id;
 
-    public AbstractClientMessage() {
+    protected AbstractClientMessage() {
         id = randomId();
-    }
-
-    public static String randomId() {
-        return UUID.randomUUID().toString().substring(0, 6);
     }
 
     public String getId() {
         return id;
+    }
+
+    /**
+     * Generates a new random ID to make the message uniquely identifiable.
+     *
+     * @return
+     */
+    public static String randomId() {
+        return UUID.randomUUID().toString().substring(0, 6);
     }
 
     /**

@@ -88,7 +88,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
                     @Override
                     public void onError(Exception e) {
-                        log.warn("An error occured on websocket to '{}': ", e);
+                        log.warn("An error occured on websocket to '{}': ", uri, e.getMessage());
                         result.completeExceptionally(new ProtocolClientException(e));
                     }
                 };
