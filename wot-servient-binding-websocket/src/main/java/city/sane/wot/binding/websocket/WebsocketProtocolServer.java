@@ -73,11 +73,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
         things.put(thing.getId(), thing);
 
         for (String address : addresses) {
-            for (String contentType : ContentManager.getOfferedMediaTypes()) {
-                exposeProperties(thing, address, contentType);
-//                exposeActions(thing, address, contentType);
-//                exposeEvents(thing, address, contentType);
-            }
+            exposeProperties(thing, address);
+//            exposeActions(thing, address);
+//            exposeEvents(thing, address);
         }
 
         return CompletableFuture.completedFuture(null);
@@ -91,10 +89,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void exposeProperties(ExposedThing thing, String address, String contentType) {
+    private void exposeProperties(ExposedThing thing, String address) {
 //        Form allForm = new Form.Builder()
 //                .setHref(address)
-//                .setContentType(contentType)
 //                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES)
 //                .build();
 //        thing.addForm(allForm);
@@ -104,7 +101,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
         properties.forEach((name, property) -> {
             Form.Builder form = new Form.Builder();
             form.setHref(address);
-            form.setContentType(contentType);
             if (property.isReadOnly()) {
                 form.setOp(Operation.READ_PROPERTY);
             } else if (property.isWriteOnly()) {
@@ -129,12 +125,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
         });
     }
 
-    private void exposeActions(ExposedThing thing, String address, String contentType) {
+    private void exposeActions(ExposedThing thing, String address) {
         Map<String, ExposedThingAction> actions = thing.getActions();
         actions.forEach((name, action) -> {
             Form.Builder form = new Form.Builder();
             form.setHref(address);
-            form.setContentType(contentType);
             form.setOp(Operation.INVOKE_ACTION);
 
             action.addForm(form.build());
@@ -142,12 +137,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
         });
     }
 
-    private void exposeEvents(ExposedThing thing, String address, String contentType) {
+    private void exposeEvents(ExposedThing thing, String address) {
         Map<String, ExposedThingEvent> events = thing.getEvents();
         events.forEach((name, event) -> {
             Form.Builder form = new Form.Builder();
             form.setHref(address);
-            form.setContentType(contentType);
             form.setOp(Operation.SUBSCRIBE_EVENT);
 
             event.addForm(form.build());
