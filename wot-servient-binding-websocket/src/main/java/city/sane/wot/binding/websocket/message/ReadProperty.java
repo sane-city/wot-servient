@@ -23,6 +23,7 @@ public class ReadProperty extends ThingInteraction {
     public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
+        CompletableFuture<AbstractServerMessage> response = new CompletableFuture<>();
 
         if (thing != null) {
             String name = getName();
@@ -35,18 +36,24 @@ public class ReadProperty extends ThingInteraction {
                     }
                     catch (ContentCodecException e) {
                         // FIXME: send 500er message back
-                        return null;
+                        return new ServerErrorResponse(this,"500 Internal Server Error");
+
+
+
                     }
                 });
             } else {
                 // Property not found
                 // FIXME: send 400er message back
-                return CompletableFuture.failedFuture(null);
+
+                return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Property not found"));
+                //return CompletableFuture.failedFuture(null);
             }
         } else {
             // Thing not found
             // FIXME: send 400er message back
-            return CompletableFuture.failedFuture(null);
+            return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Thing not found"));
+            //return CompletableFuture.failedFuture(null);
         }
     }
 

@@ -13,6 +13,7 @@ import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
+import org.eclipse.rdf4j.query.algebra.evaluation.function.numeric.Abs;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.After;
@@ -56,10 +57,19 @@ public class WebsocketProtocolServerIT {
     public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException, ContentCodecException {
         // send ReadProperty message to server and wait for ReadPropertyResponse message from server
         ReadProperty request = new ReadProperty("counter", "count");
+        ReadProperty request2 = new ReadProperty("zähler","count");
+        ReadProperty request3 = new ReadProperty("counter","mist");
+
 
         AbstractServerMessage response = ask(request);
+        AbstractServerMessage response2 = ask(request2);
+        AbstractServerMessage response3 = ask(request3);
 
         assertThat(response, instanceOf(ReadPropertyResponse.class));
+        assertThat(response2, instanceOf(ClientErrorResponse.class));
+        assertEquals("404 Thing not found",((ClientErrorResponse) response2).getReason());
+        assertThat(response3, instanceOf(ClientErrorResponse.class));
+        assertEquals("404 Property not found",((ClientErrorResponse) response3).getReason());
         assertEquals(request.getId(), response.getId());
         assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getValue());
     }
