@@ -15,6 +15,8 @@ import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
 import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
+import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
@@ -183,7 +185,8 @@ public class ServientIT {
                 new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
                 new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
-                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class)
+                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class),
+                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
         );
     }
 }
