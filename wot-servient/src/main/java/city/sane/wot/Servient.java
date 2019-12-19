@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -646,6 +647,22 @@ public class Servient {
                 .parseString("wot.servient.servers = []")
                 .withFallback(config);
         return new Servient(clientOnlyConfig);
+    }
+
+    /**
+     * Returns the version of the servient. If this is not possible, <code>zero</code> is returned.
+     * 
+     * @return
+     */
+    public static String getVersion() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(Servient.class.getClassLoader().getResourceAsStream("project.properties"));
+            return properties.getProperty("version");
+        }
+        catch (IOException e) {
+            return null;
+        }
     }
 
     private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {

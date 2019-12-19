@@ -69,8 +69,7 @@ class Cli {
     }
 
     private void printVersion() {
-        // FIXME: read correct version from pom.xml
-        String version = "1.0-SNAPSHOT";
+        String version = Servient.getVersion();
         System.out.println(version);
     }
 
