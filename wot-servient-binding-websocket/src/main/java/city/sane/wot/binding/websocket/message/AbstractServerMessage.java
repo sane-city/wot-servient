@@ -1,5 +1,6 @@
 package city.sane.wot.binding.websocket.message;
 
+import city.sane.wot.content.Content;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "writePropertyResponse"),
         @JsonSubTypes.Type(value = InvokeActionResponse.class, name = "invokeActionResponse")
 })
-public class AbstractServerMessage {
+public abstract class AbstractServerMessage {
     protected final String id;
 
     public AbstractServerMessage(String id) {
@@ -32,4 +33,6 @@ public class AbstractServerMessage {
     public String getId() {
         return id;
     }
+
+    public abstract Content toContent();
 }

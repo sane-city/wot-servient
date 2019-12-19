@@ -76,7 +76,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         for (String address : addresses) {
             exposeProperties(thing, address);
             exposeActions(thing, address);
-//            exposeEvents(thing, address);
+            exposeEvents(thing, address);
         }
 
         return CompletableFuture.completedFuture(null);

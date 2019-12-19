@@ -33,7 +33,7 @@ public class WritePropertyTest {
 
     @Test
     public void getName() {
-        assertEquals("test", message.getName());
+        assertEquals("count", message.getName());
         assertNotNull(message.getName());
     }
 

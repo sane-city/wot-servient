@@ -35,53 +35,32 @@ public class WebsocketProtocolClient implements ProtocolClient {
     @Override
     public CompletableFuture<Content> readResource(Form form) {
         log.debug("Read resource: {}", form);
-
-        Object message = form.getOptional("websocket:message");
-        if (message != null) {
-            try {
-                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
-
-                try {
-                    WebSocketClient client = getClientFor(form).get();
-                    AbstractServerMessage response = ask(client, clientMessage).get();
-
-                    // FIXME: cast to ReadPropertyResponse is not safe here
-                    return CompletableFuture.completedFuture(((ReadPropertyResponse) response).getValue());
-                }
-                catch (InterruptedException | ExecutionException e) {
-                    return CompletableFuture.failedFuture(e);
-                }
-            }
-            catch (IllegalArgumentException e) {
-                return CompletableFuture.failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
-            }
-            catch (ProtocolClientException e) {
-                return CompletableFuture.failedFuture(e);
-            }
-        }
-        else {
-            return CompletableFuture.failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
-        }
+        return sendMessage(form);
     }
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
         log.debug("Write resource '{}' with content '{}'", form, content);
+        return sendMessageWithContent(form, content);
+    }
 
+
+    @Override
+    public CompletableFuture<Content> invokeResource(Form form, Content content) {
+        log.debug("Invoke resource '{}' with content '{}'", form, content);
+        return sendMessageWithContent(form, content);
+    }
+
+    private CompletableFuture<Content> sendMessage(Form form) {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
                 AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
-                if (clientMessage instanceof WriteProperty) {
-                    ((WriteProperty) clientMessage).setValue(content);
-                }
 
                 try {
                     WebSocketClient client = getClientFor(form).get();
                     AbstractServerMessage response = ask(client, clientMessage).get();
-
-                    // FIXME: cast to WritePropertyResponse is not safe here
-                    return CompletableFuture.completedFuture(((WritePropertyResponse) response).getValue());
+                    return CompletableFuture.completedFuture(response.toContent());
                 }
                 catch (InterruptedException | ExecutionException e) {
                     return CompletableFuture.failedFuture(e);
@@ -99,24 +78,17 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
     }
 
-    @Override
-    public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        log.debug("Invoke resource '{}' with content '{}'", form, content);
-
+    private CompletableFuture<Content> sendMessageWithContent(Form form, Content content) {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
-                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
-                if (clientMessage instanceof InvokeAction) {
-                    ((InvokeAction) clientMessage).setValue(content);
-                }
+                ThingInteractionWithContent clientMessage = JSON_MAPPER.convertValue(message, ThingInteractionWithContent.class);
+                clientMessage.setValue(content);
 
                 try {
                     WebSocketClient client = getClientFor(form).get();
                     AbstractServerMessage response = ask(client, clientMessage).get();
-
-                    // FIXME: cast to InvokeActionResponse is not safe here
-                    return CompletableFuture.completedFuture(((InvokeActionResponse) response).getValue());
+                    return CompletableFuture.completedFuture(response.toContent());
                 }
                 catch (InterruptedException | ExecutionException e) {
                     return CompletableFuture.failedFuture(e);

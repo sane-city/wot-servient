@@ -12,17 +12,13 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class WriteProperty extends ThingInteraction {
-    private Content value;
-
+public class WriteProperty extends ThingInteractionWithContent {
     private WriteProperty() {
         super();
-        this.value = null;
     }
 
     public WriteProperty(String thingId, String name, Content value) {
-        super(thingId, name);
-        this.value = Objects.requireNonNull(value);
+        super(thingId, name, value);
     }
 
     @Override
@@ -63,14 +59,6 @@ public class WriteProperty extends ThingInteraction {
             // FIXME: send 400er message back
             return CompletableFuture.failedFuture(null);
         }
-    }
-
-    public Content getValue() {
-        return value;
-    }
-
-    public void setValue(Content value) {
-        this.value = value;
     }
 
     @Override

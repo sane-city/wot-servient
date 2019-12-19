@@ -12,6 +12,11 @@ public class ReadPropertyResponse extends AbstractServerMessage {
         value = null;
     }
 
+    @Override
+    public Content toContent() {
+        return getValue();
+    }
+
     public ReadPropertyResponse(String id, Content value) {
         super(id);
         this.value = Objects.requireNonNull(value);

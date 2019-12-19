@@ -10,6 +10,11 @@ public class WritePropertyResponse extends AbstractServerMessage {
         value = null;
     }
 
+    @Override
+    public Content toContent() {
+        return getValue();
+    }
+
     public WritePropertyResponse(String id, Content value) {
         super(id);
         this.value = value;

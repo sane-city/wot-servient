@@ -12,17 +12,13 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class InvokeAction extends ThingInteraction {
-    private Content value;
-
+public class InvokeAction extends ThingInteractionWithContent {
     private InvokeAction() {
         super();
-        this.value = null;
     }
 
     public InvokeAction(String thingId, String name, Content value) {
-        super(thingId, name);
-        this.value = Objects.requireNonNull(value);
+        super(thingId, name, value);
     }
 
     @Override
@@ -70,15 +66,8 @@ public class InvokeAction extends ThingInteraction {
         return "InvokeAction [" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
+                ", value='" + value + '\'' +
                 ']';
-    }
-
-    public void setValue(Content value) {
-        this.value = value;
-    }
-
-    public Content getValue() {
-        return value;
     }
 }
 
