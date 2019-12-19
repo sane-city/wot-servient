@@ -10,18 +10,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class ReadProperty extends AbstractClientMessage {
-    private final String thingId;
-    private final String name;
-
+public class ReadProperty extends ThingInteraction {
     private ReadProperty() {
-        this.thingId = null;
-        this.name = null;
+        super();
     }
 
     public ReadProperty(String thingId, String name) {
-        this.thingId = Objects.requireNonNull(thingId);
-        this.name = Objects.requireNonNull(name);
+        super(thingId, name);
     }
 
     @Override
@@ -61,13 +56,5 @@ public class ReadProperty extends AbstractClientMessage {
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
                 ']';
-    }
-
-    public String getThingId() {
-        return thingId;
-    }
-
-    public String getName() {
-        return name;
     }
 }

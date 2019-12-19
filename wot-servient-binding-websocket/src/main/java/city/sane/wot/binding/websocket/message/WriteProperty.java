@@ -12,20 +12,16 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class WriteProperty extends AbstractClientMessage {
-    private final String thingId;
-    private final String name;
+public class WriteProperty extends ThingInteraction {
     private Content value;
 
     private WriteProperty() {
-        this.thingId = null;
-        this.name = null;
+        super();
         this.value = null;
     }
 
     public WriteProperty(String thingId, String name, Content value) {
-        this.thingId = Objects.requireNonNull(thingId);
-        this.name = Objects.requireNonNull(name);
+        super(thingId, name);
         this.value = Objects.requireNonNull(value);
     }
 
@@ -67,14 +63,6 @@ public class WriteProperty extends AbstractClientMessage {
             // FIXME: send 400er message back
             return CompletableFuture.failedFuture(null);
         }
-    }
-
-    public String getThingId() {
-        return thingId;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Content getValue() {

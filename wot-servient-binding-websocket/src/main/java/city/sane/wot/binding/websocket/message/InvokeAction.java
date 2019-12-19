@@ -5,7 +5,6 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
-import city.sane.wot.thing.property.ExposedThingProperty;
 import org.java_websocket.WebSocket;
 
 import java.util.Map;
@@ -13,20 +12,16 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class InvokeAction extends AbstractClientMessage {
-    private final String thingId;
-    private final String name;
+public class InvokeAction extends ThingInteraction {
     private Content value;
 
     private InvokeAction() {
-        this.thingId = null;
-        this.name = null;
+        super();
         this.value = null;
     }
 
     public InvokeAction(String thingId, String name, Content value) {
-        this.thingId = Objects.requireNonNull(thingId);
-        this.name = Objects.requireNonNull(name);
+        super(thingId, name);
         this.value = Objects.requireNonNull(value);
     }
 
@@ -76,14 +71,6 @@ public class InvokeAction extends AbstractClientMessage {
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
                 ']';
-    }
-
-    public String getThingId() {
-        return thingId;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setValue(Content value) {

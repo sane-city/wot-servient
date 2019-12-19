@@ -75,7 +75,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         for (String address : addresses) {
             exposeProperties(thing, address);
-//            exposeActions(thing, address);
+            exposeActions(thing, address);
 //            exposeEvents(thing, address);
         }
 
@@ -141,11 +141,15 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private void exposeActions(ExposedThing thing, String address) {
         Map<String, ExposedThingAction> actions = thing.getActions();
         actions.forEach((name, action) -> {
-            Form.Builder form = new Form.Builder();
-            form.setHref(address);
-            form.setOp(Operation.INVOKE_ACTION);
-
-            action.addForm(form.build());
+            action.addForm(new Form.Builder()
+                    .setHref(address)
+                    .setOp(Operation.INVOKE_ACTION)
+                    .setOptional("websocket:message", Map.of(
+                            "type", "invokeAction",
+                            "thingId", thing.getId(),
+                            "name", name
+                    ))
+                    .build());
             log.info("Assign '{}' to Action '{}'", address, name);
         });
     }
