@@ -6,6 +6,8 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.akka.actor.ActionActor;
+import city.sane.wot.binding.akka.actor.ActionActor.Invoke;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.content.Content;
@@ -70,6 +72,15 @@ public class AkkaProtocolClientIT {
     }
 
     @Test
+    public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
+        ActorRef actorRef = system.actorOf(Props.create(MyInvokeActor.class, MyInvokeActor::new));
+        String href = actorRef.path().toStringWithAddress(system.provider().getDefaultAddress());
+        Form form = new Form.Builder().setHref(href).build();
+
+        Assert.assertEquals(ContentManager.valueToContent(45), client.invokeResource(form, ContentManager.valueToContent(3)).get());
+    }
+
+    @Test
     public void discover() throws ExecutionException, InterruptedException {
         system.actorOf(Props.create(MyDiscoverActor.class, MyDiscoverActor::new));
 
@@ -92,6 +103,16 @@ public class AkkaProtocolClientIT {
             return receiveBuilder().match(Messages.Write.class, m -> {
                 Content content = ContentManager.valueToContent(42);
                 getSender().tell(new Messages.Written(content), getSelf());
+            }).build();
+        }
+    }
+
+    private class MyInvokeActor extends AbstractActor {
+        @Override
+        public Receive createReceive() {
+            return receiveBuilder().match(Invoke.class, m -> {
+                Content content = ContentManager.valueToContent(45);
+                getSender().tell(new ActionActor.Invoked(content), getSelf());
             }).build();
         }
     }
