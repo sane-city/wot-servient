@@ -5,6 +5,8 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.binding.akka.actor.ActionActor.Invoke;
+import city.sane.wot.binding.akka.actor.ActionActor.Invoked;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
@@ -71,6 +73,22 @@ public class AkkaProtocolClient implements ProtocolClient {
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((Written) m).content)
+                .toCompletableFuture();
+    }
+
+    @Override
+    public CompletableFuture<Content> invokeResource(Form form, Content content) {
+        Invoke message = new Invoke(content);
+        String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
+        log.debug("AkkaClient sending '{}' to {}", message, href);
+
+        ActorSelection selection = system.actorSelection(href);
+        Duration timeout = Duration.ofSeconds(10);
+        return pattern.ask(selection, message, timeout)
+                .thenApply(m -> ((Invoked) m).content)
                 .toCompletableFuture();
     }
 
