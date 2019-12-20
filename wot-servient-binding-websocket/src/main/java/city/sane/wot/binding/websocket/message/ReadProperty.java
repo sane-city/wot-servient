@@ -41,16 +41,11 @@ public class ReadProperty extends ThingInteraction {
                 });
             } else {
                 // Property not found
-                // FIXME: send 400er message back
-
-                return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Property not found"));
-                //return CompletableFuture.failedFuture(null);
+                return CompletableFuture.failedFuture(new ClientErrorResponse(this, "Property not found"));
             }
         } else {
             // Thing not found
-            // FIXME: send 400er message back
-            return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Thing not found"));
-            //return CompletableFuture.failedFuture(null);
+            return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Thing not found"));
         }
     }
 
