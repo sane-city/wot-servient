@@ -1,5 +1,7 @@
 package city.sane.wot.binding.websocket;
 
+import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
@@ -51,6 +53,12 @@ public class WebsocketProtocolServerIT {
     @After
     public void tearDown() {
         server.stop().join();
+    }
+
+    @Test(expected = ProtocolServerException.class)
+    public void testWithUsedPort() {
+        WebsocketProtocolServer server2 = new WebsocketProtocolServer(ConfigFactory.load());
+        server2.start().join();
     }
 
     @Test(timeout = 20 * 1000)
