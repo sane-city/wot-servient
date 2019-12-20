@@ -46,16 +46,15 @@ public class WriteProperty extends ThingInteractionWithContent {
                     });
                 } catch (ContentCodecException e) {
                     // unable to parse paylod
-                    // FIXME: send 500er error back and remove throw
-                    return CompletableFuture.completedFuture(new ServerErrorResponse(this,"500 Internal Server Error"));
+                    return CompletableFuture.completedFuture(new ServerErrorResponse(this, "Unable to parse given input " + e.getMessage()));
                 }
             } else {
                 // Property not found
-                return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Property not found"));
+                return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Property not found"));
             }
         } else {
             // Thing not found
-            return CompletableFuture.completedFuture(new ClientErrorResponse(this,"404 Thing not found"));
+            return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Thing not found"));
         }
     }
 
