@@ -22,7 +22,7 @@ public class InvokeActionResponse extends AbstractServerMessage {
         this.value = Objects.requireNonNull(value);
     }
 
-    public InvokeActionResponse(ReadProperty clientMessage, Content value) {
+    public InvokeActionResponse(InvokeAction clientMessage, Content value) {
         super(clientMessage);
         this.value = value;
     }
