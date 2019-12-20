@@ -78,10 +78,19 @@ public class WebsocketProtocolServerIT {
     public void testWriteProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
         // send WriteProperty message to server and wait for WritePropertyResponse message from server
         WriteProperty request = new WriteProperty("counter", "count", ContentManager.valueToContent(1337));
+        WriteProperty request2 = new WriteProperty("Null","count",ContentManager.valueToContent(1337));
+        WriteProperty request3 = new WriteProperty("counter","Null",ContentManager.valueToContent(1337));
+
 
         AbstractServerMessage response = ask(request);
+        AbstractServerMessage response2 = ask(request2);
+        AbstractServerMessage response3 = ask(request3);
 
         assertThat(response, instanceOf(WritePropertyResponse.class));
+        assertThat(response2, instanceOf(ClientErrorResponse.class));
+        assertEquals("404 Thing not found",((ClientErrorResponse) response2).getReason());
+        assertThat(response3, instanceOf(ClientErrorResponse.class));
+        assertEquals("404 Property not found",((ClientErrorResponse) response3).getReason());
         assertEquals(request.getId(), response.getId());
         assertEquals(ContentManager.valueToContent(null), ((WritePropertyResponse) response).getValue());
     }
