@@ -37,9 +37,6 @@ public class ReadProperty extends ThingInteraction {
                     catch (ContentCodecException e) {
                         // FIXME: send 500er message back
                         return new ServerErrorResponse(this,"500 Internal Server Error");
-
-
-
                     }
                 });
             } else {

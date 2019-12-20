@@ -93,6 +93,7 @@ public class WebsocketProtocolServerIT {
         InvokeAction request = new InvokeAction("counter", "increment", ContentManager.valueToContent(parameters));
 
         AbstractServerMessage response = ask(request);
+        System.out.println(response);
 
         assertThat(response, instanceOf(InvokeActionResponse.class));
         assertEquals(request.getId(), response.getId());
