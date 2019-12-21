@@ -9,9 +9,11 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class FileProtocolClientTest {
     @Rule
@@ -21,17 +23,8 @@ public class FileProtocolClientTest {
     @Before
     public void setup() throws IOException {
         thing = thingDirectory.newFile("ThingA.json");
+        Files.writeString(thing.toPath(), "{\"id\":\"counter\",\"name\":\"Counter\"}", StandardOpenOption.CREATE);
     }
-
-//    @Test
-//    public void readResourceRelativeUrl() throws ExecutionException, InterruptedException {
-//        FileProtocolClient client = new FileProtocolClient();
-//        String href = "file:../thingDescriptionExamples/cf-sandbox.jsonld";
-//        Form form = new Form.Builder().setHref(href).build();
-//
-//        Content content = client.readResource(form).get();
-//        assertNotNull(content);
-//    }
 
     @Test
     public void readResourceAbsoluteUrl() throws ExecutionException, InterruptedException {
@@ -42,6 +35,22 @@ public class FileProtocolClientTest {
                 .build();
 
         Content content = client.readResource(form).get();
-        assertNotNull(content);
+
+        assertEquals("application/json", content.getType());
+        assertEquals("{\"id\":\"counter\",\"name\":\"Counter\"}", new String(content.getBody()));
+    }
+
+    @Test
+    public void writeResourceAbsoluteUrl() throws ExecutionException, InterruptedException, IOException {
+        FileProtocolClient client = new FileProtocolClient();
+        String href = "file:" + thing.getPath();
+        Form form = new Form.Builder()
+                .setHref(href)
+                .build();
+
+        Content content = new Content("application/json", "{\"id\":\"counter\",\"name\":\"Zähler\"}".getBytes());
+        client.writeResource(form, content).get();
+
+        assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", Files.readString(thing.toPath()));
     }
 }
