@@ -13,6 +13,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -46,6 +47,22 @@ public class FileProtocolClient implements ProtocolClient {
             }
             catch (IOException e) {
                 throw new CompletionException(new ProtocolClientException("Unable to read file '" + form.getHref() + "': " + e.getMessage()));
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Content> writeResource(Form form, Content content) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Path path = hrefToPath(form.getHref());
+
+                Files.write(path, content.getBody(), StandardOpenOption.CREATE);
+
+                return Content.EMPTY_CONTENT;
+            }
+            catch (IOException e) {
+                throw new CompletionException(new ProtocolClientException("Unable to write file '" + form.getHref() + "': " + e.getMessage()));
             }
         });
     }
