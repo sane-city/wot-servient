@@ -125,7 +125,6 @@
         <module>wot-servient-binding-jadex</module>
         <module>wot-servient-binding-jsonpathhttp</module>
         <module>wot-servient-cli</module>
-        <module>wot-servient-all</module>
         <module>wot-servient-examples</module>
         <module>wot-servient-scripting-groovy</module>
         <module>wot-servient-integration-tests</module>
