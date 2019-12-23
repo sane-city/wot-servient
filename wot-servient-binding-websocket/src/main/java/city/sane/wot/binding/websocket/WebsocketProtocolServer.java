@@ -175,7 +175,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            log.debug("New Websocket connectione has been opened");
+            log.debug("New Websocket connection has been opened");
         }
 
         @Override
@@ -190,6 +190,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
             Consumer<AbstractServerMessage> replyConsumer = m -> {
                 try {
                     String outputJson = JSON_MAPPER.writeValueAsString(m);
+                    log.info("Send message: {}", outputJson);
                     conn.send(outputJson);
                 }
                 catch (JsonProcessingException ex) {

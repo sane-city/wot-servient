@@ -5,29 +5,29 @@ import city.sane.wot.content.Content;
 import java.util.Objects;
 
 public class ReadPropertyResponse extends AbstractServerMessage implements FinalResponse {
-    private final Content value;
+    private final Content content;
 
     private ReadPropertyResponse() {
         super();
-        value = null;
+        content = null;
     }
 
     @Override
     public Content toContent() {
-        return getValue();
+        return getContent();
     }
 
-    public ReadPropertyResponse(String id, Content value) {
+    public ReadPropertyResponse(String id, Content content) {
         super(id);
-        this.value = Objects.requireNonNull(value);
+        this.content = Objects.requireNonNull(content);
     }
 
-    public ReadPropertyResponse(ReadProperty clientMessage, Content value) {
+    public ReadPropertyResponse(ReadProperty clientMessage, Content content) {
         super(clientMessage);
-        this.value = value;
+        this.content = content;
     }
 
-    public Content getValue() {
-        return value;
+    public Content getContent() {
+        return content;
     }
 }

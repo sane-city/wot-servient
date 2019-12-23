@@ -2,12 +2,12 @@ package city.sane.wot.binding.websocket.message;
 
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentManager;
-import com.typesafe.config.ConfigException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ReadPropertyResponseTest {
     private ReadProperty clientMessage;
@@ -33,7 +33,7 @@ public class ReadPropertyResponseTest {
 
     @Test
     public void getValue() {
-        assertEquals(value, rpr1.getValue());
-        assertNotNull(rpr1.getValue());
+        assertEquals(value, rpr1.getContent());
+        assertNotNull(rpr1.getContent());
     }
 }

@@ -71,7 +71,7 @@ public class WebsocketProtocolServerIT {
         assertThat(response3, instanceOf(ClientErrorResponse.class));
         assertEquals("Property not found",((ClientErrorResponse) response3).getReason());
         assertEquals(request.getId(), response.getId());
-        assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getValue());
+        assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getContent());
     }
 
     @Test(timeout = 20 * 1000L)

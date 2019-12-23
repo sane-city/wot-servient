@@ -14,8 +14,8 @@ public class InvokeAction extends ThingInteractionWithContent {
         super();
     }
 
-    public InvokeAction(String thingId, String name, Content value) {
-        super(thingId, name, value);
+    public InvokeAction(String thingId, String name, Content content) {
+        super(thingId, name, content);
     }
 
     @Override
