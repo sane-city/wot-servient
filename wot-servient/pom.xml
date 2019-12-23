@@ -89,5 +89,13 @@
             <artifactId>config</artifactId>
             <version>1.3.4</version>
         </dependency>
+
+        <!-- Classpath Scanner -->
+        <!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.59</version>
+        </dependency>
     </dependencies>
 </project>

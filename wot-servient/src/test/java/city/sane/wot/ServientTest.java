@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 public class ServientTest {
@@ -73,6 +74,20 @@ public class ServientTest {
                 .parseString("wot.servient.client-factories = [\"" + MyBadMissingConstructorProtocolClientFactory.class.getName() + "\"]")
                 .withFallback(ConfigFactory.load());
         new Servient(config);
+    }
+
+    @Test
+    public void constructorInstantiatedNullServers() throws ServientException {
+        Servient servient = getServientWithNullServers();
+
+        assertThat(servient.getServers(), hasSize(0));
+    }
+
+    @Test
+    public void constructorInstantiatedNullClients() throws ServientException {
+        Servient servient = getServientWithNullClients();
+
+        assertThat(servient.getServers(), hasSize(0));
     }
 
     @Test
@@ -279,6 +294,20 @@ public class ServientTest {
     private Servient getServientWithNoServer() throws ServientException {
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = []")
+                .withFallback(ConfigFactory.load());
+        return new Servient(config);
+    }
+
+    private Servient getServientWithNullClients() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = null")
+                .withFallback(ConfigFactory.load());
+        return new Servient(config);
+    }
+
+    private Servient getServientWithNullServers() throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = null")
                 .withFallback(ConfigFactory.load());
         return new Servient(config);
     }
