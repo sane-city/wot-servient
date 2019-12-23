@@ -5,12 +5,9 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import org.java_websocket.WebSocket;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 
 public class WriteProperty extends ThingInteractionWithContent {
     private WriteProperty() {
@@ -22,7 +19,7 @@ public class WriteProperty extends ThingInteractionWithContent {
     }
 
     @Override
-    public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 
@@ -36,25 +33,25 @@ public class WriteProperty extends ThingInteractionWithContent {
                 try {
                     Object input = ContentManager.contentToValue(payload, property);
 
-                    return property.write(input).thenApply(output -> {
+                    property.write(input).thenAccept(output -> {
                         try {
-                            return new WritePropertyResponse(getId(), ContentManager.valueToContent(output));
+                            replyConsumer.accept(new WritePropertyResponse(getId(), ContentManager.valueToContent(output)));
                         }
                         catch (ContentCodecException e) {
-                            throw new CompletionException(e);
+                            replyConsumer.accept(new ServerErrorResponse(this,"Unable to parse output of write operation: " + e.getMessage()));
                         }
                     });
                 } catch (ContentCodecException e) {
                     // unable to parse paylod
-                    return CompletableFuture.completedFuture(new ServerErrorResponse(this, "Unable to parse given input " + e.getMessage()));
+                    replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse given input " + e.getMessage()));
                 }
             } else {
                 // Property not found
-                return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Property not found"));
+                replyConsumer.accept(new ClientErrorResponse(this, "Property not found"));
             }
         } else {
             // Thing not found
-            return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Thing not found"));
+            replyConsumer.accept(new ClientErrorResponse(this, "Thing not found"));
         }
     }
 

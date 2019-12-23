@@ -11,11 +11,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = ReadPropertyResponse.class, name = "readPropertyResponse"),
-        @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "writePropertyResponse"),
-        @JsonSubTypes.Type(value = InvokeActionResponse.class, name = "invokeActionResponse"),
+        @JsonSubTypes.Type(value = ReadPropertyResponse.class, name = "ReadPropertyResponse"),
+        @JsonSubTypes.Type(value = WritePropertyResponse.class, name = "WritePropertyResponse"),
+        @JsonSubTypes.Type(value = InvokeActionResponse.class, name = "InvokeActionResponse"),
+        @JsonSubTypes.Type(value = SubscribeNextResponse.class, name = "SubscribeNextResponse"),
+        @JsonSubTypes.Type(value = SubscribeErrorResponse.class, name = "SubscribeErrorResponse"),
+        @JsonSubTypes.Type(value = SubscribeCompleteResponse.class, name = "SubscribeCompleteResponse"),
         @JsonSubTypes.Type(value = ServerErrorResponse.class, name = "ServerErrorResponse"),
-        @JsonSubTypes.Type(value = ClientErrorResponse.class, name = "invokeActionResponse")
+        @JsonSubTypes.Type(value = ClientErrorResponse.class, name = "ClientErrorResponse")
 
 })
 public abstract class AbstractServerMessage {

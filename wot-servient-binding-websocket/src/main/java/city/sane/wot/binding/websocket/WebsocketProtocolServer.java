@@ -3,6 +3,7 @@ package city.sane.wot.binding.websocket;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.websocket.message.AbstractClientMessage;
+import city.sane.wot.binding.websocket.message.AbstractServerMessage;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
@@ -43,7 +45,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         server = new ServientWebsocketServer(new InetSocketAddress(bindPort));
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
-        } else {
+        }
+        else {
             addresses = Servient.getAddresses().stream().map(a -> "ws://" + a + ":" + bindPort + "").collect(Collectors.toList());
         }
         things = new HashMap<>();
@@ -60,7 +63,8 @@ public class WebsocketProtocolServer implements ProtocolServer {
         return CompletableFuture.runAsync(() -> {
             try {
                 server.stop();
-            } catch (IOException | InterruptedException e) {
+            }
+            catch (IOException | InterruptedException e) {
                 throw new CompletionException(e);
             }
         });
@@ -183,23 +187,23 @@ public class WebsocketProtocolServer implements ProtocolServer {
         public void onMessage(WebSocket conn, String json) {
             log.info("Received message: {}", json);
 
+            Consumer<AbstractServerMessage> replyConsumer = m -> {
+                try {
+                    String outputJson = JSON_MAPPER.writeValueAsString(m);
+                    conn.send(outputJson);
+                }
+                catch (JsonProcessingException ex) {
+                    log.warn("Unable to send message back to client", ex);
+                }
+            };
+
             try {
                 AbstractClientMessage message = JSON_MAPPER.readValue(json, AbstractClientMessage.class);
                 log.debug("Deserialized message to: {}", message);
 
-                message.reply(conn, things).whenComplete((response, e) -> {
-                    if (e != null) {
-                        // FIXME: handle exception
-                    } else {
-                        try {
-                            String outputJson = JSON_MAPPER.writeValueAsString(response);
-                            conn.send(outputJson);
-                        } catch (JsonProcessingException ex) {
-                            // FIXME: handle exception
-                        }
-                    }
-                });
-            } catch (IOException e) {
+                message.reply(replyConsumer, things);
+            }
+            catch (IOException e) {
                 log.warn("Error on deserialization of message: {}", json);
             }
         }

@@ -2,7 +2,7 @@ package city.sane.wot.binding.websocket.message;
 
 import city.sane.wot.content.Content;
 
-public class WritePropertyResponse extends AbstractServerMessage {
+public class WritePropertyResponse extends AbstractServerMessage implements FinalResponse {
     private final Content value;
 
     private WritePropertyResponse() {

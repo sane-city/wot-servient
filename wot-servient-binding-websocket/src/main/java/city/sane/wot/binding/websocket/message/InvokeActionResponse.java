@@ -4,7 +4,7 @@ import city.sane.wot.content.Content;
 
 import java.util.Objects;
 
-public class InvokeActionResponse extends AbstractServerMessage {
+public class InvokeActionResponse extends AbstractServerMessage implements FinalResponse {
     private final Content value;
 
     private InvokeActionResponse() {
@@ -20,11 +20,6 @@ public class InvokeActionResponse extends AbstractServerMessage {
     public InvokeActionResponse(String id, Content value) {
         super(id);
         this.value = Objects.requireNonNull(value);
-    }
-
-    public InvokeActionResponse(InvokeAction clientMessage, Content value) {
-        super(clientMessage);
-        this.value = value;
     }
 
     public Content getValue() {

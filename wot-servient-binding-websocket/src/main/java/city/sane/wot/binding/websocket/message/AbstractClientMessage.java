@@ -4,11 +4,10 @@ import city.sane.wot.thing.ExposedThing;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.java_websocket.WebSocket;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolClient} to {@link city.sane.wot.binding.websocket.WebsocketProtocolServer}.
@@ -16,9 +15,11 @@ import java.util.concurrent.CompletableFuture;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = ReadProperty.class, name = "readProperty"),
-        @JsonSubTypes.Type(value = WriteProperty.class, name = "writeProperty"),
-        @JsonSubTypes.Type(value = InvokeAction.class, name = "invokeAction")
+        @JsonSubTypes.Type(value = ReadProperty.class, name = "ReadProperty"),
+        @JsonSubTypes.Type(value = WriteProperty.class, name = "WriteProperty"),
+        @JsonSubTypes.Type(value = InvokeAction.class, name = "InvokeAction"),
+        @JsonSubTypes.Type(value = SubscribeProperty.class, name = "SubscribeProperty"),
+        @JsonSubTypes.Type(value = SubscribeEvent.class, name = "SubscribeEvent")
 })
 public abstract class AbstractClientMessage {
     private final String id;
@@ -43,9 +44,9 @@ public abstract class AbstractClientMessage {
     /**
      * Creates the server's response to the request sent by the client.
      *
-     * @param socket
+     * @param replyConsumer
      * @param things
      * @return
      */
-    public abstract CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things);
+    public abstract void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things);
 }

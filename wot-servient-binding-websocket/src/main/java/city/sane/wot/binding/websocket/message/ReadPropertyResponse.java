@@ -4,7 +4,7 @@ import city.sane.wot.content.Content;
 
 import java.util.Objects;
 
-public class ReadPropertyResponse extends AbstractServerMessage {
+public class ReadPropertyResponse extends AbstractServerMessage implements FinalResponse {
     private final Content value;
 
     private ReadPropertyResponse() {

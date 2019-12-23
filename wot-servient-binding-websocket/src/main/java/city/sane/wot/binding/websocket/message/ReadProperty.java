@@ -4,11 +4,9 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import org.java_websocket.WebSocket;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class ReadProperty extends ThingInteraction {
     private ReadProperty() {
@@ -20,32 +18,30 @@ public class ReadProperty extends ThingInteraction {
     }
 
     @Override
-    public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
-        CompletableFuture<AbstractServerMessage> response = new CompletableFuture<>();
 
         if (thing != null) {
             String name = getName();
             ExposedThingProperty property = thing.getProperty(name);
 
             if (property != null) {
-                return property.read().thenApply(value -> {
+                property.read().thenAccept(value -> {
                     try {
-                        return new ReadPropertyResponse(this, ContentManager.valueToContent(value));
+                        replyConsumer.accept(new ReadPropertyResponse(this, ContentManager.valueToContent(value)));
                     }
                     catch (ContentCodecException e) {
-                        // FIXME: send 500er message back
-                        return new ServerErrorResponse(this,"500 Internal Server Error");
+                        replyConsumer.accept(new ServerErrorResponse(this,"Unable to parse output of write operation: " + e.getMessage()));
                     }
                 });
             } else {
                 // Property not found
-                return CompletableFuture.failedFuture(new ClientErrorResponse(this, "Property not found"));
+                replyConsumer.accept(new ClientErrorResponse(this, "Property not found"));
             }
         } else {
             // Thing not found
-            return CompletableFuture.completedFuture(new ClientErrorResponse(this, "Thing not found"));
+            replyConsumer.accept(new ClientErrorResponse(this, "Thing not found"));
         }
     }
 

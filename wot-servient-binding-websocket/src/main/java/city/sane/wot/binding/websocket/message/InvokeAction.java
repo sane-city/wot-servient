@@ -5,12 +5,9 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
-import org.java_websocket.WebSocket;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 
 public class InvokeAction extends ThingInteractionWithContent {
     private InvokeAction() {
@@ -22,7 +19,7 @@ public class InvokeAction extends ThingInteractionWithContent {
     }
 
     @Override
-    public CompletableFuture<AbstractServerMessage> reply(WebSocket socket, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 
@@ -36,28 +33,27 @@ public class InvokeAction extends ThingInteractionWithContent {
                 try {
                     Object input = ContentManager.contentToValue(payload, action.getInput());
 
-                    return action.invoke(input).thenApply(output -> {
+                    action.invoke(input).thenAccept(output -> {
                         try {
-                            return new InvokeActionResponse(getId(), ContentManager.valueToContent(output));
+                            replyConsumer.accept(new InvokeActionResponse(getId(), ContentManager.valueToContent(output)));
                         }
                         catch (ContentCodecException e) {
-                            throw new CompletionException(e);
+                            replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse output of invoke operation: " + e.getMessage()));
                         }
                     });
-                } catch (ContentCodecException e) {
-                    // unable to parse paylod
-                    // FIXME: send 500er error back and remove throw
-                    return CompletableFuture.failedFuture(null);
                 }
-            } else {
-                // Property not found
-                // FIXME: send 400er message back
-                return CompletableFuture.failedFuture(null);
+                catch (ContentCodecException e) {
+                    replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse input of invoke operation: " + e.getMessage()));
+                }
             }
-        } else {
+            else {
+                // Action not found
+                replyConsumer.accept(new ClientErrorResponse(this, "Action not found"));
+            }
+        }
+        else {
             // Thing not found
-            // FIXME: send 400er message back
-            return CompletableFuture.failedFuture(null);
+            replyConsumer.accept(new ClientErrorResponse(this, "Thing not found"));
         }
     }
 

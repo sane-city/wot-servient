@@ -2,9 +2,12 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
+import city.sane.wot.thing.observer.Observer;
+import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.client.WebSocketClient;
@@ -44,11 +47,38 @@ public class WebsocketProtocolClient implements ProtocolClient {
         return sendMessageWithContent(form, content);
     }
 
-
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         log.debug("Invoke resource '{}' with content '{}'", form, content);
         return sendMessageWithContent(form, content);
+    }
+
+    @Override
+    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+        Object message = form.getOptional("websocket:message");
+        if (message != null) {
+            try {
+                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+
+                try {
+                    WebSocketClient client = getClientFor(form).get();
+                    Subscription response = observe(client, clientMessage, observer);
+                    return CompletableFuture.completedFuture(response);
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    return CompletableFuture.failedFuture(e);
+                }
+            }
+            catch (IllegalArgumentException e) {
+                return CompletableFuture.failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
+            }
+            catch (ProtocolClientException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        else {
+            return CompletableFuture.failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
+        }
     }
 
     private CompletableFuture<Content> sendMessage(Form form) {
@@ -134,6 +164,10 @@ public class WebsocketProtocolClient implements ProtocolClient {
                                 if (openRequest != null) {
                                     log.debug("Found open request. Accept");
                                     openRequest.accept(message);
+
+                                    if (message instanceof FinalResponse) {
+                                        openRequests.remove(message.getId());
+                                    }
                                 }
                                 else {
                                     log.warn("Unexpected response. Discard!");
@@ -187,5 +221,35 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
 
         return result;
+    }
+
+    private Subscription observe(WebSocketClient client, AbstractClientMessage request, Observer<Content> observer) throws ProtocolClientException {
+        log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
+        openRequests.put(request.getId(), m -> {
+            if (m instanceof SubscribeNextResponse) {
+                observer.next(m.toContent());
+            }
+            else if (m instanceof SubscribeCompleteResponse) {
+                observer.complete();
+            }
+            else if (m instanceof SubscribeErrorResponse) {
+                observer.error(((SubscribeErrorResponse) m).getError());
+            }
+        });
+
+        try {
+            String json = JSON_MAPPER.writeValueAsString(request);
+            client.send(json);
+        }
+        catch (JsonProcessingException e) {
+            throw new ProtocolClientException(e);
+        }
+
+        // TODO: inform server to stop?
+        return new Subscription(() -> openRequests.remove(request.getId()));
+    }
+
+    public void destroy() {
+        clients.values().forEach(WebSocketClient::close);
     }
 }
