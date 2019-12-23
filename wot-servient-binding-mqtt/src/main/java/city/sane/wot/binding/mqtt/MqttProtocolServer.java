@@ -59,16 +59,21 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
-                client.disconnect();
-                log.info("MqttServer disconnected from broker at '{}'", settings.getBroker());
-            }
-            catch (MqttException e) {
-                throw new CompletionException(e);
-            }
-        });
+        if (client != null) {
+            return CompletableFuture.runAsync(() -> {
+                try {
+                    log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
+                    client.disconnect();
+                    log.info("MqttServer disconnected from broker at '{}'", settings.getBroker());
+                }
+                catch (MqttException e) {
+                    throw new CompletionException(e);
+                }
+            });
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override
@@ -85,6 +90,14 @@ public class MqttProtocolServer implements ProtocolServer {
         exposeActions(thing);
         exposeEvents(thing);
         listenOnMqttMessages();
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> destroy(ExposedThing thing) {
+        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+        things.remove(thing.getId());
 
         return CompletableFuture.completedFuture(null);
     }
@@ -224,14 +237,6 @@ public class MqttProtocolServer implements ProtocolServer {
         else {
             // Action not found
         }
-    }
-
-    @Override
-    public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
-        things.remove(thing.getId());
-
-        return CompletableFuture.completedFuture(null);
     }
 
     private String createUrl() {
