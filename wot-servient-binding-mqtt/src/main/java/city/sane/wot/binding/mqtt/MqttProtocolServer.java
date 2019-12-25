@@ -47,6 +47,10 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start() {
+        if (client != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.runAsync(() -> {
             try {
                 client = settings.createConnectedMqttClient();
@@ -64,6 +68,7 @@ public class MqttProtocolServer implements ProtocolServer {
                 try {
                     log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
                     client.disconnect();
+                    client = null;
                     log.info("MqttServer disconnected from broker at '{}'", settings.getBroker());
                 }
                 catch (MqttException e) {
@@ -78,11 +83,11 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        if (client == null) {
-            return CompletableFuture.completedFuture(null);
-        }
-
         log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+
+        if (client == null) {
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
+        }
 
         things.put(thing.getId(), thing);
 

@@ -14,10 +14,9 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.text.MatchesPattern.matchesPattern;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 
 public class HttpProtocolServerIT {
@@ -32,24 +31,6 @@ public class HttpProtocolServerIT {
     @After
     public void tearDown() {
         server.stop().join();
-    }
-
-    @Test
-    public void expose() {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertNull(server.destroy(thing).get());
     }
 
     @Test

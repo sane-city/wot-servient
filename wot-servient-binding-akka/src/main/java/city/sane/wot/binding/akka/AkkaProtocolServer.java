@@ -3,6 +3,7 @@ package city.sane.wot.binding.akka;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
@@ -57,9 +58,12 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> start() {
         log.info("Start AkkaServer");
-        system = ActorSystem.create(actorSystemName, actorSystemConfig);
 
-        thingsActor = system.actorOf(ThingsActor.props(things), "things");
+        if (system == null) {
+            system = ActorSystem.create(actorSystemName, actorSystemConfig);
+
+            thingsActor = system.actorOf(ThingsActor.props(things), "things");
+        }
 
         return CompletableFuture.completedFuture(null);
     }
@@ -79,11 +83,12 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("AkkaServer exposes '{}'", thing.getTitle());
-        things.put(thing.getId(), thing);
 
         if (system == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before AkkaServer has been started"));
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
         }
+
+        things.put(thing.getId(), thing);
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
@@ -98,7 +103,14 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         log.info("AkkaServer stop exposing '{}'", thing.getTitle());
-        things.remove(thing.getId());
+
+        if (system == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        if (things.remove(thing.getId()) == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
