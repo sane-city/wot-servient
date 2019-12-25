@@ -2,6 +2,7 @@ package city.sane.wot.binding.coap;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.coap.resource.*;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
@@ -67,6 +68,10 @@ public class CoapProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> start() {
         log.info("Starting on port '{}'", bindPort);
 
+        if (server != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.runAsync(() -> {
             server = new WotCoapServer(this);
             server.start();
@@ -76,6 +81,10 @@ public class CoapProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> stop() {
         log.info("Stopping on port '{}'", bindPort);
+
+        if (server == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         return CompletableFuture.runAsync(() -> {
             server.stop();
@@ -100,6 +109,11 @@ public class CoapProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("WotCoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
+
+        if (server == null) {
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
+        }
+
         things.put(thing.getId(), thing);
 
         CoapResource thingResource = new ThingResource(thing);
@@ -120,6 +134,47 @@ public class CoapProtocolServer implements ProtocolServer {
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> destroy(ExposedThing thing) {
+        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
+                thing.getTitle(), bindPort, thing.getId());
+
+        if (server == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        things.remove(thing.getId());
+
+        CoapResource resource = resources.remove(thing.getId());
+        if (resource != null) {
+            server.getRoot().delete(resource);
+        }
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public URI getDirectoryUrl() {
+        try {
+            return new URI(addresses.get(0));
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create directory url", e);
+            return null;
+        }
+    }
+
+    @Override
+    public URI getThingUrl(String id) {
+        try {
+            return new URI(addresses.get(0)).resolve("/" + id);
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to thing url", e);
+            return null;
+        }
     }
 
     private void exposeProperties(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
@@ -227,42 +282,6 @@ public class CoapProtocolServer implements ProtocolServer {
 
                 eventsResource.add(new EventResource(name, event));
             });
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
-                thing.getTitle(), bindPort, thing.getId());
-        things.remove(thing.getId());
-
-        CoapResource resource = resources.remove(thing.getId());
-        if (resource != null) {
-            server.getRoot().delete(resource);
-        }
-
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public URI getDirectoryUrl() {
-        try {
-            return new URI(addresses.get(0));
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to create directory url", e);
-            return null;
-        }
-    }
-
-    @Override
-    public URI getThingUrl(String id) {
-        try {
-            return new URI(addresses.get(0)).resolve("/" + id);
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to thing url", e);
-            return null;
         }
     }
 
