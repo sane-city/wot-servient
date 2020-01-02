@@ -38,4 +38,42 @@ public class Messages {
             this.content = content;
         }
     }
+
+    public static class Invoke implements Serializable {
+        public final Content content;
+
+        public Invoke(Content content) {
+            this.content = content;
+        }
+    }
+
+    public static class Invoked implements Serializable {
+        public final Content content;
+
+        public Invoked(Content content) {
+            this.content = content;
+        }
+    }
+
+    public static class Subscribe implements Serializable {
+    }
+
+    public static class SubscriptionNext implements Serializable {
+        public final Content next;
+
+        public SubscriptionNext(Content next) {
+            this.next = next;
+        }
+    }
+
+    public static class SubscriptionError implements Serializable {
+        public final Throwable e;
+
+        public SubscriptionError(Throwable e) {
+            this.e = e;
+        }
+    }
+
+    public static class SubscriptionComplete implements Serializable {
+    }
 }
