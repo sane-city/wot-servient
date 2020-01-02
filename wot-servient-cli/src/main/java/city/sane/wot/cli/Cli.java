@@ -93,6 +93,11 @@ class Cli {
         Servient servient = null;
         try {
             servient = getServient(cmd);
+            Servient finalServient = servient;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                log.info("Shutdown Request detected. Shutdown Servient");
+                finalServient.shutdown().join();
+            }));
             servient.start().join();
             Wot wot = new DefaultWot(servient);
 
