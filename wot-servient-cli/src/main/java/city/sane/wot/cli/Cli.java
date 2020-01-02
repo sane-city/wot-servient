@@ -85,6 +85,11 @@ class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
+        if (scripts.isEmpty()) {
+            log.info("No scripts given. Nothing to do!");
+            return;
+        }
+
         Servient servient = null;
         try {
             servient = getServient(cmd);
