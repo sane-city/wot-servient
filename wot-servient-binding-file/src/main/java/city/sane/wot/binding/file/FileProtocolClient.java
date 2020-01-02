@@ -123,7 +123,7 @@ public class FileProtocolClient implements ProtocolClient {
     }
 
     private Path hrefToPath(String href) {
-        return Paths.get(URI.create(href).getSchemeSpecificPart());
+        return Paths.get(URI.create(href));
     }
 
     private String pathToExtension(Path path) {
@@ -163,8 +163,11 @@ public class FileProtocolClient implements ProtocolClient {
             log.warn("Cannot determine media type of '{}'", path);
             contentType = "application/octet-stream";
         }
-
-        byte[] body = Files.readAllBytes(path);
-        return new Content(contentType, body);
+        if (Files.exists(path)) {
+            byte[] body = Files.readAllBytes(path);
+            return new Content(contentType, body);
+        } else {
+            return Content.EMPTY_CONTENT;
+        }
     }
 }

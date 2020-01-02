@@ -31,7 +31,7 @@ public class FileProtocolClientIT {
     @Test
     public void readResourceAbsoluteUrl() throws ExecutionException, InterruptedException {
         FileProtocolClient client = new FileProtocolClient();
-        String href = "file:" + thing.getPath();
+        String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
@@ -45,7 +45,7 @@ public class FileProtocolClientIT {
     @Test
     public void writeResourceAbsoluteUrl() throws ExecutionException, InterruptedException, IOException {
         FileProtocolClient client = new FileProtocolClient();
-        String href = "file:" + thing.getPath();
+        String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
@@ -59,7 +59,7 @@ public class FileProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void subscribeResourceFileChanged() throws ExecutionException, InterruptedException, IOException {
         FileProtocolClient client = new FileProtocolClient();
-        String href = "file:" + thing.getPath();
+        String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
@@ -81,7 +81,7 @@ public class FileProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void subscribeResourceFileCreated() throws ExecutionException, InterruptedException, IOException {
         FileProtocolClient client = new FileProtocolClient();
-        String href = "file:" + thing.getPath();
+        String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
@@ -105,7 +105,7 @@ public class FileProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void subscribeResourceFileDeleted() throws ExecutionException, InterruptedException, IOException {
         FileProtocolClient client = new FileProtocolClient();
-        String href = "file:" + thing.getPath();
+        String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
