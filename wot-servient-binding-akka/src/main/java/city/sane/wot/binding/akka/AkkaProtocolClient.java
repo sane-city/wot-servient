@@ -5,13 +5,16 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
-import city.sane.wot.binding.akka.actor.ActionActor.Invoke;
-import city.sane.wot.binding.akka.actor.ActionActor.Invoked;
+import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.akka.Messages.*;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
+import city.sane.wot.binding.akka.actor.ObserveActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
+import city.sane.wot.thing.observer.Observer;
+import city.sane.wot.thing.observer.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +22,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-import static city.sane.wot.binding.akka.Messages.*;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
@@ -90,6 +92,19 @@ public class AkkaProtocolClient implements ProtocolClient {
         return pattern.ask(selection, message, timeout)
                 .thenApply(m -> ((Invoked) m).content)
                 .toCompletableFuture();
+    }
+
+    @Override
+    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+        String href = form.getHref();
+        if (href == null) {
+            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+        }
+        ActorSelection selection = system.actorSelection(href);
+
+        ActorRef actorRef = system.actorOf(ObserveActor.props(observer, selection));
+        Subscription subscription = new Subscription(() -> system.stop(actorRef));
+        return CompletableFuture.completedFuture(subscription);
     }
 
     @Override
