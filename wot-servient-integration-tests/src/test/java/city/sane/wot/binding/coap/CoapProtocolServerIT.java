@@ -11,9 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class CoapProtocolServerIT {
     private CoapProtocolServer server;
@@ -25,37 +25,9 @@ public class CoapProtocolServerIT {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws TimeoutException {
         server.stop().join();
-
-        // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
-        //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
-        //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
-        //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
-        try {
-            Thread.sleep(1 * 1000L);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Test
-    public void expose() {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertNull(server.destroy(thing).get());
+        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test

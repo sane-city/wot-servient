@@ -16,10 +16,14 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -39,10 +43,13 @@ import java.util.stream.Stream;
  * supported by the clients. "wot.servient.client-factories" should contain an array of strings of fully qualified class names implementing
  * {@link ProtocolClientFactory}.<br>
  * The optional configuration parameter "wot.servient.credentials" can contain credentials (e.g. username and password) for the different things.  The parameter
- * should contain a map which uses the thing ids as key.
+ * should contain a map that uses the thing ids as key.
  */
 public class Servient {
+    private static final String CONFIG_SERVERS = "wot.servient.servers";
+    private static final String CONFIG_CLIENT_FACTORIES = "wot.servient.client-factories";
     private static final Logger log = LoggerFactory.getLogger(Servient.class);
+    private static ScanResult scanResult = null;
 
     private final List<ProtocolServer> servers = new ArrayList<>();
     private final Map<String, ProtocolClientFactory> clientFactories = new HashMap<>();
@@ -55,48 +62,38 @@ public class Servient {
      * @param config
      */
     public Servient(Config config) throws ServientException {
-        // read servers from config
-        List<String> requiredServers = config.getStringList("wot.servient.servers");
-        for (String serverName : requiredServers) {
-            try {
-                Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
-                Constructor<ProtocolServer> constructor;
-                ProtocolServer server;
-                if (Servient.hasConstructor(serverKlass, Config.class)) {
-                    constructor = serverKlass.getConstructor(Config.class);
-                    server = constructor.newInstance(config);
-                }
-                else {
-                    constructor = serverKlass.getConstructor();
-                    server = constructor.newInstance();
-                }
-                servers.add(server);
-            }
-            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new ServientException(e);
-            }
+        List<String> requiredServers;
+        if (config.getIsNull(CONFIG_SERVERS)) {
+            // search in classpath for available implementations
+            log.debug("Config '{}' is set to null. Search in classpath for available servers", CONFIG_SERVERS);
+            ScanResult scanResult = scanClasspath();
+            requiredServers = scanResult.getClassesImplementing(ProtocolServer.class.getName())
+                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
+        }
+        else {
+            // read servers from config
+            requiredServers = config.getStringList(CONFIG_SERVERS);
         }
 
-        // read client factories from config
-        List<String> requiredFactories = config.getStringList("wot.servient.client-factories");
+        for (String serverName : requiredServers) {
+            initializeServer(config, serverName);
+        }
+
+        List<String> requiredFactories;
+        if (config.getIsNull(CONFIG_CLIENT_FACTORIES)) {
+            // search in classpath for available implementations
+            log.debug("Config '{}' is set to null. Search in classpath for available client factories", CONFIG_CLIENT_FACTORIES);
+            ScanResult scanResult = scanClasspath();
+            requiredFactories = scanResult.getClassesImplementing(ProtocolClientFactory.class.getName())
+                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
+        }
+        else {
+            // read client factories from config
+            requiredFactories = config.getStringList(CONFIG_CLIENT_FACTORIES);
+        }
+
         for (String factoryName : requiredFactories) {
-            try {
-                Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
-                Constructor<ProtocolClientFactory> constructor;
-                ProtocolClientFactory factory;
-                if (Servient.hasConstructor(factoryKlass, Config.class)) {
-                    constructor = factoryKlass.getConstructor(Config.class);
-                    factory = constructor.newInstance(config);
-                }
-                else {
-                    constructor = factoryKlass.getConstructor();
-                    factory = constructor.newInstance();
-                }
-                clientFactories.put(factory.getScheme(), factory);
-            }
-            catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new ServientException(e);
-            }
+            initializeClientFactory(config, factoryName);
         }
 
         // read credentials from config
@@ -111,6 +108,46 @@ public class Servient {
      */
     public Servient() throws ServientException {
         this(ConfigFactory.load());
+    }
+
+    private void initializeClientFactory(Config config, String factoryName) throws ServientException {
+        try {
+            Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
+            Constructor<ProtocolClientFactory> constructor;
+            ProtocolClientFactory factory;
+            if (Servient.hasConstructor(factoryKlass, Config.class)) {
+                constructor = factoryKlass.getConstructor(Config.class);
+                factory = constructor.newInstance(config);
+            }
+            else {
+                constructor = factoryKlass.getConstructor();
+                factory = constructor.newInstance();
+            }
+            clientFactories.put(factory.getScheme(), factory);
+        }
+        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new ServientException(e);
+        }
+    }
+
+    private void initializeServer(Config config, String serverName) throws ServientException {
+        try {
+            Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
+            Constructor<ProtocolServer> constructor;
+            ProtocolServer server;
+            if (Servient.hasConstructor(serverKlass, Config.class)) {
+                constructor = serverKlass.getConstructor(Config.class);
+                server = constructor.newInstance(config);
+            }
+            else {
+                constructor = serverKlass.getConstructor();
+                server = constructor.newInstance();
+            }
+            servers.add(server);
+        }
+        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new ServientException(e);
+        }
     }
 
     @Override
@@ -577,6 +614,13 @@ public class Servient {
         }
     }
 
+    private static ScanResult scanClasspath() {
+        if (scanResult == null) {
+            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().scan();
+        }
+        return scanResult;
+    }
+
     /**
      * Returns a list of the IP addresses of all network interfaces of the local computer. If no IP addresses can be obtained, 127.0.0.1 is returned.
      *
@@ -646,6 +690,22 @@ public class Servient {
                 .parseString("wot.servient.servers = []")
                 .withFallback(config);
         return new Servient(clientOnlyConfig);
+    }
+
+    /**
+     * Returns the version of the servient. If this is not possible, <code>zero</code> is returned.
+     *
+     * @return
+     */
+    public static String getVersion() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(Servient.class.getClassLoader().getResourceAsStream("project.properties"));
+            return properties.getProperty("version");
+        }
+        catch (IOException e) {
+            return null;
+        }
     }
 
     private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {

@@ -94,7 +94,7 @@ public class ContentManager {
      * @throws ContentCodecException
      */
     public static <T> T contentToValue(Content content, DataSchema<T> schema) throws ContentCodecException {
-        if (content.getBody().length == 0) {
+        if (content == null || content.getBody().length == 0) {
             return null;
         }
 

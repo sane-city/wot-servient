@@ -1,6 +1,7 @@
 package city.sane.wot.binding.coap.resource;
 
 import city.sane.wot.binding.ProtocolServerException;
+import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -11,19 +12,18 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapHandler;
-import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -41,26 +41,16 @@ public class ObservePropertyResourceIT {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws TimeoutException {
         server.stop();
-
-        // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
-        //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
-        //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
-        //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
-        try {
-            Thread.sleep(1 * 1000L);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test(timeout = 20 * 1000)
-    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException {
+    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CoapClient client = new CoapClient("coap://localhost:5683/observable");
-        client.observe(new CoapHandler() {
+        CoapObserveRelation relation = client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
                 client.shutdown();
@@ -78,8 +68,7 @@ public class ObservePropertyResourceIT {
         });
 
         // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
 
         // write new value
         ExposedThingProperty property = thing.getProperty("count");

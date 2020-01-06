@@ -110,15 +110,16 @@ public class Form implements Serializable {
         private Map<String, Object> optionalProperties = new HashMap<>();
 
         public Builder(Form form) {
-            this.href = form.getHref();
-            this.op = form.getOp();
-            this.subprotocol = form.getSubprotocol();
-            this.contentType = form.getContentType();
-            this.optionalProperties = form.getOptionalProperties();
+            href = form.getHref();
+            op = form.getOp();
+            subprotocol = form.getSubprotocol();
+            contentType = form.getContentType();
+            optionalProperties = form.getOptionalProperties();
         }
 
         public Builder() {
-
+            op = new ArrayList<>();
+            optionalProperties = new HashMap<>();
         }
 
         public Builder setHref(String href) {
@@ -133,11 +134,16 @@ public class Form implements Serializable {
         }
 
         public Builder setOp(Operation ... op) {
-            return setOp(Arrays.asList(op));
+            return setOp(new ArrayList<>(Arrays.asList(op)));
         }
 
         public Builder setOp(Operation op) {
-            return setOp(Collections.singletonList(op));
+            return setOp(new ArrayList<>(Arrays.asList(op)));
+        }
+
+        public Builder addOp(Operation op) {
+            this.op.add(op);
+            return this;
         }
 
         public Builder setSubprotocol(String subprotocol) {
