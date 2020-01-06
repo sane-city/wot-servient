@@ -68,7 +68,7 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("AkkaServer exposes '{}'", thing.getTitle());
+        log.info("JadexServer exposes '{}'", thing.getTitle());
 
         if (platform == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before JadexServer has been started"));
