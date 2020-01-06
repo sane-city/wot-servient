@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -30,7 +29,7 @@ class AllPropertiesActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        String href = MediatorActor.remoteOverlayPath(getSelf().path()).toString();
+        String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)

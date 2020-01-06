@@ -2,7 +2,6 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.akka.actor.ThingsActor;
@@ -95,7 +94,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
-                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -117,7 +116,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
-                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -126,7 +125,7 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            String endpoint = MediatorActor.remoteOverlayPath(thingsActor.path()).toString();
+            String endpoint = thingsActor.path().toStringWithAddress(system.provider().getDefaultAddress());
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
