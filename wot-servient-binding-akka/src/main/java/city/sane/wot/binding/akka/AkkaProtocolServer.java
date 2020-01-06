@@ -2,6 +2,7 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
@@ -89,7 +90,8 @@ public class AkkaProtocolServer implements ProtocolServer {
         return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
-                    log.info("AkkaServer has '{}' exposed at {}", thing.getId(), thingActor.path().toString().replaceAll("akka:", "bud:"));
+                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }
@@ -103,7 +105,8 @@ public class AkkaProtocolServer implements ProtocolServer {
         return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
-                    log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), thingActor.path().toString().replaceAll("akka:", "bud:"));
+                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }
@@ -111,8 +114,8 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            // FIXME later
-            return new URI(thingsActor.path().toString().replaceAll("akka:", "bud:"));
+            String endpoint = MediatorActor.remoteOverlayPath(thingsActor.path()).toString();
+            return new URI(endpoint);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create directory url", e);
