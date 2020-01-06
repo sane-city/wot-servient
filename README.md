@@ -126,18 +126,9 @@ ConsumedThing consumedThing = wot.consume(thing);
 Object value = consumedThing.getProperty("count").read().get();
 ```
 
-### Add new [Protocol Binding](https://www.w3.org/TR/wot-architecture/#dfn-wot-protocol-binding)
+### Documentation
 
-Implement [ProtocolServer](wot-servient/src/main/java/city/sane/wot/binding/ProtocolServer.java) to create a additional server. This
-allows to expose things in additional protocols. To use the newly created implementation, it must be added to
-`wot.servient.servers` in the configuration.
-Existing implementations can be found in the `wot-servient-binding-*` sub modules.
-
-Implement [ProtocolClient](wot-servient/src/main/java/city/sane/wot/binding/ProtocolClient.java) and
-[ProtocolClientFactory](src/main/java/city/sane/wot/binding/ProtocolClientFactor.java) to create a additional client.
-This allows to consume things in additional protocols. To use the newly created implementation, it must be added to
-`wot.servient.clients` in the configuration.
-Existing implementations can be found in the `wot-servient-binding-*` package.
+More information can be found in the (still very short) [documentation](doc/README.md).
 
 ## License
 
