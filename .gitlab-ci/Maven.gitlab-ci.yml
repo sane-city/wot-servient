@@ -42,6 +42,17 @@ maven-deploy:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
 
+maven-release:
+  stage: deploy
+  only:
+    - /^\d+\.\d+/
+  except:
+    - branches
+    - triggers
+  script:
+    - mvn $MAVEN_CLI_OPTS versions:set -DnewVersion=$CI_COMMIT_TAG
+    - mvn $MAVEN_CLI_OPTS deploy -DskipTests
+
 build-dist:
   stage: deploy
   script:
