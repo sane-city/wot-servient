@@ -34,24 +34,35 @@ public class ThingsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
     private final Map<String, ActorRef> children = new HashMap<>();
-    private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    private final ActorRef mediator;
 
     private ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
+        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+            mediator = DistributedPubSub.get(getContext().system()).mediator();
+        }
+        else {
+            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            mediator = null;
+        }
     }
 
     @Override
     public void preStart() {
         log.info("Started");
 
-        mediator.tell(new DistributedPubSubMediator.Subscribe(TOPIC, getSelf()), getSelf());
+        if (mediator != null) {
+            mediator.tell(new DistributedPubSubMediator.Subscribe(TOPIC, getSelf()), getSelf());
+        }
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
 
-        mediator.tell(new DistributedPubSubMediator.Unsubscribe(TOPIC, getSelf()), getSelf());
+        if (mediator != null) {
+            mediator.tell(new DistributedPubSubMediator.Unsubscribe(TOPIC, getSelf()), getSelf());
+        }
     }
 
     @Override
