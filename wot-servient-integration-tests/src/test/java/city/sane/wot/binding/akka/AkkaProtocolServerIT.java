@@ -1,5 +1,6 @@
 package city.sane.wot.binding.akka;
 
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -17,19 +18,28 @@ import java.util.concurrent.ExecutionException;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.*;
 
-@Ignore
 public class AkkaProtocolServerIT {
     private AkkaProtocolServer server;
 
+    private Thread serverThread;
+    private RelayServer relayServer;
+
     @Before
     public void setUp() {
+        relayServer= new RelayServer(ConfigFactory.load());
+        serverThread = new Thread(relayServer);
+        serverThread.start();
+
         server = new AkkaProtocolServer(ConfigFactory.load());
         server.start().join();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         server.stop().join();
+
+        relayServer.close();
+        serverThread.join();
     }
 
     @Test
@@ -57,7 +67,7 @@ public class AkkaProtocolServerIT {
         assertThat(url, matchesPattern("bud://.*"));
     }
 
-    @Test
+    @Ignore
     public void getThingUrl() throws ProtocolServerException {
         String url = server.getThingUrl("counter").toString();
 

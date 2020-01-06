@@ -1,13 +1,8 @@
 package city.sane.wot.binding.akka.actor;
 
 import akka.actor.*;
-import akka.cluster.pubsub.DistributedPubSub;
-import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.akkamediator.MediatorActor;
-import city.sane.akkamediator.relayextension.MediatorRelayExtension;
-import city.sane.akkamediator.relayextension.MediatorRelayExtensionImpl;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 
@@ -45,28 +40,11 @@ class DiscoverActor extends AbstractActor {
     @Override
     public void preStart() {
         log.info("Started");
-
-        // TODO: Remove wenn der Mediator endlich rechtzeitig erstellt wird
-        ActorRef mediator = null;
-        try {
-            mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();
-        } catch (MediatorRelayExtensionImpl.NoSuchMediatorException e) {
-            mediator = getContext().getSystem().actorOf(MediatorActor.props(), "MediatorActor");
-            MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).register(getContext().getSystem().name(), mediator);
-        }
-
-        if (mediator == null) {
-            log.error("Can not create Mediator!!!!!!");
-        }
-
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).join(getSelf());
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).tell(ActorPath.fromString("bud://ALL/ALL"), new ThingsActor.Discover(filter));
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).leave(getSelf());
         timer.cancel();
     }
 

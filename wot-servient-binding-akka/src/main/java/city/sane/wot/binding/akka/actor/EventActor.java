@@ -4,7 +4,6 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
@@ -29,7 +28,7 @@ class EventActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        String href = MediatorActor.remoteOverlayPath(getSelf().path()).toString();
+        String href= getSelf().path().toString().replaceAll("akka:", "bud:");
         Form form = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT)

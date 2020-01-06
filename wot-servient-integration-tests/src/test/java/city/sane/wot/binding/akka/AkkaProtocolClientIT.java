@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.akka.actor.ActionActor;
 import city.sane.wot.binding.akka.actor.ActionActor.Invoke;
@@ -26,14 +27,20 @@ import java.util.concurrent.ExecutionException;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-@Ignore
 public class AkkaProtocolClientIT {
     private ActorSystem system;
     private AkkaProtocolClientFactory clientFactory;
     private ProtocolClient client;
 
+    private Thread serverThread;
+    private RelayServer server;
+
     @Before
     public void setUp() {
+        server = new RelayServer(ConfigFactory.load());
+        serverThread = new Thread(server);
+        serverThread.start();
+
         clientFactory = new AkkaProtocolClientFactory(ConfigFactory.load());
         clientFactory.init().join();
 
@@ -44,11 +51,14 @@ public class AkkaProtocolClientIT {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         clientFactory.destroy().join();
 
         TestKit.shutdownActorSystem(system);
         system = null;
+
+        server.close();
+        serverThread.join();
     }
 
     @Test
