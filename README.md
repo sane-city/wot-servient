@@ -25,12 +25,14 @@ You can either include this implementation in your own software stack or use the
 
 ## Installation
 
-### From Source
+### Maven
+
+Either build and install SANE WoT by yourself...
 ```bash
 mvn install
 ```
 
-### From Maven
+...or pull it from public repo:
 
 Add GitLab Maven Repository to `pom.xml`:
 ```xml
