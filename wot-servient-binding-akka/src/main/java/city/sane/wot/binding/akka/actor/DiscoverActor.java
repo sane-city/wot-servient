@@ -8,14 +8,13 @@ import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import city.sane.wot.binding.akka.actor.ThingsActor.Things;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-
-import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
@@ -25,12 +24,19 @@ class DiscoverActor extends AbstractActor {
     private final Cancellable timer;
     private final ActorRef requester;
     private final ThingFilter filter;
-    private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    private final ActorRef mediator;
     private final Map<String, Thing> things = new HashMap<>();
 
     private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
+        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+            mediator = DistributedPubSub.get(getContext().system()).mediator();
+        }
+        else {
+            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            mediator = null;
+        }
 
         timer = getContext()
                 .getSystem()
@@ -47,7 +53,9 @@ class DiscoverActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        mediator.tell(new DistributedPubSubMediator.Publish(ThingsActor.TOPIC, new ThingsActor.Discover(filter)), getSelf());
+        if (mediator != null) {
+            mediator.tell(new DistributedPubSubMediator.Publish(ThingsActor.TOPIC, new ThingsActor.Discover(filter)), getSelf());
+        }
     }
 
     @Override
