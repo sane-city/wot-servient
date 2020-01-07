@@ -33,7 +33,7 @@ public class DefaultWot implements Wot {
      *
      * @param config
      */
-    private DefaultWot(Config config) throws WotException {
+    public DefaultWot(Config config) throws WotException {
         try {
             servient = new Servient(config);
             servient.start().join();
