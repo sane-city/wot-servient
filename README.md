@@ -49,7 +49,7 @@ Add SANE WoT as dependency to your `pom.xml`:
 <dependency>
     <groupId>city.sane.wot-servient</groupId>
     <artifactId>wot-servient-all</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 ```
 
