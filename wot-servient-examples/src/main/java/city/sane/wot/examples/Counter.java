@@ -17,7 +17,7 @@ import java.util.Date;
 class Counter {
     public static void main(String[] args) throws WotException {
         // create wot
-        Wot wot = new DefaultWot();
+        Wot wot = DefaultWot.serverOnly();
 
         // create counter
         Thing thing = new Thing.Builder()
