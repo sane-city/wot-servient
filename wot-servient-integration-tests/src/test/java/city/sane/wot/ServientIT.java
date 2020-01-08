@@ -1,6 +1,7 @@
 package city.sane.wot;
 
 import city.sane.Pair;
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -47,9 +48,15 @@ public class ServientIT {
     @Parameterized.Parameter
     public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
+    private RelayServer relayServer;
+    private Thread relayServerThread;
 
     @Before
     public void setup() throws ServientException {
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
+
         Config config = ConfigFactory
                 .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
                         "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")
@@ -60,8 +67,11 @@ public class ServientIT {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws InterruptedException {
         servient.shutdown().join();
+
+        relayServer.close();
+        relayServerThread.join();
     }
 
     @Test
@@ -238,8 +248,7 @@ public class ServientIT {
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
         return Arrays.asList(
-                // akka-binding with relay is not fully supported by now
-//                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
+                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
                 new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
                 new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
