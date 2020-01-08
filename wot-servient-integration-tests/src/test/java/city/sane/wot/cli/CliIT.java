@@ -1,6 +1,13 @@
 package city.sane.wot.cli;
 
+import akka.actor.ActorSystem;
+import akka.testkit.javadsl.TestKit;
+import city.sane.relay.server.RelayServer;
 import com.google.common.io.Files;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -11,6 +18,22 @@ import java.nio.charset.Charset;
 import static org.junit.Assert.assertTrue;
 
 public class CliIT {
+    private RelayServer relayServer;
+    private Thread relayServerThread;
+
+    @Before
+    public void setUp() {
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
+    }
+
+    @After
+    public void tearDown() throws InterruptedException {
+        relayServer.close();
+        relayServerThread.join();
+    }
+
     @Test
     public void help() throws CliException {
         new Cli(new String[]{ "--help" });

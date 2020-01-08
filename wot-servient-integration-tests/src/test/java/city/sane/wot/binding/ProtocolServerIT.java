@@ -1,5 +1,6 @@
 package city.sane.wot.binding;
 
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolServer;
@@ -30,10 +31,18 @@ import static org.junit.Assert.assertTrue;
 public class ProtocolServerIT {
     @Parameterized.Parameter
     public Class<? extends ProtocolServer> protocolServerClass;
+
+    private Thread relayServerThread;
+    private RelayServer relayServer;
+
     private ProtocolServer server;
 
     @Before
-    public void setup() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void setUp() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
+
         try {
             // initialize server with config
             server = protocolServerClass.getConstructor(Config.class).newInstance(ConfigFactory.load());
@@ -47,8 +56,11 @@ public class ProtocolServerIT {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws InterruptedException {
         server.stop().join();
+
+        relayServer.close();
+        relayServerThread.join();
     }
 
     @Test

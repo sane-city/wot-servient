@@ -10,7 +10,6 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.akka.Messages.*;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
-import city.sane.wot.binding.akka.actor.ThingActor;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
@@ -25,7 +24,6 @@ import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,13 +38,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class AkkaProtocolClientIT {
-    private Thread serverThread;
-    private RelayServer server;
+    private Thread relayServerThread;
+    private RelayServer relayServer;
 
     private ActorSystem system;
     private AkkaProtocolClientFactory clientFactory;
@@ -54,18 +51,16 @@ public class AkkaProtocolClientIT {
 
     @Before
     public void setUp() {
-        server = new RelayServer(ConfigFactory.load());
-        serverThread = new Thread(server);
-        serverThread.start();
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
 
-        Config configClient = ConfigFactory.parseString("wot.servient.akka.client.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load());
-        clientFactory = new AkkaProtocolClientFactory(configClient);
+        clientFactory = new AkkaProtocolClientFactory(ConfigFactory.load());
         clientFactory.init().join();
 
         client = clientFactory.getClient();
 
-        Config configServer = ConfigFactory.parseString("wot.servient.akka.server.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load()).getConfig("wot.servient.akka.server");
-        system = ActorSystem.create("my-server", configServer);
+        system = ActorSystem.create("my-relayServer", ConfigFactory.load().getConfig("wot.servient.akka.server"));
     }
 
     @After
@@ -77,8 +72,8 @@ public class AkkaProtocolClientIT {
             system = null;
         }
 
-        server.close();
-        serverThread.join();
+        relayServer.close();
+        relayServerThread.join();
     }
 
     @Test

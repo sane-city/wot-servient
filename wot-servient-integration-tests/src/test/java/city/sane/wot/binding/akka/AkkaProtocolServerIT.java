@@ -1,5 +1,6 @@
 package city.sane.wot.binding.akka;
 
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -17,21 +18,30 @@ import static org.junit.Assert.assertEquals;
 
 public class AkkaProtocolServerIT {
     private AkkaProtocolServer server;
+    private RelayServer relayServer;
+    private Thread relayServerThread;
 
     @Before
     public void setUp() {
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
+
         server = new AkkaProtocolServer(ConfigFactory.load());
         server.start().join();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         server.stop().join();
+
+        relayServer.close();
+        relayServerThread.join();
     }
 
     @Test
     public void getDirectoryUrl() throws URISyntaxException {
-        assertEquals(new URI("akka.tcp://wot@127.0.0.1:2552/user/things"), server.getDirectoryUrl());
+        assertEquals(new URI("bud://wot-server--change-me-in-application-conf/user/things"), server.getDirectoryUrl());
     }
 
     private ExposedThing getCounterThing() {

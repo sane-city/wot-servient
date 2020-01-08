@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
+import city.sane.relay.server.RelayServer;
 import city.sane.wot.binding.akka.Messages;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -26,17 +27,26 @@ import static org.junit.Assert.assertEquals;
 
 public class AllPropertiesActorIT {
     private ActorSystem system;
+    private RelayServer relayServer;
+    private Thread relayServerThread;
 
     @Before
     public void setUp() {
+        relayServer = new RelayServer(ConfigFactory.load());
+        relayServerThread = new Thread(relayServer);
+        relayServerThread.start();
+
         Config config = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
         system = ActorSystem.create("my-server", config);
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         TestKit.shutdownActorSystem(system);
         system = null;
+
+        relayServer.close();
+        relayServerThread.join();
     }
 
     @Test
