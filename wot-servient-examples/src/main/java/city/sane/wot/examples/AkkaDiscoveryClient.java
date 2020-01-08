@@ -24,28 +24,9 @@ class AkkaDiscoveryClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException, ThingQueryException {
         Wot wot = DefaultWot.clientOnly();
 
-        // Expose a thing
-        Thing cthing = new Thing.Builder()
-                .setId("HelloClient")
-                .setTitle("HelloClient")
-                .setObjectType("Thing")
-                .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1")
-                        .addContext("saref", "https://w3id.org/saref#")
-                )
-                .build();
-        ExposedThing ecthing = wot.produce(cthing);
-
-        ecthing.addProperty("Temperature", new ThingProperty.Builder().setObjectType("saref:Temperature").build(), 15);
-        ecthing.addProperty("Luftdruck", new ThingProperty.Builder().setObjectType("saref:Pressure").build(), 32);
-
-        System.out.println(ecthing.toJson());
-
-        ecthing.expose();
-
         // Search for things providing a Temperature
         ThingQuery query = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/saref#Temperature> .");
         Collection<Thing> things = wot.discover(new ThingFilter().setQuery(query)).get();
-
 
         System.out.println("Found " + things.size() + " thing(s)");
 

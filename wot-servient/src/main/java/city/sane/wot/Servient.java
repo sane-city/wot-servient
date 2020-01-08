@@ -693,6 +693,18 @@ public class Servient {
     }
 
     /**
+     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start any clients and can therefore only produce and expose things.
+     *
+     * @param config
+     */
+    public static Servient serverOnly(Config config) throws ServientException {
+        Config clientOnlyConfig = ConfigFactory
+                .parseString("wot.servient.client-factories = []")
+                .withFallback(config);
+        return new Servient(clientOnlyConfig);
+    }
+
+    /**
      * Returns the version of the servient. If this is not possible, <code>zero</code> is returned.
      *
      * @return

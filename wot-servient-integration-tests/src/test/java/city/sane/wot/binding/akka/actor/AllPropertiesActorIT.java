@@ -13,6 +13,8 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +29,8 @@ public class AllPropertiesActorIT {
 
     @Before
     public void setUp() {
-        system = ActorSystem.create();
+        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        system = ActorSystem.create("my-server", config);
     }
 
     @After

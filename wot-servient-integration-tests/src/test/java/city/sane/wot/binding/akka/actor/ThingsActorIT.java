@@ -31,8 +31,8 @@ public class ThingsActorIT {
 
     @Before
     public void setUp() {
-        Config config = ConfigFactory.parseString("akka.actor.provider = cluster").withFallback(ConfigFactory.load());
-        system = ActorSystem.create("my-system", config);
+        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        system = ActorSystem.create("my-server", config);
     }
 
     @After

@@ -109,7 +109,7 @@ public class AkkaProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        if (system.settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (system.settings().config().getStringList("wot.servient.akka.client.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             DiscoveryDispatcherActor.Discover message = new DiscoveryDispatcherActor.Discover(filter);
             log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 

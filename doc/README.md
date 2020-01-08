@@ -1,4 +1,4 @@
-# SANE Web of Things Servient Docs
+# SANE Web of Things Servient Documentation
 
 Welcome to [SANE Web of Things Servient](https://github.com/sane-city/wot-servient) Documentation.
 

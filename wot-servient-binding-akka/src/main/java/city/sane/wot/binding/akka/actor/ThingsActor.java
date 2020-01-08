@@ -38,7 +38,7 @@ public class ThingsActor extends AbstractActor {
 
     private ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
-        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
         else {
