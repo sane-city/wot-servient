@@ -54,20 +54,17 @@ public class AkkaProtocolClientIT {
 
     @Before
     public void setUp() {
-//        server = new RelayServer(ConfigFactory.load());
-//        serverThread = new Thread(server);
-//        serverThread.start();
+        server = new RelayServer(ConfigFactory.load());
+        serverThread = new Thread(server);
+        serverThread.start();
 
-//        Config configClient = ConfigFactory.parseString("wot.servient.akka.client.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load());
-        Config configClient = ConfigFactory.load();
+        Config configClient = ConfigFactory.parseString("wot.servient.akka.client.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load());
         clientFactory = new AkkaProtocolClientFactory(configClient);
         clientFactory.init().join();
 
         client = clientFactory.getClient();
 
-//        Config configServer = ConfigFactory.parseString("wot.servient.akka.server.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load()).getConfig("wot.servient.akka.server");
-        Config configServer = ConfigFactory.load().getConfig("wot.servient.akka.server");
-
+        Config configServer = ConfigFactory.parseString("wot.servient.akka.server.akka.p2p.relay.host = localhost").withFallback(ConfigFactory.load()).getConfig("wot.servient.akka.server");
         system = ActorSystem.create("my-server", configServer);
     }
 
@@ -80,8 +77,8 @@ public class AkkaProtocolClientIT {
             system = null;
         }
 
-//        server.close();
-//        serverThread.join();
+        server.close();
+        serverThread.join();
     }
 
     @Test

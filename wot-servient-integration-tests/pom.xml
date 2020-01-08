@@ -89,5 +89,12 @@
             <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- required by city.sane.relay:server -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.13</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
