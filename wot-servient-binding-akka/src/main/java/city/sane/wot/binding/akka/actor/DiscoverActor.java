@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
  */
-class DiscoverActor extends AbstractActor {
+public class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Cancellable timer;
     private final ActorRef requester;
@@ -89,13 +89,13 @@ class DiscoverActor extends AbstractActor {
     }
 
     // CrudMessages
-    static class DiscoverTimeout {
+    public static class DiscoverTimeout {
 
     }
 
     public static class Done {
-        final ActorRef requester;
-        final Map<String, Thing> things;
+        public final ActorRef requester;
+        public final Map<String, Thing> things;
 
         public Done(ActorRef requester, Map<String, Thing> things) {
             this.requester = requester;
