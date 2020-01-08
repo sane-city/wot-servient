@@ -31,6 +31,12 @@
     <dependencies>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
+            <artifactId>wot-servient</artifactId>
+            <version>1.3-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-akka</artifactId>
             <version>1.3-SNAPSHOT</version>
             <scope>test</scope>
