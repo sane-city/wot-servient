@@ -109,18 +109,12 @@ public class AkkaProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        if (system.settings().config().getStringList("wot.servient.akka.client.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
-            DiscoveryDispatcherActor.Discover message = new DiscoveryDispatcherActor.Discover(filter);
-            log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
+        DiscoveryDispatcherActor.Discover message = new DiscoveryDispatcherActor.Discover(filter);
+        log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
-            Duration timeout = Duration.ofSeconds(10);
-            return pattern.ask(discoveryActor, message, timeout)
-                    .thenApply(m -> ((Things) m).entities.values())
-                    .toCompletableFuture();
-        }
-        else {
-            log.warn("DistributedPubSub extension missing. ANY Discovery is not be supported.");
-            return CompletableFuture.failedFuture(new ProtocolClientNotImplementedException(getClass(), "discover"));
-        }
+        Duration timeout = Duration.ofSeconds(10);
+        return pattern.ask(discoveryActor, message, timeout)
+                .thenApply(m -> ((Things) m).entities.values())
+                .toCompletableFuture();
     }
 }

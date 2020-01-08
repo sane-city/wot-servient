@@ -2,6 +2,7 @@ package city.sane.wot.binding.akka.actor;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.Address;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
@@ -34,41 +35,25 @@ public class ThingsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
     private final Map<String, ActorRef> children = new HashMap<>();
-    private final ActorRef mediator;
 
     private ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
-        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
-            mediator = DistributedPubSub.get(getContext().system()).mediator();
-        }
-        else {
-            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
-            mediator = null;
-        }
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
-
-        if (mediator != null) {
-            mediator.tell(new DistributedPubSubMediator.Subscribe(TOPIC, getSelf()), getSelf());
-        }
+        String address = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
+        log.info("Started and listening on {}", address);
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
-
-        if (mediator != null) {
-            mediator.tell(new DistributedPubSubMediator.Unsubscribe(TOPIC, getSelf()), getSelf());
-        }
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(DistributedPubSubMediator.SubscribeAck.class, this::subscriptionAcknowledged)
                 .match(Read.class, m -> getThings())
                 .match(Discover.class, this::discover)
                 .match(Expose.class, this::expose)
@@ -76,10 +61,6 @@ public class ThingsActor extends AbstractActor {
                 .match(Destroy.class, this::destroy)
                 .match(Deleted.class, this::destroyed)
                 .build();
-    }
-
-    private void subscriptionAcknowledged(DistributedPubSubMediator.SubscribeAck m) {
-        log.info("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
     private void expose(Expose m) {

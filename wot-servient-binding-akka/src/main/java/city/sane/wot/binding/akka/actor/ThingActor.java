@@ -20,7 +20,7 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
  * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link city.sane.wot.thing.action.ExposedThingAction}, or
  * {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
-class ThingActor extends AbstractActor {
+public class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ActorRef requestor;
     private final ExposedThing thing;
