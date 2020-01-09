@@ -59,7 +59,7 @@ build-dist:
     - 'mvn $MAVEN_CLI_OPTS -DskipTests -pl wot-servient-cli -am package'
     - mkdir -p dist/wot-servient
     - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
-    - cp wot-servient-cli/target/wot-servient-cli-1.3-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
+    - cp wot-servient-cli/target/wot-servient-cli-1.4-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
   artifacts:
     paths:
       - dist/wot-servient
