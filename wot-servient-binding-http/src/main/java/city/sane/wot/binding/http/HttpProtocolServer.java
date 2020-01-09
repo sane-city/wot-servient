@@ -2,6 +2,7 @@ package city.sane.wot.binding.http;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.http.route.*;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
@@ -38,6 +39,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     private final Service server;
     private final Map<String, ExposedThing> things = new HashMap<>();
+    private boolean started = false;
 
     public HttpProtocolServer(Config config) {
         bindHost = config.getString("wot.servient.http.bind-host");
@@ -78,6 +80,8 @@ public class HttpProtocolServer implements ProtocolServer {
                 server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
                 server.get("", new ThingRoute(things));
             });
+
+            started = true;
         });
     }
 
@@ -86,6 +90,7 @@ public class HttpProtocolServer implements ProtocolServer {
         log.info("Stopping on port '{}'", bindPort);
 
         return CompletableFuture.runAsync(() -> {
+            started = false;
             server.stop();
             server.awaitStop();
         });
@@ -95,6 +100,11 @@ public class HttpProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getTitle(),
                 bindHost, bindPort, thing.getId());
+
+        if (!started) {
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before HttpServer has been started"));
+        }
+
         things.put(thing.getId(), thing);
 
         for (String address : addresses) {
@@ -120,6 +130,37 @@ public class HttpProtocolServer implements ProtocolServer {
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> destroy(ExposedThing thing) {
+        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
+                bindHost, bindPort, thing.getId());
+        things.remove(thing.getId());
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public URI getDirectoryUrl() {
+        try {
+            return new URI(addresses.get(0));
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create directory url", e);
+            return null;
+        }
+    }
+
+    @Override
+    public URI getThingUrl(String id) {
+        try {
+            return new URI(addresses.get(0)).resolve("/" + id);
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to thing url", e);
+            return null;
+        }
     }
 
     private void exposeProperties(ExposedThing thing, String address, String contentType) {
@@ -187,37 +228,6 @@ public class HttpProtocolServer implements ProtocolServer {
             event.addForm(form.build());
             log.info("Assign '{}' to Event '{}'", href, name);
         });
-    }
-
-    @Override
-    public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
-                bindHost, bindPort, thing.getId());
-        things.remove(thing.getId());
-
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public URI getDirectoryUrl() {
-        try {
-            return new URI(addresses.get(0));
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to create directory url", e);
-            return null;
-        }
-    }
-
-    @Override
-    public URI getThingUrl(String id) {
-        try {
-            return new URI(addresses.get(0)).resolve("/" + id);
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to thing url", e);
-            return null;
-        }
     }
 
     private String getHrefWithVariablePattern(String address, ExposedThing thing, String type, String interactionName, ThingInteraction interaction) {

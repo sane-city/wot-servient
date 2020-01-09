@@ -2,6 +2,7 @@ package city.sane.wot.binding.coap;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.coap.resource.*;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
@@ -11,18 +12,22 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.typesafe.config.Config;
+import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +68,10 @@ public class CoapProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> start() {
         log.info("Starting on port '{}'", bindPort);
 
+        if (server != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.runAsync(() -> {
             server = new WotCoapServer(this);
             server.start();
@@ -73,19 +82,23 @@ public class CoapProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> stop() {
         log.info("Stopping on port '{}'", bindPort);
 
+        if (server == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.runAsync(() -> {
             server.stop();
             server.destroy();
 
-            // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the port is
-            //  still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port was already
-            //  in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the maintainer of the CoAP
-            //  server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
             try {
-                Thread.sleep(1 * 1000L);
+                // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the
+                //  port is still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port
+                //  was already in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the
+                //  maintainer of the CoAP server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
+                waitForPort(bindPort);
             }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            catch (TimeoutException e) {
+                throw new CompletionException(e);
             }
 
             log.debug("Server stopped");
@@ -96,6 +109,11 @@ public class CoapProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("WotCoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
                 thing.getTitle(), bindPort, thing.getId());
+
+        if (server == null) {
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
+        }
+
         things.put(thing.getId(), thing);
 
         CoapResource thingResource = new ThingResource(thing);
@@ -116,6 +134,47 @@ public class CoapProtocolServer implements ProtocolServer {
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public CompletableFuture<Void> destroy(ExposedThing thing) {
+        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
+                thing.getTitle(), bindPort, thing.getId());
+
+        if (server == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        things.remove(thing.getId());
+
+        CoapResource resource = resources.remove(thing.getId());
+        if (resource != null) {
+            server.getRoot().delete(resource);
+        }
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Override
+    public URI getDirectoryUrl() {
+        try {
+            return new URI(addresses.get(0));
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create directory url", e);
+            return null;
+        }
+    }
+
+    @Override
+    public URI getThingUrl(String id) {
+        try {
+            return new URI(addresses.get(0)).resolve("/" + id);
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to thing url", e);
+            return null;
+        }
     }
 
     private void exposeProperties(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
@@ -226,47 +285,92 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    @Override
-    public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
-                thing.getTitle(), bindPort, thing.getId());
-        things.remove(thing.getId());
-
-        CoapResource resource = resources.remove(thing.getId());
-        if (resource != null) {
-            server.getRoot().delete(resource);
-        }
-
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public URI getDirectoryUrl() {
-        try {
-            return new URI(addresses.get(0));
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to create directory url", e);
-            return null;
-        }
-    }
-
-    @Override
-    public URI getThingUrl(String id) {
-        try {
-            return new URI(addresses.get(0)).resolve("/" + id);
-        }
-        catch (URISyntaxException e) {
-            log.warn("Unable to thing url", e);
-            return null;
-        }
-    }
-
     public int getBindPort() {
         return bindPort;
     }
 
     public Map<String, ExposedThing> getThings() {
         return things;
+    }
+
+    /**
+     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is specified with <code>duration</code>.
+     * If the port does not become available within the specified duration, a {@link TimeoutException} is thrown.
+     *
+     * @param port
+     * @param duration
+     * @throws TimeoutException
+     */
+    public static void waitForPort(int port, Duration duration) throws TimeoutException {
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try (ServerSocket socket = new ServerSocket(port)) {
+                    result.complete(true);
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }, 0, 100);
+
+        try {
+            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            // ignore
+        }
+    }
+
+    /**
+     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is 10 seconds.
+     * If the port does not become available within 10 seconds, a {@link TimeoutException} is thrown.
+     *
+     * @param port
+     * @throws TimeoutException
+     */
+    public static void waitForPort(int port) throws TimeoutException {
+        waitForPort(port,Duration.ofSeconds(10));
+    }
+
+    /**
+     * This methods blocks until <code>relation</code> is acknowledged. The maximum blocking time is specified with <code>duration</code>.
+     * If the relation is not acknowledged within the specified duration, a {@link TimeoutException} is thrown.
+     *
+     * @param relation
+     * @param duration
+     * @throws TimeoutException
+     */
+    public static void waitForRelationAcknowledgedObserveRelation(CoapObserveRelation relation, Duration duration) throws TimeoutException {
+        CompletableFuture<Void> result = new CompletableFuture<>();
+
+        try {
+            Field requestField = CoapObserveRelation.class.getDeclaredField("request");
+            requestField.setAccessible(true);
+            Request request = (Request) requestField.get(relation);
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (request.isAcknowledged()) {
+                        result.complete(null);
+                    }
+                }
+            }, 0, 100);
+
+            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (NoSuchFieldException | IllegalAccessException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

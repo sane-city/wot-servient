@@ -1,6 +1,5 @@
 package city.sane.wot.binding.akka;
 
-import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -8,16 +7,14 @@ import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.text.MatchesPattern.matchesPattern;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-@Ignore
 public class AkkaProtocolServerIT {
     private AkkaProtocolServer server;
 
@@ -33,35 +30,8 @@ public class AkkaProtocolServerIT {
     }
 
     @Test
-    public void expose() {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertNull(server.destroy(thing).get());
-    }
-
-    @Test
-    public void getDirectoryUrl() {
-        String url = server.getDirectoryUrl().toString();
-
-        assertThat(url, matchesPattern("bud://.*"));
-    }
-
-    @Test
-    public void getThingUrl() throws ProtocolServerException {
-        String url = server.getThingUrl("counter").toString();
-
-        assertThat(url, matchesPattern("bud://.*/counter"));
+    public void getDirectoryUrl() throws URISyntaxException {
+        assertEquals(new URI("akka.tcp://wot@127.0.0.1:2552/user/things"), server.getDirectoryUrl());
     }
 
     private ExposedThing getCounterThing() {

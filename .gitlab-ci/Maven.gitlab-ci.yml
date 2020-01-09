@@ -42,13 +42,24 @@ maven-deploy:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
 
+maven-release:
+  stage: deploy
+  only:
+    - /^\d+\.\d+/
+  except:
+    - branches
+    - triggers
+  script:
+    - mvn $MAVEN_CLI_OPTS versions:set -DnewVersion=$CI_COMMIT_TAG
+    - mvn $MAVEN_CLI_OPTS deploy -DskipTests
+
 build-dist:
   stage: deploy
   script:
     - 'mvn $MAVEN_CLI_OPTS -DskipTests -pl wot-servient-cli -am package'
     - mkdir -p dist/wot-servient
     - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli-*.jar dist/wot-servient
-    - cp wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
+    - cp wot-servient-cli/target/wot-servient-cli-1.4-SNAPSHOT.jar dist/wot-servient/wot-servient.jar
   artifacts:
     paths:
       - dist/wot-servient

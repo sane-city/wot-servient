@@ -5,11 +5,16 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.akka.Messages;
+import city.sane.wot.binding.akka.Messages.Read;
+import city.sane.wot.binding.akka.Messages.Subscribe;
+import city.sane.wot.binding.akka.Messages.SubscriptionNext;
+import city.sane.wot.binding.akka.Messages.Write;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -21,6 +26,7 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,8 +35,8 @@ public class PropertyActorIT {
 
     @Before
     public void setUp() {
-        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
-        system = ActorSystem.create("my-server", config);
+        Config config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(ConfigFactory.load());
+        system = ActorSystem.create("my-system", config);
     }
 
     @After
@@ -47,7 +53,7 @@ public class PropertyActorIT {
         Props props = PropertyActor.props("count", thing.getProperty("count"));
         ActorRef actorRef = system.actorOf(props);
 
-        actorRef.tell(new Messages.Read(), testKit.getRef());
+        actorRef.tell(new Read(), testKit.getRef());
 
         Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
         int count = ContentManager.contentToValue(msg.content, new IntegerSchema());
@@ -63,9 +69,29 @@ public class PropertyActorIT {
         Props props = PropertyActor.props("count", thing.getProperty("count"));
         ActorRef actorRef = system.actorOf(props);
 
-        actorRef.tell(new Messages.Write(ContentManager.valueToContent(1337)), testKit.getRef());
+        actorRef.tell(new Write(ContentManager.valueToContent(1337)), testKit.getRef());
 
         testKit.expectMsgClass(Messages.Written.class);
+    }
+
+    @Test
+    public void subscribeProperty() throws ExecutionException, InterruptedException {
+        TestKit testKit = new TestKit(system);
+
+        ExposedThing thing = getExposedCounterThing();
+        ExposedThingProperty property = thing.getProperty("count");
+        Props props = PropertyActor.props("count", property);
+        ActorRef actorRef = system.actorOf(props);
+
+        actorRef.tell(new Subscribe(), testKit.getRef());
+
+        // wait until client establish subcription
+        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
+        Thread.sleep(5 * 1000L);
+
+        property.write(23).get();
+
+        testKit.expectMsgClass(SubscriptionNext.class);
     }
 
     private ExposedThing getExposedCounterThing() {

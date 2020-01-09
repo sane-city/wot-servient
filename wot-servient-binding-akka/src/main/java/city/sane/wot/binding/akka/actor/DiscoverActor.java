@@ -1,13 +1,14 @@
 package city.sane.wot.binding.akka.actor;
 
-import akka.actor.*;
+import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.actor.Cancellable;
+import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.akkamediator.MediatorActor;
-import city.sane.akkamediator.relayextension.MediatorRelayExtension;
-import city.sane.akkamediator.relayextension.MediatorRelayExtensionImpl;
+import city.sane.wot.binding.akka.actor.ThingsActor.Things;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 
@@ -15,21 +16,27 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
-
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
  */
-class DiscoverActor extends AbstractActor {
+public class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Cancellable timer;
     private final ActorRef requester;
     private final ThingFilter filter;
+    private final ActorRef mediator;
     private final Map<String, Thing> things = new HashMap<>();
 
     private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
+        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+            mediator = DistributedPubSub.get(getContext().system()).mediator();
+        }
+        else {
+            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            mediator = null;
+        }
 
         timer = getContext()
                 .getSystem()
@@ -46,27 +53,15 @@ class DiscoverActor extends AbstractActor {
     public void preStart() {
         log.info("Started");
 
-        // TODO: Remove wenn der Mediator endlich rechtzeitig erstellt wird
-        ActorRef mediator = null;
-        try {
-            mediator = MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).mediator();
-        } catch (MediatorRelayExtensionImpl.NoSuchMediatorException e) {
-            mediator = getContext().getSystem().actorOf(MediatorActor.props(), "MediatorActor");
-            MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).register(getContext().getSystem().name(), mediator);
+        if (mediator != null) {
+            mediator.tell(new DistributedPubSubMediator.Publish(ThingsActor.TOPIC, new ThingsActor.Discover(filter)), getSelf());
         }
-
-        if (mediator == null) {
-            log.error("Can not create Mediator!!!!!!");
-        }
-
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).join(getSelf());
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).tell(ActorPath.fromString("bud://ALL/ALL"), new ThingsActor.Discover(filter));
     }
 
     @Override
     public void postStop() {
         log.info("Stopped");
-        MediatorRelayExtension.MediatorRelayExtensionProvider.get(getContext().getSystem()).leave(getSelf());
+
         timer.cancel();
     }
 
@@ -94,13 +89,13 @@ class DiscoverActor extends AbstractActor {
     }
 
     // CrudMessages
-    static class DiscoverTimeout {
+    public static class DiscoverTimeout {
 
     }
 
     public static class Done {
-        final ActorRef requester;
-        final Map<String, Thing> things;
+        public final ActorRef requester;
+        public final Map<String, Thing> things;
 
         public Done(ActorRef requester, Map<String, Thing> things) {
             this.requester = requester;

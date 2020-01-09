@@ -69,8 +69,7 @@ class Cli {
     }
 
     private void printVersion() {
-        // FIXME: read correct version from pom.xml
-        String version = "1.0-SNAPSHOT";
+        String version = Servient.getVersion();
         System.out.println(version);
     }
 
@@ -86,9 +85,19 @@ class Cli {
             log.info("Servient is using current directory with {} script(s)", scripts.size());
         }
 
+        if (scripts.isEmpty()) {
+            log.info("No scripts given. Nothing to do!");
+            return;
+        }
+
         Servient servient = null;
         try {
             servient = getServient(cmd);
+            Servient finalServient = servient;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                log.info("Shutdown Request detected. Shutdown Servient");
+                finalServient.shutdown().join();
+            }));
             servient.start().join();
             Wot wot = new DefaultWot(servient);
 

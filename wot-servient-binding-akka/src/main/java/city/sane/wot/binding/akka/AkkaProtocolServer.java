@@ -2,8 +2,8 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import city.sane.akkamediator.MediatorActor;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
@@ -58,9 +58,12 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> start() {
         log.info("Start AkkaServer");
-        system = ActorSystem.create(actorSystemName, actorSystemConfig);
 
-        thingsActor = system.actorOf(ThingsActor.props(things), "things");
+        if (system == null) {
+            system = ActorSystem.create(actorSystemName, actorSystemConfig);
+
+            thingsActor = system.actorOf(ThingsActor.props(things), "things");
+        }
 
         return CompletableFuture.completedFuture(null);
     }
@@ -80,17 +83,18 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("AkkaServer exposes '{}'", thing.getTitle());
-        things.put(thing.getId(), thing);
 
         if (system == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before AkkaServer has been started"));
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
         }
+
+        things.put(thing.getId(), thing);
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
-                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -99,13 +103,20 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         log.info("AkkaServer stop exposing '{}'", thing.getTitle());
-        things.remove(thing.getId());
+
+        if (system == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        if (things.remove(thing.getId()) == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
-                    String endpoint = MediatorActor.remoteOverlayPath(thingActor.path()).toString();
+                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
                     log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -114,11 +125,23 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            String endpoint = MediatorActor.remoteOverlayPath(thingsActor.path()).toString();
+            String endpoint = thingsActor.path().toStringWithAddress(system.provider().getDefaultAddress());
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create directory url", e);
+            return null;
+        }
+    }
+
+    @Override
+    public URI getThingUrl(String id) {
+        try {
+            String endpoint = thingsActor.path().child(id).toStringWithAddress(system.provider().getDefaultAddress());
+            return new URI(endpoint);
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create thing url", e);
             return null;
         }
     }

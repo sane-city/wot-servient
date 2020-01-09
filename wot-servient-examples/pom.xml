@@ -5,7 +5,7 @@
     <parent>
         <artifactId>master</artifactId>
         <groupId>city.sane.wot-servient</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,63 +14,63 @@
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-akka</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-coap</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-file</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-http</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-jadex</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-jsonpathhttp</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-mqtt</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-value</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -84,14 +84,14 @@
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-cli</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-scripting-groovy</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -5,6 +5,7 @@ import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
 import jadex.bridge.IExternalAccess;
+import jadex.bridge.service.IService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ public class JadexProtocolServer implements ProtocolServer {
     private final JadexProtocolServerConfig config;
     private IExternalAccess platform;
     private ThingsService thingsService;
+    private String thingsServiceId;
 
     public JadexProtocolServer(Config wotConfig) {
         this(new JadexProtocolServerConfig(wotConfig));
@@ -38,9 +40,14 @@ public class JadexProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> start() {
         log.info("JadexServer is starting Jadex Platform");
 
+        if (platform != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return config.createPlatform(things).thenAccept(result -> {
             platform = result.first();
             thingsService = result.second();
+            thingsServiceId = ((IService) thingsService).getServiceId().toString();
         });
     }
 
@@ -49,7 +56,10 @@ public class JadexProtocolServer implements ProtocolServer {
         log.info("JadexServer is stopping Jadex Platform '{}'", platform);
 
         if (platform != null) {
-            return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> null);
+            return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> {
+                platform = null;
+                return null;
+            });
         }
         else {
             return CompletableFuture.completedFuture(null);
@@ -58,12 +68,13 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("AkkaServer exposes '{}'", thing.getTitle());
-        things.put(thing.getId(), thing);
+        log.info("JadexServer exposes '{}'", thing.getTitle());
 
         if (platform == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before JadexServer has been started"));
         }
+
+        things.put(thing.getId(), thing);
 
         CompletableFuture<IExternalAccess> expose = FutureConverters.fromJadex(thingsService.expose(thing.getId()));
 
@@ -72,7 +83,9 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        things.remove(thing.getId());
+        if (things.remove(thing.getId()) == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
         if (thingsService != null) {
             return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
@@ -81,5 +94,4 @@ public class JadexProtocolServer implements ProtocolServer {
             return CompletableFuture.completedFuture(null);
         }
     }
-
 }

@@ -15,12 +15,14 @@ import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
 import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.thing.Context;
 import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.filter.*;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -38,9 +40,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class ServientIT {
@@ -63,6 +65,19 @@ public class ServientIT {
     public void teardown() {
         servient.shutdown().join();
     }
+
+    @Test
+    public void destroy() {
+        ExposedThing thing = getExposedCounterThing();
+        servient.addThing(thing);
+        thing.expose().join();
+        thing.destroy().join();
+
+        assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
+        assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
+        assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
+    }
+
 
     @Test
     public void fetch() throws ProtocolServerException {
@@ -98,6 +113,51 @@ public class ServientIT {
         catch (ProtocolServerNotImplementedException e) {
 
         }
+    }
+
+    @Test
+    public void discoverLocal() throws ExecutionException, InterruptedException {
+        // expose things so that something can be discovered
+        ExposedThing thingX = new ExposedThing(servient).setId("ThingX");
+        servient.addThing(thingX);
+        thingX.expose().join();
+        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
+        servient.addThing(thingY);
+        thingY.expose().join();
+        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
+        servient.addThing(thingZ);
+        thingZ.expose().join();
+
+        // discover
+        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
+
+        Collection<Thing> things = servient.discover(filter).get();
+        assertEquals(3, things.size());
+    }
+
+    @Test
+    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException, ThingQueryException {
+        // expose things so that something can be discovered
+        ExposedThing thingX = new ExposedThing(servient)
+                .setId("ThingX")
+                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                .setObjectType("Thing");
+        servient.addThing(thingX);
+        thingX.expose().join();
+        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
+        servient.addThing(thingY);
+        thingY.expose().join();
+        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
+        servient.addThing(thingZ);
+        thingZ.expose().join();
+
+        // discover
+        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
+        ThingQuery sparqlQuery = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .");
+        filter.setQuery(sparqlQuery);
+
+        Collection<Thing> things = servient.discover(filter).get();
+        assertEquals(1, things.size());
     }
 
     private ExposedThing getExposedCounterThing() {

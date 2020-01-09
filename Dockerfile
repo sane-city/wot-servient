@@ -13,7 +13,7 @@ RUN mkdir /usr/local/share/wot-servient && \
 
 COPY --from=build /wot-servient/wot-servient-cli/bin/ /usr/local/share/wot-servient/bin/
 COPY --from=build /wot-servient/wot-servient-cli/target/lib/ /usr/local/share/wot-servient/lib/
-COPY --from=build /wot-servient/wot-servient-cli/target/wot-servient-cli-1.1-SNAPSHOT.jar /usr/local/share/wot-servient/wot-servient.jar
+COPY --from=build /wot-servient/wot-servient-cli/target/wot-servient-cli-1.4-SNAPSHOT.jar /usr/local/share/wot-servient/wot-servient.jar
 
 EXPOSE 8080 5683
 
