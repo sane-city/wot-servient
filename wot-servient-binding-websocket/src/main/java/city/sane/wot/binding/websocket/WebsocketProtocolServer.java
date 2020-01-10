@@ -198,11 +198,15 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private void exposeEvents(ExposedThing thing, String address) {
         Map<String, ExposedThingEvent> events = thing.getEvents();
         events.forEach((name, event) -> {
-            Form.Builder form = new Form.Builder();
-            form.setHref(address);
-            form.setOp(Operation.SUBSCRIBE_EVENT);
-
-            event.addForm(form.build());
+            event.addForm(new Form.Builder()
+                    .setHref(address)
+                    .setOp(Operation.SUBSCRIBE_EVENT)
+                    .setOptional("websocket:message", Map.of(
+                            "type", "SubscribeEvent",
+                            "thingId", thing.getId(),
+                            "name", name
+                    ))
+                    .build());
             log.info("Assign '{}' to Event '{}'", address, name);
         });
     }
