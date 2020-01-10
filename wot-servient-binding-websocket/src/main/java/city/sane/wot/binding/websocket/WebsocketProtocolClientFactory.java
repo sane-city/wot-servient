@@ -21,6 +21,7 @@ public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public ProtocolClient getClient() {
         WebsocketProtocolClient client = new WebsocketProtocolClient();
+        clients.add(client);
         return client;
     }
 
