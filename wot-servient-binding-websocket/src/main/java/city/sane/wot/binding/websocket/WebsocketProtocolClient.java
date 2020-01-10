@@ -3,12 +3,13 @@ package city.sane.wot.binding.websocket;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.handler.codec.JsonEncoder;
+import city.sane.wot.binding.websocket.codec.TextWebSocketFrameEncoder;
 import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -162,13 +163,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         CompletableFuture<AbstractServerMessage> result = new CompletableFuture<>();
         openRequests.put(request.getId(), result::complete);
 
-        try {
-            String json = JSON_MAPPER.writeValueAsString(request);
-            client.send(json);
-        }
-        catch (JsonProcessingException e) {
-            return CompletableFuture.failedFuture(e);
-        }
+        client.send(request);
 
         return result;
     }
@@ -187,13 +182,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
             }
         });
 
-        try {
-            String json = JSON_MAPPER.writeValueAsString(request);
-            client.send(json);
-        }
-        catch (JsonProcessingException e) {
-            throw new ProtocolClientException(e);
-        }
+        client.send(request);
 
         // TODO: inform server to stop?
         return new Subscription(() -> openRequests.remove(request.getId()));
@@ -224,6 +213,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
                             pipeline.addLast(
                                     new HttpClientCodec(),
                                     new HttpObjectAggregator(8192),
+                                    new TextWebSocketFrameEncoder(),
+                                    new JsonEncoder<>(AbstractClientMessage.class),
                                     handler);
                         }
                     });
@@ -240,9 +231,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
             return uri;
         }
 
-        public void send(String message) {
-            WebSocketFrame frame = new TextWebSocketFrame(message);
-            channel.writeAndFlush(frame);
+        public void send(AbstractClientMessage message) {
+            channel.writeAndFlush(message);
         }
 
         private class WebsocketClientHandler extends SimpleChannelInboundHandler<Object> {
@@ -300,7 +290,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 if (msg instanceof FullHttpResponse) {
                     FullHttpResponse response = (FullHttpResponse) msg;
                     throw new IllegalStateException(
-                            "Unexpected FullHttpResponse (getStatus=" + response.getStatus() +
+                            "Unexpected FullHttpResponse (getStatus=" + response.status() +
                                     ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
                 }
 

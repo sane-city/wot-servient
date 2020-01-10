@@ -4,6 +4,8 @@ import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.handler.codec.JsonDecoder;
 import city.sane.wot.binding.handler.codec.JsonEncoder;
+import city.sane.wot.binding.websocket.codec.TextWebSocketFrameDecoder;
+import city.sane.wot.binding.websocket.codec.TextWebSocketFrameEncoder;
 import city.sane.wot.binding.websocket.message.AbstractClientMessage;
 import city.sane.wot.binding.websocket.message.AbstractServerMessage;
 import city.sane.wot.thing.ExposedThing;
@@ -19,12 +21,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import org.slf4j.Logger;
@@ -218,11 +216,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
             pipeline.addLast(new WebSocketServerCompressionHandler());
             pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true));
 
-            pipeline.addLast(new WebSocketFrameToTextDecoder());
-            pipeline.addLast(new TextToWebSocketFrameEncoder());
+            pipeline.addLast(new TextWebSocketFrameDecoder());
+            pipeline.addLast(new TextWebSocketFrameEncoder());
 
-            pipeline.addLast(new JsonDecoder(AbstractClientMessage.class));
-            pipeline.addLast(new JsonEncoder(AbstractServerMessage.class));
+            pipeline.addLast(new JsonDecoder<>(AbstractClientMessage.class));
+            pipeline.addLast(new JsonEncoder<>(AbstractServerMessage.class));
 
             pipeline.addLast(new SimpleChannelInboundHandler<AbstractClientMessage>() {
                 @Override
@@ -233,28 +231,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
             });
         }
 
-        private class WebSocketFrameToTextDecoder extends MessageToMessageDecoder<WebSocketFrame> implements ChannelInboundHandler {
-            @Override
-            protected void decode(ChannelHandlerContext ctx, WebSocketFrame frame, List<Object> out) throws Exception {
-                if (frame instanceof TextWebSocketFrame) {
-                    String text = ((TextWebSocketFrame) frame).text();
-                    log.info("Received text: {}", text);
-                    out.add(text);
-                }
-                else {
-                    String message = "unsupported frame type: " + frame.getClass().getName();
-                    throw new UnsupportedOperationException(message);
-                }
-            }
-        }
-
-        private class TextToWebSocketFrameEncoder extends MessageToMessageEncoder<String> {
-            @Override
-            protected void encode(ChannelHandlerContext ctx, String text, List<Object> out) throws Exception {
-                WebSocketFrame frame = new TextWebSocketFrame(text);
-                out.add(frame);
-            }
-        }
     }
 
 }
