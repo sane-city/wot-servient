@@ -2,6 +2,8 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.handler.codec.JsonDecoder;
+import city.sane.wot.binding.handler.codec.JsonEncoder;
 import city.sane.wot.binding.websocket.message.AbstractClientMessage;
 import city.sane.wot.binding.websocket.message.AbstractServerMessage;
 import city.sane.wot.thing.ExposedThing;
@@ -10,7 +12,6 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import io.netty.bootstrap.ServerBootstrap;
@@ -18,6 +19,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -27,7 +30,6 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,37 +217,29 @@ public class WebsocketProtocolServer implements ProtocolServer {
             pipeline.addLast(new HttpObjectAggregator(65536));
             pipeline.addLast(new WebSocketServerCompressionHandler());
             pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true));
-            pipeline.addLast(new WebSocketFrameHandler());
+
+            pipeline.addLast(new WebSocketFrameToTextDecoder());
+            pipeline.addLast(new TextToWebSocketFrameEncoder());
+
+            pipeline.addLast(new JsonDecoder(AbstractClientMessage.class));
+            pipeline.addLast(new JsonEncoder(AbstractServerMessage.class));
+
+            pipeline.addLast(new SimpleChannelInboundHandler<AbstractClientMessage>() {
+                @Override
+                protected void channelRead0(ChannelHandlerContext ctx, AbstractClientMessage message) throws Exception {
+                    Consumer<AbstractServerMessage> replyConsumer = ctx.channel()::writeAndFlush;
+                    message.reply(replyConsumer, things);
+                }
+            });
         }
 
-        private class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+        private class WebSocketFrameToTextDecoder extends MessageToMessageDecoder<WebSocketFrame> implements ChannelInboundHandler {
             @Override
-            protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+            protected void decode(ChannelHandlerContext ctx, WebSocketFrame frame, List<Object> out) throws Exception {
                 if (frame instanceof TextWebSocketFrame) {
-                    String json = ((TextWebSocketFrame) frame).text();
-
-                    log.info("Received message: {}", json);
-
-                    Consumer<AbstractServerMessage> replyConsumer = m -> {
-                        try {
-                            String outputJson = JSON_MAPPER.writeValueAsString(m);
-                            log.info("Send message: {}", outputJson);
-                            ctx.channel().writeAndFlush(new TextWebSocketFrame(outputJson));
-                        }
-                        catch (JsonProcessingException ex) {
-                            log.warn("Unable to send message back to client", ex);
-                        }
-                    };
-
-                    try {
-                        AbstractClientMessage message = JSON_MAPPER.readValue(json, AbstractClientMessage.class);
-                        log.debug("Deserialized message to: {}", message);
-
-                        message.reply(replyConsumer, things);
-                    }
-                    catch (IOException e) {
-                        log.warn("Error on deserialization of message: {}", json);
-                    }
+                    String text = ((TextWebSocketFrame) frame).text();
+                    log.info("Received text: {}", text);
+                    out.add(text);
                 }
                 else {
                     String message = "unsupported frame type: " + frame.getClass().getName();
@@ -253,5 +247,14 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 }
             }
         }
+
+        private class TextToWebSocketFrameEncoder extends MessageToMessageEncoder<String> {
+            @Override
+            protected void encode(ChannelHandlerContext ctx, String text, List<Object> out) throws Exception {
+                WebSocketFrame frame = new TextWebSocketFrame(text);
+                out.add(frame);
+            }
+        }
     }
+
 }
