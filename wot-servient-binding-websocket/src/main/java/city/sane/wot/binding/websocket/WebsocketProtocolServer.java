@@ -13,6 +13,17 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -33,16 +44,25 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
-
+    private final ServerBootstrap serverBootstrap;
+    private final EventLoopGroup serverBossGroup;
+    private final EventLoopGroup serverWorkerGroup;
     private Map<String, ExposedThing> things;
-
-    private ServientWebsocketServer server;
     private List<String> addresses;
     private int bindPort;
+    private Channel serverChannel;
 
     public WebsocketProtocolServer(Config config) {
         bindPort = config.getInt("wot.servient.websocket.bind-port");
-        server = new ServientWebsocketServer(new InetSocketAddress(bindPort));
+
+        serverBossGroup = new NioEventLoopGroup(1);
+        serverWorkerGroup = new NioEventLoopGroup();
+        serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(serverBossGroup, serverWorkerGroup)
+                .channel(NioServerSocketChannel.class)
+//                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new WebSocketServerInitializer());
+
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
         }
@@ -54,17 +74,36 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start() {
-        // FIXME: The server currently fails silently if it cannot be started. We need to rebuild this and throw an exception if the server can't be started.
-        return CompletableFuture.runAsync(server::start);
+        if (serverChannel != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return CompletableFuture.runAsync(() -> {
+            try {
+                serverChannel = serverBootstrap.bind(bindPort).sync().channel();
+            }
+            catch (InterruptedException e) {
+                log.warn("Start failed", e);
+                throw new CompletionException(e);
+            }
+        });
     }
 
     @Override
     public CompletableFuture<Void> stop() {
+        if (serverChannel == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.runAsync(() -> {
             try {
-                server.stop();
+                serverChannel.close().sync();
+                serverBossGroup.shutdownGracefully().sync();
+                serverWorkerGroup.shutdownGracefully().sync();
+                serverChannel = null;
             }
-            catch (IOException | InterruptedException e) {
+            catch (InterruptedException e) {
+                log.warn("Stop failed", e);
                 throw new CompletionException(e);
             }
         });
@@ -107,7 +146,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         .setHref(address)
                         .setOp(Operation.READ_PROPERTY)
                         .setOptional("websocket:message", Map.of(
-                                "type", "readProperty",
+                                "type", "ReadProperty",
                                 "thingId", thing.getId(),
                                 "name", name
                         ))
@@ -119,7 +158,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                         .setHref(address)
                         .setOp(Operation.WRITE_PROPERTY)
                         .setOptional("websocket:message", Map.of(
-                                "type", "writeProperty",
+                                "type", "WriteProperty",
                                 "thingId", thing.getId(),
                                 "name", name
                         ))
@@ -147,7 +186,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                     .setHref(address)
                     .setOp(Operation.INVOKE_ACTION)
                     .setOptional("websocket:message", Map.of(
-                            "type", "invokeAction",
+                            "type", "InvokeAction",
                             "thingId", thing.getId(),
                             "name", name
                     ))
@@ -217,6 +256,55 @@ public class WebsocketProtocolServer implements ProtocolServer {
         @Override
         public void onStart() {
             log.debug("WebsocketServer has been started");
+        }
+    }
+
+    private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
+        @Override
+        protected void initChannel(SocketChannel ch) throws Exception {
+            ChannelPipeline pipeline = ch.pipeline();
+            pipeline.addLast(new HttpServerCodec());
+            pipeline.addLast(new HttpObjectAggregator(65536));
+            pipeline.addLast(new WebSocketServerCompressionHandler());
+            pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true));
+            pipeline.addLast(new WebSocketFrameHandler());
+        }
+
+        private class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+                if (frame instanceof TextWebSocketFrame) {
+                    // Send the uppercase string back.
+                    String json = ((TextWebSocketFrame) frame).text();
+
+                    log.info("Received message: {}", json);
+
+                    Consumer<AbstractServerMessage> replyConsumer = m -> {
+                        try {
+                            String outputJson = JSON_MAPPER.writeValueAsString(m);
+                            log.info("Send message: {}", outputJson);
+                            ctx.channel().writeAndFlush(new TextWebSocketFrame(outputJson));
+                        }
+                        catch (JsonProcessingException ex) {
+                            log.warn("Unable to send message back to client", ex);
+                        }
+                    };
+
+                    try {
+                        AbstractClientMessage message = JSON_MAPPER.readValue(json, AbstractClientMessage.class);
+                        log.debug("Deserialized message to: {}", message);
+
+                        message.reply(replyConsumer, things);
+                    }
+                    catch (IOException e) {
+                        log.warn("Error on deserialization of message: {}", json);
+                    }
+                }
+                else {
+                    String message = "unsupported frame type: " + frame.getClass().getName();
+                    throw new UnsupportedOperationException(message);
+                }
+            }
         }
     }
 }

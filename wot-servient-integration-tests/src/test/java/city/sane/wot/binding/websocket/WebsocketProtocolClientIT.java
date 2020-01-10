@@ -10,6 +10,17 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.observer.Observer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -30,23 +41,35 @@ public class WebsocketProtocolClientIT {
 
     private WebsocketProtocolClientFactory clientFactory;
     private ProtocolClient client;
-    private WebSocketServer server;
+    private NioEventLoopGroup serverBossGroup;
+    private NioEventLoopGroup serverWorkerGroup;
+    private ServerBootstrap serverBootstrap;
+    private Channel serverChannel;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         clientFactory = new WebsocketProtocolClientFactory();
         clientFactory.init().join();
 
         client = clientFactory.getClient();
 
-        server = new MyWebSocketServer(new InetSocketAddress(8080));
-        server.start();
+        serverBossGroup = new NioEventLoopGroup(1);
+        serverWorkerGroup = new NioEventLoopGroup();
+        serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(serverBossGroup, serverWorkerGroup)
+                .channel(NioServerSocketChannel.class)
+//                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new WebSocketServerInitializer());
+        serverChannel = serverBootstrap.bind(8080).sync().channel();
     }
 
     @After
     public void tearDown() throws IOException, InterruptedException {
         clientFactory.destroy().join();
-        server.stop();
+
+        serverChannel.close().sync();
+        serverBossGroup.shutdownGracefully().sync();
+        serverWorkerGroup.shutdownGracefully().sync();
     }
 
     @Test(timeout = 20 * 1000L)
@@ -130,6 +153,62 @@ public class WebsocketProtocolClientIT {
         client.subscribeResource(form, observer).get();
 
         assertEquals(Content.EMPTY_CONTENT, future.get());
+    }
+
+    private class WebSocketServerInitializer  extends ChannelInitializer<SocketChannel> {
+        @Override
+        protected void initChannel(SocketChannel ch) throws Exception {
+            ChannelPipeline pipeline = ch.pipeline();
+            pipeline.addLast(new HttpServerCodec());
+            pipeline.addLast(new HttpObjectAggregator(65536));
+            pipeline.addLast(new WebSocketServerCompressionHandler());
+            pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true));
+            pipeline.addLast(new WebSocketServerInitializer.WebSocketFrameHandler());
+        }
+
+        private class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+                if (frame instanceof TextWebSocketFrame) {
+                    // Send the uppercase string back.
+                    String requestJson = ((TextWebSocketFrame) frame).text();
+
+                    try {
+                        AbstractClientMessage request = JSON_MAPPER.readValue(requestJson, AbstractClientMessage.class);
+
+                        AbstractServerMessage response = null;
+                        if (request instanceof ReadProperty) {
+                            response = new ReadPropertyResponse(request.getId(), ContentManager.valueToContent(1337));
+                        }
+                        else if (request instanceof WriteProperty) {
+                            response = new WritePropertyResponse(request.getId(), Content.EMPTY_CONTENT);
+                        }
+                        else if (request instanceof InvokeAction) {
+                            response = new InvokeActionResponse(request.getId(), ContentManager.valueToContent(43));
+                        }
+                        else if (request instanceof SubscribeProperty) {
+                            response = new SubscribeNextResponse(request.getId(), ContentManager.valueToContent(9001));
+                        }
+                        else if (request instanceof SubscribeEvent) {
+                            response = new SubscribeNextResponse(request.getId(), Content.EMPTY_CONTENT);
+                        }
+                        else {
+                            throw new RuntimeException("Unknown request: " + request.toString());
+                        }
+
+                        String responseJson = JSON_MAPPER.writeValueAsString(response);
+                        ctx.channel().writeAndFlush(new TextWebSocketFrame(responseJson));
+                    }
+                    catch (IOException | ContentCodecException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else {
+                    String message = "unsupported frame type: " + frame.getClass().getName();
+                    throw new UnsupportedOperationException(message);
+                }
+            }
+        }
     }
 
     private static class MyWebSocketServer extends WebSocketServer {

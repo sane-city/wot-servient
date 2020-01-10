@@ -119,7 +119,7 @@ public class WebsocketProtocolServerIT {
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        Thread.sleep(10 * 1000L);
 
         thing.getProperty("count").write(1337).get();
 
@@ -138,7 +138,7 @@ public class WebsocketProtocolServerIT {
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        Thread.sleep(10 * 1000L);
 
         thing.getEvent("change").emit().get();
 
