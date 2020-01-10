@@ -235,7 +235,7 @@ public class WebsocketProtocolServerIT {
         CompletableFuture<AbstractServerMessage> future = new CompletableFuture<>();
 
         try {
-            cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+            cc = new WebSocketClient(new URI("ws://localhost:8081")) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     try {
@@ -265,6 +265,7 @@ public class WebsocketProtocolServerIT {
 
                 @Override
                 public void onError(Exception ex) {
+                    throw new RuntimeException(ex);
 
                 }
             };
@@ -279,7 +280,7 @@ public class WebsocketProtocolServerIT {
 
     private Subscription observe(AbstractClientMessage request, Observer<Content> observer) throws URISyntaxException {
         try {
-            cc = new WebSocketClient(new URI("ws://localhost:8080")) {
+            cc = new WebSocketClient(new URI("ws://localhost:8081")) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     try {
@@ -317,7 +318,7 @@ public class WebsocketProtocolServerIT {
 
                 @Override
                 public void onError(Exception ex) {
-
+                    throw new RuntimeException(ex);
                 }
             };
             cc.connect();

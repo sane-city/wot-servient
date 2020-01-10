@@ -60,7 +60,7 @@ public class WebsocketProtocolClientIT {
                 .channel(NioServerSocketChannel.class)
 //                .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new WebSocketServerInitializer());
-        serverChannel = serverBootstrap.bind(8080).sync().channel();
+        serverChannel = serverBootstrap.bind(8081).sync().channel();
     }
 
     @After
@@ -75,7 +75,7 @@ public class WebsocketProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void readResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
-                .setHref("ws://localhost:8080")
+                .setHref("ws://localhost:8081")
                 .setOp(Operation.READ_PROPERTY)
                 .setOptional("websocket:message", Map.of(
                         "type", "ReadProperty",
@@ -90,7 +90,7 @@ public class WebsocketProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void writeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
-                .setHref("ws://localhost:8080")
+                .setHref("ws://localhost:8081")
                 .setOp(Operation.WRITE_PROPERTY)
                 .setOptional("websocket:message", Map.of(
                         "type", "WriteProperty",
@@ -105,7 +105,7 @@ public class WebsocketProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
-                .setHref("ws://localhost:8080")
+                .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
                 .setOptional("websocket:message", Map.of(
                         "type", "InvokeAction",
@@ -120,7 +120,7 @@ public class WebsocketProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void subscribeProperty() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientNotImplementedException {
         Form form = new Form.Builder()
-                .setHref("ws://localhost:8080")
+                .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
                 .setOptional("websocket:message", Map.of(
                         "type", "SubscribeProperty",
@@ -139,7 +139,7 @@ public class WebsocketProtocolClientIT {
     @Test(timeout = 20 * 1000L)
     public void subscribeEvent() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientNotImplementedException {
         Form form = new Form.Builder()
-                .setHref("ws://localhost:8080")
+                .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
                 .setOptional("websocket:message", Map.of(
                         "type", "SubscribeEvent",
