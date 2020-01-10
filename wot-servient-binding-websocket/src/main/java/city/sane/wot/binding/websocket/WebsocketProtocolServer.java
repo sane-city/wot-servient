@@ -24,14 +24,10 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
-import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +57,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         serverBootstrap.group(serverBossGroup, serverWorkerGroup)
                 .channel(NioServerSocketChannel.class)
 //                .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new WebSocketServerInitializer());
+                .childHandler(new WebsocketProtocolServerInitializer());
 
         if (!config.getStringList("wot.servient.websocket.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.websocket.addresses");
@@ -211,59 +207,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         });
     }
 
-    class ServientWebsocketServer extends WebSocketServer {
-        ServientWebsocketServer(InetSocketAddress inetSocketAddress) {
-            super(inetSocketAddress);
-        }
-
-        @Override
-        public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            log.debug("New Websocket connection has been opened");
-        }
-
-        @Override
-        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            log.debug("WebsocketServer is closing");
-        }
-
-        @Override
-        public void onMessage(WebSocket conn, String json) {
-            log.info("Received message: {}", json);
-
-            Consumer<AbstractServerMessage> replyConsumer = m -> {
-                try {
-                    String outputJson = JSON_MAPPER.writeValueAsString(m);
-                    log.info("Send message: {}", outputJson);
-                    conn.send(outputJson);
-                }
-                catch (JsonProcessingException ex) {
-                    log.warn("Unable to send message back to client", ex);
-                }
-            };
-
-            try {
-                AbstractClientMessage message = JSON_MAPPER.readValue(json, AbstractClientMessage.class);
-                log.debug("Deserialized message to: {}", message);
-
-                message.reply(replyConsumer, things);
-            }
-            catch (IOException e) {
-                log.warn("Error on deserialization of message: {}", json);
-            }
-        }
-
-        @Override
-        public void onError(WebSocket conn, Exception ex) {
-            log.warn("An error occured on websocket server", ex);
-        }
-
-        @Override
-        public void onStart() {
-            log.debug("WebsocketServer has been started");
-        }
-    }
-
-    private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
+    private class WebsocketProtocolServerInitializer extends ChannelInitializer<SocketChannel> {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
@@ -278,7 +222,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
                 if (frame instanceof TextWebSocketFrame) {
-                    // Send the uppercase string back.
                     String json = ((TextWebSocketFrame) frame).text();
 
                     log.info("Received message: {}", json);

@@ -10,29 +10,38 @@ import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.*;
+import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
- * TODO: Currently a WebsocketProtocolClient and therefore also a WebSocketClient is created for each Thing. Even if each thing is reachable via the same socket. It would be better if there was only one WebSocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
- * TODO: WebSocketClient.close() is never called!
+ * TODO: Currently a WebsocketProtocolClient and therefore also a WebsocketClient is created for each Thing. Even if each thing is reachable via the same socket. It would be better if there was only one WebsocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
+ * TODO: WebsocketClient.close() is never called!
  */
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
 
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
-    private final Map<URI, WebSocketClient> clients = new HashMap<>();
+    private final Map<URI, WebsocketClient> clients = new HashMap<>();
     private final Map<String, Consumer<AbstractServerMessage>> openRequests = new HashMap<>();
 
     @Override
@@ -61,7 +70,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
 
                 try {
-                    WebSocketClient client = getClientFor(form).get();
+                    WebsocketClient client = getClientFor(form).get();
                     Subscription response = observe(client, clientMessage, observer);
                     return CompletableFuture.completedFuture(response);
                 }
@@ -88,7 +97,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
 
                 try {
-                    WebSocketClient client = getClientFor(form).get();
+                    WebsocketClient client = getClientFor(form).get();
                     AbstractServerMessage response = ask(client, clientMessage).get();
                     return CompletableFuture.completedFuture(response.toContent());
                 }
@@ -116,7 +125,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                 clientMessage.setValue(content);
 
                 try {
-                    WebSocketClient client = getClientFor(form).get();
+                    WebsocketClient client = getClientFor(form).get();
                     AbstractServerMessage response = ask(client, clientMessage).get();
                     return CompletableFuture.completedFuture(response.toContent());
                 }
@@ -136,78 +145,19 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
     }
 
-    private synchronized CompletableFuture<WebSocketClient> getClientFor(Form form) throws ProtocolClientException {
-        try {
-            URI uri = new URI(form.getHref());
-            WebSocketClient client = clients.get(uri);
-            if (client == null || !client.isOpen()) {
-                log.info("Create new websocket client for socket '{}'", uri);
-                CompletableFuture<WebSocketClient> result = new CompletableFuture<>();
-
-                client = new WebSocketClient(uri) {
-                    @Override
-                    public void onOpen(ServerHandshake serverHandshake) {
-                        log.debug("Websocket client for socket '{}' is ready", uri);
-                        clients.put(uri, this);
-                        result.complete(this);
-                    }
-
-                    @Override
-                    public void onMessage(String json) {
-                        log.debug("Received message on websocket client for socket '{}': {}", uri, json);
-                        try {
-                            AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
-
-                            if (message != null) {
-                                Consumer<AbstractServerMessage> openRequest = openRequests.get(message.getId());
-
-                                if (openRequest != null) {
-                                    log.debug("Found open request. Accept");
-                                    openRequest.accept(message);
-
-                                    if (message instanceof FinalResponse) {
-                                        openRequests.remove(message.getId());
-                                    }
-                                }
-                                else {
-                                    log.warn("Unexpected response. Discard!");
-                                }
-                            }
-                            else {
-                                log.warn("Message is null. Discard!");
-                            }
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onClose(int i, String s, boolean b) {
-                        log.debug("Websocket client for socket '{}' is closed", uri);
-                        clients.remove(uri);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        log.warn("An error occured on websocket client for socket '{}': ", uri, e.getMessage());
-                        result.completeExceptionally(new ProtocolClientException(e));
-                    }
-                };
-                client.connect();
-
-                return result;
+    private synchronized CompletableFuture<WebsocketClient> getClientFor(Form form) throws ProtocolClientException {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                WebsocketClient client = new WebsocketClient(form);
+                return client;
             }
-            else {
-                return CompletableFuture.completedFuture(client);
+            catch (URISyntaxException | InterruptedException e) {
+                throw new CompletionException(e);
             }
-        }
-        catch (URISyntaxException e) {
-            throw new ProtocolClientException("Unable to create websocket client for href '" + form.getHref() + "': " + e.getMessage());
-        }
+        });
     }
 
-    private CompletableFuture<AbstractServerMessage> ask(WebSocketClient client, AbstractClientMessage request) {
+    private CompletableFuture<AbstractServerMessage> ask(WebsocketClient client, AbstractClientMessage request) {
         log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
         CompletableFuture<AbstractServerMessage> result = new CompletableFuture<>();
         openRequests.put(request.getId(), result::complete);
@@ -223,7 +173,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         return result;
     }
 
-    private Subscription observe(WebSocketClient client, AbstractClientMessage request, Observer<Content> observer) throws ProtocolClientException {
+    private Subscription observe(WebsocketClient client, AbstractClientMessage request, Observer<Content> observer) throws ProtocolClientException {
         log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
         openRequests.put(request.getId(), m -> {
             if (m instanceof SubscribeNextResponse) {
@@ -250,6 +200,144 @@ public class WebsocketProtocolClient implements ProtocolClient {
     }
 
     public void destroy() {
-        clients.values().forEach(WebSocketClient::close);
+        clients.values().forEach(WebsocketClient::close);
+    }
+
+    private class WebsocketClient {
+        private final Channel channel;
+        private final EventLoopGroup group;
+        private final URI uri;
+
+        public WebsocketClient(Form form) throws URISyntaxException, InterruptedException {
+            uri = new URI(form.getHref());
+            WebsocketClientHandler handler = new WebsocketClientHandler(
+                    WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders())
+            );
+            group = new NioEventLoopGroup();
+            Bootstrap clientBootstrap = new Bootstrap();
+            clientBootstrap.group(group)
+                    .channel(NioSocketChannel.class)
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ChannelPipeline pipeline = ch.pipeline();
+                            pipeline.addLast(
+                                    new HttpClientCodec(),
+                                    new HttpObjectAggregator(8192),
+                                    handler);
+                        }
+                    });
+            channel = clientBootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
+            handler.handshakeFuture().sync();
+        }
+
+        public void close() {
+            channel.close().syncUninterruptibly();
+            group.shutdownGracefully().syncUninterruptibly();
+        }
+
+        public URI getURI() {
+            return uri;
+        }
+
+        public void send(String message) {
+            WebSocketFrame frame = new TextWebSocketFrame(message);
+            channel.writeAndFlush(frame);
+        }
+
+        private class WebsocketClientHandler extends SimpleChannelInboundHandler<Object> {
+            private final WebSocketClientHandshaker handshaker;
+            private ChannelPromise handshakeFuture;
+
+            public WebsocketClientHandler(WebSocketClientHandshaker handshaker) {
+                this.handshaker = handshaker;
+            }
+
+            public ChannelFuture handshakeFuture() {
+                return handshakeFuture;
+            }
+
+            @Override
+            public void handlerAdded(ChannelHandlerContext ctx) {
+                handshakeFuture = ctx.newPromise();
+            }
+
+            @Override
+            public void channelActive(ChannelHandlerContext ctx) {
+                handshaker.handshake(ctx.channel());
+            }
+
+            @Override
+            public void channelInactive(ChannelHandlerContext ctx) {
+//                System.out.println("WebSocket Client disconnected!");
+            }
+
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                cause.printStackTrace();
+                if (!handshakeFuture.isDone()) {
+                    handshakeFuture.setFailure(cause);
+                }
+                ctx.close();
+            }
+
+            @Override
+            public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+                Channel ch = ctx.channel();
+                if (!handshaker.isHandshakeComplete()) {
+                    try {
+                        handshaker.finishHandshake(ch, (FullHttpResponse) msg);
+//                        System.out.println("WebSocket Client connected!");
+                        handshakeFuture.setSuccess();
+                    }
+                    catch (WebSocketHandshakeException e) {
+//                        System.out.println("WebSocket Client failed to connect");
+                        handshakeFuture.setFailure(e);
+                    }
+                    return;
+                }
+
+                if (msg instanceof FullHttpResponse) {
+                    FullHttpResponse response = (FullHttpResponse) msg;
+                    throw new IllegalStateException(
+                            "Unexpected FullHttpResponse (getStatus=" + response.getStatus() +
+                                    ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
+                }
+
+                WebSocketFrame frame = (WebSocketFrame) msg;
+                if (frame instanceof TextWebSocketFrame) {
+                    String json = ((TextWebSocketFrame) frame).text();
+
+                    log.debug("Received message on websocket client for socket '{}': {}", uri, json);
+                    AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
+
+                    if (message != null) {
+                        Consumer<AbstractServerMessage> openRequest = openRequests.get(message.getId());
+
+                        if (openRequest != null) {
+                            log.debug("Found open request. Accept");
+                            openRequest.accept(message);
+
+                            if (message instanceof FinalResponse) {
+                                openRequests.remove(message.getId());
+                            }
+                        }
+                        else {
+                            log.warn("Unexpected response. Discard!");
+                        }
+                    }
+                    else {
+                        log.warn("Message is null. Discard!");
+                    }
+                }
+                else if (frame instanceof PongWebSocketFrame) {
+//                    System.out.println("WebSocket Client received pong");
+                }
+                else if (frame instanceof CloseWebSocketFrame) {
+//                    System.out.println("WebSocket Client received closing");
+                    ch.close();
+                }
+            }
+        }
     }
 }
