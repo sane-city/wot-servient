@@ -64,7 +64,7 @@ public class WebsocketProtocolClientIT {
     }
 
     @After
-    public void tearDown() throws IOException, InterruptedException {
+    public void tearDown() throws InterruptedException {
         clientFactory.destroy().join();
 
         serverChannel.close().sync();
