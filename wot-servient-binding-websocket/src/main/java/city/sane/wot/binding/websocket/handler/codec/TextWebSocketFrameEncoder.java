@@ -1,4 +1,4 @@
-package city.sane.wot.binding.websocket.codec;
+package city.sane.wot.binding.websocket.handler.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
