@@ -1,7 +1,6 @@
 package city.sane.wot;
 
 import city.sane.wot.binding.*;
-import city.sane.wot.content.Content;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.DiscoveryMethod;
@@ -9,124 +8,99 @@ import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.form.Form;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValue;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class ServientTest {
-    @Test
-    public void constructorInstantiatedServer() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithServer();
+    private ServientConfig config;
+    private ProtocolServer server;
+    private ProtocolClientFactory clientFactory;
+    private ProtocolClient client;
+    private ExposedThing exposedThing;
+    private Thing thing;
 
-        assertNull(servient.start().get());
-        assertNotNull(servient.getServer(MyProtocolServer.class));
+    @Before
+    public void setUp() {
+        config = mock(ServientConfig.class);
+        server = mock(ProtocolServer.class);
+        clientFactory = mock(ProtocolClientFactory.class);
+        client = mock(ProtocolClient.class);
+        exposedThing = mock(ExposedThing.class);
+        thing = mock(Thing.class);
     }
 
     @Test
-    public void constructorInstantiatedClientFactory() throws ServientException, ExecutionException, InterruptedException, ProtocolClientException {
-        Servient servient = getServientWithClient();
-
-        assertNull(servient.start().get());
-        assertNotNull(servient.getClientFor("test"));
-    }
-
-    @Test(expected = ServientException.class)
-    public void constructorBadServerWithoutImplementation() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + MyBadMissingImplementationProtocolServer.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        new Servient(config);
-    }
-
-    @Test(expected = ServientException.class)
-    public void constructorBadServerMissingConstructor() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + MyBadMissingConstructorProtocolServer.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        new Servient(config);
-    }
-
-    @Test(expected = ServientException.class)
-    public void constructorBadClientWithoutImplementation() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = [\"" + MyBadMissingImplementationProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        new Servient(config);
-    }
-
-    @Test(expected = ServientException.class)
-    public void constructorBadClientMissingConstructor() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = [\"" + MyBadMissingConstructorProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        new Servient(config);
-    }
-
-    @Test
-    public void constructorInstantiatedNullServers() throws ServientException {
-        Servient servient = getServientWithNullServers();
-
-        assertThat(servient.getServers(), hasSize(0));
-    }
-
-    @Test
-    public void constructorInstantiatedNullClients() throws ServientException {
-        Servient servient = getServientWithNullClients();
-
-        assertThat(servient.getServers(), hasSize(0));
-    }
-
-    @Test
-    public void constructorWithCredentials() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.credentials { \"counter\" = \"mySecret\" }")
-                .withFallback(ConfigFactory.load());
+    public void start() throws ExecutionException, InterruptedException {
         Servient servient = new Servient(config);
 
-        assertEquals("mySecret",
-                ((ConfigValue) servient.getCredentials("counter")).unwrapped());
-    }
-
-    @Test
-    public void start() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithServer();
-
         assertNull(servient.start().get());
     }
 
+    @Test(expected = ProtocolServerException.class)
+    public void startFails() throws Throwable {
+        when(server.start()).thenReturn(CompletableFuture.failedFuture(new ProtocolServerException()));
+        when(config.getServers()).thenReturn(List.of(server));
+
+        Servient servient = new Servient(config);
+
+        try {
+            servient.start().get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
     @Test
-    public void shutdown() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithServer();
+    public void shutdown() throws ExecutionException, InterruptedException {
+        Servient servient = new Servient(config);
 
         assertNull(servient.shutdown().get());
     }
 
-    @Test
-    public void expose() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithServer();
-        servient.addThing(new ExposedThing(servient).setId("counter"));
+    @Test(expected = ProtocolServerException.class)
+    public void shutdownFails() throws Throwable {
+        when(server.stop()).thenReturn(CompletableFuture.failedFuture(new ProtocolServerException()));
+        when(config.getServers()).thenReturn(List.of(server));
 
-        assertThat(servient.expose("counter").get(), instanceOf(ExposedThing.class));
+        Servient servient = new Servient(config);
+
+        try {
+            servient.shutdown().get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void expose() throws InterruptedException, ExecutionException {
+        when(server.expose(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+        Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
+
+        assertThat(servient.expose("counter").get(), is(exposedThing));
+        verify(server, times(1)).expose(exposedThing);
     }
 
     @Test(expected = ServientException.class)
     public void exposeWithoutServers() throws Throwable {
-        Servient servient = getServientWithNoServer();
-        servient.addThing(new ExposedThing(servient).setId("counter"));
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
         try {
             servient.expose("counter").get();
@@ -138,7 +112,7 @@ public class ServientTest {
 
     @Test(expected = ServientException.class)
     public void exposeUnknownThing() throws Throwable {
-        Servient servient = getServientWithServer();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.expose("counter").get();
@@ -149,17 +123,30 @@ public class ServientTest {
     }
 
     @Test
-    public void destroy() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithServer();
-        servient.addThing(new ExposedThing(servient).setId("counter"));
+    public void destroy() throws ExecutionException, InterruptedException {
+        when(server.destroy(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        assertThat(servient.destroy("counter").get(), instanceOf(ExposedThing.class));
+        Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
+
+        assertThat(servient.destroy("counter").get(), is(exposedThing));
+        verify(server, times(1)).destroy(exposedThing);
     }
 
     @Test(expected = ServientException.class)
     public void destroyWithoutServers() throws Throwable {
-        Servient servient = getServientWithNoServer();
-        servient.addThing(new ExposedThing(servient).setId("counter"));
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of("counter", exposedThing));
+
+        try {
+            servient.destroy("counter").get();
+        }
+        catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected = ServientException.class)
+    public void destroyUnknownThing() throws Throwable {
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.destroy("counter").get();
@@ -170,15 +157,19 @@ public class ServientTest {
     }
 
     @Test
-    public void fetch() throws ServientException, URISyntaxException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithClient();
+    public void fetch() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        assertThat(servient.fetch("test:/counter").get(), instanceOf(Thing.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.fetch("test:/counter").get();
+
+        verify(client, times(1)).readResource(any());
     }
 
     @Test(expected = ServientException.class)
     public void fetchMissingScheme() throws Throwable {
-        Servient servient = getServientWithNoClient();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.fetch("test:/counter").get();
@@ -189,54 +180,74 @@ public class ServientTest {
     }
 
     @Test
-    public void fetchDirectory() throws ServientException, URISyntaxException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithClient();
+    public void fetchDirectory() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        assertThat(servient.fetchDirectory(new URI("test:/")).get(), instanceOf(Map.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.fetchDirectory(new URI("test:/")).get();
+
+        verify(client, times(1)).readResource(any());
     }
 
     @Test
-    public void fetchDirectoryString() throws ServientException, URISyntaxException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithClient();
+    public void fetchDirectoryString() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        assertThat(servient.fetchDirectory("test:/").get(), instanceOf(Map.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.fetchDirectory("test:/").get();
+
+        verify(client, times(1)).readResource(any());
     }
 
     @Test
-    public void discover() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithClient();
+    public void discover() throws ExecutionException, InterruptedException, ProtocolClientException {
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.discover(any())).thenReturn(CompletableFuture.completedFuture(List.of(thing)));
 
-        assertThat(servient.discover().get(), instanceOf(Collection.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.discover().get();
+
+        verify(client, times(1)).discover(any());
     }
 
     @Test
-    public void discoverWithQuery() throws ServientException, ExecutionException, InterruptedException, ThingQueryException {
-        Servient servient = getServientWithClient();
+    public void discoverWithQuery() throws ExecutionException, InterruptedException, ThingQueryException, ProtocolClientException {
+        ThingFilter filter = new ThingFilter().setQuery(new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> ."));
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.discover(any())).thenReturn(CompletableFuture.completedFuture(List.of(thing)));
 
-        ThingFilter filter = new ThingFilter();
-        filter.setQuery(new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> ."));
-        assertThat(servient.discover(filter).get(), instanceOf(Collection.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.discover(filter).get();
+
+        verify(client, times(1)).discover(filter);
     }
 
     @Test
-    public void discoverLocal() throws ServientException, ExecutionException, InterruptedException {
-        Servient servient = getServientWithClient();
+    public void discoverLocal() throws ExecutionException, InterruptedException, ProtocolClientException {
+        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
 
-        ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.LOCAL);
-        assertThat(servient.discover(filter).get(), instanceOf(Collection.class));
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of("counter", exposedThing));
+
+        assertThat(servient.discover(filter).get(), hasItem(exposedThing));
     }
 
     @Test
-    public void discoverDirectory() throws ServientException, ExecutionException, InterruptedException, URISyntaxException {
-        Servient servient = getServientWithClient();
-
+    public void discoverDirectory() throws ExecutionException, InterruptedException, URISyntaxException, ProtocolClientException {
         ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.DIRECTORY).setUrl(new URI("test:/"));
-        assertThat(servient.discover(filter).get(), instanceOf(Collection.class));
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        servient.discover(filter).get();
+
+        verify(client, times(1)).readResource(new Form.Builder().setHref("test:/").build());
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
     public void discoverWithNoClientImplementsDiscover() throws Throwable {
-        Servient servient = getServientWithNoClient();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.discover().get();
@@ -248,7 +259,8 @@ public class ServientTest {
 
     @Test(expected = ServientException.class)
     public void runScriptWithNoEngine() throws ServientException {
-        Servient servient = new Servient();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
+
         servient.runScript(new File("foo.bar"), null);
     }
 
@@ -261,76 +273,25 @@ public class ServientTest {
     }
 
     @Test
-    public void clientOnly() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + MyProtocolServer.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        Servient servient = Servient.clientOnly(config);
+    public void addThingWithoutId() {
+        when(exposedThing.getId()).thenReturn(null);
 
-        assertTrue(servient.getServers().isEmpty());
-    }
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), new HashMap<>());
+        servient.addThing(exposedThing);
 
-    private Servient getServientWithServer() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + MyProtocolServer.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
-    }
-
-    private Servient getServientWithClient() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = [\"" + MyProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
-    }
-
-    private Servient getServientWithNoClient() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = []")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
-    }
-
-    private Servient getServientWithNoServer() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = []")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
-    }
-
-    private Servient getServientWithNullClients() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = null")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
-    }
-
-    private Servient getServientWithNullServers() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = null")
-                .withFallback(ConfigFactory.load());
-        return new Servient(config);
+        verify(exposedThing, times(1)).setId(any());
     }
 
     @Test
-    public void addThingWithoutId() throws ServientException {
-        Servient servient = new Servient();
-        ExposedThing thing = new ExposedThing(servient);
-        servient.addThing(thing);
-
-        assertNotNull(thing.getId());
-    }
-
-    @Test
-    public void getClientForNegative() throws ProtocolClientException, ServientException {
-        Servient servient = new Servient();
+    public void getClientForNegative() throws ProtocolClientException {
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         assertNull(servient.getClientFor("test"));
     }
 
     @Test(expected = ServientException.class)
     public void register() throws Throwable {
-        Servient servient = new Servient();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.register("test://foo/bar", null).get();
@@ -342,142 +303,13 @@ public class ServientTest {
 
     @Test(expected = ServientException.class)
     public void unregister() throws Throwable {
-        Servient servient = new Servient();
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
             servient.unregister("test://foo/bar", null).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
-        }
-    }
-
-    public static class MyProtocolServer implements ProtocolServer {
-        @Override
-        public CompletableFuture<Void> start() {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> stop() {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> expose(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> destroy(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
-    public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        @Override
-        public String getScheme() {
-            return "test";
-        }
-
-        @Override
-        public ProtocolClient getClient() {
-            return new MyProtocolClient();
-        }
-    }
-
-    static class MyProtocolClient implements ProtocolClient {
-        public MyProtocolClient() {
-        }
-
-        @Override
-        public CompletableFuture<Content> readResource(Form form) {
-            String json = null;
-            switch (form.getHref()) {
-                case "test:/":
-                    json = "{\"counter\": {\"id\": \"counter\"}}";
-                    break;
-
-                case "test:/counter":
-                    json = "{\"id\": \"counter\"}";
-                    break;
-            }
-            return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
-        }
-
-        @Override
-        public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-    }
-
-    static class MyBadMissingImplementationProtocolServer {
-        MyBadMissingImplementationProtocolServer(Config config) {
-
-        }
-    }
-
-    static class MyBadMissingConstructorProtocolServer implements ProtocolServer {
-        /**
-         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
-         *
-         * @return
-         */
-        @Override
-        public CompletableFuture<Void> start() {
-            return null;
-        }
-
-        /**
-         * Stops the server (e.g. HTTP server) and ends the exposure of the Things
-         *
-         * @return
-         */
-        @Override
-        public CompletableFuture<Void> stop() {
-            return null;
-        }
-
-        /**
-         * Exposes <code>thing</code> and allows interaction with it.
-         *
-         * @param thing
-         *
-         * @return
-         */
-        @Override
-        public CompletableFuture<Void> expose(ExposedThing thing) {
-            return null;
-        }
-
-        /**
-         * Stops the exposure of <code>thing</code> and allows no further interaction with the thing.
-         *
-         * @param thing
-         *
-         * @return
-         */
-        @Override
-        public CompletableFuture<Void> destroy(ExposedThing thing) {
-            return null;
-        }
-    }
-
-    static class MyBadMissingImplementationProtocolClientFactory {
-        MyBadMissingImplementationProtocolClientFactory(Config config) {
-
-        }
-    }
-
-    static class MyBadMissingConstructorProtocolClientFactory implements ProtocolClientFactory {
-        @Override
-        public String getScheme() {
-            return null;
-        }
-
-        @Override
-        public ProtocolClient getClient() {
-            return null;
         }
     }
 }

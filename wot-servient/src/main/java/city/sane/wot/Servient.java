@@ -16,16 +16,11 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ScanResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -46,15 +41,22 @@ import java.util.stream.Stream;
  * should contain a map that uses the thing ids as key.
  */
 public class Servient {
-    private static final String CONFIG_SERVERS = "wot.servient.servers";
-    private static final String CONFIG_CLIENT_FACTORIES = "wot.servient.client-factories";
     private static final Logger log = LoggerFactory.getLogger(Servient.class);
-    private static ScanResult scanResult = null;
 
-    private final List<ProtocolServer> servers = new ArrayList<>();
-    private final Map<String, ProtocolClientFactory> clientFactories = new HashMap<>();
-    private final Map<String, ExposedThing> things = new HashMap<>();
-    private final Map<String, Object> credentialStore = new HashMap<>();
+    private final List<ProtocolServer> servers;
+    private final Map<String, ProtocolClientFactory> clientFactories;
+    private final Map<String, Object> credentialStore;
+    private final Map<String, ExposedThing> things;
+
+    Servient(List<ProtocolServer> servers,
+             Map<String, ProtocolClientFactory> clientFactories,
+             Map<String, Object> credentialStore,
+             Map<String, ExposedThing> things) {
+        this.servers = servers;
+        this.clientFactories = clientFactories;
+        this.credentialStore = credentialStore;
+        this.things = things;
+    }
 
     /**
      * Creates a servient with the given <code>config</code>.
@@ -62,45 +64,7 @@ public class Servient {
      * @param config
      */
     public Servient(Config config) throws ServientException {
-        List<String> requiredServers;
-        if (config.getIsNull(CONFIG_SERVERS)) {
-            // search in classpath for available implementations
-            log.debug("Config '{}' is set to null. Search in classpath for available servers", CONFIG_SERVERS);
-            ScanResult scanResult = scanClasspath();
-            requiredServers = scanResult.getClassesImplementing(ProtocolServer.class.getName())
-                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
-        }
-        else {
-            // read servers from config
-            requiredServers = config.getStringList(CONFIG_SERVERS);
-        }
-
-        for (String serverName : requiredServers) {
-            initializeServer(config, serverName);
-        }
-
-        List<String> requiredFactories;
-        if (config.getIsNull(CONFIG_CLIENT_FACTORIES)) {
-            // search in classpath for available implementations
-            log.debug("Config '{}' is set to null. Search in classpath for available client factories", CONFIG_CLIENT_FACTORIES);
-            ScanResult scanResult = scanClasspath();
-            requiredFactories = scanResult.getClassesImplementing(ProtocolClientFactory.class.getName())
-                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
-        }
-        else {
-            // read client factories from config
-            requiredFactories = config.getStringList(CONFIG_CLIENT_FACTORIES);
-        }
-
-        for (String factoryName : requiredFactories) {
-            initializeClientFactory(config, factoryName);
-        }
-
-        // read credentials from config
-        String credentialsPath = "wot.servient.credentials";
-        if (config.hasPath(credentialsPath)) {
-            addCredentials(config.getObject(credentialsPath));
-        }
+        this(new ServientConfig(config));
     }
 
     /**
@@ -110,44 +74,8 @@ public class Servient {
         this(ConfigFactory.load());
     }
 
-    private void initializeClientFactory(Config config, String factoryName) throws ServientException {
-        try {
-            Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
-            Constructor<ProtocolClientFactory> constructor;
-            ProtocolClientFactory factory;
-            if (Servient.hasConstructor(factoryKlass, Config.class)) {
-                constructor = factoryKlass.getConstructor(Config.class);
-                factory = constructor.newInstance(config);
-            }
-            else {
-                constructor = factoryKlass.getConstructor();
-                factory = constructor.newInstance();
-            }
-            clientFactories.put(factory.getScheme(), factory);
-        }
-        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ServientException(e);
-        }
-    }
-
-    private void initializeServer(Config config, String serverName) throws ServientException {
-        try {
-            Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
-            Constructor<ProtocolServer> constructor;
-            ProtocolServer server;
-            if (Servient.hasConstructor(serverKlass, Config.class)) {
-                constructor = serverKlass.getConstructor(Config.class);
-                server = constructor.newInstance(config);
-            }
-            else {
-                constructor = serverKlass.getConstructor();
-                server = constructor.newInstance();
-            }
-            servers.add(server);
-        }
-        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ServientException(e);
-        }
+    public Servient(ServientConfig config) {
+        this(config.getServers(), config.getClientFactories(), config.getCredentialStore(), new HashMap<>());
     }
 
     @Override
@@ -573,17 +501,6 @@ public class Servient {
     }
 
     /**
-     * Stores security credentials (e.g. username and password) for the thing with the id id <code>id</code>.<br>
-     * See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
-     *
-     * @param credentials
-     */
-    private void addCredentials(Map credentials) {
-        log.debug("Servient storing credentials for '{}'", credentials.keySet());
-        credentialStore.putAll(credentials);
-    }
-
-    /**
      * Returns the security credentials (e.g. username and password) for the thing with the id <code>id</code>.<br>
      * See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
      *
@@ -614,11 +531,8 @@ public class Servient {
         }
     }
 
-    private static ScanResult scanClasspath() {
-        if (scanResult == null) {
-            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().scan();
-        }
-        return scanResult;
+    public List<String> getClientSchemes() {
+        return new ArrayList<>(clientFactories.keySet());
     }
 
     /**
@@ -717,16 +631,6 @@ public class Servient {
         }
         catch (IOException e) {
             return null;
-        }
-    }
-
-    private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {
-        try {
-            clazz.getConstructor(parameterTypes);
-            return true;
-        }
-        catch (NoSuchMethodException e) {
-            return false;
         }
     }
 }

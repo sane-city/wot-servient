@@ -11,4 +11,8 @@ public class ProtocolServerException extends Exception {
     public ProtocolServerException(Throwable cause) {
         super(cause);
     }
+
+    public ProtocolServerException() {
+        super();
+    }
 }

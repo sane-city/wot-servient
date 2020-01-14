@@ -98,9 +98,13 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             throw new NoFormForInteractionConsumedThingException(getTitle(), op);
         }
 
-        Set<String> schemes = forms.stream().map(Form::getHrefScheme)
+        List<String> supportedSchemes = servient.getClientSchemes();
+        Set<String> schemes = forms.stream().map(Form::getHrefScheme).sorted(Comparator.comparingInt(supportedSchemes::indexOf))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        // TODO: sort schemes by priority?
+
+        if (schemes.isEmpty()) {
+            throw new NoFormForInteractionConsumedThingException("No schemes in forms found");
+        }
 
         String scheme = null;
         ProtocolClient client = null;
@@ -140,7 +144,8 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (form == null) {
             // if there no op was defined use default assignment
-            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp() == null || f.getOp().isEmpty()).findFirst();
+            String finalScheme = scheme;
+            Optional<Form> nonOpForm = forms.stream().filter(f -> (f.getOp() == null || f.getOp().isEmpty()) && f.getHrefScheme().equals(finalScheme)).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
             }
@@ -150,6 +155,10 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
 
         return new Pair<>(client, form);
+    }
+
+    public Pair<ProtocolClient, Form> getClientFor(Form form, Operation op) throws ConsumedThingException {
+        return getClientFor(List.of(form), op);
     }
 
     private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
