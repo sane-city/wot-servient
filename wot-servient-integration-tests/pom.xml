@@ -32,55 +32,53 @@
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-akka</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-coap</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-http</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-jsonpathhttp</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-jadex</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-mqtt</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <version>2.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.12</artifactId>
-            <version>2.5.23</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-cli</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
