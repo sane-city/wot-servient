@@ -20,10 +20,12 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
-    private final PropertyState state = new PropertyState();
+    private final PropertyState state;
 
     public ExposedThingProperty(String name, ThingProperty property, ExposedThing thing) {
         this.name = name;
+        this.thing = thing;
+        state = new PropertyState();
 
         if (property != null) {
             objectType = property.getObjectType();
@@ -37,17 +39,16 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
             optionalProperties = property.getOptionalProperties();
         }
 
-        this.thing = thing;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     public CompletableFuture<Object> read() {

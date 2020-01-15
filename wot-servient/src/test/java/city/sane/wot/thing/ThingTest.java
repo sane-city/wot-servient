@@ -6,30 +6,41 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.property.ThingProperty;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 public class ThingTest {
+    private String objectType;
+    private Context objectContext;
+    private String id;
+    private String title;
+    private String description;
+    private String base;
+
+    @Before
+    public void setUp() {
+        objectType = "";
+        objectContext = mock(Context.class);
+        id = "";
+        title = "";
+        description = "";
+        base = "";
+    }
+
     @Test
     public void toJson() {
-        Thing thing = new Thing.Builder()
-                .setId("Foo")
-                .setDescription("Bar")
-                .setObjectType("Thing")
-                .setObjectContext(new Context("http://www.w3.org/ns/td"))
-                .build();
+        Thing thing = new Thing("Thing", new Context("http://www.w3.org/ns/td"), "Foo", title, Map.of(), "Bar", Map.of(), Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of(), base);
 
         assertEquals(
                 "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":\"http://www.w3.org/ns/td\"}",
@@ -39,12 +50,7 @@ public class ThingTest {
 
     @Test
     public void toJsonPretty() {
-        Thing thing = new Thing.Builder()
-                .setId("Foo")
-                .setDescription("Bar")
-                .setObjectType("Thing")
-                .setObjectContext(new Context("http://www.w3.org/ns/td"))
-                .build();
+        Thing thing = new Thing("Thing", new Context("http://www.w3.org/ns/td"), "Foo", title, Map.of(), "Bar", Map.of(), Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of(), base);
 
         assertEquals(
                 "{\n" +

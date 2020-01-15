@@ -1,6 +1,7 @@
 package city.sane.wot.thing.action;
 
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.schema.DataSchema;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +20,28 @@ public class ExposedThingAction extends ThingAction {
     private final ExposedThing thing;
 
     @JsonIgnore
-    private final ActionState state = new ActionState();
+    private final ActionState state;
+
+    ExposedThingAction(String name,
+                       ExposedThing thing,
+                       ActionState state,
+                       String description,
+                       Map<String, String> descriptions,
+                       Map<String, Map> uriVariables,
+                       DataSchema input,
+                       DataSchema output) {
+        this.name = name;
+        this.thing = thing;
+        this.state = state;
+        this.description = description;
+        this.descriptions = descriptions;
+        this.uriVariables = uriVariables;
+        this.input = input;
+        this.output = output;
+    }
 
     public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
-        this.name = name;
-        description = action.getDescription();
-        descriptions = action.getDescriptions();
-        uriVariables = action.getUriVariables();
-        input = action.getInput();
-        output = action.getOutput();
-        this.thing = thing;
+        this(name, thing, new ActionState(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
     }
 
     public ActionState getState() {

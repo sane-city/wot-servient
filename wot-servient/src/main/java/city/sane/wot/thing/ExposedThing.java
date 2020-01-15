@@ -41,6 +41,40 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     @JsonIgnore
     private final Subject subject;
 
+    ExposedThing(Servient servient,
+                 Subject subject,
+                 String objectType,
+                 Context objectContext,
+                 String id,
+                 String title,
+                 Map<String, String> titles,
+                 String description,
+                 Map<String, String> descriptions,
+                 List<Form> forms,
+                 List<String> security,
+                 Map<String, SecurityScheme> securityDefinitions,
+                 String base,
+                 Map<String, ExposedThingProperty> properties,
+                 Map<String, ExposedThingAction> actions,
+                 Map<String, ExposedThingEvent> events) {
+        this.servient = servient;
+        this.subject = subject;
+        this.objectType = objectType;
+        this.objectContext = objectContext;
+        this.id = id;
+        this.title = title;
+        this.titles = titles;
+        this.description = description;
+        this.descriptions = descriptions;
+        this.forms = forms;
+        this.security = security;
+        this.securityDefinitions = securityDefinitions;
+        this.base = base;
+        this.properties = properties;
+        this.actions = actions;
+        this.events = events;
+    }
+
     public ExposedThing(Servient servient) {
         this.servient = servient;
         subject = new Subject();
@@ -48,17 +82,17 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
 
     public ExposedThing(Servient servient, Thing thing) {
         this(servient);
-        setObjectType(thing.getObjectType());
-        setObjectContexts(thing.getObjectContext());
-        setId(thing.getId());
-        setTitle(thing.getTitle());
-        setTitles(thing.getTitles());
-        setDescription(thing.getDescription());
-        setDescriptions(thing.getDescriptions());
-        setForms(thing.getForms());
-        setSecurity(thing.getSecurity());
-        setSecurityDefinitions(thing.getSecurityDefinitions());
-        setBase(thing.getBase());
+        objectType = thing.getObjectType();
+        objectContext = thing.getObjectContext();
+        id = thing.getId();
+        title = thing.getTitle();
+        titles = thing.getTitles();
+        description = thing.getDescription();
+        descriptions = thing.getDescriptions();
+        forms = thing.getForms();
+        security = thing.getSecurity();
+        securityDefinitions = thing.getSecurityDefinitions();
+        base = thing.getBase();
         ((Map<String, ThingProperty>) thing.getProperties()).forEach(this::addProperty);
         ((Map<String, ThingAction>) thing.getActions()).forEach(this::addAction);
         ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
@@ -164,6 +198,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * can shorten the Thing Description.
      *
      * @param base
+     *
      * @return
      */
     private ExposedThing setBase(String base) {
@@ -199,7 +234,10 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler) {
+    public ExposedThing addProperty(String name,
+                                    ThingProperty property,
+                                    Supplier<CompletableFuture<Object>> readHandler,
+                                    Function<Object, CompletableFuture<Object>> writeHandler) {
         log.info("'{}' adding Property '{}'", getId(), name);
 
         ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);

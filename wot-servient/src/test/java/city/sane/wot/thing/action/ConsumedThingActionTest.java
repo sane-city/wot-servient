@@ -1,62 +1,42 @@
 package city.sane.wot.thing.action;
 
-import city.sane.wot.Servient;
-import city.sane.wot.ServientException;
+import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.content.Content;
 import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.form.Operation;
-import city.sane.wot.thing.schema.NumberSchema;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class ConsumedThingActionTest {
+    private ThingAction action;
+    private ConsumedThing thing;
+    private ProtocolClient client;
+    private Form form;
+
+    @Before
+    public void setUp() {
+        action = mock(ThingAction.class);
+        thing = mock(ConsumedThing.class);
+        client = mock(ProtocolClient.class);
+        form = mock(Form.class);
+    }
+
     @Test
-    public void invoke() throws ExecutionException, InterruptedException, ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = [\"" + MyProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        Servient servient = new Servient(config);
+    public void invoke() throws ConsumedThingException {
+        when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
+        when(form.getHref()).thenReturn("test:/myAction");
+        when(client.invokeResource(any(), any())).thenReturn(CompletableFuture.completedFuture(null));
 
-        Thing thing = new Thing.Builder().build();
-        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        ConsumedThingAction consumedThingAction = new ConsumedThingAction("myAction", action, thing);
+        consumedThingAction.invoke();
 
-        Form form = new Form.Builder().setOp(Operation.INVOKE_ACTION).setHref("test:/myAction").build();
-        ThingAction action = new ThingAction.Builder().addForm(form).setOutput(new NumberSchema()).build();
-        ConsumedThingAction consumedThingAction = new ConsumedThingAction("myAction", action, consumedThing);
-
-        assertEquals(1337, consumedThingAction.invoke().get());
-    }
-
-    public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        @Override
-        public String getScheme() {
-            return "test";
-        }
-
-        @Override
-        public ProtocolClient getClient() {
-            return new ConsumedThingActionTest.MyProtocolClient();
-        }
-    }
-
-    static class MyProtocolClient implements ProtocolClient {
-        @Override
-        public CompletableFuture<Content> invokeResource(Form form, Content content) {
-            String json = null;
-            if ("test:/myAction".equals(form.getHref())) {
-                json = "1337";
-            }
-            return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
-        }
+        verify(client, times(1)).invokeResource(any(), any());
     }
 }

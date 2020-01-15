@@ -1,20 +1,26 @@
 package city.sane.wot.binding;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.ExposedThingTest;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ProtocolServerTest {
+    private String id;
+
+    @Before
+    public void setUp() {
+        id = "counter";
+    }
     @Test(expected = ProtocolServerNotImplementedException.class)
     public void getDirectoryUrl() throws ProtocolServerException {
-        new ExposedThingTest.MyProtocolServer().getDirectoryUrl();
+        new MyProtocolServer().getDirectoryUrl();
     }
 
     @Test(expected = ProtocolServerNotImplementedException.class)
     public void getThingUrl() throws ProtocolServerException {
-        new ExposedThingTest.MyProtocolServer().getThingUrl(null);
+        new MyProtocolServer().getThingUrl(id);
     }
 
     class MyProtocolServer implements ProtocolServer {

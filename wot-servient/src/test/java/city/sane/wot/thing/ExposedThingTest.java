@@ -2,312 +2,236 @@ package city.sane.wot.thing;
 
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
-import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.thing.action.ExposedThingAction;
-import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
-import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.observer.Subject;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import city.sane.wot.thing.property.ThingProperty;
 import com.github.jsonldjava.shaded.com.google.common.base.Supplier;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class ExposedThingTest {
-    @Test
-    public void readProperty() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
+    private Servient servient;
+    private Subject subject;
+    private String objectType;
+    private Context objectContext;
+    private String id;
+    private String title;
+    private String description;
+    private String base;
+    private ExposedThingProperty property;
+    private ExposedThingAction action;
+    private ExposedThingEvent event;
+    private Supplier<CompletableFuture<Object>> readHandler;
+    private Function<Object, CompletableFuture<Object>> writeHandler;
+    private BiConsumer biConsumerHandler;
+    private Runnable runnableHandler;
+    private Supplier supplierHandler;
 
-        assertEquals(42, thing.getProperty("count").read().get());
+    @Before
+    public void setUp() {
+        servient = mock(Servient.class);
+        subject = mock(Subject.class);
+        objectType = "";
+        objectContext = mock(Context.class);
+        id = "count";
+        title = "counter";
+        description = "";
+        base = "";
+        property = mock(ExposedThingProperty.class);
+        action = mock(ExposedThingAction.class);
+        event = mock(ExposedThingEvent.class);
+        readHandler = mock(Supplier.class);
+        writeHandler = mock(Function.class);
+        biConsumerHandler = mock(BiConsumer.class);
+        runnableHandler = mock(Runnable.class);
+        supplierHandler = mock(Supplier.class);
     }
 
     @Test
-    public void writeProperty() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-        thing.getProperty("count").write(1337).join();
+    public void getProperty() {
+        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
-        ExposedThingProperty counter = thing.getProperty("count");
-        assertEquals(1337, counter.read().get());
+        assertEquals(property, exposedThing.getProperty("count"));
     }
 
     @Test
-    public void invokeAction() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-        ExposedThingAction increment = thing.getAction("increment");
+    public void getAction() {
+        Map<String, ExposedThingAction> actions = Map.of("increment", action);
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), actions, Map.of());
 
-        assertEquals(43, increment.invoke().get());
+        assertEquals(action, exposedThing.getAction("increment"));
     }
 
     @Test
-    public void emitEvent() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
+    public void getEvent() {
+        Map<String, ExposedThingEvent> events = Map.of("change", event);
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), events);
 
-        assertNull(thing.getEvent("change").emit().get());
+        assertEquals(event, exposedThing.getEvent("change"));
     }
 
     @Test
-    public void subscribeEvent() throws ServientException {
-        ExposedThing thing = getCounterThing();
-        ExposedThingEvent event = thing.getEvent("change");
+    public void readProperties() throws ExecutionException, InterruptedException {
+        when(property.read()).thenReturn(CompletableFuture.completedFuture(null));
+        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
-        AtomicInteger counter1 = new AtomicInteger();
-        event.subscribe(next -> counter1.getAndIncrement());
+        exposedThing.readProperties().get();
 
-        AtomicInteger counter2 = new AtomicInteger();
-        event.subscribe(next -> counter2.getAndIncrement());
-
-        event.emit().join();
-        event.emit().join();
-
-        assertEquals(2, counter1.get());
-        assertEquals(2, counter2.get());
+        verify(property, times(1)).read();
     }
 
     @Test
-    public void observeProperty() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-        ExposedThingProperty property = thing.getProperty("count");
+    public void writeProperties() throws ExecutionException, InterruptedException {
+        when(property.write(any())).thenReturn(CompletableFuture.completedFuture(null));
+        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
-        CompletableFuture<Object> subscriptionFuture = new CompletableFuture<>();
-        property.subscribe(
-                subscriptionFuture::complete,
-                subscriptionFuture::completeExceptionally,
-                () -> System.out.println("completed!"));
-        property.write(1337);
+        exposedThing.writeProperties(Map.of("count", 0)).get();
 
-        assertEquals(1337, subscriptionFuture.get());
+        verify(property, times(1)).write(0);
     }
 
     @Test
-    public void allProperties() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-        Map<String, Object> values = thing.readProperties().get();
+    public void expose() {
+        when(servient.expose(any())).thenReturn(CompletableFuture.completedFuture(null));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), Map.of());
 
-        assertEquals(42, values.get("count"));
-    }
+        exposedThing.expose();
 
-    @Test
-    public void jsonSerialization() throws ServientException {
-        ExposedThing thing = getCounterThing();
-
-        String json = thing.toJson();
-
-        System.out.println(json);
-
-//        assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"description\":\"counter example Thing\",\"properties\":{\"lastChange\":{\"description\":\"last change of counter value\",\"type\":\"string\",\"observable\":true,\"readOnly\":true},\"counter\":{\"description\":\"current counter value\",\"type\":\"integer\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{},\"reset\":{}},\"events\":{\"change\":{}}}", json);
-        assertThat(json, instanceOf(String.class));
-    }
-
-    @Test
-    public void propertyWithHandlers() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-
-        Supplier<CompletableFuture<Object>> readHandler = () -> CompletableFuture.completedFuture(1337);
-        Function<Object, CompletableFuture<Object>> writeHandler = (value) -> CompletableFuture.completedFuture(((int) value) / 2);
-
-        thing.addProperty("withHandlers", new ThingProperty(), readHandler, writeHandler);
-        ExposedThingProperty property = thing.getProperty("withHandlers");
-
-        assertEquals(1337, property.read().get());
-        assertEquals(2, property.write(4).get());
-    }
-
-    @Test
-    public void expose() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
-
-        assertThat(thing.expose().get(), instanceOf(ExposedThing.class));
+        verify(servient, times(1)).expose(id);
     }
 
     @Test
     public void destroy() throws ExecutionException, InterruptedException, ServientException {
-        ExposedThing thing = getCounterThing();
+        when(servient.destroy(any())).thenReturn(CompletableFuture.completedFuture(null));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), Map.of());
 
-        assertThat(thing.destroy().get(), instanceOf(ExposedThing.class));
+        exposedThing.destroy();
+
+        verify(servient, times(1)).destroy(id);
     }
 
     @Test
-    public void writeProperties() throws ServientException, ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
+    public void addProperty() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
-        Map<String, Object> newValues = Map.of("count", 0);
-        assertThat(thing.writeProperties(newValues).get(), instanceOf(Map.class));
+        exposedThing.addProperty("count");
+
+        assertNotNull(exposedThing.getProperty("count"));
     }
 
     @Test
-    public void addProperty() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void addPropertyWithHandlers() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
-        thing.addProperty("myNewProperty");
+        exposedThing.addProperty("count", property, readHandler, writeHandler);
+        ExposedThingProperty property = exposedThing.getProperty("count");
 
-        assertNotNull(thing.getProperty("myNewProperty"));
+        assertNotNull(property);
+        assertEquals(readHandler, property.getState().getReadHandler());
+        assertEquals(writeHandler, property.getState().getWriteHandler());
     }
 
     @Test
-    public void addPropertyWithInitValue() throws ServientException, ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
+    public void addPropertyWithInitValue() {
+        when(property.write(any())).thenReturn(CompletableFuture.completedFuture(null));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
-        thing.addProperty("myNewProperty", new ThingProperty(),1337);
+        exposedThing.addProperty("count", property, 1337);
 
-        assertNotNull(thing.getProperty("myNewProperty"));
-        assertEquals(1337, thing.getProperty("myNewProperty").read().get());
+        assertNotNull(exposedThing.getProperty("count"));
     }
 
     @Test
-    public void removeProperty() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void removeProperty() {
+        Map<String, ExposedThingProperty> properties = new HashMap(Map.of("count", property));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
-        thing.removeProperty("count");
+        exposedThing.removeProperty("count");
 
-        assertNull(thing.getProperty("count"));
+        assertNull(exposedThing.getProperty("count"));
     }
 
     @Test
-    public void addAction() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void addAction() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
-        thing.addAction("myNewAction");
+        exposedThing.addAction("increment");
 
-        assertNotNull(thing.getAction("myNewAction"));
+        assertNotNull(exposedThing.addAction("increment"));
     }
 
     @Test
-    public void addActionWithBiConsumerHandler() throws ServientException, ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
+    public void addActionWithBiConsumerHandler() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
-        CompletableFuture<Boolean> future = new CompletableFuture();
-        thing.addAction("myNewAction", (BiConsumer<Object, Map<String, Object>>) (input, options) -> future.complete(true));
+        exposedThing.addAction("increment", biConsumerHandler);
+        ExposedThingAction action = exposedThing.getAction("increment");
 
-        assertNull(thing.getAction("myNewAction").invoke().get());
-        assertTrue(future.get());
+        assertNotNull(action);
     }
 
     @Test
-    public void addActionWithRunnableHandler() throws ServientException, ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
+    public void addActionWithRunnableHandler() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
-        CompletableFuture<Boolean> future = new CompletableFuture();
-        thing.addAction("myNewAction", () -> future.complete(true));
+        exposedThing.addAction("increment", runnableHandler);
+        ExposedThingAction action = exposedThing.getAction("increment");
 
-        assertNull(thing.getAction("myNewAction").invoke().get());
-        assertTrue(future.get());
+        assertNotNull(action);
     }
 
     @Test
     public void addActionWithSupplierHandler() throws ServientException, ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
-        CompletableFuture<Object> future = new CompletableFuture();
-        thing.addAction("myNewAction", () -> {
-            future.complete(true);
-            return future;
-        });
+        exposedThing.addAction("increment", supplierHandler);
+        ExposedThingAction action = exposedThing.getAction("increment");
 
-        assertTrue((Boolean) thing.getAction("myNewAction").invoke().get());
-        assertTrue((Boolean) future.get());
+        assertNotNull(action);
     }
 
     @Test
-    public void removeAction() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void removeAction() {
+        Map<String, ExposedThingAction> actions = new HashMap(Map.of("increment", action));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), actions, Map.of());
 
-        thing.removeAction("increment");
+        exposedThing.removeAction("increment");
 
-        assertNull(thing.getAction("increment"));
+        assertNull(exposedThing.getAction("increment"));
     }
 
     @Test
-    public void addEvent() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void addEvent() {
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), new HashMap());
 
-        thing.addEvent("myNewEvent");
+        exposedThing.addEvent("change");
 
-        assertNotNull(thing.getEvent("myNewEvent"));
+        assertNotNull(exposedThing.addEvent("change"));
     }
 
     @Test
-    public void removeEvent() throws ServientException {
-        ExposedThing thing = getCounterThing();
+    public void removeEvent() {
+        Map<String, ExposedThingEvent> events = new HashMap(Map.of("change", event));
+        ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), events);
 
-        thing.removeEvent("change");
+        exposedThing.removeEvent("change");
 
-        assertNull(thing.getEvent("change"));
-    }
-
-    private ExposedThing getCounterThing() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + ExposedThingTest.MyProtocolServer.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        Servient servient = new Servient(config);
-
-        ExposedThing thing = new ExposedThing(servient)
-                .setId("counter")
-                .setTitle("counter")
-                .setDescription("counter example Thing");
-
-        ThingProperty counterProperty = new ThingProperty.Builder()
-                .setType("integer")
-                .setDescription("current counter value")
-                .setObservable(true)
-                .setReadOnly(true)
-                .build();
-
-        ThingProperty lastChangeProperty = new ThingProperty.Builder()
-                .setType("string")
-                .setDescription("last change of counter value")
-                .setObservable(true)
-                .setReadOnly(true)
-                .build();
-
-        thing.addProperty("count", counterProperty, 42);
-        thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
-
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
-            return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
-                thing.getProperty("count").write(newValue);
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return newValue;
-            });
-        });
-
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
-            return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) - 1;
-                thing.getProperty("count").write(newValue);
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return newValue;
-            });
-        });
-
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
-            return thing.getProperty("count").write(0).thenApply(value -> {
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return 0;
-            });
-        });
-
-        thing.addEvent("change", new ThingEvent());
-
-        servient.addThing(thing);
-
-        return thing;
+        assertNull(exposedThing.getEvent("change"));
     }
 
     @Test
@@ -316,31 +240,5 @@ public class ExposedThingTest {
         ExposedThing thingB = new ExposedThing(null, new Thing.Builder().setId("counter").build());
 
         assertEquals(thingA, thingB);
-    }
-
-    public static class MyProtocolServer implements ProtocolServer {
-        public MyProtocolServer() {
-
-        }
-
-        @Override
-        public CompletableFuture<Void> start() {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> stop() {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> expose(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public CompletableFuture<Void> destroy(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
-        }
     }
 }
