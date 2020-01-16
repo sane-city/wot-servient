@@ -25,7 +25,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), getBody());
+        return Objects.hash(getType(), Arrays.hashCode(getBody()));
     }
 
     @Override
