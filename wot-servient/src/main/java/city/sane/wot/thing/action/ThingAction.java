@@ -24,6 +24,14 @@ public class ThingAction extends ThingInteraction<ThingAction> {
     @JsonDeserialize(as = VariableDataSchema.class)
     DataSchema output;
 
+    ThingAction(DataSchema input, DataSchema output) {
+        this.input = input;
+        this.output = output;
+    }
+
+    public ThingAction() {
+    }
+
     public DataSchema getInput() {
         return input;
     }
@@ -71,9 +79,7 @@ public class ThingAction extends ThingInteraction<ThingAction> {
 
         @Override
         public ThingAction build() {
-            ThingAction action = new ThingAction();
-            action.input = input;
-            action.output = output;
+            ThingAction action = new ThingAction(input, output);
             applyInteractionParameters(action);
             return action;
         }

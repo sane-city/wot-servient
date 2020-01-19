@@ -1,66 +1,64 @@
 package city.sane.wot;
 
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
-import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
+import java.net.URISyntaxException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class DefaultWotTest {
-    @Test(expected = ProtocolClientNotImplementedException.class)
-    public void discoverNoClients() throws Throwable {
-        DefaultWot wot = new DefaultWot();
+    private Servient servient;
+    private Thing thing;
 
-        try {
-            wot.discover().get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+    @Before
+    public void setUp() {
+        servient = mock(Servient.class);
+        thing = mock(Thing.class);
     }
 
     @Test
-    public void produce() throws WotException {
-        DefaultWot wot = new DefaultWot();
+    public void discover() {
+        DefaultWot wot = new DefaultWot(servient);
+        wot.discover();
 
-        Thing thing = new Thing.Builder().build();
-        assertThat(wot.produce(thing), instanceOf(ExposedThing.class));
+        verify(servient, times(1)).discover(any());
     }
 
     @Test
-    public void consume() throws WotException {
-        DefaultWot wot = new DefaultWot();
+    public void produce() {
+        DefaultWot wot = new DefaultWot(servient);
+        wot.produce(thing);
 
-        Thing thing = new Thing.Builder().build();
-        assertThat(wot.consume(thing), instanceOf(ConsumedThing.class));
-    }
-
-    @Test(expected = ServientException.class)
-    public void fetchUnknownScheme() throws Throwable {
-        DefaultWot wot = new DefaultWot();
-
-        try {
-            String url = "http://localhost";
-            wot.fetch(url).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        verify(servient, times(1)).addThing(any());
     }
 
     @Test
-    public void destroy() throws WotException, ExecutionException, InterruptedException {
-        DefaultWot wot = new DefaultWot();
+    public void consume() {
+        DefaultWot wot = new DefaultWot(servient);
 
-        assertNull(wot.destroy().get());
+        assertNotNull(wot.consume(thing));
+    }
+
+    @Test
+    public void fetch() throws URISyntaxException {
+        DefaultWot wot = new DefaultWot(servient);
+        wot.fetch("http://localhost");
+
+        verify(servient, times(1)).fetch("http://localhost");
+    }
+
+    @Test
+    public void destroy() {
+        DefaultWot wot = new DefaultWot(servient);
+        wot.destroy();
+
+        verify(servient, times(1)).shutdown();
     }
 
     @Test
@@ -68,11 +66,5 @@ public class DefaultWotTest {
         Wot wot = DefaultWot.clientOnly();
 
         assertThat(wot, instanceOf(Wot.class));
-    }
-
-    @Test(expected = WotException.class)
-    public void clientOnlyBadServient() throws WotException {
-        Config config = ConfigFactory.parseString("wot.servient.client-factories = [foo.bar.MyClientFactory]").withFallback(ConfigFactory.load());
-        DefaultWot.clientOnly(config);
     }
 }

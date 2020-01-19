@@ -44,7 +44,7 @@ public class ConsumedThingEvent extends ThingEvent {
         return super.equals(obj);
     }
 
-    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.SUBSCRIBE_EVENT);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();

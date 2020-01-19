@@ -122,7 +122,7 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
