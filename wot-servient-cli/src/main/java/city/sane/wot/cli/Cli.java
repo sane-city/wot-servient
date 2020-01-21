@@ -65,7 +65,7 @@ class Cli {
         Level level = Level.valueOf(value);
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.getLoggerList().forEach(f -> f.setLevel(level));
+        context.getLoggerList().stream().filter(l -> l.getName().startsWith("city.sane")).forEach(l -> l.setLevel(level));
     }
 
     private void printVersion() {
