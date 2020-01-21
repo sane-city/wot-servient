@@ -201,7 +201,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    private ExposedThing setBase(String base) {
+    public ExposedThing setBase(String base) {
         this.base = base;
         return this;
     }

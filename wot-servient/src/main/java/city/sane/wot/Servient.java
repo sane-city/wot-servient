@@ -146,6 +146,7 @@ public class Servient {
         log.info("Servient exposing '{}'", id);
 
         // initializing forms
+        thing.setBase("");
         Map<String, ExposedThingProperty> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
         Map<String, ExposedThingAction> actions = thing.getActions();
