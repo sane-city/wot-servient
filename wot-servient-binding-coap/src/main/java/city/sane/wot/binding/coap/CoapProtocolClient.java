@@ -176,17 +176,17 @@ public class CoapProtocolClient implements ProtocolClient {
             else {
                 try {
                     String error = ContentManager.contentToValue(output, new StringSchema());
-                    future.completeExceptionally(new ProtocolClientException("Response was not successful: " + error));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + error));
                 }
                 catch (ContentCodecException e) {
-                    future.completeExceptionally(new ProtocolClientException("Response was not successful: " + e.getMessage()));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + e.getMessage()));
                 }
             }
         }
 
         @Override
         public void onError() {
-            future.completeExceptionally(new ProtocolClientException("Response was not successful"));
+            future.completeExceptionally(new ProtocolClientException("request timeouts or has been rejected by the server"));
         }
     }
 }
