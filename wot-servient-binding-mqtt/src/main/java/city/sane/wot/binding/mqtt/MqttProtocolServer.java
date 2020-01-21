@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.content.Content;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletionException;
 /**
  * Allows exposing Things via MQTT.
  */
+@ServientDiscoveryIgnore
 public class MqttProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 

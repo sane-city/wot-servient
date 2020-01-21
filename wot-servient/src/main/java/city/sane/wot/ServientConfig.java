@@ -44,7 +44,8 @@ public class ServientConfig {
             log.debug("Config '{}' is set to null. Search in classpath for available servers", CONFIG_SERVERS);
             ScanResult scanResult = scanClasspath();
             requiredServers = scanResult.getClassesImplementing(ProtocolServer.class.getName())
-                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
+                    .stream().filter(ci -> !ci.hasAnnotation(ServientDiscoveryIgnore.class.getName()))
+                    .map(ClassInfo::getName).collect(Collectors.toList());
         }
         else {
             // read servers from config
@@ -63,7 +64,8 @@ public class ServientConfig {
             log.debug("Config '{}' is set to null. Search in classpath for available client factories", CONFIG_CLIENT_FACTORIES);
             ScanResult scanResult = scanClasspath();
             requiredFactories = scanResult.getClassesImplementing(ProtocolClientFactory.class.getName())
-                    .stream().map(ClassInfo::getName).collect(Collectors.toList());
+                    .stream().filter(ci -> !ci.hasAnnotation(ServientDiscoveryIgnore.class.getName()))
+                    .map(ClassInfo::getName).collect(Collectors.toList());
         }
         else {
             // read client factories from config
@@ -148,7 +150,7 @@ public class ServientConfig {
 
     private static ScanResult scanClasspath() {
         if (scanResult == null) {
-            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().scan();
+            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().enableAnnotationInfo().scan();
         }
         return scanResult;
     }
