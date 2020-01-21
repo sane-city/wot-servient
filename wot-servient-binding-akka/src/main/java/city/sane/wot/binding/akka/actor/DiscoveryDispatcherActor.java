@@ -23,12 +23,12 @@ public class DiscoveryDispatcherActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
     }
 
     private void startDiscovery(Discover m) {
-        log.info("Start discovery with filter '{}'", m.filter);
+        log.debug("Start discovery with filter '{}'", m.filter);
 
         getContext().actorOf(DiscoverActor.props(getSender(), Duration.ofSeconds(5), m.filter), "discovery");
     }
@@ -49,7 +49,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
         ActorRef requester = m.requester;
         Map<String, Thing> things = m.things;
 
-        log.info("AkkaDiscovery finished. Send result requester '{}'", requester);
+        log.debug("AkkaDiscovery finished. Send result requester '{}'", requester);
         requester.tell(new Things(things), getSelf());
     }
 

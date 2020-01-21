@@ -95,7 +95,7 @@ public class AkkaProtocolServer implements ProtocolServer {
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
-                    log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
+                    log.debug("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }
@@ -117,7 +117,7 @@ public class AkkaProtocolServer implements ProtocolServer {
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
-                    log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
+                    log.debug("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }

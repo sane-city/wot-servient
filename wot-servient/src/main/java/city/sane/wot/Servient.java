@@ -99,6 +99,7 @@ public class Servient {
      * @return
      */
     public CompletableFuture<Void> start() {
+        log.info("Start Servient");
         CompletableFuture<Void>[] serverFutures = servers.stream().map(ProtocolServer::start).toArray(CompletableFuture[]::new);
         CompletableFuture<Void>[] clientFutures = clientFactories.values().stream().map(ProtocolClientFactory::init).toArray(CompletableFuture[]::new);
 
@@ -114,6 +115,7 @@ public class Servient {
      * @return
      */
     public CompletableFuture<Void> shutdown() {
+        log.info("Stop Servient");
         CompletableFuture<Void>[] clientFutures = clientFactories.values().stream().map(ProtocolClientFactory::destroy).toArray(CompletableFuture[]::new);
         CompletableFuture<Void>[] serverFutures = servers.stream().map(ProtocolServer::stop).toArray(CompletableFuture[]::new);
 

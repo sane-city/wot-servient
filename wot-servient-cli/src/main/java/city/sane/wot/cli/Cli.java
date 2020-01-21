@@ -23,7 +23,7 @@ class Cli {
     private static final Logger log = LoggerFactory.getLogger(Cli.class);
 
     private static final String CONF = "wot-servient.conf";
-    private static final String LOGLEVEL = "warn";
+    private static final String LOGLEVEL = "info";
     private static final String OPT_VERSION = "version";
     private static final String OPT_LOGLEVEL = "loglevel";
     private static final String OPT_CLIENTONLY = "clientonly";

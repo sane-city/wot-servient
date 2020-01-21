@@ -54,7 +54,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
     public CompletableFuture<Object> read() {
         // call read handler (if any)
         if (state.getReadHandler() != null) {
-            log.info("'{}' calls registered readHandler for Property '{}'", thing.getId(), name);
+            log.debug("'{}' calls registered readHandler for Property '{}'", thing.getId(), name);
 
             // update internal state in case writeHandler wants to get the value
             return state.getReadHandler().get().whenComplete((customValue, e) -> state.setValue(customValue));
@@ -63,7 +63,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
             CompletableFuture<Object> future = new CompletableFuture<>();
 
             Object value = state.getValue();
-            log.info("'{}' gets internal value '{}' for Property '{}'", thing.getId(), value, name);
+            log.debug("'{}' gets internal value '{}' for Property '{}'", thing.getId(), value, name);
             future.complete(value);
 
             return future;
@@ -73,10 +73,10 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
     public CompletableFuture<Object> write(Object value) {
         // call write handler (if any)
         if (state.getWriteHandler() != null) {
-            log.info("'{}' calls registered writeHandler for Property '{}'", thing.getId(), name);
+            log.debug("'{}' calls registered writeHandler for Property '{}'", thing.getId(), name);
 
             return state.getWriteHandler().apply(value).whenComplete((customValue, e) -> {
-                log.info("'{}' write handler for Property '{}' sets custom value '{}'", thing.getId(), name, customValue);
+                log.debug("'{}' write handler for Property '{}' sets custom value '{}'", thing.getId(), name, customValue);
                 if (!Objects.equals(state.getValue(), customValue)) {
                     state.setValue(customValue);
 
@@ -87,7 +87,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
         }
         else {
             if (!Objects.equals(state.getValue(), value)) {
-                log.info("'{}' sets Property '{}' to internal value '{}'", thing.getId(), name, value);
+                log.debug("'{}' sets Property '{}' to internal value '{}'", thing.getId(), name, value);
                 state.setValue(value);
 
                 // inform property observers
@@ -100,7 +100,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
 
     @Override
     public Subscription subscribe(Observer<Object> observer) {
-        log.info("'{}' subscribe to Property '{}'", thing.getId(), name);
+        log.debug("'{}' subscribe to Property '{}'", thing.getId(), name);
         return state.getSubject().subscribe(observer);
     }
 

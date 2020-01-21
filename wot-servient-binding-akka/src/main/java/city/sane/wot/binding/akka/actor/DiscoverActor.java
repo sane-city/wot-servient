@@ -51,7 +51,7 @@ public class DiscoverActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (mediator != null) {
             mediator.tell(new DistributedPubSubMediator.Publish(ThingsActor.TOPIC, new ThingsActor.Discover(filter)), getSelf());
@@ -60,7 +60,7 @@ public class DiscoverActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
 
         timer.cancel();
     }
@@ -74,12 +74,12 @@ public class DiscoverActor extends AbstractActor {
     }
 
     private void foundThings(Things m) {
-        log.info("Received {} thing(s) from {}", m.entities.size(), getSender());
+        log.debug("Received {} thing(s) from {}", m.entities.size(), getSender());
         things.putAll(m.entities);
     }
 
     private void stop() {
-        log.info("AkkaDiscovery timed out. Send all Things collected so far to parent");
+        log.debug("AkkaDiscovery timed out. Send all Things collected so far to parent");
         getContext().getParent().tell(new Done(requester, things), getSelf());
         getContext().stop(getSelf());
     }

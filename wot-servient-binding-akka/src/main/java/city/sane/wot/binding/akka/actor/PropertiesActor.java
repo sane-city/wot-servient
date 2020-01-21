@@ -27,7 +27,7 @@ class PropertiesActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!properties.isEmpty()) {
             properties.forEach((name, property) -> {
@@ -42,7 +42,7 @@ class PropertiesActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -59,7 +59,7 @@ class PropertiesActor extends AbstractActor {
     }
 
     private void done() {
-        log.info("All properties have been exposed");
+        log.debug("All properties have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 

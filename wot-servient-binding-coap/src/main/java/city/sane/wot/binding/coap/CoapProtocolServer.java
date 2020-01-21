@@ -193,7 +193,7 @@ public class CoapProtocolServer implements ProtocolServer {
                         .build();
 
                 thing.addForm(form);
-                log.info("Assign '{}' for reading all properties", href);
+                log.debug("Assign '{}' for reading all properties", href);
 
                 allResource.add(new AllPropertiesResource(thing));
             }
@@ -217,7 +217,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 }
 
                 property.addForm(form.build());
-                log.info("Assign '{}' to Property '{}'", href, name);
+                log.debug("Assign '{}' to Property '{}'", href, name);
 
                 PropertyResource propertyResource = new PropertyResource(name, property);
                 propertiesResource.add(propertyResource);
@@ -233,7 +233,7 @@ public class CoapProtocolServer implements ProtocolServer {
                             .build();
 
                     property.addForm(observableForm);
-                    log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+                    log.debug("Assign '{}' to observable Property '{}'", observableHref, name);
 
                     propertyResource.add(new ObservePropertyResource(name, property));
                 }
@@ -256,7 +256,7 @@ public class CoapProtocolServer implements ProtocolServer {
                         .build();
 
                 action.addForm(form);
-                log.info("Assign '{}' to Action '{}'", href, name);
+                log.debug("Assign '{}' to Action '{}'", href, name);
 
                 actionsResource.add(new ActionResource(name, action));
             });
@@ -278,7 +278,7 @@ public class CoapProtocolServer implements ProtocolServer {
                         .build();
 
                 event.addForm(form);
-                log.info("Assign '{}' to Event '{}'", href, name);
+                log.debug("Assign '{}' to Event '{}'", href, name);
 
                 eventsResource.add(new EventResource(name, event));
             });

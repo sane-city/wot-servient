@@ -24,7 +24,7 @@ class AllActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         ActorRef propertiesActor = getContext().actorOf(AllPropertiesActor.props(thing), "properties");
         children.add(propertiesActor);
@@ -32,7 +32,7 @@ class AllActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -49,7 +49,7 @@ class AllActor extends AbstractActor {
     }
 
     private void done() {
-        log.info("'all' resources have been exposed");
+        log.debug("'all' resources have been exposed");
         getContext().getParent().tell(new ThingsActor.Created<>(getSelf()), getSelf());
     }
 

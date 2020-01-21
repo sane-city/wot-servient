@@ -48,13 +48,13 @@ class AkkaSimpleClusterListener extends AbstractActor {
         return receiveBuilder()
                 .match(
                         MemberUp.class,
-                        mUp -> log.info("Member is Up: {}", mUp.member()))
+                        mUp -> log.debug("Member is Up: {}", mUp.member()))
                 .match(
                         UnreachableMember.class,
-                        mUnreachable -> log.info("Member detected as unreachable: {}", mUnreachable.member()))
+                        mUnreachable -> log.debug("Member detected as unreachable: {}", mUnreachable.member()))
                 .match(
                         MemberRemoved.class,
-                        mRemoved -> log.info("Member is Removed: {}", mRemoved.member()))
+                        mRemoved -> log.debug("Member is Removed: {}", mRemoved.member()))
                 .match(
                         MemberEvent.class,
                         message -> {

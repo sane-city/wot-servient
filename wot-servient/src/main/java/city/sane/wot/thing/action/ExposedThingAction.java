@@ -68,10 +68,10 @@ public class ExposedThingAction extends ThingAction {
      * @return
      */
     public CompletableFuture<Object> invoke(Object input, Map<String, Object> options) {
-        log.info("'{}' has Action state of '{}': {}", thing.getId(), name, getState());
+        log.debug("'{}' has Action state of '{}': {}", thing.getId(), name, getState());
 
         if (getState().getHandler() != null) {
-            log.info("'{}' calls registered handler for Action '{}' with input '{}' and options '{}'", thing.getId(), name, input, options);
+            log.debug("'{}' calls registered handler for Action '{}' with input '{}' and options '{}'", thing.getId(), name, input, options);
             CompletableFuture<Object> output = getState().getHandler().apply(input, options);
             if (output == null) {
                 log.warn("'{}': Called registered handler for Action '{}' returned null. This can cause problems. Give Future with null result back.", thing.getId(), name);
@@ -80,7 +80,7 @@ public class ExposedThingAction extends ThingAction {
             return output;
         }
         else {
-            log.info("'{}' has no handler for Action '{}'", thing.getId(), name);
+            log.debug("'{}' has no handler for Action '{}'", thing.getId(), name);
             return CompletableFuture.completedFuture(null);
         }
     }

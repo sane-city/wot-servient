@@ -164,7 +164,7 @@ public class MqttProtocolServer implements ProtocolServer {
                     .setOp(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY)
                     .build();
             property.addForm(form);
-            log.info("Assign '{}' to Property '{}'", href, name);
+            log.debug("Assign '{}' to Property '{}'", href, name);
         });
     }
 
@@ -185,7 +185,7 @@ public class MqttProtocolServer implements ProtocolServer {
                         .setOp(Operation.INVOKE_ACTION)
                         .build();
                 action.addForm(form);
-                log.info("Assign '{}' to Action '{}'", href, name);
+                log.debug("Assign '{}' to Action '{}'", href, name);
             }
             catch (MqttException e) {
                 throw new CompletionException(e);
@@ -209,14 +209,14 @@ public class MqttProtocolServer implements ProtocolServer {
                     .setOptional("mqtt:retain", false)
                     .build();
             event.addForm(form);
-            log.info("Assign '{}' to Event '{}'", href, name);
+            log.debug("Assign '{}' to Event '{}'", href, name);
         });
     }
 
     private void handleSubscriptionData(String topic, Object data) {
         try {
             Content content = ContentManager.valueToContent(data);
-            log.info("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
+            log.debug("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
             client.publish(topic, new MqttMessage(content.getBody()));
         }
         catch (ContentCodecException e) {

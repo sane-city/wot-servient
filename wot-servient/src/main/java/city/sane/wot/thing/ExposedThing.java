@@ -238,7 +238,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
                                     ThingProperty property,
                                     Supplier<CompletableFuture<Object>> readHandler,
                                     Function<Object, CompletableFuture<Object>> writeHandler) {
-        log.info("'{}' adding Property '{}'", getId(), name);
+        log.debug("'{}' adding Property '{}'", getId(), name);
 
         ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);
         exposedProperty.getState().setReadHandler(readHandler);
@@ -327,7 +327,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeProperty(String name) {
-        log.info("'{}' removing Property '{}'", getId(), name);
+        log.debug("'{}' removing Property '{}'", getId(), name);
         properties.remove(name);
         return this;
     }
@@ -343,7 +343,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, BiFunction<Object, Map<String, Object>, CompletableFuture<Object>> handler) {
-        log.info("'{}' adding Action '{}'", getId(), name);
+        log.debug("'{}' adding Action '{}'", getId(), name);
 
         ExposedThingAction exposedAction = new ExposedThingAction(name, action, this);
         exposedAction.getState().setHandler(handler);
@@ -483,7 +483,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeAction(String name) {
-        log.info("'{}' removing Action '{}'", getId(), name);
+        log.debug("'{}' removing Action '{}'", getId(), name);
         actions.remove(name);
         return this;
     }
@@ -522,7 +522,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeEvent(String name) {
-        log.info("'{}' removing Event '{}'", getId(), name);
+        log.debug("'{}' removing Event '{}'", getId(), name);
         events.remove(name);
         return this;
     }
@@ -534,7 +534,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public CompletableFuture<ExposedThing> expose() {
-        log.info("Expose all Interactions and TD for '{}'", getId());
+        log.debug("Expose all Interactions and TD for '{}'", getId());
 
         // let servient forward exposure to the servers
         return servient.expose(getId()).whenComplete((thing, e) -> {
@@ -551,7 +551,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public CompletableFuture<ExposedThing> destroy() {
-        log.info("Stop exposing all Interactions and TD for '{}'", getId());
+        log.debug("Stop exposing all Interactions and TD for '{}'", getId());
 
         // let servient forward destroy to the servers
         return servient.destroy(getId()).whenComplete((thing, e) -> {

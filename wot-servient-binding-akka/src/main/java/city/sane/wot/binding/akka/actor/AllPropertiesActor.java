@@ -27,7 +27,7 @@ class AllPropertiesActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form form = new Form.Builder()
@@ -37,14 +37,14 @@ class AllPropertiesActor extends AbstractActor {
                 .build();
 
         thing.addForm(form);
-        log.info("Assign '{}' for reading all properties", href);
+        log.debug("Assign '{}' for reading all properties", href);
 
         getContext().getParent().tell(new ThingsActor.Created<>(getSelf()), getSelf());
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override

@@ -31,7 +31,7 @@ public class ActionActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form form = new Form.Builder()
@@ -41,14 +41,14 @@ public class ActionActor extends AbstractActor {
                 .build();
 
         action.addForm(form);
-        log.info("Assign '{}' to Action '{}'", href, name);
+        log.debug("Assign '{}' to Action '{}'", href, name);
 
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override

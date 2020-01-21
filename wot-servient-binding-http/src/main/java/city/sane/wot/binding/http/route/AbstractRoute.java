@@ -35,10 +35,10 @@ abstract class AbstractRoute implements Route {
     }
 
     void logRequest(Request request) {
-        if (log.isInfoEnabled()) {
-            log.info("Handle {} to '{}'", request.requestMethod(), request.url());
+        if (log.isDebugEnabled()) {
+            log.debug("Handle {} to '{}'", request.requestMethod(), request.url());
             if (request.raw().getQueryString() != null && !request.raw().getQueryString().isEmpty()) {
-                log.info("Request parameters: {}", request.raw().getQueryString());
+                log.debug("Request parameters: {}", request.raw().getQueryString());
             }
         }
     }

@@ -44,7 +44,7 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
     }
 
     public CompletableFuture<Void> emit(Object data) {
-        log.info("Event '{}' has been emitted", name);
+        log.debug("Event '{}' has been emitted", name);
         return state.getSubject().next(data);
     }
 

@@ -24,7 +24,7 @@ public class ObserveActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         log.debug("Send Subscribe message to {}", selection);
         selection.tell(new Subscribe(), getSelf());
@@ -32,7 +32,7 @@ public class ObserveActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stop");
+        log.debug("Stop");
     }
 
     @Override

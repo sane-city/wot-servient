@@ -33,7 +33,7 @@ class EventActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form form = new Form.Builder()
@@ -44,14 +44,14 @@ class EventActor extends AbstractActor {
                 .build();
 
         event.addForm(form);
-        log.info("Assign '{}' to Event '{}'", href, name);
+        log.debug("Assign '{}' to Event '{}'", href, name);
 
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override

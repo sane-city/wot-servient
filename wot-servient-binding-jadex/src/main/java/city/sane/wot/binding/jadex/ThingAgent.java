@@ -75,7 +75,7 @@ public class ThingAgent implements ThingService {
                         .build();
 
                 thing.addForm(form);
-                log.info("Assign '{}' for reading all properties", href);
+                log.debug("Assign '{}' for reading all properties", href);
             }
         }
 
@@ -88,7 +88,7 @@ public class ThingAgent implements ThingService {
                     .build();
             property.addForm(form);
 
-            log.info("Assign '{}' to Property '{}'", href, name);
+            log.debug("Assign '{}' to Property '{}'", href, name);
         });
 
         //
@@ -105,7 +105,7 @@ public class ThingAgent implements ThingService {
                     .build();
             action.addForm(form);
 
-            log.info("Assign '{}' to Action '{}'", href, name);
+            log.debug("Assign '{}' to Action '{}'", href, name);
         });
 
         //
@@ -122,7 +122,7 @@ public class ThingAgent implements ThingService {
                     .build();
             event.addForm(form);
 
-            log.info("Assign '{}' to Event '{}'", href, name);
+            log.debug("Assign '{}' to Event '{}'", href, name);
         });
 
         return DONE;

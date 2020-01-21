@@ -25,7 +25,7 @@ public class RootResource extends AbstractResource {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        log.info("Handle GET to '{}'", getURI());
+        log.debug("Handle GET to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
 
