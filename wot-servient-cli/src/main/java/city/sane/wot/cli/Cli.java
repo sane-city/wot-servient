@@ -190,7 +190,7 @@ class Cli {
         Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
         options.addOption(version);
 
-        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
+        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: " + LOGLEVEL + ")").build();
         options.addOption(loglevel);
 
         Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();
