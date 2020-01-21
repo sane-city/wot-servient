@@ -5,8 +5,5 @@
 .idea
 **/*.iml
 
-# Git
-.git
-
 # macOS
 .DS_Store
