@@ -49,7 +49,7 @@ public class ConsumedThingEvent extends ThingEvent {
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 
-        log.debug("New subscription for Event '{}' from '{}'", name, thing.getTitle());
+        log.debug("New subscription for Event '{}' from '{}'", name, thing.getId());
         try {
             return client.subscribeResource(form,
                     new Observer<>(content -> {

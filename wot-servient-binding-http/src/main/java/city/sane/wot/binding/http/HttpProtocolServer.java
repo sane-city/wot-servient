@@ -87,7 +87,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on port '{}'", bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
 
         return CompletableFuture.runAsync(() -> {
             started = false;
@@ -98,7 +98,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
 
         if (!started) {
@@ -134,7 +134,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
         things.remove(thing.getId());
 

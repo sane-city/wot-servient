@@ -22,7 +22,7 @@ class ExampleDynamic {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
         exposedThing.addAction("addProperty", new ThingAction(),
                 () -> {
