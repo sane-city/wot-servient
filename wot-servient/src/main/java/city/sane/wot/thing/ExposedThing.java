@@ -540,6 +540,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return servient.expose(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
+                log.debug("TD has changed. Inform observers.");
                 subject.next(thing);
             }
         });
@@ -557,6 +558,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         return servient.destroy(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
+                log.debug("TD has changed. Inform observers.");
                 subject.next(thing);
             }
         });

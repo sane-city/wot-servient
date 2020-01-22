@@ -40,9 +40,10 @@ public class CoapProtocolClient implements ProtocolClient {
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
                 .setTimeout(10 * 1000L);
-        log.debug("CoapClient sending {} to {}", "GET", url);
 
         Request request = generateRequest(form, CoAP.Code.GET);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
+
         client.advanced(new FutureCoapHandler(future), request);
 
         return future;
@@ -58,7 +59,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
-        log.debug("Sending '{}' to '{}'", request.getCode(), url);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
         if (content != null) {
             request.setPayload(content.getBody());
         }
@@ -78,7 +79,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.POST);
-        log.debug("Sending '{}' to '{}'", request.getCode(), url);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
         if (content != null) {
             request.setPayload(content.getBody());
         }
@@ -99,7 +100,7 @@ public class CoapProtocolClient implements ProtocolClient {
         // Californium does not offer any method to wait until the observation is established...
         // This causes new values not being recognized directly after observation creation.
         // The client must wait "some" time before it can be sure that the observation is active.
-        log.debug("CoapClient subscribe {}", url);
+        log.debug("CoapClient subscribe to '{}'", url);
         client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
@@ -166,7 +167,7 @@ public class CoapProtocolClient implements ProtocolClient {
 
         @Override
         public void onLoad(CoapResponse response) {
-            log.debug("Response receivend: {}", response.getCode());
+            log.debug("Response received: {}", response.getCode());
             String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
             byte[] body = response.getPayload();
             Content output = new Content(type, body);
@@ -176,10 +177,10 @@ public class CoapProtocolClient implements ProtocolClient {
             else {
                 try {
                     String error = ContentManager.contentToValue(output, new StringSchema());
-                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + error));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + response + " (" + error + ")"));
                 }
                 catch (ContentCodecException e) {
-                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + e.getMessage()));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + response + " (" + e.getMessage() + ")"));
                 }
             }
         }

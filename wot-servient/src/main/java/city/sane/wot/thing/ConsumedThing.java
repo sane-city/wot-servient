@@ -119,7 +119,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (client != null) {
             // from cache
-            log.debug("'{}' chose cached client for '{}'", getId(), scheme);
+            log.debug("'{}' chose cached client for scheme '{}'", getId(), scheme);
         }
         else {
             // new client
@@ -129,7 +129,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             scheme = protocolClient.first();
             client = protocolClient.second();
 
-            log.debug("'{}' got new client for '{}'", getId(), scheme);
+            log.debug("'{}' got new client for scheme '{}'", getId(), scheme);
             clients.put(scheme, client);
         }
 

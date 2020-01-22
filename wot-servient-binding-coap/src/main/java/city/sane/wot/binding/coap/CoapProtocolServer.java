@@ -107,7 +107,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("CoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
                 thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
@@ -138,7 +138,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("CoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
+        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
                 thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
@@ -233,7 +233,7 @@ public class CoapProtocolServer implements ProtocolServer {
                             .build();
 
                     property.addForm(observableForm);
-                    log.debug("Assign '{}' to observable Property '{}'", observableHref, name);
+                    log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
 
                     propertyResource.add(new ObservePropertyResource(name, property));
                 }
