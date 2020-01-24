@@ -117,7 +117,7 @@
     </distributionManagement>
 
     <scm>
-        <developerConnection>scm:git:ssh://git@git.informatik.uni-hamburg.de:sane-public/wot-servient.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@git.informatik.uni-hamburg.de/sane-public/wot-servient.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
