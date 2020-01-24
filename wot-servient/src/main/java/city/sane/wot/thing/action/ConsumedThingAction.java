@@ -50,7 +50,7 @@ public class ConsumedThingAction extends ThingAction {
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("Thing '{}' invoking Action '{}' with form '{}' and parameters '{}'", thing.getTitle(), name, form.getHref(), parameters);
+            log.debug("Thing '{}' invoking Action '{}' with form '{}' and parameters '{}'", thing.getId(), name, form.getHref(), parameters);
 
             Content input = null;
             if (!parameters.isEmpty()) {

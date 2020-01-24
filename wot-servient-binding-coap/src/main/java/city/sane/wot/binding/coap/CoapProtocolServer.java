@@ -66,7 +66,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start() {
-        log.info("Starting on port '{}'", bindPort);
+        log.info("Starting on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server != null) {
             return CompletableFuture.completedFuture(null);
@@ -80,7 +80,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on port '{}'", bindPort);
+        log.info("Stopping on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server == null) {
             return CompletableFuture.completedFuture(null);
@@ -107,8 +107,8 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("WotCoapServer on '{}' exposes '{}' at coap://0.0.0.0:{}/{}", bindPort,
-                thing.getTitle(), bindPort, thing.getId());
+        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
+                thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
@@ -121,7 +121,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
         Resource root = server.getRoot();
         if (root == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before WotCoapServer has been started"));
+            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before CoapServer has been started"));
         }
         root.add(thingResource);
 
@@ -138,8 +138,8 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("WotCoapServer on '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", bindPort,
-                thing.getTitle(), bindPort, thing.getId());
+        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
+                thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
             return CompletableFuture.completedFuture(null);
@@ -233,7 +233,7 @@ public class CoapProtocolServer implements ProtocolServer {
                             .build();
 
                     property.addForm(observableForm);
-                    log.debug("Assign '{}' to observable Property '{}'", observableHref, name);
+                    log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
 
                     propertyResource.add(new ObservePropertyResource(name, property));
                 }

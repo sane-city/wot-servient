@@ -95,7 +95,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
      */
     public Pair<ProtocolClient, Form> getClientFor(List<Form> forms, Operation op) throws ConsumedThingException {
         if (forms.isEmpty()) {
-            throw new NoFormForInteractionConsumedThingException(getTitle(), op);
+            throw new NoFormForInteractionConsumedThingException(getId(), op);
         }
 
         List<String> supportedSchemes = servient.getClientSchemes();
@@ -119,17 +119,17 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (client != null) {
             // from cache
-            log.debug("'{}' chose cached client for '{}'", getTitle(), scheme);
+            log.debug("'{}' chose cached client for scheme '{}'", getId(), scheme);
         }
         else {
             // new client
-            log.debug("'{}' has no client in cache", getTitle());
+            log.debug("'{}' has no client in cache", getId());
 
             Pair<String, ProtocolClient> protocolClient = initNewClientFor(schemes);
             scheme = protocolClient.first();
             client = protocolClient.second();
 
-            log.debug("'{}' got new client for '{}'", getTitle(), scheme);
+            log.debug("'{}' got new client for scheme '{}'", getId(), scheme);
             clients.put(scheme, client);
         }
 
@@ -150,7 +150,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                 form = nonOpForm.get();
             }
             else {
-                throw new NoFormForInteractionConsumedThingException(getTitle(), op);
+                throw new NoFormForInteractionConsumedThingException(getId(), op);
             }
         }
 
@@ -169,7 +169,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                     // init client's security system
                     List<String> security = getSecurity();
                     if (!security.isEmpty()) {
-                        log.debug("'{}' setting credentials for '{}'", getTitle(), client);
+                        log.debug("'{}' setting credentials for '{}'", getId(), client);
                         Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
                         List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
                                 .filter(Objects::nonNull).collect(Collectors.toList());
@@ -181,7 +181,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
                 }
             }
 
-            throw new NoClientFactoryForSchemesConsumedThingException(getTitle(), schemes);
+            throw new NoClientFactoryForSchemesConsumedThingException(getId(), schemes);
         }
         catch (ProtocolClientException e) {
             throw new ConsumedThingException("Unable to create client: " + e.getMessage());
@@ -199,7 +199,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("'{}' reading '{}'", getTitle(), form.getHref());
+            log.debug("'{}' reading '{}'", getId(), form.getHref());
 
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {

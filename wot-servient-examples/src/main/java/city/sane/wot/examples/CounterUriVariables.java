@@ -26,7 +26,7 @@ class CounterUriVariables {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
         // expose counter
         exposedThing.addProperty("count",

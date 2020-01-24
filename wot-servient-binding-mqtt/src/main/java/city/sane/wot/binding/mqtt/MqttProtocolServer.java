@@ -85,7 +85,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
 
         if (client == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
@@ -103,7 +103,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
         things.remove(thing.getId());
 
         return CompletableFuture.completedFuture(null);

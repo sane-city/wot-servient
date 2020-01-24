@@ -43,7 +43,7 @@ class MqttPublish {
                 );
 
         exposedThing.expose().whenComplete((result, ex) -> {
-            System.out.println(exposedThing.getTitle() + " ready");
+            System.out.println(exposedThing.getId() + " ready");
 
             System.out.println("=== TD ===");
             String json = exposedThing.toJson(true);

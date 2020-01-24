@@ -41,11 +41,12 @@ public class ServientConfig {
         List<String> requiredServers;
         if (config.getIsNull(CONFIG_SERVERS)) {
             // search in classpath for available implementations
-            log.debug("Config '{}' is set to null. Search in classpath for available servers", CONFIG_SERVERS);
+            log.debug("Config '{}' is set to 'null'. Search in classpath for available servers", CONFIG_SERVERS);
             ScanResult scanResult = scanClasspath();
             requiredServers = scanResult.getClassesImplementing(ProtocolServer.class.getName())
                     .stream().filter(ci -> !ci.hasAnnotation(ServientDiscoveryIgnore.class.getName()))
                     .map(ClassInfo::getName).collect(Collectors.toList());
+            log.debug("Found servers: {}", requiredServers);
         }
         else {
             // read servers from config
@@ -61,11 +62,12 @@ public class ServientConfig {
         List<String> requiredFactories;
         if (config.getIsNull(CONFIG_CLIENT_FACTORIES)) {
             // search in classpath for available implementations
-            log.debug("Config '{}' is set to null. Search in classpath for available client factories", CONFIG_CLIENT_FACTORIES);
+            log.debug("Config '{}' is set to 'null'. Search in classpath for available client factories", CONFIG_CLIENT_FACTORIES);
             ScanResult scanResult = scanClasspath();
             requiredFactories = scanResult.getClassesImplementing(ProtocolClientFactory.class.getName())
                     .stream().filter(ci -> !ci.hasAnnotation(ServientDiscoveryIgnore.class.getName()))
                     .map(ClassInfo::getName).collect(Collectors.toList());
+            log.debug("Found client factories: {}", requiredFactories);
         }
         else {
             // read client factories from config
