@@ -99,6 +99,7 @@
             <url>https://git.informatik.uni-hamburg.de/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
         </repository>
     </repositories>
+
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>
@@ -114,6 +115,11 @@
         <!--            <url>https://nexus.cadeia.org/content/repositories/snapshots/</url>-->
         <!--        </snapshotRepository>-->
     </distributionManagement>
+
+    <scm>
+        <developerConnection>scm:git:ssh://git@git.informatik.uni-hamburg.de:sane-public/wot-servient.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <modules>
         <module>wot-servient</module>
