@@ -36,22 +36,12 @@ maven-deploy:
   coverage: '/\d+.\d+ \% covered/'
   only:
     - master
+    - /^\d+\.\d+/
   artifacts:
     reports:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
-
-maven-release:
-  stage: deploy
-  only:
-    - /^\d+\.\d+/
-  except:
-    - branches
-    - triggers
-  script:
-    - mvn $MAVEN_CLI_OPTS versions:set -DnewVersion=$CI_COMMIT_TAG
-    - mvn $MAVEN_CLI_OPTS deploy -DskipTests
 
 build-dist:
   stage: deploy
