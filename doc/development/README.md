@@ -8,6 +8,16 @@ mvn clean -DskipTests -Darguments=-DskipTests release:prepare
 
 **An additional call of `mvn release:perform` is not necessary!**
 
+### Add Asset to Release
+
+```bash
+curl --request POST \
+     --header "PRIVATE-TOKEN: s3cr3tPassw0rd" \
+     --data name="wot-servient-1.1.zip" \
+     --data url="https://git.informatik.uni-hamburg.de/sane-public/wot-servient/-/jobs/102695/artifacts/download" \
+     "https://git.informatik.uni-hamburg.de/api/v4/projects/2707/releases/1.1/assets/links"
+```
+
 ## Build dist
 
 ```bash
