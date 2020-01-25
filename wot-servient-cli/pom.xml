@@ -27,6 +27,7 @@
                             <useUniqueVersions>false</useUniqueVersions>
                         </manifest>
                     </archive>
+                    <finalName>wot-servient-cli</finalName>
                 </configuration>
             </plugin>
             <plugin>

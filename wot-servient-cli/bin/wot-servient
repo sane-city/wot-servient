@@ -74,4 +74,4 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
-exec "$JAVACMD" -jar "${SERVIENT_HOME}/wot-servient.jar" "$@"
+exec "$JAVACMD" -jar "${SERVIENT_HOME}/wot-servient-cli.jar" "$@"

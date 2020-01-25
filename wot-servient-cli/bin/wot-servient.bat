@@ -68,7 +68,7 @@ set CMD_LINE_ARGS=%$
 @rem Setup the command line
 
 @rem Execute WoT Servient
-"%JAVA_EXE%" -jar "%SERVIENT_HOME%\wot-servient.jar" %CMD_LINE_ARGS%
+"%JAVA_EXE%" -jar "%SERVIENT_HOME%\wot-servient-cli.jar" %CMD_LINE_ARGS%
 
 :end
 @rem End local scope for the variables with windows NT shell
