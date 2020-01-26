@@ -2,6 +2,7 @@ package city.sane.wot.thing.event;
 
 import city.sane.wot.thing.ThingInteraction;
 import city.sane.wot.thing.schema.DataSchema;
+import city.sane.wot.thing.schema.StringSchema;
 import city.sane.wot.thing.schema.VariableDataSchema;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -18,7 +19,7 @@ import java.util.Objects;
 public class ThingEvent extends ThingInteraction<ThingEvent> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    DataSchema data;
+    DataSchema data = new StringSchema();
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String type;
