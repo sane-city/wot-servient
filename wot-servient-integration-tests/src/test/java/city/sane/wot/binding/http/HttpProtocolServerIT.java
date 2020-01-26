@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -55,10 +56,7 @@ public class HttpProtocolServerIT {
         SecurityScheme securityScheme = new BasicSecurityScheme();
         List<SecurityScheme> metadata = Collections.singletonList(securityScheme);
 
-        Object credentials = ConfigFactory
-                .parseString("credentials { username = \"foo\"\npassword = \"bar\" }").getObject("credentials");
-
-        assertTrue(client.setSecurity(metadata, credentials));
+        assertTrue(client.setSecurity(metadata, Map.of("username", "foo", "password", "bar")));
     }
 
     private ExposedThing getCounterThing() {
