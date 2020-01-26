@@ -4,6 +4,7 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.typesafe.config.ConfigFactory;
 import org.hamcrest.text.MatchesPattern;
@@ -51,8 +52,7 @@ public class HttpProtocolServerIT {
     public void setSecurity() {
         HttpProtocolClient client = new HttpProtocolClient();
 
-        SecurityScheme securityScheme = new SecurityScheme();
-        securityScheme.setScheme("basic");
+        SecurityScheme securityScheme = new BasicSecurityScheme();
         List<SecurityScheme> metadata = Collections.singletonList(securityScheme);
 
         Object credentials = ConfigFactory
