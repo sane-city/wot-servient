@@ -72,6 +72,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     List<String> security = new ArrayList<>();
 
+    @JsonProperty("securityDefinitions")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
 

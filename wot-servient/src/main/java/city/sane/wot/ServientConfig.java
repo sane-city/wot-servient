@@ -83,7 +83,7 @@ public class ServientConfig {
         // read credentials from config
         credentialStore = new HashMap<>();
         if (config.hasPath(CONFIG_CREDENTIALS)) {
-            addCredentials(config.getObject(CONFIG_CREDENTIALS));
+            addCredentials(config.getObject(CONFIG_CREDENTIALS).unwrapped());
         }
     }
 
@@ -105,7 +105,7 @@ public class ServientConfig {
      *
      * @param credentials
      */
-    private void addCredentials(Map credentials) {
+    private void addCredentials(Map<String, Object> credentials) {
         log.debug("Servient storing credentials for '{}'", credentials.keySet());
         credentialStore.putAll(credentials);
     }
