@@ -1,6 +1,6 @@
 FROM kubeless/unzip AS build
 
-ADD ./wot-servient-cli/target/wot-servient-*.zip .
+ADD ./wot-servient-*.zip .
 
 RUN unzip -qq ./wot-servient-*.zip && \
     rm ./wot-servient-*.zip
