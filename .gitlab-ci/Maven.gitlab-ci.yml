@@ -31,6 +31,7 @@ maven-deploy:
     - eclipse-mosquitto:1.6 # for mqtt client/server tests
   script:
     - 'mvn $MAVEN_CLI_OPTS deploy sonar:sonar'
+    - mv wot-servient-cli/target/wot-servient-*.zip .
   after_script:
     - '/bin/bash coverage-jacoco.sh'
   coverage: '/\d+.\d+ \% covered/'
@@ -42,16 +43,5 @@ maven-deploy:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
-
-build-dist:
-  stage: deploy
-  script:
-    - 'mvn $MAVEN_CLI_OPTS -DskipTests -pl wot-servient-cli -am package'
-    - mkdir -p dist/wot-servient
-    - cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli.jar dist/wot-servient
-  artifacts:
     paths:
-      - dist/wot-servient
-  only:
-    - master
-    - /^\d+\.\d+/
+      - "wot-servient-*.zip"

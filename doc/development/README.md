@@ -22,8 +22,7 @@ curl --request POST \
 
 ```bash
 mvn -DskipTests -pl wot-servient-cli -am package
-mkdir -p dist/wot-servient
-cp -R wot-servient-cli/bin wot-servient-cli/target/lib wot-servient-cli/target/wot-servient-cli.jar dist/wot-servient
+# wot-servient-cli/target/wot-servient-*.zip generated
 ```
 
 ## Build and Push Docker Image
