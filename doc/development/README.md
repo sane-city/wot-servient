@@ -3,6 +3,7 @@
 ## Release new Version
 
 ```bash
+rm release.properties
 mvn clean -DskipTests -Darguments=-DskipTests release:prepare
 ```
 
