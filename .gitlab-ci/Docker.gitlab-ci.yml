@@ -1,4 +1,5 @@
 .docker: &docker
+  stage: .post
   # Official docker image.
   image: docker:latest
   services:
@@ -8,34 +9,20 @@
 
 docker-build-master:
   <<: *docker
-  stage: build
   script:
     - docker build --pull --tag "$CI_REGISTRY_IMAGE" .
+    # minimal test
+    - docker run --rm "$CI_REGISTRY_IMAGE" --help
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
 
 docker-build:
   <<: *docker
-  stage: build
   script:
     - docker build --pull --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-  except:
-    - master
-
-docker-test-master:
-  <<: *docker
-  stage: test
-  script:
-    - docker run --rm "$CI_REGISTRY_IMAGE" --help
-  only:
-    - master
-
-docker-test:
-  <<: *docker
-  stage: test
-  script:
+    # minimal test
     - docker run --rm "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --help
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master
