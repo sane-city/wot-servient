@@ -11,4 +11,8 @@ public class WotException extends Exception {
     public WotException(Throwable cause) {
         super(cause);
     }
+
+    public WotException() {
+        super();
+    }
 }
