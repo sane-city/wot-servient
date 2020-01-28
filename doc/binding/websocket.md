@@ -1,6 +1,6 @@
 # Websocket Binding
 
-This binding uses Socket Communication to interact with Things.
+This binding uses the WebSocket protocol to interact with Things.
 
 ## Configuration
 
@@ -13,7 +13,7 @@ All configurations associated with Websocket Binding are located in the `wot.ser
 | Parameter     | Explanation  | Default Value |
 |---------------|---------------|---------------|
 | `bind-host`   | IP address that websocket server should listen on. | `"0.0.0.0"`
-| `bind-port`   | Port that websocket server should listen on. | `80` |
+| `bind-port`   | Port that websocket server should listen on. | `8081` |
 | `addresses`   | List of URLs, which are used in the Thing Description as accessible addresses. If no addresses are specified, the service automatically determines its local addresses. However, it may be necessary to set the address manually, for example when using Docker. | `[]` |
 
 
@@ -31,8 +31,8 @@ wot {
 
     websocket {
       bind-host = "0.0.0.0"
-      bind-port = 8080
-      addresses = ["ws://192.168.178.42:8080"]
+      bind-port = 8081
+      addresses = ["ws://192.168.178.42:8081"]
     }
   }
 }
