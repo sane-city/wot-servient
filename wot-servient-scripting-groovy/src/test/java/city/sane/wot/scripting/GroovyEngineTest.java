@@ -61,4 +61,12 @@ public class GroovyEngineTest {
         DefaultWot wot = new DefaultWot();
         engine.runScript(script, wot);
     }
+
+    @Test
+    public void runScriptWithDefaultImport() throws ScriptingException, WotException {
+        String script = "new Thing()";
+
+        DefaultWot wot = new DefaultWot();
+        engine.runScript(script, wot);
+    }
 }
