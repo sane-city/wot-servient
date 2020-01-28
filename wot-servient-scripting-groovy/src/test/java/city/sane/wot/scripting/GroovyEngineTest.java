@@ -201,6 +201,17 @@ public class GroovyEngineTest {
 //            }
 //        });
 
+//        assertThrows(ScriptingEngineException.class, () -> {
+//            try {
+//                String script = "5[\"class\"].forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
+//                        "(null, -1);";
+//                engine.runScript(script, wot, executorService).get();
+//            }
+//            catch (InterruptedException | ExecutionException e) {
+//                throw e.getCause();
+//            }
+//        });
+
         assertThrows(ScriptingEngineException.class, () -> {
             try {
                 String script = "new File(\"file.txt\").createNewFile()";
