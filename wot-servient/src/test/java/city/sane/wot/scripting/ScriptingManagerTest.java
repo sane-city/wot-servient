@@ -22,13 +22,13 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScript() throws ScriptingException, IOException {
+    public void runScript() throws IOException {
         TemporaryFolder folder = new TemporaryFolder();
         folder.create();
         File file = folder.newFile("counter.test");
         Files.write("1+1", file, Charset.defaultCharset());
 
-        ScriptingManager.runScript(file,null);
+        ScriptingManager.runScript(file, null);
 
         // should not fail
         assertTrue(true);
@@ -36,7 +36,7 @@ public class ScriptingManagerTest {
 
     @Test
     public void runScriptString() throws ExecutionException, InterruptedException {
-        ScriptingManager.runScript("1+1", "application/test",null).get();
+        ScriptingManager.runScript("1+1", "application/test", null).get();
 
         // should not fail
         assertTrue(true);
@@ -45,7 +45,38 @@ public class ScriptingManagerTest {
     @Test(expected = ScriptingException.class)
     public void runScriptUnsupportedMediaType() throws Throwable {
         try {
-            ScriptingManager.runScript("1+1", "application/lolcode",null).get();
+            ScriptingManager.runScript("1+1", "application/lolcode", null).get();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void runPrivilegedScript() throws IOException {
+        TemporaryFolder folder = new TemporaryFolder();
+        folder.create();
+        File file = folder.newFile("counter.test");
+        Files.write("1+1", file, Charset.defaultCharset());
+
+        ScriptingManager.runPrivilegedScript(file, null);
+
+        // should not fail
+        assertTrue(true);
+    }
+
+    @Test
+    public void runPrivilegedScriptString() throws ExecutionException, InterruptedException {
+        ScriptingManager.runPrivilegedScript("1+1", "application/test", null).get();
+
+        // should not fail
+        assertTrue(true);
+    }
+
+    @Test(expected = ScriptingException.class)
+    public void runPrivilegedScriptUnsupportedMediaType() throws Throwable {
+        try {
+            ScriptingManager.runPrivilegedScript("1+1", "application/lolcode", null).get();
         }
         catch (InterruptedException | ExecutionException e) {
             throw e.getCause();
@@ -65,7 +96,12 @@ public class ScriptingManagerTest {
 
         @Override
         public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
-            return null;
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> runPrivilegedScript(String script, Wot wot, ExecutorService executorService) {
+            return CompletableFuture.completedFuture(null);
         }
     }
 }

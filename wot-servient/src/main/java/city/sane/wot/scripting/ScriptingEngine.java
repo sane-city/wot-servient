@@ -23,5 +23,25 @@ interface ScriptingEngine {
      */
     String getFileExtension();
 
+    /**
+     * Runs <code>script</code> in sandboxed context.
+     *
+     * @param script
+     * @param wot
+     * @param executorService
+     *
+     * @return
+     */
     CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService);
+
+    /**
+     * Runs <code>script</code> in privileged context (dangerous) - means here: Script can import classes and make system calls.
+     *
+     * @param script
+     * @param wot
+     * @param executorService
+     *
+     * @return
+     */
+    CompletableFuture<Void> runPrivilegedScript(String script, Wot wot, ExecutorService executorService);
 }

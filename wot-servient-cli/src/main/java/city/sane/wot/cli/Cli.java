@@ -105,7 +105,7 @@ class Cli {
 
         for (File script : scripts) {
             log.info("Servient is running script '{}'", script);
-            Future completionFuture = servient.runScript(script, wot);
+            Future completionFuture = servient.runPrivilegedScript(script, wot);
             completionFutures.add(completionFuture);
         }
 

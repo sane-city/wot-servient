@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GroovyEngineTest {
     private ScriptingEngine engine;
@@ -28,7 +29,7 @@ public class GroovyEngineTest {
     }
 
     @Test
-    public void runScript() throws WotException, ExecutionException, InterruptedException {
+    public void runPrivilegedScriptShouldNotFailOnValidScript() throws WotException, ExecutionException, InterruptedException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -60,19 +61,19 @@ public class GroovyEngineTest {
                 "println(exposedThing.toJson(true))";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot, executorService).get();
+        engine.runPrivilegedScript(script, wot, executorService).get();
 
         // should not fail
         assertTrue(true);
     }
 
     @Test(expected = ScriptingEngineException.class)
-    public void runInvalidScript() throws Throwable {
+    public void runPrivilegedScriptShouldFailOnInvalidScript() throws Throwable {
         String script = "wot.dahsjkdhajkdhajkdhasjk()";
 
         DefaultWot wot = new DefaultWot();
         try {
-            engine.runScript(script, wot, executorService).get();
+            engine.runPrivilegedScript(script, wot, executorService).get();
         }
         catch (InterruptedException | ExecutionException e) {
             throw e.getCause();
@@ -80,10 +81,53 @@ public class GroovyEngineTest {
     }
 
     @Test
-    public void runScriptWithDefaultImport() throws WotException, ExecutionException, InterruptedException {
+    public void runPrivilegedScriptShouldAutoImportServientClasses() throws WotException, ExecutionException, InterruptedException {
+        String script = "new Thing()";
+
+        DefaultWot wot = new DefaultWot();
+        engine.runPrivilegedScript(script, wot, executorService).get();
+    }
+
+    @Test
+    public void runScriptShouldAutoImportServientClasses() throws WotException, ExecutionException, InterruptedException {
         String script = "new Thing()";
 
         DefaultWot wot = new DefaultWot();
         engine.runScript(script, wot, executorService).get();
+    }
+
+    @Test
+    public void runScriptShouldBlockMaliciousScripts() throws Throwable {
+        DefaultWot wot = new DefaultWot();
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "System.exit(1)";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "new File(\"file.txt\").createNewFile()";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "new DefaultWot()";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 }

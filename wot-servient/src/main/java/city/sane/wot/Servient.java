@@ -516,7 +516,7 @@ public class Servient {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT object.<br>
+     * Executes the WoT script in <code>file</code> in sandboxed context and passes <code>wot</code> to the script as WoT object.<br>
      * Only the script languages known to the {@link ScriptingManager} are supported.
      *
      * @param file
@@ -527,6 +527,20 @@ public class Servient {
      */
     public CompletableFuture<Void> runScript(File file, Wot wot) {
         return ScriptingManager.runScript(file, wot);
+    }
+
+    /**
+     * Executes the WoT script in <code>file</code> in privileged context and passes <code>wot</code> to the script as WoT object.<br>
+     * Only the script languages known to the {@link ScriptingManager} are supported.
+     *
+     * @param file
+     * @param wot
+     *
+     * @throws ServientException
+     * @return
+     */
+    public CompletableFuture<Void> runPrivilegedScript(File file, Wot wot) {
+        return ScriptingManager.runPrivilegedScript(file, wot);
     }
 
     public List<String> getClientSchemes() {
