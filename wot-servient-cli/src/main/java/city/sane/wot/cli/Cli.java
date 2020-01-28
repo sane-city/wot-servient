@@ -115,7 +115,7 @@ class Cli {
 
     private Servient getServient(CommandLine cmd) throws ServientException {
         Config config;
-        if (!cmd.hasOption("f")) {
+        if (!cmd.hasOption(OPT_CONFIGFILE)) {
             File defaultFile = new File(CONF);
             if (defaultFile.exists()) {
                 log.info("Servient is using default configuration file '{}'", defaultFile);
@@ -127,13 +127,13 @@ class Cli {
             }
         }
         else {
-            File file = new File(cmd.getOptionValue("f"));
+            File file = new File(cmd.getOptionValue(OPT_CONFIGFILE));
             config = ConfigFactory.parseFile(file).withFallback(ConfigFactory.load());
             log.info("Servient is using configuration file '{}'", file);
         }
 
         Servient servient;
-        if (!cmd.hasOption("c")) {
+        if (!cmd.hasOption(OPT_CLIENTONLY)) {
             servient = new Servient(config);
         }
         else {
