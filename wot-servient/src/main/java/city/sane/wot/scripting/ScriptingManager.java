@@ -9,11 +9,16 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * The ScriptingManager executes WoT scripts in certain scripting languages.
  */
 public class ScriptingManager {
+    private final static ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+
     private static final Map<String, ScriptingEngine> ENGINES = new HashMap();
 
     private ScriptingManager() {
@@ -43,8 +48,9 @@ public class ScriptingManager {
      * @param file
      * @param wot
      * @throws ScriptingManagerException
+     * @return
      */
-    public static void runScript(File file, Wot wot) throws ScriptingException {
+    public static Future runScript(File file, Wot wot) throws ScriptingException {
         Path path = file.toPath();
         try {
             String script = Files.readString(path);
@@ -55,7 +61,7 @@ public class ScriptingManager {
                 throw new ScriptingManagerException("No scripting engine available for extension '" + extension + "'");
             }
 
-            runScript(script, mediaType, wot);
+            return runScript(script, mediaType, wot);
         }
         catch (IOException e) {
             throw new ScriptingManagerException(e);
@@ -69,15 +75,16 @@ public class ScriptingManager {
      * @param mediaType
      * @param wot
      * @throws ScriptingManagerException
+     * @return
      */
-    public static void runScript(String script, String mediaType, Wot wot) throws ScriptingException {
+    public static Future runScript(String script, String mediaType, Wot wot) throws ScriptingException {
         ScriptingEngine engine = ENGINES.get(mediaType);
 
         if (engine == null) {
             throw new ScriptingManagerException("No scripting engine available for media type '" + mediaType + "'");
         }
 
-        engine.runScript(script, wot);
+        return engine.runScript(script, wot, EXECUTOR_SERVICE);
     }
 
     private static String pathToExtension(Path path) {

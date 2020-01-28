@@ -25,6 +25,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -524,10 +525,11 @@ public class Servient {
      * @param wot
      *
      * @throws ServientException
+     * @return
      */
-    public void runScript(File file, Wot wot) throws ServientException {
+    public Future runScript(File file, Wot wot) throws ServientException {
         try {
-            ScriptingManager.runScript(file, wot);
+            return ScriptingManager.runScript(file, wot);
         }
         catch (ScriptingException e) {
             throw new ServientException(e);

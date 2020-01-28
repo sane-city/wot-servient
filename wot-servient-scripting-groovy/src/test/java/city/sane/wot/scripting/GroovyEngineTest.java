@@ -2,17 +2,30 @@ package city.sane.wot.scripting;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.WotException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
 public class GroovyEngineTest {
     private ScriptingEngine engine;
+    private ExecutorService executorService;
 
     @Before
     public void setup() {
         engine = new GroovyEngine();
+        executorService = Executors.newCachedThreadPool();
+    }
+
+    @After
+    public void teardown() {
+        executorService.shutdown();
     }
 
     @Test
@@ -48,7 +61,7 @@ public class GroovyEngineTest {
                 "println(exposedThing.toJson(true))";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot);
+        engine.runScript(script, wot, executorService);
 
         // should not fail
         assertTrue(true);
@@ -59,7 +72,7 @@ public class GroovyEngineTest {
         String script = "wot.dahsjkdhajkdhajkdhasjk()";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot);
+        engine.runScript(script, wot, executorService);
     }
 
     @Test
@@ -67,6 +80,6 @@ public class GroovyEngineTest {
         String script = "new Thing()";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot);
+        engine.runScript(script, wot, executorService);
     }
 }
