@@ -6,10 +6,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +28,7 @@ public class GroovyEngineTest {
     }
 
     @Test
-    public void runScript() throws ScriptingException, WotException {
+    public void runScript() throws WotException, ExecutionException, InterruptedException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -61,25 +60,30 @@ public class GroovyEngineTest {
                 "println(exposedThing.toJson(true))";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot, executorService);
+        engine.runScript(script, wot, executorService).get();
 
         // should not fail
         assertTrue(true);
     }
 
     @Test(expected = ScriptingEngineException.class)
-    public void runInvalidScript() throws ScriptingException, WotException {
+    public void runInvalidScript() throws Throwable {
         String script = "wot.dahsjkdhajkdhajkdhasjk()";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot, executorService);
+        try {
+            engine.runScript(script, wot, executorService).get();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test
-    public void runScriptWithDefaultImport() throws ScriptingException, WotException {
+    public void runScriptWithDefaultImport() throws WotException, ExecutionException, InterruptedException {
         String script = "new Thing()";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot, executorService);
+        engine.runScript(script, wot, executorService).get();
     }
 }

@@ -9,7 +9,6 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 /**
  * Allows the execution of WoT scripts written in the programming language Groovy.
@@ -26,7 +25,7 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public Future runScript(String script, Wot wot, ExecutorService executorService) throws ScriptingEngineException {
+    public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
         Binding binding = new Binding();
         binding.setVariable("wot", wot);
 
@@ -50,15 +49,17 @@ public class GroovyEngine implements ScriptingEngine {
         GroovyShell shell = new GroovyShell(binding, config);
         Script groovyScript = shell.parse(script);
 
-        CompletableFuture<Void> completableFuture = new CompletableFuture();
-        return executorService.submit(() -> {
+        CompletableFuture<Void> completionFuture = new CompletableFuture<>();
+        executorService.submit(() -> {
             try {
                 groovyScript.run();
-                completableFuture.complete(null);
+                completionFuture.complete(null);
             }
             catch (RuntimeException e) {
-                completableFuture.completeExceptionally(new ScriptingEngineException(e));
+                completionFuture.completeExceptionally(new ScriptingEngineException(e));
             }
         });
+
+        return completionFuture;
     }
 }

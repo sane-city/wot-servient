@@ -3,7 +3,6 @@ package city.sane.wot;
 import city.sane.wot.binding.*;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
-import city.sane.wot.scripting.ScriptingException;
 import city.sane.wot.scripting.ScriptingManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -25,7 +24,6 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -527,13 +525,8 @@ public class Servient {
      * @throws ServientException
      * @return
      */
-    public Future runScript(File file, Wot wot) throws ServientException {
-        try {
-            return ScriptingManager.runScript(file, wot);
-        }
-        catch (ScriptingException e) {
-            throw new ServientException(e);
-        }
+    public CompletableFuture<Void> runScript(File file, Wot wot) {
+        return ScriptingManager.runScript(file, wot);
     }
 
     public List<String> getClientSchemes() {
