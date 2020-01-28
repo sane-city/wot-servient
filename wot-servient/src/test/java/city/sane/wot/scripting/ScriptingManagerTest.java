@@ -9,6 +9,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertTrue;
 
@@ -56,8 +58,8 @@ public class ScriptingManagerTest {
         }
 
         @Override
-        public void runScript(String script, Wot wot) {
-
+        public Future<Void> runScript(String script, Wot wot, ExecutorService executorService) {
+            return null;
         }
     }
 }

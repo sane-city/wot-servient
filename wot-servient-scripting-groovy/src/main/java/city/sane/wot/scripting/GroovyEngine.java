@@ -2,10 +2,14 @@ package city.sane.wot.scripting;
 
 import city.sane.wot.Wot;
 import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * Allows the execution of WoT scripts written in the programming language Groovy.
@@ -22,7 +26,7 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public void runScript(String script, Wot wot) throws ScriptingEngineException {
+    public Future runScript(String script, Wot wot, ExecutorService executorService) throws ScriptingEngineException {
         Binding binding = new Binding();
         binding.setVariable("wot", wot);
 
@@ -39,18 +43,22 @@ public class GroovyEngine implements ScriptingEngine {
                 "city.sane.wot.thing.form",
                 "city.sane.wot.thing.property",
                 "city.sane.wot.thing.schema",
-                "city.sane.wot.thing.security"
-        );
+                "city.sane.wot.thing.security");
         CompilerConfiguration config = new CompilerConfiguration();
         config.addCompilationCustomizers(importCustomizer);
 
         GroovyShell shell = new GroovyShell(binding, config);
+        Script groovyScript = shell.parse(script);
 
-        try {
-            shell.evaluate(script);
-        }
-        catch (RuntimeException e) {
-            throw new ScriptingEngineException(e);
-        }
+        CompletableFuture<Void> completableFuture = new CompletableFuture();
+        return executorService.submit(() -> {
+            try {
+                groovyScript.run();
+                completableFuture.complete(null);
+            }
+            catch (RuntimeException e) {
+                completableFuture.completeExceptionally(new ScriptingEngineException(e));
+            }
+        });
     }
 }

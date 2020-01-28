@@ -15,8 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 class Cli {
@@ -90,26 +94,34 @@ class Cli {
             return;
         }
 
-        Servient servient = null;
-        try {
-            servient = getServient(cmd);
-            Servient finalServient = servient;
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                log.info("Shutdown Request detected. Shutdown Servient");
-                finalServient.shutdown().join();
-            }));
-            servient.start().join();
-            Wot wot = new DefaultWot(servient);
+        List<Future> completionFutures = new ArrayList<>();
+        final Servient servient = getServient(cmd);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Stop all scripts and shutdown Servient");
+            servient.shutdown().join();
+        }));
+        servient.start().join();
+        Wot wot = new DefaultWot(servient);
 
-            for (File script : scripts) {
-                log.info("Servient is running script '{}'", script);
-                servient.runScript(script, wot);
-            }
+        for (File script : scripts) {
+            log.info("Servient is running script '{}'", script);
+            Future completionFuture = servient.runScript(script, wot);
+            completionFutures.add(completionFuture);
         }
-        finally {
-            if (servient != null) {
-                servient.shutdown().join();
+
+        // wait for all scripts to complete
+        completionFutures.forEach(future -> {
+            try {
+                future.get();
             }
+            catch (InterruptedException | ExecutionException | CancellationException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Shutdown servient if we are in client-only mode and all scripts have been executed, otherwise wait for termination by user
+        if (cmd.hasOption(OPT_CLIENTONLY)) {
+            System.exit(0);
         }
     }
 
