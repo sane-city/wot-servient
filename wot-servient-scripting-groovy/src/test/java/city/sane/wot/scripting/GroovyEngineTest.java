@@ -112,6 +112,97 @@ public class GroovyEngineTest {
 
         assertThrows(ScriptingEngineException.class, () -> {
             try {
+                String script = "Eval.me(\"System.exit(1)\")";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+//        assertThrows(ScriptingEngineException.class, () -> {
+//            try {
+//                String script = "evaluate(\"System.exit(1)\")";
+//                engine.runScript(script, wot, executorService).get();
+//            }
+//            catch (InterruptedException | ExecutionException e) {
+//                throw e.getCause();
+//            }
+//        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "(new GroovyShell()).evaluate(\"System.exit(1)\")";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "Class.forName(\"java.lang.System\").exit(1)";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "System.&exit.call(1)";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+//        assertThrows(ScriptingEngineException.class, () -> {
+//            try {
+//                String script = "System.getMetaClass().invokeMethod(\"exit\", 1)";
+//                engine.runScript(script, wot, executorService).get();
+//            }
+//            catch (InterruptedException | ExecutionException e) {
+//                throw e.getCause();
+//            }
+//        });
+
+//        assertThrows(ScriptingEngineException.class, () -> {
+//            try {
+//                String script = "def s = System; s.exit(1)";
+//                engine.runScript(script, wot, executorService).get();
+//            }
+//            catch (InterruptedException | ExecutionException e) {
+//                throw e.getCause();
+//            }
+//        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "Script t = this; t.evaluate(\"System.exit(1)\")";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+//        assertThrows(ScriptingEngineException.class, () -> {
+//            try {
+//                String script = "Math.class.forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
+//                        "(null, -1);";
+//                engine.runScript(script, wot, executorService).get();
+//            }
+//            catch (InterruptedException | ExecutionException e) {
+//                throw e.getCause();
+//            }
+//        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
                 String script = "new File(\"file.txt\").createNewFile()";
                 engine.runScript(script, wot, executorService).get();
             }

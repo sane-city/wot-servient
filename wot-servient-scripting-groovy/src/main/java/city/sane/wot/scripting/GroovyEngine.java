@@ -32,18 +32,18 @@ public class GroovyEngine implements ScriptingEngine {
 
     @Override
     public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
-        Binding binding = new Binding();
-        binding.setVariable("wot", wot);
-
         CompilerConfiguration config = getCompilerConfiguration();
-
-        GroovyShell shell = new GroovyShell(binding, config);
 
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
         executorService.submit(() -> {
             try {
+                Binding binding = new Binding();
+                binding.setVariable("wot", wot);
+                GroovyShell shell = new GroovyShell(binding, config);
+
                 Script groovyScript = shell.parse(script);
                 groovyScript.run();
+
                 completionFuture.complete(null);
             }
             catch (RuntimeException e) {
