@@ -65,7 +65,7 @@ public class ScriptingManagerTest {
 
         @Override
         public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
-            return null;
+            return CompletableFuture.completedFuture(null);
         }
     }
 }
