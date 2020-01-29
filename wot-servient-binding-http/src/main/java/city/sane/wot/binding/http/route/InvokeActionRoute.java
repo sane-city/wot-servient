@@ -30,7 +30,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+                                       ExposedThing thing) {
         ExposedThingAction action = thing.getAction(name);
         if (action != null) {
             try {
@@ -45,7 +45,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
 
                 return respondWithValue(response, requestContentType, content, value);
             }
-            catch (ContentCodecException e) {
+            catch (ContentCodecException | InterruptedException | ExecutionException e) {
                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                 return e;
             }

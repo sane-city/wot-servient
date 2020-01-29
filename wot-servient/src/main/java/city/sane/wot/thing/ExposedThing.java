@@ -28,6 +28,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * This the server API that allows defining request handlers, properties, actions, and events
  * to a Thing. An ExposedThing is created by the {@link city.sane.wot.Wot#produce(Thing)} method.
@@ -249,6 +252,25 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     }
 
     /**
+     * Adds a property with the given <code>name</code> to the Thing.<br>
+     * <code>readHandler</code> is invoked when the property is read. It returns a future with the value of the property. Set to <code>null</code> if not
+     * needed.<br>
+     * <code>writeHandler</code> is invoked when the property is written to. It consumes the new property value and returns the output of the write operation.
+     * Set to <code>null</code> if not needed.<br>
+     *
+     * @param name
+     * @param readHandler
+     * @param writeHandler
+     *
+     * @return
+     */
+    public ExposedThing addProperty(String name,
+                                    Supplier<CompletableFuture<Object>> readHandler,
+                                    Function<Object, CompletableFuture<Object>> writeHandler) {
+        return addProperty(name, new ThingProperty(), readHandler, writeHandler);
+    }
+
+    /**
      * Adds the given <code>property</code> with the given <code>name</code> to the Thing.
      *
      * @param name
@@ -364,8 +386,13 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      */
     public ExposedThing addAction(String name, ThingAction action, BiConsumer<Object, Map<String, Object>> handler) {
         return addAction(name, action, (input, options) -> {
-            handler.accept(input, options);
-            return CompletableFuture.completedFuture(null);
+            try {
+                handler.accept(input, options);
+                return completedFuture(null);
+            }
+            catch (Exception e) {
+                return failedFuture(e);
+            }
         });
     }
 

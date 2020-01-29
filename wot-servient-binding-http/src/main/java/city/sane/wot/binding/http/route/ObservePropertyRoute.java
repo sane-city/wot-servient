@@ -31,13 +31,19 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+                                       ExposedThing thing) {
         ExposedThingProperty property = thing.getProperty(name);
         if (property != null) {
             if (!property.isWriteOnly() && property.isObservable()) {
                 CompletableFuture<Object> result = subscribeForNextData(response, requestContentType, name, property);
 
-                return result.get();
+                try {
+                    return result.get();
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                    return e;
+                }
             }
             else {
                 response.status(HttpStatus.BAD_REQUEST_400);

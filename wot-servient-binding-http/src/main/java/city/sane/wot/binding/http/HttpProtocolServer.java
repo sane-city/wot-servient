@@ -98,7 +98,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/things/{}", bindHost, bindPort, thing.getId(),
+        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
 
         if (!started) {

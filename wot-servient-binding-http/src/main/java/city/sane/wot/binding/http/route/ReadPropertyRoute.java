@@ -25,18 +25,19 @@ public class ReadPropertyRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+                                       ExposedThing thing) {
         ExposedThingProperty property = thing.getProperty(name);
         if (property != null) {
             if (!property.isWriteOnly()) {
-                Object value = property.read().get();
 
                 try {
+                    Object value = property.read().get();
+
                     Content content = ContentManager.valueToContent(value, requestContentType);
                     response.type(content.getType());
                     return content;
                 }
-                catch (ContentCodecException e) {
+                catch (ContentCodecException | InterruptedException | ExecutionException e) {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                     return e;
                 }
