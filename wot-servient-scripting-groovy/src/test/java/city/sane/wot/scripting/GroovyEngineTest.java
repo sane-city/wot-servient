@@ -120,15 +120,15 @@ public class GroovyEngineTest {
             }
         });
 
-//        assertThrows(ScriptingEngineException.class, () -> {
-//            try {
-//                String script = "evaluate(\"System.exit(1)\")";
-//                engine.runScript(script, wot, executorService).get();
-//            }
-//            catch (InterruptedException | ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        });
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "evaluate(\"System.exit(1)\")";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
 
         assertThrows(ScriptingEngineException.class, () -> {
             try {
@@ -160,25 +160,25 @@ public class GroovyEngineTest {
             }
         });
 
-//        assertThrows(ScriptingEngineException.class, () -> {
-//            try {
-//                String script = "System.getMetaClass().invokeMethod(\"exit\", 1)";
-//                engine.runScript(script, wot, executorService).get();
-//            }
-//            catch (InterruptedException | ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        });
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "System.getMetaClass().invokeMethod(\"exit\", 1)";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
 
-//        assertThrows(ScriptingEngineException.class, () -> {
-//            try {
-//                String script = "def s = System; s.exit(1)";
-//                engine.runScript(script, wot, executorService).get();
-//            }
-//            catch (InterruptedException | ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        });
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "def s = System; s.exit(1)";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
 
         assertThrows(ScriptingEngineException.class, () -> {
             try {
@@ -190,27 +190,44 @@ public class GroovyEngineTest {
             }
         });
 
-//        assertThrows(ScriptingEngineException.class, () -> {
-//            try {
-//                String script = "Math.class.forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
-//                        "(null, -1);";
-//                engine.runScript(script, wot, executorService).get();
-//            }
-//            catch (InterruptedException | ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        });
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "Math.class.forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
+                        "(null, -1);";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
 
-//        assertThrows(ScriptingEngineException.class, () -> {
-//            try {
-//                String script = "5[\"class\"].forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
-//                        "(null, -1);";
-//                engine.runScript(script, wot, executorService).get();
-//            }
-//            catch (InterruptedException | ExecutionException e) {
-//                throw e.getCause();
-//            }
-//        });
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "5[\"class\"].forName(\"java.lang.System\").getMethod(\"exit\", Integer.TYPE).invoke" +
+                        "(null, -1);";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
+
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                String script = "StringBuilder sb = new StringBuilder();\n" +
+                        "        sb.append(\"ss\");\n" +
+                        "        sb.append(\"a\");\n" +
+                        "        sb.append(\"l\");\n" +
+                        "        \n" +
+                        "        1[\"c\"+sb.reverse().toString()].forName(\"java.lang.System\").getMethod(\"exit\", " +
+                        "Integer.TYPE).invoke" +
+                        "(null, 3);";
+                engine.runScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
 
         assertThrows(ScriptingEngineException.class, () -> {
             try {

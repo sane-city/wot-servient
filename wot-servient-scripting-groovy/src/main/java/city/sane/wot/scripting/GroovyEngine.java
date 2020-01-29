@@ -88,7 +88,7 @@ public class GroovyEngine implements ScriptingEngine {
     private SecureASTCustomizer getSecureASTCustomizer() {
         SecureASTCustomizer customizer = new SecureASTCustomizer();
         customizer.setMethodDefinitionAllowed(false);
-        customizer.setPackageAllowed(false);
+        customizer.setClosuresAllowed(false);
         customizer.setPackageAllowed(false);
         customizer.setImportsWhitelist(List.of(
                 // java.lang
@@ -102,7 +102,6 @@ public class GroovyEngine implements ScriptingEngine {
                 Long.class.getName(),
                 Math.class.getName(),
                 Number.class.getName(),
-                Object.class.getName(),
                 Short.class.getName(),
                 String.class.getName(),
                 StringBuilder.class.getName(),
@@ -130,8 +129,16 @@ public class GroovyEngine implements ScriptingEngine {
                 // city.sane.wot.thing
                 Thing.class.getName()
         ));
+//        customizer.setStarImportsWhitelist(List.of());
+//        customizer.setStaticImportsWhitelist(List.of());
+//        customizer.setStaticStarImportsWhitelist(List.of());
+//        customizer.setExpressionsWhitelist(List.of());
+//        customizer.setStatementsWhitelist(List.of());
         customizer.setStatementsBlacklist(List.of(DoWhileStatement.class, ForStatement.class, WhileStatement.class));
         customizer.setIndirectImportCheckEnabled(true);
+//        customizer.setTokensWhitelist(List.of());
+//        customizer.setConstantTypesClassesWhiteList(List.of());
+        customizer.setReceiversClassesBlackList(List.of());
         return customizer;
     }
 
