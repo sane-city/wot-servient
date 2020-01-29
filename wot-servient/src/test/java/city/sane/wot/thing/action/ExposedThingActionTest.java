@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
@@ -38,10 +39,12 @@ public class ExposedThingActionTest {
 
     @Test
     public void invokeWithoutHandlerShouldReturnNullFuture() {
-        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
-        exposedThingAction.invoke(invokeInput, invokeOptions);
+        when(state.getHandler()).thenReturn(handler);
 
-        verify(handler, times(1)).apply(invokeInput, invokeOptions);
+        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
+        CompletableFuture<Object> result = exposedThingAction.invoke(invokeInput, invokeOptions);
+
+        assertNotNull(result);
     }
 
     @Test
