@@ -1,20 +1,70 @@
-def thing = [
-        id        : 'KlimabotschafterWetterstation',
-        title     : 'KlimabotschafterWetterstation',
-        '@type'   : 'Thing',
-        '@context': [
-                'http://www.w3.org/ns/td',
-                [
-                        om   : 'http://www.wurvoc.org/vocabularies/om-1.8/',
-                        saref: 'https://w3id.org/saref#',
-                        sch  : 'http://schema.org/',
-                        sane : 'https://sane.city/',
-                ]
+def thing = wot.produce([
+        id         : 'counter',
+        title      : 'counter',
+        description: 'counter example Thing',
+        '@context' : ['https://www.w3.org/2019/wot/td/v1', [iot: 'http://example.org/iot']]
+])
+
+println('Produced ' + thing.title)
+
+thing.addProperty(
+        'count',
+        [
+                type       : 'integer',
+                description: 'current counter vaue',
+                observable : true,
+                readOnly   : true
         ],
-]
+        42
+)
 
-def exposedThing = wot.produce(thing)
+thing.addProperty(
+        'lastChange',
+        [
+                type       : 'string',
+                description: 'last change of counter value',
+                observable : true,
+                readOnly   : true
+        ],
+        new Date().toString()
+)
 
-exposedThing.addAction("poisonPill", { -> ((String)null).toString()})
+thing.addAction(
+        'increment',
+        {
+            println('Incrementing')
+            thing.properties['count'].read().thenApply { count ->
+                def value = count + 1
+                thing.properties['count'].write(value)
+                thing.properties['lastChange'].write(new Date().toString())
+                thing.events['change'].emit()
+            }
+        }
+)
 
-exposedThing.expose()
+thing.addAction(
+        'decrement',
+        {
+            println('Decrementing')
+            thing.properties['count'].read().thenApply { count ->
+                def value = count - 1
+                thing.properties['count'].write(value)
+                thing.properties['lastChange'].write(new Date().toString())
+                thing.events['change'].emit()
+            }
+        }
+)
+
+thing.addAction(
+        'reset',
+        {
+            println('Resetting')
+            thing.properties['count'].write(0)
+            thing.properties['lastChange'].write(new Date().toString())
+            thing.events['change'].emit()
+        }
+)
+
+thing.addEvent('change', [:])
+
+thing.expose().thenRun { println(thing.title + ' ready') }

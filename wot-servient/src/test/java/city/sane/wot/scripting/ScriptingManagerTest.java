@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.assertTrue;
 
 public class ScriptingManagerTest {
@@ -65,7 +66,7 @@ public class ScriptingManagerTest {
 
         @Override
         public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 }

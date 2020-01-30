@@ -14,6 +14,7 @@ maven-verify:
     - eclipse-mosquitto:1.6 # for mqtt client/server tests
   script:
     - 'mvn $MAVEN_CLI_OPTS verify sonar:sonar'
+    - mv wot-servient-cli/target/wot-servient-*.zip .
   after_script:
     - '/bin/bash coverage-jacoco.sh'
   coverage: '/\d+.\d+ \% covered/'
@@ -24,6 +25,8 @@ maven-verify:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
         - "*/target/failsafe-reports/TEST-*.xml"
+    paths:
+      - "wot-servient-*.zip"
 
 maven-deploy:
   stage: deploy
