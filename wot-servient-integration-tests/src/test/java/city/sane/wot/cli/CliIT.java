@@ -1,6 +1,7 @@
 package city.sane.wot.cli;
 
 import com.google.common.io.Files;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -10,6 +11,7 @@ import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class CliIT {
     @Test
     public void help() throws CliException {
@@ -63,6 +65,7 @@ public class CliIT {
         Files.write(script, file, Charset.defaultCharset());
 
         new Cli(new String[]{
+                "--clientonly",
                 file.getAbsolutePath()
         });
 

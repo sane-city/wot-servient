@@ -2,16 +2,15 @@ package city.sane.wot.thing.action;
 
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.schema.DataSchema;
-import com.github.jsonldjava.utils.Obj;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,13 +37,11 @@ public class ExposedThingActionTest {
     }
 
     @Test
-    public void invokeWithoutHandlerShouldReturnNullFuture() {
-        when(state.getHandler()).thenReturn(handler);
-
+    public void invokeWithoutHandlerShouldReturnNullFuture() throws ExecutionException, InterruptedException {
         ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
-        CompletableFuture<Object> result = exposedThingAction.invoke(invokeInput, invokeOptions);
+        exposedThingAction.invoke(invokeInput, invokeOptions);
 
-        assertNotNull(result);
+        assertNull(exposedThingAction.invoke(invokeInput, invokeOptions).get());
     }
 
     @Test
