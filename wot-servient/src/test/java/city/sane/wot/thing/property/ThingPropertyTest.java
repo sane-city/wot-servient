@@ -11,8 +11,8 @@ import static org.junit.Assert.assertFalse;
 public class ThingPropertyTest {
     @Test
     public void testEquals() {
-        ThingProperty property1 = new ThingProperty.Builder().build();
-        ThingProperty property2 = new ThingProperty.Builder().build();
+        ThingProperty property1 = new ThingProperty();
+        ThingProperty property2 = new ThingProperty();
 
         assertEquals(property1, property2);
     }

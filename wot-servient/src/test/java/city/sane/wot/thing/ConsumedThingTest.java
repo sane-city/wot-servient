@@ -3,79 +3,117 @@ package city.sane.wot.thing;
 import city.sane.Pair;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.content.Content;
+import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 public class ConsumedThingTest {
-    private ConsumedThing consumedThing;
+    private Servient servient;
+    private ProtocolClient client;
+    private Form form1;
+    private Form form2;
+    private Operation op;
+    private Thing thing;
 
     @Before
-    public void setUp() throws Exception {
-        Config config = ConfigFactory
-                .parseString("wot.servient.client-factories = [\"" + ConsumedThingTest.MyProtocolClientFactory.class.getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-        Servient servient = new Servient(config);
-        Thing thing = new Thing.Builder()
-                .setId("counter")
-                .setTitle("Counter")
-                .setForms(Collections.singletonList(new Form.Builder()
-                        .setHref("test:/all")
-                        .setOp(Operation.READ_ALL_PROPERTIES)
-                        .build()
-                ))
-                .build();
-        consumedThing = new ConsumedThing(servient, thing);
+    public void setUp() {
+        servient = mock(Servient.class);
+        client = mock(ProtocolClient.class);
+        thing = mock(Thing.class);
+        form1 = mock(Form.class);
+        form2 = mock(Form.class);
+        op = Operation.READ_PROPERTY;
     }
 
     @Test
-    public void getClientFor() throws ConsumedThingException {
-        Form form = new Form.Builder().setHref("test:/count").setOp(Operation.READ_PROPERTY).build();
-        Operation op = Operation.READ_PROPERTY;
+    public void getClientFor() throws ConsumedThingException, ProtocolClientException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(form1.getHrefScheme()).thenReturn("test");
 
-        assertThat(consumedThing.getClientFor(Collections.singletonList(form), op), instanceOf(Pair.class));
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        Pair<ProtocolClient, Form> clientFor = consumedThing.getClientFor(form1, op);
+
+        assertEquals(client, clientFor.first());
+        assertEquals(form1, clientFor.second());
+    }
+
+    // If the client support multiple protocols offered by the thing, it should select the protocol which is first in list
+    @Test
+    public void getClientForFirstInClient() throws ConsumedThingException, ProtocolClientException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(servient.getClientSchemes()).thenReturn(List.of("test", "bar"));
+        when(form1.getHrefScheme()).thenReturn("bar");
+        when(form2.getHrefScheme()).thenReturn("test");
+
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        Pair<ProtocolClient, Form> clientFor = consumedThing.getClientFor(List.of(form1, form2), op);
+
+        assertEquals(client, clientFor.first());
+        assertEquals(form2, clientFor.second());
     }
 
     @Test(expected = NoFormForInteractionConsumedThingException.class)
-    public void getClientForWithUnsupportedOperation() throws ConsumedThingException {
-        Form form = new Form.Builder().setHref("test:/count").setOp(Operation.READ_PROPERTY).build();
-        Operation op = Operation.WRITE_PROPERTY;
+    public void getClientForWithUnsupportedOperation() throws ConsumedThingException, ProtocolClientException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(form1.getHrefScheme()).thenReturn("test");
+        when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
 
-        consumedThing.getClientFor(Collections.singletonList(form), op);
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY);
     }
 
     @Test(expected = NoClientFactoryForSchemesConsumedThingException.class)
-    public void getClientForWithUnsupportedProtocol() throws ConsumedThingException {
-        Form form = new Form.Builder().setHref("http:/count").setOp(Operation.READ_PROPERTY).build();
-        Operation op = Operation.WRITE_PROPERTY;
+    public void getClientForWithUnsupportedProtocol() throws ConsumedThingException, ProtocolClientException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(form1.getHrefScheme()).thenReturn("http");
+        when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
 
-        consumedThing.getClientFor(Collections.singletonList(form), op);
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY);
     }
 
     @Test
-    public void readAllProperties() throws ExecutionException, InterruptedException {
-        assertThat(consumedThing.readProperties().get(), instanceOf(Map.class));
+    public void readAllProperties() throws ExecutionException, InterruptedException, ProtocolClientException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(form1.getHrefScheme()).thenReturn("test");
+        when(thing.getForms()).thenReturn(List.of(form1));
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+        consumedThing.readProperties().get();
+
+        verify(client, times(1)).readResource(form1);
     }
 
     @Test
-    public void readSomeProperties() throws ExecutionException, InterruptedException {
-        List<String> names = Collections.singletonList("count");
-        assertThat(consumedThing.readProperties(names).get(), instanceOf(Map.class));
+    public void readSomeProperties() throws ExecutionException, InterruptedException, ProtocolClientException, ContentCodecException {
+        when(servient.getClientFor("test")).thenReturn(client);
+        when(form1.getHrefScheme()).thenReturn("test");
+        when(thing.getForms()).thenReturn(List.of(form1));
+        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(ContentManager.valueToContent(Map.of("foo", 1, "bar", 2, "baz", 3))));
+
+        ConsumedThing consumedThing = new ConsumedThing(servient, thing);
+
+        Map<String, Object> values = consumedThing.readProperties("foo", "bar").get();
+        assertThat(values, hasEntry("foo", 1));
+        assertThat(values, hasEntry("bar", 2));
+        assertThat(values, not(hasEntry("baz", 3)));
+        verify(client, times(1)).readResource(form1);
     }
 
     @Test
@@ -104,28 +142,5 @@ public class ConsumedThingTest {
         ConsumedThing thingB = new ConsumedThing(null, new Thing.Builder().setId("counter").build());
 
         assertEquals(thingA, thingB);
-    }
-
-    public static class MyProtocolClientFactory implements ProtocolClientFactory {
-        @Override
-        public String getScheme() {
-            return "test";
-        }
-
-        @Override
-        public ProtocolClient getClient() {
-            return new MyProtocolClient();
-        }
-    }
-
-    static class MyProtocolClient implements ProtocolClient {
-        @Override
-        public CompletableFuture<Content> readResource(Form form) {
-            String json = null;
-            if ("test:/all".equals(form.getHref())) {
-                json = "{\"count\": 1337}";
-            }
-            return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
-        }
     }
 }

@@ -27,7 +27,7 @@ class EventsActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!events.isEmpty()) {
             events.forEach((name, event) -> {
@@ -42,7 +42,7 @@ class EventsActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -59,7 +59,7 @@ class EventsActor extends AbstractActor {
     }
 
     private void done() {
-        log.info("All events have been exposed");
+        log.debug("All events have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 

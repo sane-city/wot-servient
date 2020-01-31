@@ -26,7 +26,7 @@ class Counter {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
         // expose counter
         exposedThing.addProperty("count",
@@ -76,6 +76,6 @@ class Counter {
 
         exposedThing.addEvent("change", new ThingEvent());
 
-        exposedThing.expose().thenRun(() -> System.out.println(exposedThing.getTitle() + " ready"));
+        exposedThing.expose().thenRun(() -> System.out.println(exposedThing.getId() + " ready"));
     }
 }

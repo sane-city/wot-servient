@@ -44,16 +44,16 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
     String id;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String title;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, String> titles;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String description;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, String> descriptions;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -72,15 +72,45 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     List<String> security = new ArrayList<>();
 
+    @JsonProperty("securityDefinitions")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String base;
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " [id=" + getId() + ", title=" + getTitle() + "]";
+    Thing(String objectType,
+          Context objectContext,
+          String id,
+          String title,
+          Map<String, String> titles,
+          String description,
+          Map<String, String> descriptions,
+          Map<String, P> properties,
+          Map<String, A> actions,
+          Map<String, E> events,
+          List<Form> forms,
+          List<String> security,
+          Map<String, SecurityScheme> securityDefinitions,
+          String base) {
+        this.objectType = objectType;
+        this.objectContext = objectContext;
+        this.id = id;
+        this.title = title;
+        this.titles = titles;
+        this.description = description;
+        this.descriptions = descriptions;
+        this.properties = properties;
+        this.actions = actions;
+        this.events = events;
+        this.forms = forms;
+        this.security = security;
+        this.securityDefinitions = securityDefinitions;
+        this.base = base;
+    }
+
+    public Thing() {
+
     }
 
     public String getObjectType() {
@@ -168,6 +198,11 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return false;
         }
         return getId().equals(((Thing) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [id=" + getId() + ", title=" + getTitle() + "]";
     }
 
     public String toJson(boolean prettyPrint) {
@@ -383,21 +418,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
         @Override
         public Thing build() {
-            Thing thing = new Thing();
-            thing.objectType = objectType;
-            thing.objectContext = objectContext;
-            thing.id = id;
-            thing.title = title;
-            thing.titles = titles;
-            thing.description = description;
-            thing.descriptions = descriptions;
-            thing.properties = properties;
-            thing.actions = actions;
-            thing.events = events;
-            thing.forms = forms;
-            thing.security = security;
-            thing.securityDefinitions = securityDefinitions;
-            thing.base = base;
+            Thing thing = new Thing(objectType, objectContext, id, title, titles, description, descriptions, properties, actions, events, forms, security, securityDefinitions, base);
             return thing;
         }
     }

@@ -2,21 +2,33 @@ package city.sane.wot.scripting;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.WotException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertTrue;
 
 public class GroovyEngineTest {
     private ScriptingEngine engine;
+    private ExecutorService executorService;
 
     @Before
     public void setup() {
         engine = new GroovyEngine();
+        executorService = Executors.newCachedThreadPool();
+    }
+
+    @After
+    public void teardown() {
+        executorService.shutdown();
     }
 
     @Test
-    public void runScript() throws ScriptingException, WotException {
+    public void runScript() throws WotException, ExecutionException, InterruptedException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -48,17 +60,26 @@ public class GroovyEngineTest {
                 "println(exposedThing.toJson(true))";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot);
+        engine.runScript(script, wot, executorService).get();
 
         // should not fail
         assertTrue(true);
     }
 
-    @Test(expected = ScriptingEngineException.class)
-    public void runInvalidScript() throws ScriptingException, WotException {
-        String script = "wot.dahsjkdhajkdhajkdhasjk()";
+//    @Test(expected = ScriptingEngineException.class)
+//    public void runInvalidScript() throws ScriptingException, WotException {
+//        String script = "wot.dahsjkdhajkdhajkdhasjk()";
+//
+//        DefaultWot wot = new DefaultWot();
+//        Future future = engine.runScript(script, wot, executorService);
+//        System.out.println();
+//    }
+
+    @Test
+    public void runScriptWithDefaultImport() throws WotException, ExecutionException, InterruptedException {
+        String script = "new Thing()";
 
         DefaultWot wot = new DefaultWot();
-        engine.runScript(script, wot);
+        engine.runScript(script, wot, executorService).get();
     }
 }

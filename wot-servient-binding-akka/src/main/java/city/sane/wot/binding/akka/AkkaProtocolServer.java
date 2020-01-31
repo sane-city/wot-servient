@@ -82,7 +82,7 @@ public class AkkaProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("AkkaServer exposes '{}'", thing.getTitle());
+        log.info("AkkaServer exposes '{}'", thing.getId());
 
         if (system == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
@@ -95,14 +95,14 @@ public class AkkaProtocolServer implements ProtocolServer {
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
-                    log.info("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
+                    log.debug("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("AkkaServer stop exposing '{}'", thing.getTitle());
+        log.info("AkkaServer stop exposing '{}'", thing.getId());
 
         if (system == null) {
             return CompletableFuture.completedFuture(null);
@@ -117,7 +117,7 @@ public class AkkaProtocolServer implements ProtocolServer {
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
                     String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
-                    log.info("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
+                    log.debug("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
     }

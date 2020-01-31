@@ -4,62 +4,107 @@ import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.security.BasicSecurityScheme;
+import city.sane.wot.thing.security.SecurityScheme;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import net.javacrumbs.jsonunit.core.Option;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.*;
 
 public class ThingTest {
-    @Test
-    public void toJson() {
-        Thing thing = new Thing.Builder()
-                .setId("Foo")
-                .setDescription("Bar")
-                .setObjectType("Thing")
-                .setObjectContext(new Context("http://www.w3.org/ns/td"))
-                .build();
+    private String objectType;
+    private Context objectContext;
+    private String id;
+    private String title;
+    private String description;
+    private String base;
+    private Map<String, String> titles;
+    private Map<String, String> descriptions;
+    private Map<Object, ThingProperty> properties;
+    private Map<Object, ThingAction> actions;
+    private Map<Object, ThingEvent> events;
+    private Map<Object, SecurityScheme> securityDefinitions;
+    private List<Form> forms;
+    private List<String> security;
 
-        assertEquals(
-                "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":\"http://www.w3.org/ns/td\"}",
-                thing.toJson()
-        );
+    @Before
+    public void setUp() {
+        objectType = "Thing";
+        objectContext = new Context("http://www.w3.org/ns/td");
+        id = "foo";
+        title = "Foo";
+        description = "Bar";
+        base = "";
+        titles = Map.of("de", "Zähler");
+        descriptions = Map.of("de", "Dies ist ein Zähler");
+        properties = Map.of();
+        actions = Map.of();
+        events = Map.of();
+        securityDefinitions = Map.of("basic_sc", new BasicSecurityScheme("header"));
+        security = List.of("basic_sc");
+        forms = List.of();
     }
 
     @Test
-    public void toJsonPretty() {
-        Thing thing = new Thing.Builder()
-                .setId("Foo")
-                .setDescription("Bar")
-                .setObjectType("Thing")
-                .setObjectContext(new Context("http://www.w3.org/ns/td"))
-                .build();
+    public void toJson() {
+        Thing thing = new Thing(
+                objectType,
+                objectContext,
+                id,
+                title,
+                titles,
+                description,
+                descriptions,
+                properties,
+                actions,
+                events,
+                forms,
+                security,
+                securityDefinitions,
+                base);
 
-        assertEquals(
-                "{\n" +
-                        "  \"id\" : \"Foo\",\n" +
-                        "  \"description\" : \"Bar\",\n" +
-                        "  \"@type\" : \"Thing\",\n" +
-                        "  \"@context\" : \"http://www.w3.org/ns/td\"\n" +
-                        "}",
-                thing.toJson(true)
-        );
+        assertThatJson(thing.toJson())
+                .when(Option.IGNORING_ARRAY_ORDER)
+                .isEqualTo("{" +
+                        "    \"id\":\"foo\",\n" +
+                        "    \"title\":\"Foo\",\n" +
+                        "    \"titles\":{\"de\":\"Zähler\"},\n" +
+                        "    \"description\":\"Bar\",\n" +
+                        "    \"descriptions\":{\"de\":\"Dies ist ein Zähler\"},\n" +
+                        "    \"@type\":\"Thing\",\n" +
+                        "    \"@context\":\"http://www.w3.org/ns/td\",\n" +
+                        "    \"securityDefinitions\":{\"basic_sc\":{\"scheme\":\"basic\",\"in\":\"header\"}},\n" +
+                        "    \"security\":[\"basic_sc\"]\n" +
+                        "}");
     }
 
     @Test
     public void fromJson() {
-        String json = "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":[\"http://www.w3.org/ns/td\"]}";
+        String json = "{" +
+                "    \"id\":\"Foo\",\n" +
+                "    \"description\":\"Bar\",\n" +
+                "    \"@type\":\"Thing\",\n" +
+                "    \"@context\":[\"http://www.w3.org/ns/td\"],\n" +
+                "    \"securityDefinitions\": {\n" +
+                "        \"basic_sc\": {\n" +
+                "            \"scheme\": \"basic\",\n" +
+                "            \"in\": \"header\"\n" +
+                "        }\n" +
+                "    }," +
+                "    \"security\": [\"basic_sc\"]\n" +
+                "}";
 
         Thing thing = Thing.fromJson(json);
 
@@ -67,6 +112,8 @@ public class ThingTest {
         assertEquals("Bar", thing.getDescription());
         assertEquals("Thing", thing.getObjectType());
         assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
+        assertEquals(Map.of("basic_sc", new BasicSecurityScheme("header")), thing.getSecurityDefinitions());
+        assertEquals(List.of("basic_sc"), thing.getSecurity());
     }
 
     @Test

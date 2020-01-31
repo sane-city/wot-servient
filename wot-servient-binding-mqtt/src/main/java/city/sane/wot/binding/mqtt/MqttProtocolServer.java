@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.content.Content;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletionException;
 /**
  * Allows exposing Things via MQTT.
  */
+@ServientDiscoveryIgnore
 public class MqttProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
 
@@ -83,7 +85,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
 
         if (client == null) {
             return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
@@ -101,7 +103,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getTitle(), thing.getId());
+        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
         things.remove(thing.getId());
 
         return CompletableFuture.completedFuture(null);
@@ -164,7 +166,7 @@ public class MqttProtocolServer implements ProtocolServer {
                     .setOp(Operation.OBSERVE_PROPERTY, Operation.UNOBSERVE_PROPERTY)
                     .build();
             property.addForm(form);
-            log.info("Assign '{}' to Property '{}'", href, name);
+            log.debug("Assign '{}' to Property '{}'", href, name);
         });
     }
 
@@ -185,7 +187,7 @@ public class MqttProtocolServer implements ProtocolServer {
                         .setOp(Operation.INVOKE_ACTION)
                         .build();
                 action.addForm(form);
-                log.info("Assign '{}' to Action '{}'", href, name);
+                log.debug("Assign '{}' to Action '{}'", href, name);
             }
             catch (MqttException e) {
                 throw new CompletionException(e);
@@ -209,14 +211,14 @@ public class MqttProtocolServer implements ProtocolServer {
                     .setOptional("mqtt:retain", false)
                     .build();
             event.addForm(form);
-            log.info("Assign '{}' to Event '{}'", href, name);
+            log.debug("Assign '{}' to Event '{}'", href, name);
         });
     }
 
     private void handleSubscriptionData(String topic, Object data) {
         try {
             Content content = ContentManager.valueToContent(data);
-            log.info("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
+            log.debug("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
             client.publish(topic, new MqttMessage(content.getBody()));
         }
         catch (ContentCodecException e) {

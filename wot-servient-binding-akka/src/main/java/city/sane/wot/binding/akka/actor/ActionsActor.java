@@ -27,7 +27,7 @@ class ActionsActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!actions.isEmpty()) {
             actions.forEach((name, action) -> {
@@ -42,7 +42,7 @@ class ActionsActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -59,7 +59,7 @@ class ActionsActor extends AbstractActor {
     }
 
     private void done() {
-        log.info("All actions have been exposed");
+        log.debug("All actions have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 

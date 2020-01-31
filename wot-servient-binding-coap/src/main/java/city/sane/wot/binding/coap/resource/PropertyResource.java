@@ -25,7 +25,7 @@ public class PropertyResource extends AbstractResource {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        log.info("Handle GET to '{}'", getURI());
+        log.debug("Handle GET to '{}'", getURI());
         if (!property.isWriteOnly()) {
             String requestContentFormat = getOrDefaultRequestContentType(exchange);
 
@@ -55,7 +55,7 @@ public class PropertyResource extends AbstractResource {
 
     @Override
     public void handlePUT(CoapExchange exchange) {
-        log.info("WotCoapServer handles PUT to {}", getURI());
+        log.debug("WotCoapServer handles PUT to {}", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
         if (!ContentManager.isSupportedMediaType(requestContentFormat)) {

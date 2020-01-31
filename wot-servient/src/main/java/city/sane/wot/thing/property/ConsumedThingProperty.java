@@ -77,7 +77,7 @@ public class ConsumedThingProperty extends ThingProperty {
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("Thing '{}' reading Property '{}' from '{}'", thing.getTitle(), name, form.getHref());
+            log.debug("Thing '{}' reading Property '{}' from '{}'", thing.getId(), name, form.getHref());
 
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
@@ -100,7 +100,7 @@ public class ConsumedThingProperty extends ThingProperty {
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("ConsumedThing {} writing {}", thing.getTitle(), form.getHref());
+            log.debug("ConsumedThing {} writing {}", thing.getId(), form.getHref());
 
             Content input = ContentManager.valueToContent(value, form.getContentType());
 
@@ -122,12 +122,12 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    private CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 
-        log.debug("New subscription for '{}'", thing.getTitle());
+        log.debug("New subscription for '{}'", thing.getId());
         try {
             return client.subscribeResource(form,
                     content -> {

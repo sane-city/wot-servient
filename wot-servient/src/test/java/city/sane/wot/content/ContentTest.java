@@ -34,4 +34,12 @@ public class ContentTest {
 
         assertNotEquals("Hallo Welt", content);
     }
+
+    @Test
+    public void testHashCode() {
+        Content contentA = new Content("application/json", "Hallo Welt".getBytes());
+        Content contentB = new Content("application/json", "Hallo Welt".getBytes());
+
+        assertEquals(contentA.hashCode(), contentB.hashCode());
+    }
 }

@@ -28,6 +28,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * This the server API that allows defining request handlers, properties, actions, and events
  * to a Thing. An ExposedThing is created by the {@link city.sane.wot.Wot#produce(Thing)} method.
@@ -41,6 +44,40 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     @JsonIgnore
     private final Subject subject;
 
+    ExposedThing(Servient servient,
+                 Subject subject,
+                 String objectType,
+                 Context objectContext,
+                 String id,
+                 String title,
+                 Map<String, String> titles,
+                 String description,
+                 Map<String, String> descriptions,
+                 List<Form> forms,
+                 List<String> security,
+                 Map<String, SecurityScheme> securityDefinitions,
+                 String base,
+                 Map<String, ExposedThingProperty> properties,
+                 Map<String, ExposedThingAction> actions,
+                 Map<String, ExposedThingEvent> events) {
+        this.servient = servient;
+        this.subject = subject;
+        this.objectType = objectType;
+        this.objectContext = objectContext;
+        this.id = id;
+        this.title = title;
+        this.titles = titles;
+        this.description = description;
+        this.descriptions = descriptions;
+        this.forms = forms;
+        this.security = security;
+        this.securityDefinitions = securityDefinitions;
+        this.base = base;
+        this.properties = properties;
+        this.actions = actions;
+        this.events = events;
+    }
+
     public ExposedThing(Servient servient) {
         this.servient = servient;
         subject = new Subject();
@@ -48,17 +85,17 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
 
     public ExposedThing(Servient servient, Thing thing) {
         this(servient);
-        setObjectType(thing.getObjectType());
-        setObjectContexts(thing.getObjectContext());
-        setId(thing.getId());
-        setTitle(thing.getTitle());
-        setTitles(thing.getTitles());
-        setDescription(thing.getDescription());
-        setDescriptions(thing.getDescriptions());
-        setForms(thing.getForms());
-        setSecurity(thing.getSecurity());
-        setSecurityDefinitions(thing.getSecurityDefinitions());
-        setBase(thing.getBase());
+        objectType = thing.getObjectType();
+        objectContext = thing.getObjectContext();
+        id = thing.getId();
+        title = thing.getTitle();
+        titles = thing.getTitles();
+        description = thing.getDescription();
+        descriptions = thing.getDescriptions();
+        forms = thing.getForms();
+        security = thing.getSecurity();
+        securityDefinitions = thing.getSecurityDefinitions();
+        base = thing.getBase();
         ((Map<String, ThingProperty>) thing.getProperties()).forEach(this::addProperty);
         ((Map<String, ThingAction>) thing.getActions()).forEach(this::addAction);
         ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
@@ -164,9 +201,10 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * can shorten the Thing Description.
      *
      * @param base
+     *
      * @return
      */
-    private ExposedThing setBase(String base) {
+    public ExposedThing setBase(String base) {
         this.base = base;
         return this;
     }
@@ -199,8 +237,11 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      *
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Supplier<CompletableFuture<Object>> readHandler, Function<Object, CompletableFuture<Object>> writeHandler) {
-        log.info("'{}' adding Property '{}'", getId(), name);
+    public ExposedThing addProperty(String name,
+                                    ThingProperty property,
+                                    Supplier<CompletableFuture<Object>> readHandler,
+                                    Function<Object, CompletableFuture<Object>> writeHandler) {
+        log.debug("'{}' adding Property '{}'", getId(), name);
 
         ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);
         exposedProperty.getState().setReadHandler(readHandler);
@@ -208,6 +249,25 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         properties.put(name, exposedProperty);
 
         return this;
+    }
+
+    /**
+     * Adds a property with the given <code>name</code> to the Thing.<br>
+     * <code>readHandler</code> is invoked when the property is read. It returns a future with the value of the property. Set to <code>null</code> if not
+     * needed.<br>
+     * <code>writeHandler</code> is invoked when the property is written to. It consumes the new property value and returns the output of the write operation.
+     * Set to <code>null</code> if not needed.<br>
+     *
+     * @param name
+     * @param readHandler
+     * @param writeHandler
+     *
+     * @return
+     */
+    public ExposedThing addProperty(String name,
+                                    Supplier<CompletableFuture<Object>> readHandler,
+                                    Function<Object, CompletableFuture<Object>> writeHandler) {
+        return addProperty(name, new ThingProperty(), readHandler, writeHandler);
     }
 
     /**
@@ -289,7 +349,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeProperty(String name) {
-        log.info("'{}' removing Property '{}'", getId(), name);
+        log.debug("'{}' removing Property '{}'", getId(), name);
         properties.remove(name);
         return this;
     }
@@ -305,7 +365,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addAction(String name, ThingAction action, BiFunction<Object, Map<String, Object>, CompletableFuture<Object>> handler) {
-        log.info("'{}' adding Action '{}'", getId(), name);
+        log.debug("'{}' adding Action '{}'", getId(), name);
 
         ExposedThingAction exposedAction = new ExposedThingAction(name, action, this);
         exposedAction.getState().setHandler(handler);
@@ -326,8 +386,13 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      */
     public ExposedThing addAction(String name, ThingAction action, BiConsumer<Object, Map<String, Object>> handler) {
         return addAction(name, action, (input, options) -> {
-            handler.accept(input, options);
-            return CompletableFuture.completedFuture(null);
+            try {
+                handler.accept(input, options);
+                return completedFuture(null);
+            }
+            catch (Exception e) {
+                return failedFuture(e);
+            }
         });
     }
 
@@ -445,7 +510,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeAction(String name) {
-        log.info("'{}' removing Action '{}'", getId(), name);
+        log.debug("'{}' removing Action '{}'", getId(), name);
         actions.remove(name);
         return this;
     }
@@ -484,7 +549,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing removeEvent(String name) {
-        log.info("'{}' removing Event '{}'", getId(), name);
+        log.debug("'{}' removing Event '{}'", getId(), name);
         events.remove(name);
         return this;
     }
@@ -496,12 +561,13 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public CompletableFuture<ExposedThing> expose() {
-        log.info("Expose all Interactions and TD for '{}'", getId());
+        log.debug("Expose all Interactions and TD for '{}'", getId());
 
         // let servient forward exposure to the servers
         return servient.expose(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
+                log.debug("TD has changed. Inform observers.");
                 subject.next(thing);
             }
         });
@@ -513,12 +579,13 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public CompletableFuture<ExposedThing> destroy() {
-        log.info("Stop exposing all Interactions and TD for '{}'", getId());
+        log.debug("Stop exposing all Interactions and TD for '{}'", getId());
 
         // let servient forward destroy to the servers
         return servient.destroy(getId()).whenComplete((thing, e) -> {
             if (thing != null) {
                 // inform TD observers
+                log.debug("TD has changed. Inform observers.");
                 subject.next(thing);
             }
         });

@@ -30,7 +30,7 @@ class PropertyActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form.Builder builder = new Form.Builder()
@@ -47,14 +47,14 @@ class PropertyActor extends AbstractActor {
         }
 
         property.addForm(builder.build());
-        log.info("Assign '{}' to Property '{}'", href, name);
+        log.debug("Assign '{}' to Property '{}'", href, name);
 
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override

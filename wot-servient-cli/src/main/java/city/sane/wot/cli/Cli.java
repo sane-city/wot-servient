@@ -15,15 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 class Cli {
     private static final Logger log = LoggerFactory.getLogger(Cli.class);
 
     private static final String CONF = "wot-servient.conf";
-    private static final String LOGLEVEL = "warn";
+    private static final String LOGLEVEL = "info";
     private static final String OPT_VERSION = "version";
     private static final String OPT_LOGLEVEL = "loglevel";
     private static final String OPT_CLIENTONLY = "clientonly";
@@ -65,7 +69,7 @@ class Cli {
         Level level = Level.valueOf(value);
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.getLoggerList().forEach(f -> f.setLevel(level));
+        context.getLoggerList().stream().filter(l -> l.getName().startsWith("city.sane")).forEach(l -> l.setLevel(level));
     }
 
     private void printVersion() {
@@ -90,32 +94,40 @@ class Cli {
             return;
         }
 
-        Servient servient = null;
-        try {
-            servient = getServient(cmd);
-            Servient finalServient = servient;
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                log.info("Shutdown Request detected. Shutdown Servient");
-                finalServient.shutdown().join();
-            }));
-            servient.start().join();
-            Wot wot = new DefaultWot(servient);
+        List<Future> completionFutures = new ArrayList<>();
+        final Servient servient = getServient(cmd);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Stop all scripts and shutdown Servient");
+            servient.shutdown().join();
+        }));
+        servient.start().join();
+        Wot wot = new DefaultWot(servient);
 
-            for (File script : scripts) {
-                log.info("Servient is running script '{}'", script);
-                servient.runScript(script, wot);
-            }
+        for (File script : scripts) {
+            log.info("Servient is running script '{}'", script);
+            Future completionFuture = servient.runScript(script, wot);
+            completionFutures.add(completionFuture);
         }
-        finally {
-            if (servient != null) {
-                servient.shutdown().join();
+
+        // wait for all scripts to complete
+        completionFutures.forEach(future -> {
+            try {
+                future.get();
             }
+            catch (InterruptedException | ExecutionException | CancellationException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Shutdown servient if we are in client-only mode and all scripts have been executed, otherwise wait for termination by user
+        if (cmd.hasOption(OPT_CLIENTONLY)) {
+            System.exit(0);
         }
     }
 
     private Servient getServient(CommandLine cmd) throws ServientException {
         Config config;
-        if (!cmd.hasOption("f")) {
+        if (!cmd.hasOption(OPT_CONFIGFILE)) {
             File defaultFile = new File(CONF);
             if (defaultFile.exists()) {
                 log.info("Servient is using default configuration file '{}'", defaultFile);
@@ -127,13 +139,13 @@ class Cli {
             }
         }
         else {
-            File file = new File(cmd.getOptionValue("f"));
+            File file = new File(cmd.getOptionValue(OPT_CONFIGFILE));
             config = ConfigFactory.parseFile(file).withFallback(ConfigFactory.load());
             log.info("Servient is using configuration file '{}'", file);
         }
 
         Servient servient;
-        if (!cmd.hasOption("c")) {
+        if (!cmd.hasOption(OPT_CLIENTONLY)) {
             servient = new Servient(config);
         }
         else {
@@ -190,7 +202,7 @@ class Cli {
         Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
         options.addOption(version);
 
-        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: warn)").build();
+        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: " + LOGLEVEL + ")").build();
         options.addOption(loglevel);
 
         Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();

@@ -1,19 +1,29 @@
 package city.sane.wot.thing.event;
 
+import city.sane.wot.thing.schema.DataSchema;
 import city.sane.wot.thing.schema.NumberSchema;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class ThingEventTest {
+    private DataSchema data;
+
+    @Before
+    public void setUp() {
+        data = mock(DataSchema.class);
+    }
+
     @Test
     public void builder() {
         ThingEvent event = new ThingEvent.Builder()
-                .setData(new NumberSchema())
+                .setData(data)
                 .setType("integer")
                 .build();
 
-        assertEquals(new NumberSchema(), event.getData());
+        assertEquals(data, event.getData());
         assertEquals("integer", event.getType());
     }
 }

@@ -38,7 +38,7 @@ class ThingActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         ActorRef allActor = getContext().actorOf(AllActor.props(thing), "all");
         children.add(allActor);
@@ -55,7 +55,7 @@ class ThingActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
@@ -68,7 +68,7 @@ class ThingActor extends AbstractActor {
 
     private void created() {
         if (children.remove(getSender()) && children.isEmpty()) {
-            log.info("Thing has been exposed");
+            log.debug("Thing has been exposed");
             getContext().getParent().tell(new Created<>(new Pair<>(requestor, thing.getId())), getSelf());
         }
     }

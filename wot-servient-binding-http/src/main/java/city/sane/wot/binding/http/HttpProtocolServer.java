@@ -87,7 +87,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on port '{}'", bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
 
         return CompletableFuture.runAsync(() -> {
             started = false;
@@ -98,7 +98,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
 
         if (!started) {
@@ -119,7 +119,7 @@ public class HttpProtocolServer implements ProtocolServer {
                             .build();
 
                     thing.addForm(form);
-                    log.info("Assign '{}' for reading all properties", href);
+                    log.debug("Assign '{}' for reading all properties", href);
                 }
 
                 exposeProperties(thing, address, contentType);
@@ -134,7 +134,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' port '{}' stop exposing '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
         things.remove(thing.getId());
 
@@ -183,7 +183,7 @@ public class HttpProtocolServer implements ProtocolServer {
             }
 
             property.addForm(form.build());
-            log.info("Assign '{}' to Property '{}'", href, name);
+            log.debug("Assign '{}' to Property '{}'", href, name);
 
             // if property is observable add an additional form with a observable href
             if (property.isObservable()) {
@@ -195,7 +195,7 @@ public class HttpProtocolServer implements ProtocolServer {
                 observableForm.setSubprotocol("longpoll");
 
                 property.addForm(observableForm.build());
-                log.info("Assign '{}' to observable Property '{}'", observableHref, name);
+                log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
             }
         });
     }
@@ -211,7 +211,7 @@ public class HttpProtocolServer implements ProtocolServer {
             form.setOptional(HTTP_METHOD_NAME, "POST");
 
             action.addForm(form.build());
-            log.info("Assign '{}' to Action '{}'", href, name);
+            log.debug("Assign '{}' to Action '{}'", href, name);
         });
     }
 
@@ -226,7 +226,7 @@ public class HttpProtocolServer implements ProtocolServer {
             form.setOp(Operation.SUBSCRIBE_EVENT);
 
             event.addForm(form.build());
-            log.info("Assign '{}' to Event '{}'", href, name);
+            log.debug("Assign '{}' to Event '{}'", href, name);
         });
     }
 

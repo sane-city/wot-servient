@@ -25,7 +25,7 @@ public class ActionResource extends AbstractResource {
 
     @Override
     public void handlePOST(CoapExchange exchange) {
-        log.info("Handle POST to '{}'", getURI());
+        log.debug("Handle POST to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
         if (!ContentManager.isSupportedMediaType(requestContentFormat)) {

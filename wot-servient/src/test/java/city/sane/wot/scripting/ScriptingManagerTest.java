@@ -9,7 +9,11 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.assertTrue;
 
 public class ScriptingManagerTest {
@@ -32,16 +36,21 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScriptString() throws ScriptingException {
-        ScriptingManager.runScript("1+1", "application/test",null);
+    public void runScriptString() throws ExecutionException, InterruptedException {
+        ScriptingManager.runScript("1+1", "application/test",null).get();
 
         // should not fail
         assertTrue(true);
     }
 
     @Test(expected = ScriptingException.class)
-    public void runScriptUnsupportedMediaType() throws ScriptingException {
-        ScriptingManager.runScript("1+1", "application/lolcode",null);
+    public void runScriptUnsupportedMediaType() throws Throwable {
+        try {
+            ScriptingManager.runScript("1+1", "application/lolcode",null).get();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     static class MyScriptingEngine implements ScriptingEngine {
@@ -56,8 +65,8 @@ public class ScriptingManagerTest {
         }
 
         @Override
-        public void runScript(String script, Wot wot) {
-
+        public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
+            return completedFuture(null);
         }
     }
 }

@@ -49,7 +49,7 @@ public class ThingsActor extends AbstractActor {
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (mediator != null) {
             mediator.tell(new DistributedPubSubMediator.Subscribe(TOPIC, getSelf()), getSelf());
@@ -58,7 +58,7 @@ public class ThingsActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
 
         if (mediator != null) {
             mediator.tell(new DistributedPubSubMediator.Unsubscribe(TOPIC, getSelf()), getSelf());
@@ -79,7 +79,7 @@ public class ThingsActor extends AbstractActor {
     }
 
     private void subscriptionAcknowledged(DistributedPubSubMediator.SubscribeAck m) {
-        log.info("Subscribed to topic '{}'", m.subscribe().topic());
+        log.debug("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
     private void expose(Expose m) {
@@ -92,7 +92,7 @@ public class ThingsActor extends AbstractActor {
         Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
         ActorRef requester = pair.first();
         String id = pair.second();
-        log.info("Thing '{}' has been exposed", id);
+        log.debug("Thing '{}' has been exposed", id);
         requester.tell(new Created(getSender()), getSelf());
     }
 
@@ -132,7 +132,7 @@ public class ThingsActor extends AbstractActor {
         String id = m.id;
         ActorRef actorRef = children.remove(id);
         if (actorRef != null) {
-            log.info("Destroy Thing '{}'. Stop Actor '{}'", id, actorRef);
+            log.debug("Destroy Thing '{}'. Stop Actor '{}'", id, actorRef);
             getContext().stop(actorRef);
             getContext().watchWith(actorRef, new Deleted<>(new Pair<>(getSender(), id)));
         }
@@ -142,7 +142,7 @@ public class ThingsActor extends AbstractActor {
         Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.id;
         ActorRef requester = pair.first();
         String id = pair.second();
-        log.info("Thing '{}' is no longer exposed", id);
+        log.debug("Thing '{}' is no longer exposed", id);
         requester.tell(new Deleted<>(getSender()), getSelf());
     }
 

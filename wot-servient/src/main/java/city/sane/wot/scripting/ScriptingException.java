@@ -1,6 +1,8 @@
 package city.sane.wot.scripting;
 
-public abstract class ScriptingException extends Exception {
+import city.sane.wot.ServientException;
+
+public abstract class ScriptingException extends ServientException {
     public ScriptingException(String message) {
         super(message);
     }

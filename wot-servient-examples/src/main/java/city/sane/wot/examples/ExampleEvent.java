@@ -28,7 +28,7 @@ class ExampleEvent {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
         AtomicInteger counter = new AtomicInteger();
         exposedThing.addAction("reset", new ThingAction(),

@@ -25,7 +25,7 @@ public class ThingResource extends AbstractResource {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-        log.info("Handles GET to '{}'", getURI());
+        log.debug("Handles GET to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
         if (!ContentManager.isSupportedMediaType(requestContentFormat)) {

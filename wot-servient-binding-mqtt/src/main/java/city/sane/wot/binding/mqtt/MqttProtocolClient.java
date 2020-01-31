@@ -67,7 +67,7 @@ public class MqttProtocolClient implements ProtocolClient {
 
     private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
         try {
-            log.info("MqttClient at '{}' publishing to topic '{}'", settings.getBroker(), topic);
+            log.debug("MqttClient at '{}' publishing to topic '{}'", settings.getBroker(), topic);
             byte[] payload;
             if (content != null) {
                 payload = content.getBody();
@@ -110,11 +110,11 @@ public class MqttProtocolClient implements ProtocolClient {
             Subscription subscription = newSubject.subscribe(observer);
 
             CompletableFuture.runAsync(() -> {
-                log.info("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
+                log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
 
                 try {
                     client.subscribe(topic, (receivedTopic, message) -> {
-                        log.info("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
+                        log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
                         Content content = new Content(form.getContentType(), message.getPayload());
                         newSubject.next(content);
                     });
@@ -128,7 +128,7 @@ public class MqttProtocolClient implements ProtocolClient {
             existingSubject = newSubject;
         }
         else {
-            log.info("MqttClient connected to broker at '{}' reuse existing subscription to topic '{}'", settings.getBroker(), topic);
+            log.debug("MqttClient connected to broker at '{}' reuse existing subscription to topic '{}'", settings.getBroker(), topic);
             Subscription subscription = existingSubject.subscribe(observer);
             result.complete(subscription);
         }

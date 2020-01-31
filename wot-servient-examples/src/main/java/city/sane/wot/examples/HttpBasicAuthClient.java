@@ -41,7 +41,7 @@ class HttpBasicAuthClient {
                 "    \"actions\" : {\n" +
                 "        \"fire\": {\n" +
                 "            \"forms\": [\n" +
-                "                {\"href\": \"https://jigsaw.w3.org/HTTP/Basic/\"}\n" +
+                "                {\"href\": \"https://jigsaw.w3.org/HTTP/Basic/\", \"htv:methodName\": \"GET\"}\n" +
                 "            ]\n" +
                 "        }\n" +
                 "    } \n" +

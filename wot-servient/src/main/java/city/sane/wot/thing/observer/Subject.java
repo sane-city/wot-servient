@@ -38,7 +38,7 @@ public class Subject<T> implements Subscribable<T> {
         }
 
         ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
+        log.debug("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
 
         // call all observers in parallel
         CompletableFuture[] nextFutures = observersSnapshot.stream()
@@ -62,7 +62,7 @@ public class Subject<T> implements Subscribable<T> {
         closed = true;
 
         ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
+        log.debug("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
 
         // call all observers in parallel
         CompletableFuture[] nextFutures = observersSnapshot.stream()
@@ -84,7 +84,7 @@ public class Subject<T> implements Subscribable<T> {
         closed = true;
 
         ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about completion", observersSnapshot.size());
+        log.debug("Inform {} observer(s) about completion", observersSnapshot.size());
 
         // call all observers in parallel
         CompletableFuture[] nextFutures = observersSnapshot.stream()
