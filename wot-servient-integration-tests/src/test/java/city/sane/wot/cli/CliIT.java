@@ -72,7 +72,7 @@ public class CliIT {
         assertTrue(true);
     }
 
-    @Test(expected = CliException.class)
+    @Test(expected = RuntimeException.class)
     public void runBrokenScript() throws CliException, IOException {
         String script = "1/0";
 
