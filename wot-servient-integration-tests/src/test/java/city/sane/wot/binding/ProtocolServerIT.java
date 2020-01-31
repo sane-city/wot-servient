@@ -5,6 +5,7 @@ import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -144,7 +145,8 @@ public class ProtocolServerIT {
                 CoapProtocolServer.class,
                 HttpProtocolServer.class,
                 JadexProtocolServer.class,
-                MqttProtocolServer.class
+                MqttProtocolServer.class,
+                WebsocketProtocolServer.class
         );
     }
 }

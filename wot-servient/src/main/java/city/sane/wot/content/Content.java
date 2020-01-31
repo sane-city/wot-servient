@@ -13,6 +13,11 @@ public class Content implements Serializable {
     private final String type;
     private final byte[] body;
 
+    private Content(){
+        type = null;
+        body = null;
+    }
+
     public Content(String type, byte[] body) {
         this.type = type;
         this.body = body;

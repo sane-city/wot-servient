@@ -146,6 +146,10 @@ public class ContentManager {
      * @throws ContentCodecException
      */
     public static Content valueToContent(Object value, String contentType) throws ContentCodecException {
+        if (contentType == null) {
+            contentType = ContentManager.DEFAULT;
+        }
+
         byte[] bytes;
         // split into media type and parameters
         String mediaType = getMediaType(contentType);
@@ -187,7 +191,7 @@ public class ContentManager {
      * @throws ContentCodecException
      */
     public static Content valueToContent(Object value) throws ContentCodecException {
-        return valueToContent(value, ContentManager.DEFAULT);
+        return valueToContent(value, null);
     }
 
     /**
