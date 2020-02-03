@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 public class WebsocketProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("wss", new WebsocketProtocolClientFactory().getScheme());
+        assertEquals("ws", new WebsocketProtocolClientFactory().getScheme());
     }
 
     @Test
