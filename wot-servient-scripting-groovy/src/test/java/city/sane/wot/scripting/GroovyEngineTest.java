@@ -66,18 +66,14 @@ public class GroovyEngineTest {
         assertTrue(true);
     }
 
-    @Test(expected = ScriptingEngineException.class)
-    public void runInvalidScript() throws Throwable {
-        String script = "wot.dahsjkdhajkdhajkdhasjk()";
-
-        DefaultWot wot = new DefaultWot();
-        try {
-            engine.runScript(script, wot, executorService).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
-    }
+//    @Test(expected = ScriptingEngineException.class)
+//    public void runInvalidScript() throws ScriptingException, WotException {
+//        String script = "wot.dahsjkdhajkdhajkdhasjk()";
+//
+//        DefaultWot wot = new DefaultWot();
+//        Future future = engine.runScript(script, wot, executorService);
+//        System.out.println();
+//    }
 
     @Test
     public void runScriptWithDefaultImport() throws WotException, ExecutionException, InterruptedException {

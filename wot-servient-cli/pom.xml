@@ -16,15 +16,15 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.2</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>city.sane.wot.cli.Cli</mainClass>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <!-- Disable timestamped versions in the manifest -->
-                            <useUniqueVersions>false</useUniqueVersions>
-                        </manifest>
-                    </archive>
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <mainClass>city.sane.wot.cli.Cli</mainClass>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <classpathPrefix>lib/</classpathPrefix>-->
+<!--                            &lt;!&ndash; Disable timestamped versions in the manifest &ndash;&gt;-->
+<!--                            <useUniqueVersions>false</useUniqueVersions>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
                     <finalName>wot-servient-cli</finalName>
                 </configuration>
             </plugin>

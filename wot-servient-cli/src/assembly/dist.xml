@@ -12,7 +12,7 @@
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>./</outputDirectory>
+            <outputDirectory>./lib/</outputDirectory>
             <includes>
                 <include>wot-servient-cli.jar</include>
             </includes>
