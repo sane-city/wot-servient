@@ -125,28 +125,4 @@ public class DefaultWot implements Wot {
         servient.start().join();
         return new DefaultWot(servient);
     }
-
-    /**
-     * Creates and starts a {@link Servient}. The servient will not start any clients and can therefore only produce and expose things.
-     */
-    public static Wot serverOnly() throws WotException {
-        return serverOnly(ConfigFactory.load());
-    }
-
-    /**
-     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will not start any clients and can therefore only produce and
-     * expose things.
-     *
-     * @param config
-     */
-    public static Wot serverOnly(Config config) throws WotException {
-        try {
-            Servient servient = Servient.serverOnly(config);
-            servient.start().join();
-            return new DefaultWot(servient);
-        }
-        catch (ServientException e) {
-            throw new WotException(e);
-        }
-    }
 }

@@ -111,7 +111,6 @@
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
             <version>4.8.59</version>
-            <groupId>org.mockito</groupId>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
