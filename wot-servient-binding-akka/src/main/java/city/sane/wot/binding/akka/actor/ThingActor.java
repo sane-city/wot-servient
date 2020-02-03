@@ -6,6 +6,11 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.Pair;
+import city.sane.wot.binding.akka.Messages.Read;
+import city.sane.wot.binding.akka.Messages.RespondRead;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 
 import java.util.HashSet;
@@ -57,6 +62,7 @@ class ThingActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Created.class, m -> created())
+                .match(Read.class, m -> read())
                 .build();
     }
 
@@ -64,6 +70,16 @@ class ThingActor extends AbstractActor {
         if (children.remove(getSender()) && children.isEmpty()) {
             log.debug("Thing has been exposed");
             getContext().getParent().tell(new Created<>(new Pair<>(requestor, thing.getId())), getSelf());
+        }
+    }
+
+    private void read() {
+        try {
+            Content content = ContentManager.valueToContent(thing);
+            getSender().tell(new RespondRead(content), getSelf());
+        }
+        catch (ContentCodecException e) {
+            // TODO: handle exception
         }
     }
 

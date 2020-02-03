@@ -74,6 +74,13 @@
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
+            <artifactId>wot-servient-binding-websocket</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-cli</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>

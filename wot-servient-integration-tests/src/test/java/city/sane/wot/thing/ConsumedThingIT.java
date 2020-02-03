@@ -14,6 +14,8 @@ import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
+import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -383,7 +385,8 @@ public class ConsumedThingIT {
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
                 // Jadex platform discovery is unstable
 //                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
-                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class)
+                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class),
+                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
         );
     }
 }

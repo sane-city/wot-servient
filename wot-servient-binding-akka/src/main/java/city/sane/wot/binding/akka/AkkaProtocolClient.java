@@ -7,8 +7,8 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.akka.Messages.*;
-import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.binding.akka.actor.ObserveActor;
+import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
@@ -110,7 +110,7 @@ public class AkkaProtocolClient implements ProtocolClient {
     @Override
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
         if (system.settings().config().getStringList("wot.servient.akka.client.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
-            DiscoveryDispatcherActor.Discover message = new DiscoveryDispatcherActor.Discover(filter);
+            Discover message = new Discover(filter);
             log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
             Duration timeout = Duration.ofSeconds(10);

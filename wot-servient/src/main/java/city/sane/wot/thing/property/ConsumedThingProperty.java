@@ -100,7 +100,7 @@ public class ConsumedThingProperty extends ThingProperty {
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("ConsumedThing {} reading {}", thing.getId(), form.getHref());
+            log.debug("ConsumedThing {} writing {}", thing.getId(), form.getHref());
 
             Content input = ContentManager.valueToContent(value, form.getContentType());
 

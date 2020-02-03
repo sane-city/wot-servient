@@ -39,6 +39,7 @@ This table shows which operations are supported by which protocol.
 | [JSONPath+HTTP](jsonpath+http.md) |       ✅      |       ✅       |        ✅       |         ✅         |          |
 | [MQTT](mqtt.md)                   |               |                |        ✅       |         ✅         |          |
 | [Value](value.md)                 |       ✅      |                |                |                   |          |
+| [Websocket](websocket.md)         |       ✅      |       ✅       |        ✅      |          ✅        |          |
 
 *¹ technically possible, but not implemented yet
 

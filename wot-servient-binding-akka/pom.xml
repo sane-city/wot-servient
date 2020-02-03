@@ -15,7 +15,6 @@
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
-        
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient</artifactId>

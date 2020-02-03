@@ -5,10 +5,9 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.filter.ThingFilter;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.util.Map;
 
@@ -55,14 +54,5 @@ public class DiscoveryDispatcherActor extends AbstractActor {
 
     public static Props props() {
         return Props.create(DiscoveryDispatcherActor.class, DiscoveryDispatcherActor::new);
-    }
-
-    // CrudMessages
-    public static class Discover implements Serializable {
-        final ThingFilter filter;
-
-        public Discover(ThingFilter filter) {
-            this.filter = filter;
-        }
     }
 }

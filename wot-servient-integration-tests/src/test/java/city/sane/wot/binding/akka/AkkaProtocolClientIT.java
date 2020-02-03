@@ -8,8 +8,8 @@ import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.akka.Messages.*;
-import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import city.sane.wot.binding.akka.actor.ThingsActor;
+import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -147,7 +147,7 @@ public class AkkaProtocolClientIT {
     private class MyDiscoverActor extends AbstractActor {
         @Override
         public Receive createReceive() {
-            return receiveBuilder().match(DiscoveryDispatcherActor.Discover.class, m -> getSender().tell(new ThingsActor.Things(Collections.emptyMap()), getSelf())).build();
+            return receiveBuilder().match(Discover.class, m -> getSender().tell(new ThingsActor.Things(Collections.emptyMap()), getSelf())).build();
         }
     }
 }

@@ -134,6 +134,18 @@ public class AkkaProtocolServer implements ProtocolServer {
         }
     }
 
+    @Override
+    public URI getThingUrl(String id) {
+        try {
+            String endpoint = thingsActor.path().child(id).toStringWithAddress(system.provider().getDefaultAddress());
+            return new URI(endpoint);
+        }
+        catch (URISyntaxException e) {
+            log.warn("Unable to create thing url", e);
+            return null;
+        }
+    }
+
     public ActorSystem getActorSystem() {
         return system;
     }

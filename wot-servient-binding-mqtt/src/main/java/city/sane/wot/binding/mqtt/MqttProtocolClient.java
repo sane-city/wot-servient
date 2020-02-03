@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Allows consuming Things via MQTT.
+ * TODO: Currently a MqttProtocolClient and therefore also a MqttClient is created for each Thing. Even if each thing is reachable via the same broker. It would be better if there was only one MqttClient per broker and that is shared by all MqttProtocolClient instances.
+ * TODO: MqttClient.close() is never called!
  */
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
