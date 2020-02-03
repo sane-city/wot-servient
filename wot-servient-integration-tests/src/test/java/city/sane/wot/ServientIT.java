@@ -11,13 +11,11 @@ import city.sane.wot.binding.coap.CoapProtocolClientFactory;
 import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
-import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
-import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
-import city.sane.wot.thing.Context;
 import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
+import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
@@ -240,11 +238,11 @@ public class ServientIT {
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
         return Arrays.asList(
-                // akka-binding with relay is not fully supported by now
-//                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
+                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
                 new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
-                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
+                // Jadex platform discovery is unstable
+//                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
                 new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class),
                 new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
         );

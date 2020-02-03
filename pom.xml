@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>city.sane.wot-servient</groupId>
-    <artifactId>master</artifactId>
+    <artifactId>parent</artifactId>
     <packaging>pom</packaging>
     <version>1.4-SNAPSHOT</version>
 
@@ -11,6 +11,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
         <akka.version>2.5.23</akka.version>
+        <netty.version>4.1.39.Final</netty.version>
     </properties>
 
     <build>
@@ -102,10 +103,6 @@
 
     <repositories>
         <repository>
-            <id>gitlab-projekt-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/groups/smartcity2019/-/packages/maven</url>
-        </repository>
-        <repository>
             <id>gitlab-maven</id>
             <url>https://git.informatik.uni-hamburg.de/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
         </repository>
@@ -151,6 +148,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- testing -->
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
@@ -176,20 +174,21 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- netty -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
-                <version>4.1.39.Final</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec</artifactId>
-                <version>4.1.39.Final</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport</artifactId>
-                <version>4.1.39.Final</version>
+                <version>${netty.version}</version>
             </dependency>
 
             <!-- akka -->

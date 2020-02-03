@@ -43,7 +43,7 @@
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <root level="debug">
+    <root level="trace">
         <appender-ref ref="consoleAppender"/>
     </root>
 </configuration>

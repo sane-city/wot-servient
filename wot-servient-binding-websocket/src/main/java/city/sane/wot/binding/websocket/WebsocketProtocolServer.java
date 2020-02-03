@@ -128,13 +128,6 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeProperties(ExposedThing thing, String address) {
-//        Form allForm = new Form.Builder()
-//                .setHref(address)
-//                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES)
-//                .build();
-//        thing.addForm(allForm);
-//        log.info("Assign '{}' for reading all properties", address);
-
         Map<String, ExposedThingProperty> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             if (!property.isWriteOnly()) {

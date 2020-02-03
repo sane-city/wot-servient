@@ -28,8 +28,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <sonar.host.url>https://sonarqube.cadeia.org</sonar.host.url>
-                <sonar.login>${SONAR_LOGIN_TOKEN}</sonar.login>
+                <sonar.organization>sane-city</sonar.organization>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.login>${env.SONAR_LOGIN_TOKEN}</sonar.login>
             </properties>
         </profile>
     </profiles>

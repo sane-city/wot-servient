@@ -380,8 +380,7 @@ public class ConsumedThingIT {
     @Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
         return Arrays.asList(
-                // akka-binding with relay is not fully supported by now
-//                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
+                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
                 new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
                 // Jadex platform discovery is unstable
