@@ -9,7 +9,7 @@ mvn clean -DskipTests -Darguments=-DskipTests release:prepare
 
 **An additional call of `mvn release:perform` is not necessary!**
 
-Wait for GitLab to finish build tasks.
+Wait for GitLab CI to finish build tasks and select "Keep" on job artifact.
 
 Add Release Notes to git Tag on [GitLab](https://git.informatik.uni-hamburg.de/sane-public/wot-servient/-/tags).
 
