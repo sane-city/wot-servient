@@ -80,13 +80,6 @@
 
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
-            <artifactId>wot-servient-binding-akka</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-binding-coap</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -126,7 +119,6 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient-scripting-groovy</artifactId>
