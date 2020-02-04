@@ -20,6 +20,7 @@ maven-verify:
   coverage: '/\d+.\d+ \% covered/'
   except:
     - master
+    - /^\d+\.\d+/
   artifacts:
     reports:
       junit:
