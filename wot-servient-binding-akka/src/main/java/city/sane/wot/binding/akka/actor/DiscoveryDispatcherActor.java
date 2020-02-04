@@ -41,7 +41,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
     private void startDiscovery(Discover m) {
         log.debug("Start discovery with filter '{}'", m.filter);
 
-        getContext().actorOf(DiscoverActor.props(getSender(), Duration.ofSeconds(5), m.filter));
+        getContext().actorOf(DiscoverActor.props(getSender(), Duration.ofSeconds(5), m.filter), "discovery");
     }
 
     private void finishDiscovery(DiscoverActor.Done m) {
