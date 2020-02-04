@@ -13,6 +13,7 @@ import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
+import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
@@ -29,8 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class AkkaProtocolClientIT {
     private ActorSystem system;
@@ -102,6 +102,14 @@ public class AkkaProtocolClientIT {
         system.actorOf(Props.create(MyDiscoverActor.class, MyDiscoverActor::new));
 
         assertThat(client.discover(new ThingFilter()).get(), instanceOf(Collection.class));
+    }
+
+    @Test
+    public void discoverShouldAbleToProcessMultipleDiscoveriesInParallel() throws ExecutionException, InterruptedException {
+        CompletableFuture<Collection<Thing>> discover1 = client.discover(new ThingFilter());
+        CompletableFuture<Collection<Thing>> discover2 = client.discover(new ThingFilter());
+
+        assertNull(CompletableFuture.allOf(discover1, discover2).get());
     }
 
     private class MyReadActor extends AbstractActor {
