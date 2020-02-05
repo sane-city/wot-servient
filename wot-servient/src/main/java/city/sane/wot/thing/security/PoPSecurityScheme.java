@@ -47,4 +47,15 @@ public class PoPSecurityScheme extends SecurityScheme {
     public String getAlg() {
         return alg;
     }
+
+    @Override
+    public String toString() {
+        return "PoPSecurityScheme{" +
+                "in='" + in + '\'' +
+                ", name='" + name + '\'' +
+                ", format='" + format + '\'' +
+                ", authorization='" + authorization + '\'' +
+                ", alg='" + alg + '\'' +
+                '}';
+    }
 }

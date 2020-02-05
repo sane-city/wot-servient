@@ -49,4 +49,15 @@ public class BearerSecurityScheme extends SecurityScheme {
     public String getAuthorization() {
         return authorization;
     }
+
+    @Override
+    public String toString() {
+        return "BearerSecurityScheme{" +
+                "in='" + in + '\'' +
+                ", alg='" + alg + '\'' +
+                ", format='" + format + '\'' +
+                ", name='" + name + '\'' +
+                ", authorization='" + authorization + '\'' +
+                '}';
+    }
 }

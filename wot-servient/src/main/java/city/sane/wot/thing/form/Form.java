@@ -33,7 +33,13 @@ public class Form implements Serializable {
 
     @Override
     public String toString() {
-        return "Form [href=" + getHref() + ", op=" + getOp() + "]";
+        return "Form{" +
+                "href='" + href + '\'' +
+                ", op=" + op +
+                ", subprotocol='" + subprotocol + '\'' +
+                ", contentType='" + contentType + '\'' +
+                ", optionalProperties=" + optionalProperties +
+                '}';
     }
 
     @JsonIgnore

@@ -202,7 +202,22 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [id=" + getId() + ", title=" + getTitle() + "]";
+        return "Thing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
     }
 
     public String toJson(boolean prettyPrint) {

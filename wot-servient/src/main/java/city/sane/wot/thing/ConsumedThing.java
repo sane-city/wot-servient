@@ -235,6 +235,26 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         return readProperties(Arrays.asList(names));
     }
 
+    @Override
+    public String toString() {
+        return "ConsumedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
+    }
+
     /**
      * Creates new form (if needed) for URI Variables
      * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>

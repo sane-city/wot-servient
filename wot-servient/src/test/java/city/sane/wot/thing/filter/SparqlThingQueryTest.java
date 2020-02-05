@@ -17,7 +17,7 @@ public class SparqlThingQueryTest {
         String queryString = "?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .";
         SparqlThingQuery query = new SparqlThingQuery(queryString);
 
-        assertEquals(queryString, query.toString());
+        assertEquals("SparqlThingQuery{query='?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .'}", query.toString());
     }
 
     @Test

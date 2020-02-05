@@ -50,4 +50,15 @@ public class OAuth2SecurityScheme extends SecurityScheme {
     public List<String> getScopes() {
         return scopes;
     }
+
+    @Override
+    public String toString() {
+        return "OAuth2SecurityScheme{" +
+                "authorization='" + authorization + '\'' +
+                ", flow='" + flow + '\'' +
+                ", token='" + token + '\'' +
+                ", refresh='" + refresh + '\'' +
+                ", scopes=" + scopes +
+                '}';
+    }
 }

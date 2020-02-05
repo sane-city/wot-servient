@@ -74,4 +74,17 @@ public class ConsumedThingEvent extends ThingEvent {
     public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingEvent{" +
+                "name='" + name + '\'' +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

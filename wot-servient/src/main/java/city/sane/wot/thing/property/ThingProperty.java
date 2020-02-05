@@ -95,6 +95,22 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         return Objects.hash(super.hashCode(), objectType, type, observable, readOnly, writeOnly, optionalProperties);
     }
 
+    @Override
+    public String toString() {
+        return "ThingProperty{" +
+                "objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
     /**
      * Allows building new {@link ThingProperty} objects.
      */

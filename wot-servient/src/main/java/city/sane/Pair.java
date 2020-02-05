@@ -14,16 +14,19 @@ public class Pair<A, B> implements Serializable {
         this.second = second;
     }
 
-    @Override
-    public String toString() {
-        return "Pair [first=" + first() + ", second=" + second() + "]";
-    }
-
     public A first() {
         return first;
     }
 
     public B second() {
         return second;
+    }
+
+    @Override
+    public String toString() {
+        return "Pair{" +
+                "first=" + first +
+                ", second=" + second +
+                '}';
     }
 }

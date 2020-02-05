@@ -26,9 +26,9 @@ public class WritePropertyResponse extends AbstractServerMessage implements Fina
 
     @Override
     public String toString() {
-        return "WritePropertyResponse [" +
+        return "WritePropertyResponse{" +
                 "value=" + value +
                 ", id='" + id + '\'' +
-                ']';
+                '}';
     }
 }

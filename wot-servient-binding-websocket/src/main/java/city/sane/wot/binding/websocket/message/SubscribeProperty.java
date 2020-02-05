@@ -59,9 +59,9 @@ public class SubscribeProperty extends ThingInteraction {
 
     @Override
     public String toString() {
-        return "SubscribeProperty [" +
+        return "SubscribeProperty{" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ']';
+                '}';
     }
 }

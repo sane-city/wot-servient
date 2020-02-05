@@ -295,7 +295,7 @@ public class ServientTest {
     }
 
     @Test(expected = ServientException.class)
-    public void register() throws Throwable {
+    public void registerShouldThrowExceptionBecauseNotImplemented() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {
@@ -307,7 +307,7 @@ public class ServientTest {
     }
 
     @Test(expected = ServientException.class)
-    public void unregister() throws Throwable {
+    public void unregisterShouldThrowExceptionBecauseNotImplemented() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
         try {

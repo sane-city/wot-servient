@@ -14,11 +14,6 @@ public class Triple<A, B, C> {
         this.third = third;
     }
 
-    @Override
-    public String toString() {
-        return "Triple [first=" + first() + ", second=" + second() + ", third=" + third() + "]";
-    }
-
     public A first() {
         return first;
     }
@@ -29,5 +24,14 @@ public class Triple<A, B, C> {
 
     public C third() {
         return third;
+    }
+
+    @Override
+    public String toString() {
+        return "Triple{" +
+                "first=" + first +
+                ", second=" + second +
+                ", third=" + third +
+                '}';
     }
 }

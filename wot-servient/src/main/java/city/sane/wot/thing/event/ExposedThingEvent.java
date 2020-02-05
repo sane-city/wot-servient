@@ -56,4 +56,18 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
     public Subscription subscribe(Observer<Object> observer) {
         return state.getSubject().subscribe(observer);
     }
+
+    @Override
+    public String toString() {
+        return "ExposedThingEvent{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

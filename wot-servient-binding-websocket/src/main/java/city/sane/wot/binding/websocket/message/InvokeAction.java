@@ -59,11 +59,11 @@ public class InvokeAction extends ThingInteractionWithContent {
 
     @Override
     public String toString() {
-        return "InvokeAction [" +
-                "thingId='" + thingId + '\'' +
+        return "InvokeAction{" +
+                "value=" + value +
+                ", thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ']';
+                '}';
     }
 }
 

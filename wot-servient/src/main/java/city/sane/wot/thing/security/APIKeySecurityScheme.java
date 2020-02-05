@@ -25,4 +25,12 @@ public class APIKeySecurityScheme extends SecurityScheme {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "APIKeySecurityScheme{" +
+                "in='" + in + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

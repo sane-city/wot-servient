@@ -52,6 +52,18 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
         return Objects.hash(super.hashCode(), data, type);
     }
 
+    @Override
+    public String toString() {
+        return "ThingEvent{" +
+                "data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
     /**
      * Allows building new {@link ThingEvent} objects.
      */

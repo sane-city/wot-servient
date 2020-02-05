@@ -25,7 +25,10 @@ public class Content implements Serializable {
 
     @Override
     public String toString() {
-        return "Content [type=" + getType() + ", body=" + getBody() + "]";
+        return "Content{" +
+                "type='" + type + '\'' +
+                ", body=" + Arrays.toString(body) +
+                '}';
     }
 
     @Override

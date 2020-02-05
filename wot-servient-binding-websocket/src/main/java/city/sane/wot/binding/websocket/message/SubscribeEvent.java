@@ -59,9 +59,9 @@ public class SubscribeEvent extends ThingInteraction {
 
     @Override
     public String toString() {
-        return "SubscribeEvent [" +
+        return "SubscribeEvent{" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ']';
+                '}';
     }
 }

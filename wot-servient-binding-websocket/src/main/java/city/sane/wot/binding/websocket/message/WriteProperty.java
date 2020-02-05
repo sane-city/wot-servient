@@ -57,10 +57,10 @@ public class WriteProperty extends ThingInteractionWithContent {
 
     @Override
     public String toString() {
-        return "WriteProperty [" +
-                "thingId='" + thingId + '\'' +
+        return "WriteProperty{" +
+                "value=" + value +
+                ", thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ", value=" + value +
-                ']';
+                '}';
     }
 }
