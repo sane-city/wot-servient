@@ -110,6 +110,15 @@ public class ServientConfig {
         credentialStore.putAll(credentials);
     }
 
+    @Override
+    public String toString() {
+        return "ServientConfig{" +
+                "servers=" + servers +
+                ", clientFactories=" + clientFactories +
+                ", credentialStore=" + credentialStore +
+                '}';
+    }
+
     static Pair<String, ProtocolClientFactory> initializeClientFactory(Config config, String factoryName) throws ServientConfigException {
         try {
             Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);

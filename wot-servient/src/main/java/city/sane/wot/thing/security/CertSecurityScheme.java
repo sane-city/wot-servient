@@ -17,4 +17,11 @@ public class CertSecurityScheme extends SecurityScheme {
     public String getIdentity() {
         return identity;
     }
+
+    @Override
+    public String toString() {
+        return "CertSecurityScheme{" +
+                "identity='" + identity + '\'' +
+                '}';
+    }
 }

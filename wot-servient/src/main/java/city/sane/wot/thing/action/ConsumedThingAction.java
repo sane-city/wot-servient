@@ -80,4 +80,17 @@ public class ConsumedThingAction extends ThingAction {
     public CompletableFuture invoke() {
         return invoke(Collections.emptyMap());
     }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingAction{" +
+                "name='" + name + '\'' +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

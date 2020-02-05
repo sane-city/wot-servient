@@ -47,9 +47,9 @@ public class ReadProperty extends ThingInteraction {
 
     @Override
     public String toString() {
-        return "ReadProperty [" +
+        return "ReadProperty{" +
                 "thingId='" + thingId + '\'' +
                 ", name='" + name + '\'' +
-                ']';
+                '}';
     }
 }

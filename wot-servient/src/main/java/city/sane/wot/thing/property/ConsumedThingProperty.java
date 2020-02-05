@@ -153,4 +153,21 @@ public class ConsumedThingProperty extends ThingProperty {
     public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingProperty{" +
+                "name='" + name + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

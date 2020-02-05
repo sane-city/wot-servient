@@ -40,4 +40,11 @@ public class JsonThingQuery implements ThingQuery {
     public List<Thing> filter(Collection<Thing> things) {
         return sparql.filter(things);
     }
+
+    @Override
+    public String toString() {
+        return "JsonThingQuery{" +
+                "sparql=" + sparql +
+                '}';
+    }
 }

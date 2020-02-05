@@ -17,4 +17,11 @@ public class PublicSecurityScheme extends SecurityScheme {
     public String getIdentity() {
         return identity;
     }
+
+    @Override
+    public String toString() {
+        return "PublicSecurityScheme{" +
+                "identity='" + identity + '\'' +
+                '}';
+    }
 }

@@ -635,4 +635,24 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         // wait until all properties have been written
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenApply(f -> returnValues);
     }
+
+    @Override
+    public String toString() {
+        return "ExposedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
+    }
 }

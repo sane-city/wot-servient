@@ -76,4 +76,12 @@ public class Subscription {
     public void remove(Subscription subscription) {
         subscriptions.remove(subscription);
     }
+
+    @Override
+    public String toString() {
+        return "Subscription{" +
+                "subscriptions=" + subscriptions +
+                ", closed=" + closed +
+                '}';
+    }
 }

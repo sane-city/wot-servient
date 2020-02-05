@@ -61,6 +61,18 @@ public class ThingAction extends ThingInteraction<ThingAction> {
         return Objects.hash(super.hashCode(), input, output);
     }
 
+    @Override
+    public String toString() {
+        return "ThingAction{" +
+                "input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
     /**
      * Allows building new {@link ThingAction} objects.
      */

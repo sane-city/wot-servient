@@ -48,7 +48,9 @@ public class Context implements Serializable {
 
     @Override
     public String toString() {
-        return "Context [urls=" + urls + "]";
+        return "Context{" +
+                "urls=" + urls +
+                '}';
     }
 
     public Context addContext(String prefix, String url) {

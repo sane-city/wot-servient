@@ -17,4 +17,11 @@ public class PSKSecurityScheme extends SecurityScheme {
     public String getIdentity() {
         return identity;
     }
+
+    @Override
+    public String toString() {
+        return "PSKSecurityScheme{" +
+                "identity='" + identity + '\'' +
+                '}';
+    }
 }

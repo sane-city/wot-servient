@@ -41,7 +41,9 @@ public class SparqlThingQuery implements ThingQuery {
 
     @Override
     public String toString() {
-        return query;
+        return "SparqlThingQuery{" +
+                "query='" + query + '\'' +
+                '}';
     }
 
     @Override

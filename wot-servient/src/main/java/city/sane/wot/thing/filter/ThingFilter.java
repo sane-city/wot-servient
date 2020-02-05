@@ -21,7 +21,11 @@ public class ThingFilter implements Serializable {
 
     @Override
     public String toString() {
-        return "ThingFilter [method=" + getMethod() + ", url=" + getUrl() + ", query=" + getQuery() + "]";
+        return "ThingFilter{" +
+                "method=" + method +
+                ", url=" + url +
+                ", query=" + query +
+                '}';
     }
 
     public DiscoveryMethod getMethod() {

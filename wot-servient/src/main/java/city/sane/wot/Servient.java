@@ -79,7 +79,12 @@ public class Servient {
 
     @Override
     public String toString() {
-        return "Servient [servers=" + getServers() + " clientFactories=" + clientFactories.values() + "]";
+        return "Servient{" +
+                "servers=" + servers +
+                ", clientFactories=" + clientFactories +
+                ", credentialStore=" + credentialStore +
+                ", things=" + things +
+                '}';
     }
 
     /**

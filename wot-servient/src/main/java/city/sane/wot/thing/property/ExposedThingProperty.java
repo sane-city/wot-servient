@@ -136,4 +136,22 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
     public PropertyState getState() {
         return state;
     }
+
+    @Override
+    public String toString() {
+        return "ExposedThingProperty{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

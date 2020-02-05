@@ -112,4 +112,18 @@ public class ExposedThingAction extends ThingAction {
     public CompletableFuture<Object> invoke() {
         return invoke(null);
     }
+
+    @Override
+    public String toString() {
+        return "ExposedThingAction{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
 }

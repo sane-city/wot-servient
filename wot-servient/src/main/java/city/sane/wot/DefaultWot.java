@@ -87,6 +87,13 @@ public class DefaultWot implements Wot {
         return servient.shutdown();
     }
 
+    @Override
+    public String toString() {
+        return "DefaultWot{" +
+                "servient=" + servient +
+                '}';
+    }
+
     /**
      * Creates and starts a {@link Servient}. The servient will not start any servers and can therefore only consume things
      * and not expose any things.

@@ -32,4 +32,13 @@ public class DigestSecurityScheme extends SecurityScheme {
     public String getQop() {
         return qop;
     }
+
+    @Override
+    public String toString() {
+        return "DigestSecurityScheme{" +
+                "in='" + in + '\'' +
+                ", name='" + name + '\'' +
+                ", qop='" + qop + '\'' +
+                '}';
+    }
 }

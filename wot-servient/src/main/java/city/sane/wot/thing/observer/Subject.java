@@ -116,4 +116,12 @@ public class Subject<T> implements Subscribable<T> {
         log.debug("unsubscribe from Subject: {}", subscription);
         observers.remove(subscription);
     }
+
+    @Override
+    public String toString() {
+        return "Subject{" +
+                "observers=" + observers +
+                ", closed=" + closed +
+                '}';
+    }
 }
