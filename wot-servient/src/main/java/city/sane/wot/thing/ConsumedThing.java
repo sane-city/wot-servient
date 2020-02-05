@@ -123,7 +123,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
         else {
             // new client
-            log.debug("'{}' has no client in cache", getId());
+            log.debug("'{}' has no client in cache. Try to init client for one of the following schemes: {}", getId(), schemes);
 
             Pair<String, ProtocolClient> protocolClient = initNewClientFor(schemes);
             scheme = protocolClient.first();
