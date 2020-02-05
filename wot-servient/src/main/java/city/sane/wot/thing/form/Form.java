@@ -1,7 +1,10 @@
 package city.sane.wot.thing.form;
 
 import city.sane.ObjectBuilder;
+import city.sane.wot.thing.ConsumedThing;
 import com.fasterxml.jackson.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -13,6 +16,8 @@ import java.util.*;
  * See also: https://www.w3.org/TR/wot-thing-description/#form
  */
 public class Form implements Serializable {
+    private static final Logger log = LoggerFactory.getLogger(Form.class);
+
     private String href;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -54,6 +59,7 @@ public class Form implements Serializable {
             return new URI(sanitizedHref).getScheme();
         }
         catch (URISyntaxException e) {
+            log.warn("Form href is invalid: ", e);
             return null;
         }
     }
