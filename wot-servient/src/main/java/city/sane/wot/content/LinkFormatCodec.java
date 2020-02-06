@@ -1,16 +1,12 @@
 package city.sane.wot.content;
 
-import city.sane.wot.binding.handler.codec.JsonDecoder;
-import city.sane.wot.thing.schema.ArraySchema;
 import city.sane.wot.thing.schema.DataSchema;
-import city.sane.wot.thing.schema.ObjectSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
@@ -25,7 +21,7 @@ public class LinkFormatCodec implements ContentCodec {
     @Override
     public <T> T bytesToValue(byte[] body, DataSchema<T> schema, Map<String, String> parameters) throws ContentCodecException {
         Pattern pattern = Pattern.compile("^(.+)=\"(.+)\"");
-        if (schema instanceof ObjectSchema) {
+        if (schema.getType().equals("object")) {
             Map<String, Map<String, String>> entries = new HashMap<>();
 
             String bodyString = new String(body);
