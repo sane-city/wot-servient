@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 public class FormTest {
     @Test
     public void builder() {
-        Form property = new Form.Builder()
+        Form form = new Form.Builder()
                 .setHref("test:/foo")
                 .setOp(Operation.OBSERVE_PROPERTY)
                 .setSubprotocol("longpolling")
@@ -18,11 +18,11 @@ public class FormTest {
                 .setOptionalProperties(Map.of("foo", "bar"))
                 .build();
 
-        assertEquals("test:/foo", property.getHref());
-        assertEquals(Collections.singletonList(Operation.OBSERVE_PROPERTY), property.getOp());
-        assertEquals("longpolling", property.getSubprotocol());
-        assertEquals("application/json", property.getContentType());
-        assertEquals(Map.of("foo", "bar"), property.getOptionalProperties());
-        assertEquals("bar", property.getOptional("foo"));
+        assertEquals("test:/foo", form.getHref());
+        assertEquals(Collections.singletonList(Operation.OBSERVE_PROPERTY), form.getOp());
+        assertEquals("longpolling", form.getSubprotocol());
+        assertEquals("application/json", form.getContentType());
+        assertEquals(Map.of("foo", "bar"), form.getOptionalProperties());
+        assertEquals("bar", form.getOptional("foo"));
     }
 }
