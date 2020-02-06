@@ -42,7 +42,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.GET);
-        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
 
         client.advanced(new FutureCoapHandler(future), request);
 
@@ -59,7 +59,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
-        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
         if (content != null) {
             request.setPayload(content.getBody());
         }
