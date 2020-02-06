@@ -140,11 +140,11 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to expose Things"));
+            return CompletableFuture.failedFuture(new ServientException("Servient was started without any servers and is therefore not able to expose things."));
         }
 
         if (thing == null) {
-            return CompletableFuture.failedFuture(new ServientException("Thing must be added to the servient first"));
+            return CompletableFuture.failedFuture(new ServientException("Thing must first be added to the Servient before it can be exposed."));
         }
 
         log.info("Servient exposing '{}'", id);
