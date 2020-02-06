@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
@@ -106,7 +107,7 @@ public class ServientIT {
 
             Map things = servient.fetchDirectory(url).join();
 
-            assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
+            assertThat((Map<String, Thing>) things, hasKey("counter"));
         }
         catch (ProtocolServerNotImplementedException e) {
 

@@ -24,6 +24,7 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 
 public class ThingsActorIT {
@@ -51,7 +52,7 @@ public class ThingsActorIT {
         Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
         Map things = ContentManager.contentToValue(msg.content, new ObjectSchema());
 
-        assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
+        assertThat((Map<String, Thing>) things, hasKey("counter"));
     }
 
     @Test
@@ -64,7 +65,7 @@ public class ThingsActorIT {
 
         ThingsActor.Things msg = testKit.expectMsgClass(ThingsActor.Things.class);
 
-        assertThat(msg.entities, Matchers.hasKey("counter"));
+        assertThat(msg.entities, hasKey("counter"));
     }
 
     @Test

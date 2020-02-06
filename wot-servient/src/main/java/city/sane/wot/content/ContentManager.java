@@ -25,6 +25,7 @@ public class ContentManager {
         addCodec(new TextCodec());
         addCodec(new HtmlCodec());
         addCodec(new CborCodec());
+        addCodec(new LinkFormatCodec());
     }
 
     private ContentManager() {
