@@ -76,6 +76,13 @@ class Counter {
 
         exposedThing.addEvent("change", new ThingEvent());
 
-        exposedThing.expose().thenRun(() -> System.out.println(exposedThing.getId() + " ready"));
+        exposedThing.expose().whenComplete((r, e) -> {
+            if (e == null) {
+                System.out.println(exposedThing.getId() + " ready");
+            }
+            else {
+                System.err.println(e.getMessage());
+            }
+        });
     }
 }

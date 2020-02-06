@@ -123,4 +123,11 @@ thing.addEvent(
         ]
 )
 
-thing.expose().thenRun { println(thing.title + ' ready') }
+thing.expose().whenComplete { r, e ->
+    if (e == null) {
+        println(thing.title + ' ready')
+    }
+    else {
+        println('Error: ' + e)
+    }
+}
