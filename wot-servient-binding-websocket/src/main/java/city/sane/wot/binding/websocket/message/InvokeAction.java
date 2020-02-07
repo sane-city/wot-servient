@@ -19,7 +19,8 @@ public class InvokeAction extends ThingInteractionWithContent {
     }
 
     @Override
-    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer,
+                      Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 

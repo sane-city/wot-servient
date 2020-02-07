@@ -7,7 +7,6 @@ import city.sane.wot.thing.property.ThingProperty;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +16,6 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class MqttProtocolServerTest {
@@ -55,22 +53,6 @@ public class MqttProtocolServerTest {
         assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
         assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertNull(server.destroy(thing).get());
-    }
-
-    @Test
-    public void invokeAction() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-
-        assertEquals(43, thing.getProperty("count").read().get());
     }
 
     private ExposedThing getCounterThing() {
@@ -127,5 +109,21 @@ public class MqttProtocolServerTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
+
+    @Test
+    public void invokeAction() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+
+        assertEquals(43, thing.getProperty("count").read().get());
     }
 }

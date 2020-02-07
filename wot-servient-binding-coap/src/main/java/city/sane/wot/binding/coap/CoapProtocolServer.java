@@ -44,7 +44,6 @@ public class CoapProtocolServer implements ProtocolServer {
 
     private final int bindPort;
     private final List<String> addresses;
-
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final Map<String, CoapResource> resources = new HashMap<>();
     private WotCoapServer server;
@@ -177,7 +176,10 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    private void exposeProperties(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+    private void exposeProperties(ExposedThing thing,
+                                  CoapResource thingResource,
+                                  String address,
+                                  String contentType) {
         Map<String, ExposedThingProperty> properties = thing.getProperties();
         if (!properties.isEmpty()) {
             // make reporting of all properties optional?
@@ -241,7 +243,10 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    private void exposeActions(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+    private void exposeActions(ExposedThing thing,
+                               CoapResource thingResource,
+                               String address,
+                               String contentType) {
         Map<String, ExposedThingAction> actions = thing.getActions();
         if (!actions.isEmpty()) {
             CoapResource actionsResource = new CoapResource("actions");
@@ -263,7 +268,10 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    private void exposeEvents(ExposedThing thing, CoapResource thingResource, String address, String contentType) {
+    private void exposeEvents(ExposedThing thing,
+                              CoapResource thingResource,
+                              String address,
+                              String contentType) {
         Map<String, ExposedThingEvent> events = thing.getEvents();
         if (!events.isEmpty()) {
             CoapResource eventsResource = new CoapResource("events");
@@ -285,17 +293,22 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    public int getBindPort() {
-        return bindPort;
-    }
-
-    public Map<String, ExposedThing> getThings() {
-        return things;
+    /**
+     * This method blocks until the port specified in <code>port</code> is available (again). The
+     * maximum blocking time is 10 seconds. If the port does not become available within 10 seconds,
+     * a {@link TimeoutException} is thrown.
+     *
+     * @param port
+     * @throws TimeoutException
+     */
+    public static void waitForPort(int port) throws TimeoutException {
+        waitForPort(port, Duration.ofSeconds(10));
     }
 
     /**
-     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is specified with <code>duration</code>.
-     * If the port does not become available within the specified duration, a {@link TimeoutException} is thrown.
+     * This method blocks until the port specified in <code>port</code> is available (again). The
+     * maximum blocking time is specified with <code>duration</code>. If the port does not become
+     * available within the specified duration, a {@link TimeoutException} is thrown.
      *
      * @param port
      * @param duration
@@ -310,7 +323,8 @@ public class CoapProtocolServer implements ProtocolServer {
             public void run() {
                 try (ServerSocket socket = new ServerSocket(port)) {
                     result.complete(true);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     // ignore
                 }
             }
@@ -327,26 +341,25 @@ public class CoapProtocolServer implements ProtocolServer {
         }
     }
 
-    /**
-     * This method blocks until the port specified in <code>port</code> is available (again). The maximum blocking time is 10 seconds.
-     * If the port does not become available within 10 seconds, a {@link TimeoutException} is thrown.
-     *
-     * @param port
-     * @throws TimeoutException
-     */
-    public static void waitForPort(int port) throws TimeoutException {
-        waitForPort(port,Duration.ofSeconds(10));
+    public int getBindPort() {
+        return bindPort;
+    }
+
+    public Map<String, ExposedThing> getThings() {
+        return things;
     }
 
     /**
-     * This methods blocks until <code>relation</code> is acknowledged. The maximum blocking time is specified with <code>duration</code>.
-     * If the relation is not acknowledged within the specified duration, a {@link TimeoutException} is thrown.
+     * This methods blocks until <code>relation</code> is acknowledged. The maximum blocking time is
+     * specified with <code>duration</code>. If the relation is not acknowledged within the
+     * specified duration, a {@link TimeoutException} is thrown.
      *
      * @param relation
      * @param duration
      * @throws TimeoutException
      */
-    public static void waitForRelationAcknowledgedObserveRelation(CoapObserveRelation relation, Duration duration) throws TimeoutException {
+    public static void waitForRelationAcknowledgedObserveRelation(CoapObserveRelation relation,
+                                                                  Duration duration) throws TimeoutException {
         CompletableFuture<Void> result = new CompletableFuture<>();
 
         try {

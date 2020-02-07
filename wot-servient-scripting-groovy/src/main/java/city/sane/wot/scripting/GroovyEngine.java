@@ -25,7 +25,9 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
+    public CompletableFuture<Void> runScript(String script,
+                                             Wot wot,
+                                             ExecutorService executorService) {
         Binding binding = new Binding();
         binding.setVariable("wot", wot);
 

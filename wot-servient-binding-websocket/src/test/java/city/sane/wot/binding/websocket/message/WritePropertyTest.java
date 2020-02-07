@@ -6,7 +6,8 @@ import city.sane.wot.content.ContentManager;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class WritePropertyTest {
     private WriteProperty message;
@@ -14,7 +15,7 @@ public class WritePropertyTest {
     @Before
     public void setUp() throws Exception {
         Content content = ContentManager.valueToContent(24);
-        message = new WriteProperty("counter","count", content);
+        message = new WriteProperty("counter", "count", content);
     }
 
     @Test(expected = NullPointerException.class)

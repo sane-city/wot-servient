@@ -3,14 +3,14 @@ package city.sane.wot.binding.websocket.message;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ReadPropertyTest {
     private ReadProperty message;
 
     @Before
     public void setUp() {
-        message = new ReadProperty("counter","count");
+        message = new ReadProperty("counter", "count");
     }
 
     @Test(expected = NullPointerException.class)

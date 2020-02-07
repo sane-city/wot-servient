@@ -49,29 +49,29 @@ class Counter {
 
         exposedThing.addAction("increment", new ThingAction(),
                 () -> exposedThing.getProperty("count").read().thenApply(value -> {
-                        int newValue = ((Integer) value) + 1;
-                        exposedThing.getProperty("count").write(newValue);
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                        return newValue;
-                    })
+                    int newValue = ((Integer) value) + 1;
+                    exposedThing.getProperty("count").write(newValue);
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                    return newValue;
+                })
         );
 
         exposedThing.addAction("decrement", new ThingAction(),
                 () -> exposedThing.getProperty("count").read().thenApply(value -> {
-                        int newValue = ((Integer) value) - 1;
-                        exposedThing.getProperty("count").write(newValue);
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                        return newValue;
-                    })
+                    int newValue = ((Integer) value) - 1;
+                    exposedThing.getProperty("count").write(newValue);
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                    return newValue;
+                })
         );
 
         exposedThing.addAction("reset", new ThingAction(),
                 () -> exposedThing.getProperty("count").write(0).whenComplete((value, e) -> {
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                    })
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                })
         );
 
         exposedThing.addEvent("change", new ThingEvent());

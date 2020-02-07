@@ -103,7 +103,6 @@ class PropertyActor extends AbstractActor {
                     sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
                 }
             });
-
         }
         catch (ContentCodecException e) {
             log.warning("Unable to write property: {}", e.getMessage());

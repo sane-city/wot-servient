@@ -35,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 
 public class WebsocketProtocolServerIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private WebsocketProtocolServer server;
     private WebSocketClient cc;
     private ExposedThing thing;
@@ -47,102 +46,6 @@ public class WebsocketProtocolServerIT {
 
         thing = getCounterThing();
         server.expose(thing).join();
-    }
-
-    @After
-    public void tearDown() {
-        server.stop().join();
-    }
-
-    @Test(timeout = 20 * 1000L)
-    public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException, ContentCodecException {
-        // send ReadProperty message to server and wait for ReadPropertyResponse message from server
-        ReadProperty request = new ReadProperty("counter", "count");
-        ReadProperty request2 = new ReadProperty("zähler","count");
-        ReadProperty request3 = new ReadProperty("counter","mist");
-
-        AbstractServerMessage response = ask(request);
-        AbstractServerMessage response2 = ask(request2);
-        AbstractServerMessage response3 = ask(request3);
-
-        assertThat(response, instanceOf(ReadPropertyResponse.class));
-        assertThat(response2, instanceOf(ClientErrorResponse.class));
-        assertEquals("Thing not found",((ClientErrorResponse) response2).getReason());
-        assertThat(response3, instanceOf(ClientErrorResponse.class));
-        assertEquals("Property not found",((ClientErrorResponse) response3).getReason());
-        assertEquals(request.getId(), response.getId());
-        assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getContent());
-    }
-
-    @Test(timeout = 20 * 1000L)
-    public void testWriteProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
-        // send WriteProperty message to server and wait for WritePropertyResponse message from server
-        WriteProperty request = new WriteProperty("counter", "count", ContentManager.valueToContent(1337));
-        WriteProperty request2 = new WriteProperty("Null","count",ContentManager.valueToContent(1337));
-        WriteProperty request3 = new WriteProperty("counter","Null",ContentManager.valueToContent(1337));
-
-        AbstractServerMessage response = ask(request);
-        AbstractServerMessage response2 = ask(request2);
-        AbstractServerMessage response3 = ask(request3);
-
-        assertThat(response, instanceOf(WritePropertyResponse.class));
-        assertThat(response2, instanceOf(ClientErrorResponse.class));
-        assertEquals("Thing not found",((ClientErrorResponse) response2).getReason());
-        assertThat(response3, instanceOf(ClientErrorResponse.class));
-        assertEquals("Property not found",((ClientErrorResponse) response3).getReason());
-        assertEquals(request.getId(), response.getId());
-        assertEquals(ContentManager.valueToContent(null), ((WritePropertyResponse) response).getValue());
-    }
-
-    @Test(timeout = 20 * 1000L)
-    public void testInvokeAction() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
-        // send InvokeAction message to server and wait for InvokeActionResponse message from server
-        Map<String, Integer> parameters = Map.of("step", 3);
-        InvokeAction request = new InvokeAction("counter", "increment", ContentManager.valueToContent(parameters));
-
-        AbstractServerMessage response = ask(request);
-
-        assertThat(response, instanceOf(InvokeActionResponse.class));
-        assertEquals(request.getId(), response.getId());
-        assertEquals(ContentManager.valueToContent(45), ((InvokeActionResponse) response).getValue());
-    }
-
-    @Test(timeout = 20 * 1000L)
-    public void testSubscribeProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
-        // send SubscribeProperty message to server and wait for SubscribeNextResponse message from server
-        SubscribeProperty request = new SubscribeProperty("counter", "count");
-
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        observe(request, observer);
-
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(10 * 1000L);
-
-        thing.getProperty("count").write(1337).get();
-
-        assertEquals(ContentManager.valueToContent(1337), future.get());
-    }
-
-    @Test(timeout = 20 * 1000L)
-    public void testSubscribeEvent() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
-        // send SubscribeEvent message to server and wait for SubscribeNextResponse message from server
-        SubscribeEvent request = new SubscribeEvent("counter", "change");
-
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        observe(request, observer);
-
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(10 * 1000L);
-
-        thing.getEvent("change").emit().get();
-
-        assertEquals(new Content(ContentManager.DEFAULT, "null".getBytes()), future.get());
     }
 
     private ExposedThing getCounterThing() {
@@ -222,6 +125,31 @@ public class WebsocketProtocolServerIT {
         return thing;
     }
 
+    @After
+    public void tearDown() {
+        server.stop().join();
+    }
+
+    @Test(timeout = 20 * 1000L)
+    public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException, ContentCodecException {
+        // send ReadProperty message to server and wait for ReadPropertyResponse message from server
+        ReadProperty request = new ReadProperty("counter", "count");
+        ReadProperty request2 = new ReadProperty("zähler", "count");
+        ReadProperty request3 = new ReadProperty("counter", "mist");
+
+        AbstractServerMessage response = ask(request);
+        AbstractServerMessage response2 = ask(request2);
+        AbstractServerMessage response3 = ask(request3);
+
+        assertThat(response, instanceOf(ReadPropertyResponse.class));
+        assertThat(response2, instanceOf(ClientErrorResponse.class));
+        assertEquals("Thing not found", ((ClientErrorResponse) response2).getReason());
+        assertThat(response3, instanceOf(ClientErrorResponse.class));
+        assertEquals("Property not found", ((ClientErrorResponse) response3).getReason());
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(42), ((ReadPropertyResponse) response).getContent());
+    }
+
     /**
      * Sends the message in <code>request</code> to the server and waits for the response.
      *
@@ -266,7 +194,6 @@ public class WebsocketProtocolServerIT {
                 @Override
                 public void onError(Exception ex) {
                     throw new RuntimeException(ex);
-
                 }
             };
             cc.connect();
@@ -278,7 +205,60 @@ public class WebsocketProtocolServerIT {
         return future.get();
     }
 
-    private Subscription observe(AbstractClientMessage request, Observer<Content> observer) throws URISyntaxException {
+    @Test(timeout = 20 * 1000L)
+    public void testWriteProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+        // send WriteProperty message to server and wait for WritePropertyResponse message from server
+        WriteProperty request = new WriteProperty("counter", "count", ContentManager.valueToContent(1337));
+        WriteProperty request2 = new WriteProperty("Null", "count", ContentManager.valueToContent(1337));
+        WriteProperty request3 = new WriteProperty("counter", "Null", ContentManager.valueToContent(1337));
+
+        AbstractServerMessage response = ask(request);
+        AbstractServerMessage response2 = ask(request2);
+        AbstractServerMessage response3 = ask(request3);
+
+        assertThat(response, instanceOf(WritePropertyResponse.class));
+        assertThat(response2, instanceOf(ClientErrorResponse.class));
+        assertEquals("Thing not found", ((ClientErrorResponse) response2).getReason());
+        assertThat(response3, instanceOf(ClientErrorResponse.class));
+        assertEquals("Property not found", ((ClientErrorResponse) response3).getReason());
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(null), ((WritePropertyResponse) response).getValue());
+    }
+
+    @Test(timeout = 20 * 1000L)
+    public void testInvokeAction() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+        // send InvokeAction message to server and wait for InvokeActionResponse message from server
+        Map<String, Integer> parameters = Map.of("step", 3);
+        InvokeAction request = new InvokeAction("counter", "increment", ContentManager.valueToContent(parameters));
+
+        AbstractServerMessage response = ask(request);
+
+        assertThat(response, instanceOf(InvokeActionResponse.class));
+        assertEquals(request.getId(), response.getId());
+        assertEquals(ContentManager.valueToContent(45), ((InvokeActionResponse) response).getValue());
+    }
+
+    @Test(timeout = 20 * 1000L)
+    public void testSubscribeProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+        // send SubscribeProperty message to server and wait for SubscribeNextResponse message from server
+        SubscribeProperty request = new SubscribeProperty("counter", "count");
+
+        CompletableFuture<Content> future = new CompletableFuture<>();
+        Observer<Content> observer = new Observer<>(future::complete);
+
+        observe(request, observer);
+
+        // wait until client establish subscription
+        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
+        Thread.sleep(10 * 1000L);
+
+        thing.getProperty("count").write(1337).get();
+
+        assertEquals(ContentManager.valueToContent(1337), future.get());
+    }
+
+    private Subscription observe(AbstractClientMessage request,
+                                 Observer<Content> observer) throws URISyntaxException {
         try {
             cc = new WebSocketClient(new URI("ws://localhost:8081")) {
                 @Override
@@ -328,5 +308,24 @@ public class WebsocketProtocolServerIT {
         finally {
             cc.close();
         }
+    }
+
+    @Test(timeout = 20 * 1000L)
+    public void testSubscribeEvent() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+        // send SubscribeEvent message to server and wait for SubscribeNextResponse message from server
+        SubscribeEvent request = new SubscribeEvent("counter", "change");
+
+        CompletableFuture<Content> future = new CompletableFuture<>();
+        Observer<Content> observer = new Observer<>(future::complete);
+
+        observe(request, observer);
+
+        // wait until client establish subscription
+        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
+        Thread.sleep(10 * 1000L);
+
+        thing.getEvent("change").emit().get();
+
+        assertEquals(new Content(ContentManager.DEFAULT, "null".getBytes()), future.get());
     }
 }

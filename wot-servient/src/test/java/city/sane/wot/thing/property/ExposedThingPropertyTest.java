@@ -1,7 +1,6 @@
 package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.observer.Subject;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,8 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.Mockito.*;
 
 public class ExposedThingPropertyTest {
@@ -90,7 +88,7 @@ public class ExposedThingPropertyTest {
 
     @Test
     public void writeWithHandlerShouldCallHandlerAndInformSubject() {
-        when(writeHandler.apply(any())).thenReturn(CompletableFuture.completedFuture(1337));
+        when(writeHandler.apply(any())).thenReturn(completedFuture(1337));
         when(state.getWriteHandler()).thenReturn(writeHandler);
         when(state.getSubject()).thenReturn(subject);
 

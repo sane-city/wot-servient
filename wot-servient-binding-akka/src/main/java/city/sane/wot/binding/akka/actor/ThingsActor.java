@@ -25,12 +25,12 @@ import static city.sane.wot.binding.akka.Messages.Read;
 import static city.sane.wot.binding.akka.Messages.RespondRead;
 
 /**
- * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolServer} and is responsible for exposing things. For each exposed Thing
- * a {@link ThingActor} is created, which is responsible for the interaction with the Thing.
+ * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolServer} and is
+ * responsible for exposing things. For each exposed Thing a {@link ThingActor} is created, which is
+ * responsible for the interaction with the Thing.
  */
 public class ThingsActor extends AbstractActor {
     public static final String TOPIC = "thing-discovery";
-
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
     private final Map<String, ActorRef> children = new HashMap<>();
@@ -82,20 +82,6 @@ public class ThingsActor extends AbstractActor {
         log.debug("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
-    private void expose(Expose m) {
-        String id = m.entity;
-        ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
-        children.put(id, thingActor);
-    }
-
-    private void exposed(Created m) {
-        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
-        ActorRef requester = pair.first();
-        String id = pair.second();
-        log.debug("Thing '{}' has been exposed", id);
-        requester.tell(new Created(getSender()), getSelf());
-    }
-
     private void getThings() throws ContentCodecException {
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
@@ -126,6 +112,20 @@ public class ThingsActor extends AbstractActor {
                 new Things(thingsMap),
                 getSelf()
         );
+    }
+
+    private void expose(Expose m) {
+        String id = m.entity;
+        ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
+        children.put(id, thingActor);
+    }
+
+    private void exposed(Created m) {
+        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
+        ActorRef requester = pair.first();
+        String id = pair.second();
+        log.debug("Thing '{}' has been exposed", id);
+        requester.tell(new Created(getSender()), getSelf());
     }
 
     private void destroy(Destroy m) {

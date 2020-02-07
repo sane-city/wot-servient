@@ -5,8 +5,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Defines a subscription to a resource (for example, a {@link Subject}).
- * This class is part of the Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
+ * Defines a subscription to a resource (for example, a {@link Subject}). This class is part of the
+ * Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
  */
 public class Subscription {
     private final Consumer<Subscription> unsubscribe;
@@ -14,22 +14,24 @@ public class Subscription {
     private boolean closed = false;
 
     /**
-     * Creates a new subscription. <code>unsubscribe</code> is called when the subscription is cancelled (e.g. to remove from a {@link Subject}).
-     *
-     * @param unsubscribe
-     */
-    public Subscription(Consumer<Subscription> unsubscribe) {
-        this.unsubscribe = unsubscribe;
-    }
-
-    /**
-     * Creates a new subscription. <code>unsubscribe</code> is called and consumes
-     * the current subscription object when the subscription is cancelled (e.g. to remove from a {@link Subject}).
+     * Creates a new subscription. <code>unsubscribe</code> is called and consumes the current
+     * subscription object when the subscription is cancelled (e.g. to remove from a {@link
+     * Subject}).
      *
      * @param unsubscribe
      */
     public Subscription(Runnable unsubscribe) {
         this(s -> unsubscribe.run());
+    }
+
+    /**
+     * Creates a new subscription. <code>unsubscribe</code> is called when the subscription is
+     * cancelled (e.g. to remove from a {@link Subject}).
+     *
+     * @param unsubscribe
+     */
+    public Subscription(Consumer<Subscription> unsubscribe) {
+        this.unsubscribe = unsubscribe;
     }
 
     /**
@@ -61,10 +63,10 @@ public class Subscription {
     }
 
     /**
-     * Creates a new subscription to this subscription. <code>unsubscribe</code> will be called after {@link #unsubscribe()} of this subscription.
+     * Creates a new subscription to this subscription. <code>unsubscribe</code> will be called
+     * after {@link #unsubscribe()} of this subscription.
      *
      * @param unsubscribe
-     *
      * @return
      */
     public Subscription add(Runnable unsubscribe) {

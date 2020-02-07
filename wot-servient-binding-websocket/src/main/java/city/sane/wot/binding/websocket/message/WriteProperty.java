@@ -19,7 +19,8 @@ public class WriteProperty extends ThingInteractionWithContent {
     }
 
     @Override
-    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer,
+                      Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 
@@ -38,18 +39,21 @@ public class WriteProperty extends ThingInteractionWithContent {
                             replyConsumer.accept(new WritePropertyResponse(getId(), ContentManager.valueToContent(output)));
                         }
                         catch (ContentCodecException e) {
-                            replyConsumer.accept(new ServerErrorResponse(this,"Unable to parse output of write operation: " + e.getMessage()));
+                            replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse output of write operation: " + e.getMessage()));
                         }
                     });
-                } catch (ContentCodecException e) {
+                }
+                catch (ContentCodecException e) {
                     // unable to parse paylod
                     replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse given input " + e.getMessage()));
                 }
-            } else {
+            }
+            else {
                 // Property not found
                 replyConsumer.accept(new ClientErrorResponse(this, "Property not found"));
             }
-        } else {
+        }
+        else {
             // Thing not found
             replyConsumer.accept(new ClientErrorResponse(this, "Thing not found"));
         }

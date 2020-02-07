@@ -16,7 +16,6 @@ import java.util.Set;
 public class ContentManager {
     public static final String DEFAULT = "application/json";
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
-
     private static final Map<String, ContentCodec> CODECS = new HashMap();
     private static final Set<String> OFFERED = new HashSet<>();
 
@@ -32,7 +31,17 @@ public class ContentManager {
     }
 
     /**
-     * Adds support for media type specified in codec. If offered is {@code true}, this media type will also be included in thing descriptions.
+     * Adds support for media type specified in codec.
+     *
+     * @param codec
+     */
+    public static void addCodec(ContentCodec codec) {
+        addCodec(codec, false);
+    }
+
+    /**
+     * Adds support for media type specified in codec. If offered is {@code true}, this media type
+     * will also be included in thing descriptions.
      *
      * @param codec
      * @param offered
@@ -42,15 +51,6 @@ public class ContentManager {
         if (offered) {
             OFFERED.add(codec.getMediaType());
         }
-    }
-
-    /**
-     * Adds support for media type specified in codec.
-     *
-     * @param codec
-     */
-    public static void addCodec(ContentCodec codec) {
-        addCodec(codec, false);
     }
 
     /**
@@ -64,15 +64,6 @@ public class ContentManager {
     }
 
     /**
-     * Servient will accept these media types as payloads for processing requests
-     *
-     * @return
-     */
-    public static Set<String> getSupportedMediaTypes() {
-        return CODECS.keySet();
-    }
-
-    /**
      * Servient will offer these media types in the thing descriptions.
      *
      * @return
@@ -82,19 +73,20 @@ public class ContentManager {
     }
 
     /**
-     * Deserializes <code>content</code> according to the data schema defined in <code>schema</code>.
-     * Returns <code>null</code> if no schema is specified.
-     * If <code>content</code> does not define a content type, {@link #DEFAULT} is assumed.
-     * If the content type defined in <code>content</code> is not supported, Java's internal serialization method will be used.
+     * Deserializes <code>content</code> according to the data schema defined in
+     * <code>schema</code>. Returns <code>null</code> if no schema is specified. If
+     * <code>content</code> does not define a content type, {@link #DEFAULT} is assumed. If the
+     * content type defined in <code>content</code> is not supported, Java's internal serialization
+     * method will be used.
      *
      * @param content
      * @param schema
      * @param <T>
-     *
      * @return
      * @throws ContentCodecException
      */
-    public static <T> T contentToValue(Content content, DataSchema<T> schema) throws ContentCodecException {
+    public static <T> T contentToValue(Content content,
+                                       DataSchema<T> schema) throws ContentCodecException {
         if (content == null || content.getBody().length == 0) {
             return null;
         }
@@ -137,16 +129,84 @@ public class ContentManager {
     }
 
     /**
-     * Serialized <code>value</code> according to the content type defined in <code>contentType</code> to a {@link Content} object.
-     * If the content type defined in <code>contentType</code> is not supported, Java's internal serialization method will be used.
+     * Extracts the media type from <code>contentType</code> (e.g. "text/plain; charset=utf-8"
+     * becomes "text/plain"). Returns <code>null</code> if no media type could be found.
+     *
+     * @param contentType
+     * @return
+     */
+    private static String getMediaType(String contentType) {
+        if (contentType == null) {
+            return null;
+        }
+
+        String[] parts = contentType.split(";", 2);
+        return parts[0].trim();
+    }
+
+    /**
+     * Returns a {@link Map} with all media type parameters in <code>contentType</code> (e.g.
+     * "text/plain; charset=utf-8" results in a one-element map with "charset" as key and "utf-8" as
+     * value). Returns <code>null</code> if no media type could be found.
+     *
+     * @param contentType
+     * @return
+     */
+    private static Map<String, String> getMediaTypeParameters(String contentType) {
+        if (contentType == null) {
+            return null;
+        }
+
+        Map<String, String> parameters = new HashMap<>();
+
+        String[] parts = contentType.split(";");
+        for (int i = 1; i < parts.length; i++) {
+            String part = parts[i];
+            int eq = part.indexOf('=');
+
+            String name;
+            String value;
+            if (eq >= 0) {
+                name = part.substring(0, eq).trim();
+                value = part.substring(eq + 1).trim();
+            }
+            else {
+                // handle parameters without value
+                name = part;
+                value = null;
+            }
+
+            parameters.put(name, value);
+        }
+
+        return parameters;
+    }
+
+    /**
+     * Serialized <code>value</code> using default content type defined in {@link #DEFAULT} to a
+     * {@link Content} object.
      *
      * @param value
-     * @param contentType
-     *
      * @return
      * @throws ContentCodecException
      */
-    public static Content valueToContent(Object value, String contentType) throws ContentCodecException {
+    public static Content valueToContent(Object value) throws ContentCodecException {
+        return valueToContent(value, null);
+    }
+
+    /**
+     * Serialized <code>value</code> according to the content type defined in
+     * <code>contentType</code> to a {@link Content} object. If the content type defined in
+     * <code>contentType</code> is not supported, Java's internal serialization method will be
+     * used.
+     *
+     * @param value
+     * @param contentType
+     * @return
+     * @throws ContentCodecException
+     */
+    public static Content valueToContent(Object value,
+                                         String contentType) throws ContentCodecException {
         if (contentType == null) {
             contentType = ContentManager.DEFAULT;
         }
@@ -184,22 +244,10 @@ public class ContentManager {
     }
 
     /**
-     * Serialized <code>value</code> using default content type defined in {@link #DEFAULT} to a {@link Content} object.
-     *
-     * @param value
-     *
-     * @return
-     * @throws ContentCodecException
-     */
-    public static Content valueToContent(Object value) throws ContentCodecException {
-        return valueToContent(value, null);
-    }
-
-    /**
-     * Returns <code>true</code> if data in the format <code>contentType</code> can be (de)serialized. Otherwise <code>false</code> is returned.
+     * Returns <code>true</code> if data in the format <code>contentType</code> can be
+     * (de)serialized. Otherwise <code>false</code> is returned.
      *
      * @param contentType
-     *
      * @return
      */
     public static boolean isSupportedMediaType(String contentType) {
@@ -208,58 +256,11 @@ public class ContentManager {
     }
 
     /**
-     * Extracts the media type from <code>contentType</code> (e.g. "text/plain; charset=utf-8" becomes "text/plain").
-     * Returns <code>null</code> if no media type could be found.
-     *
-     * @param contentType
+     * Servient will accept these media types as payloads for processing requests
      *
      * @return
      */
-    private static String getMediaType(String contentType) {
-        if (contentType == null) {
-            return null;
-        }
-
-        String[] parts = contentType.split(";", 2);
-        return parts[0].trim();
-    }
-
-    /**
-     * Returns a {@link Map} with all media type parameters in <code>contentType</code> (e.g. "text/plain; charset=utf-8" results in a one-element map with
-     * "charset" as key and "utf-8" as value).
-     * Returns <code>null</code> if no media type could be found.
-     *
-     * @param contentType
-     *
-     * @return
-     */
-    private static Map<String, String> getMediaTypeParameters(String contentType) {
-        if (contentType == null) {
-            return null;
-        }
-
-        Map<String, String> parameters = new HashMap<>();
-
-        String[] parts = contentType.split(";");
-        for (int i = 1; i < parts.length; i++) {
-            String part = parts[i];
-            int eq = part.indexOf('=');
-
-            String name;
-            String value;
-            if (eq >= 0) {
-                name = part.substring(0, eq).trim();
-                value = part.substring(eq + 1).trim();
-            }
-            else {
-                // handle parameters without value
-                name = part;
-                value = null;
-            }
-
-            parameters.put(name, value);
-        }
-
-        return parameters;
+    public static Set<String> getSupportedMediaTypes() {
+        return CODECS.keySet();
     }
 }

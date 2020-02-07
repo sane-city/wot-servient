@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ReadPropertyRouteIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private Service service;
 
     @Before
@@ -37,49 +36,6 @@ public class ReadPropertyRouteIT {
         service.init();
         service.awaitInitialization();
         service.get(":id/properties/:name", new ReadPropertyRoute(Map.of("counter", getCounterThing())));
-    }
-
-    @After
-    public void teardown() {
-        service.stop();
-        service.awaitStop();
-    }
-
-    @Test
-    public void readProperty() throws IOException {
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertEquals("2019-07-25 00:35:36", JSON_MAPPER.readValue(response.getEntity().getContent(), String.class));
-    }
-
-    @Test
-    public void readPropertyWithCustomContentType() throws IOException {
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
-        request.addHeader("Content-Type", "text/plain");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertEquals("2019-07-25 00:35:36", EntityUtils.toString(response.getEntity()));
-    }
-
-    @Test
-    public void readPropertyUnknownThing() throws IOException {
-        HttpUriRequest request = new HttpGet("http://localhost:8080/zaehler/properties/lastChange");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(404, response.getStatusLine().getStatusCode());
-    }
-
-    @Test
-    public void readPropertyUnknownProperty() throws IOException {
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/county");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(404, response.getStatusLine().getStatusCode());
     }
 
     private ExposedThing getCounterThing() {
@@ -156,5 +112,48 @@ public class ReadPropertyRouteIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() {
+        service.stop();
+        service.awaitStop();
+    }
+
+    @Test
+    public void readProperty() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertEquals("2019-07-25 00:35:36", JSON_MAPPER.readValue(response.getEntity().getContent(), String.class));
+    }
+
+    @Test
+    public void readPropertyWithCustomContentType() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/lastChange");
+        request.addHeader("Content-Type", "text/plain");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertEquals("2019-07-25 00:35:36", EntityUtils.toString(response.getEntity()));
+    }
+
+    @Test
+    public void readPropertyUnknownThing() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/zaehler/properties/lastChange");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void readPropertyUnknownProperty() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/county");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
     }
 }

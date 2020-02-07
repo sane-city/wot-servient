@@ -10,7 +10,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolClient} to {@link city.sane.wot.binding.websocket.WebsocketProtocolServer}.
+ * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolClient}
+ * to {@link city.sane.wot.binding.websocket.WebsocketProtocolServer}.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -28,10 +29,6 @@ public abstract class AbstractClientMessage {
         id = randomId();
     }
 
-    public String getId() {
-        return id;
-    }
-
     /**
      * Generates a new random ID to make the message uniquely identifiable.
      *
@@ -41,6 +38,10 @@ public abstract class AbstractClientMessage {
         return UUID.randomUUID().toString().substring(0, 6);
     }
 
+    public String getId() {
+        return id;
+    }
+
     /**
      * Creates the server's response to the request sent by the client.
      *
@@ -48,5 +49,6 @@ public abstract class AbstractClientMessage {
      * @param things
      * @return
      */
-    public abstract void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things);
+    public abstract void reply(Consumer<AbstractServerMessage> replyConsumer,
+                               Map<String, ExposedThing> things);
 }

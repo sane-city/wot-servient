@@ -38,7 +38,6 @@ class ExampleEventClient {
                         () -> System.out.println("ExampleDynamicClient: completed!")
                 );
                 System.out.println("ExampleDynamicClient: Subscribed");
-
             }
             catch (ConsumedThingException ex) {
                 throw new RuntimeException(ex);

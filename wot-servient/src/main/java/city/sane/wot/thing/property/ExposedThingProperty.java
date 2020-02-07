@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -21,13 +20,23 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  */
 public class ExposedThingProperty extends ThingProperty implements Subscribable<Object> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
-
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
     private final PropertyState state;
 
-    public ExposedThingProperty(String name, ExposedThing thing, PropertyState state, String objectType, String description, Map<String, String> descriptions, String type, boolean observable, boolean readOnly, boolean writeOnly, Map<String, Map> uriVariables, Map<String, Object> optionalProperties) {
+    public ExposedThingProperty(String name,
+                                ExposedThing thing,
+                                PropertyState state,
+                                String objectType,
+                                String description,
+                                Map<String, String> descriptions,
+                                String type,
+                                boolean observable,
+                                boolean readOnly,
+                                boolean writeOnly,
+                                Map<String, Map> uriVariables,
+                                Map<String, Object> optionalProperties) {
         this.name = name;
         this.thing = thing;
         this.state = state;
@@ -61,13 +70,31 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public String toString() {
+        return "ExposedThingProperty{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 
     public CompletableFuture<Object> read() {
@@ -135,23 +162,5 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
 
     public PropertyState getState() {
         return state;
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThingProperty{" +
-                "name='" + name + '\'' +
-                ", state=" + state +
-                ", objectType='" + objectType + '\'' +
-                ", type='" + type + '\'' +
-                ", observable=" + observable +
-                ", readOnly=" + readOnly +
-                ", writeOnly=" + writeOnly +
-                ", optionalProperties=" + optionalProperties +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 }

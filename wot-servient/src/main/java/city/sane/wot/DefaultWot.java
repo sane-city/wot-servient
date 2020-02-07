@@ -29,6 +29,13 @@ public class DefaultWot implements Wot {
     }
 
     /**
+     * Creates and starts a {@link Servient}.
+     */
+    public DefaultWot() throws WotException {
+        this(ConfigFactory.load());
+    }
+
+    /**
      * Creates and starts a {@link Servient} with the given <code>config</code>.
      *
      * @param config
@@ -38,36 +45,68 @@ public class DefaultWot implements Wot {
         servient.start().join();
     }
 
-    /**
-     * Creates and starts a {@link Servient}.
-     */
-    public DefaultWot() throws WotException {
-        this(ConfigFactory.load());
-    }
-
     @Override
+    public String toString() {
+        return "DefaultWot{" +
+                "servient=" + servient +
+                '}';
+    }
+/**
+     * Creates and starts a {@link Servient}. The servient will not start any servers and can
+     * therefore only consume things and not expose any things.
+     */
+    public static Wot clientOnly() throws WotException {
+        return clientOnly(ConfigFactory.load());
+    }@Override
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
         return servient.discover(filter);
     }
 
-    @Override
+    /**
+     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will
+     * not start any servers and can therefore only consume things and not expose any things.
+     *
+     * @param config
+     */
+    public static Wot clientOnly(Config config) throws WotException {
+        Servient servient = Servient.clientOnly(config);
+        servient.start().join();
+        return new DefaultWot(servient);
+    }
+/**
+     * Creates and starts a {@link Servient}. The servient will not start any clients and can
+     * therefore only produce and expose things.
+     */
+    public static Wot serverOnly() throws WotException {
+        return serverOnly(ConfigFactory.load());
+    }@Override
     public CompletableFuture<Collection<Thing>> discover() {
         return discover(new ThingFilter(DiscoveryMethod.ANY));
     }
 
-    @Override
+    /**
+     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will
+     * not start any clients and can therefore only produce and expose things.
+     *
+     * @param config
+     */
+    public static Wot serverOnly(Config config) throws WotException {
+        Servient servient = Servient.serverOnly(config);
+        servient.start().join();
+        return new DefaultWot(servient);
+    }    @Override
     public ExposedThing produce(Thing thing) {
         ExposedThing exposedThing = new ExposedThing(servient, thing);
         servient.addThing(exposedThing);
         return exposedThing;
     }
 
-    @Override
+        @Override
     public ConsumedThing consume(Thing thing) {
         return new ConsumedThing(servient, thing);
     }
 
-    @Override
+        @Override
     public ConsumedThing consume(String thing) {
         return consume(Thing.fromJson(thing));
     }
@@ -87,49 +126,13 @@ public class DefaultWot implements Wot {
         return servient.shutdown();
     }
 
-    @Override
-    public String toString() {
-        return "DefaultWot{" +
-                "servient=" + servient +
-                '}';
-    }
 
-    /**
-     * Creates and starts a {@link Servient}. The servient will not start any servers and can therefore only consume things
-     * and not expose any things.
-     */
-    public static Wot clientOnly() throws WotException {
-        return clientOnly(ConfigFactory.load());
-    }
 
-    /**
-     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will not start any servers and can therefore only consume things
-     * and not expose any things.
-     *
-     * @param config
-     */
-    public static Wot clientOnly(Config config) throws WotException {
-        Servient servient = Servient.clientOnly(config);
-        servient.start().join();
-        return new DefaultWot(servient);
-    }
 
-    /**
-     * Creates and starts a {@link Servient}. The servient will not start any clients and can therefore only produce and expose things.
-     */
-    public static Wot serverOnly() throws WotException {
-        return serverOnly(ConfigFactory.load());
-    }
 
-    /**
-     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will not start any clients and can therefore only produce and
-     * expose things.
-     *
-     * @param config
-     */
-    public static Wot serverOnly(Config config) throws WotException {
-        Servient servient = Servient.serverOnly(config);
-        servient.start().join();
-        return new DefaultWot(servient);
-    }
+
+
+
+
+
 }

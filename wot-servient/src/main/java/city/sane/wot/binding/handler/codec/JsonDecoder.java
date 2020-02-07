@@ -11,9 +11,7 @@ import java.util.List;
 
 public class JsonDecoder<T> extends MessageToMessageDecoder<String> implements ChannelInboundHandler {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private final Logger log = LoggerFactory.getLogger(JsonDecoder.class);
-
     private final Class<? extends T> clazz;
 
     public JsonDecoder(Class<? extends T> clazz) {
@@ -21,7 +19,9 @@ public class JsonDecoder<T> extends MessageToMessageDecoder<String> implements C
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, String json, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx,
+                          String json,
+                          List<Object> out) throws Exception {
         T message = JSON_MAPPER.readValue(json, clazz);
         log.debug("Deserialized message to: {}", message);
         out.add(message);

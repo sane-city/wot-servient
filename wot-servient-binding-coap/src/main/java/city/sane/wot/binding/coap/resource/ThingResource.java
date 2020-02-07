@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ThingResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(ThingResource.class);
-
     private final ExposedThing thing;
 
     public ThingResource(ExposedThing thing) {

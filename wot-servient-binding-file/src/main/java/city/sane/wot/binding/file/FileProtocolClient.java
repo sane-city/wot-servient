@@ -25,8 +25,8 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class FileProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(FileProtocolClient.class);
     private static final Map<String, String> EXTENSION_TO_CONTENT_TYPE = Map.of(
-        ".json", "application/json",
-        ".jsonld", "application/ld+json"
+            ".json", "application/json",
+            ".jsonld", "application/ld+json"
     );
 
     @Override
@@ -59,7 +59,8 @@ public class FileProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         Path path = hrefToPath(form.getHref());
         Path directory = path.getParent();
 
@@ -126,6 +127,24 @@ public class FileProtocolClient implements ProtocolClient {
         return Paths.get(URI.create(href));
     }
 
+    private Content getContentFromPath(Path path) throws IOException {
+        String extension = pathToExtension(path);
+
+        log.debug("Found extension '{}'", extension);
+        String contentType = extensionToContentType(extension);
+        if (contentType == null) {
+            log.warn("Cannot determine media type of '{}'", path);
+            contentType = "application/octet-stream";
+        }
+        if (Files.exists(path)) {
+            byte[] body = Files.readAllBytes(path);
+            return new Content(contentType, body);
+        }
+        else {
+            return Content.EMPTY_CONTENT;
+        }
+    }
+
     private String pathToExtension(Path path) {
         String pathStr = path.toString();
         if (pathStr.contains(".")) {
@@ -152,22 +171,5 @@ public class FileProtocolClient implements ProtocolClient {
         }
 
         return contentType;
-    }
-
-    private Content getContentFromPath(Path path) throws IOException {
-        String extension = pathToExtension(path);
-
-        log.debug("Found extension '{}'", extension);
-        String contentType = extensionToContentType(extension);
-        if (contentType == null) {
-            log.warn("Cannot determine media type of '{}'", path);
-            contentType = "application/octet-stream";
-        }
-        if (Files.exists(path)) {
-            byte[] body = Files.readAllBytes(path);
-            return new Content(contentType, body);
-        } else {
-            return Content.EMPTY_CONTENT;
-        }
     }
 }

@@ -19,7 +19,9 @@ public class JsonCodec implements ContentCodec {
     }
 
     @Override
-    public <T> T bytesToValue(byte[] body, DataSchema<T> schema, Map<String, String> parameters) throws ContentCodecException {
+    public <T> T bytesToValue(byte[] body,
+                              DataSchema<T> schema,
+                              Map<String, String> parameters) throws ContentCodecException {
         try {
             return getMapper().readValue(body, schema.getClassType());
         }
@@ -29,7 +31,8 @@ public class JsonCodec implements ContentCodec {
     }
 
     @Override
-    public byte[] valueToBytes(Object value, Map<String, String> parameters) throws ContentCodecException {
+    public byte[] valueToBytes(Object value,
+                               Map<String, String> parameters) throws ContentCodecException {
         try {
             return getMapper().writeValueAsBytes(value);
         }

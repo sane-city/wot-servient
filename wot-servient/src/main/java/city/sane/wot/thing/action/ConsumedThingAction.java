@@ -22,7 +22,6 @@ import java.util.concurrent.CompletionException;
  */
 public class ConsumedThingAction extends ThingAction {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
-
     private final String name;
     private final ConsumedThing thing;
 
@@ -42,6 +41,23 @@ public class ConsumedThingAction extends ThingAction {
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingAction{" +
+                "name='" + name + '\'' +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public CompletableFuture invoke() {
+        return invoke(Collections.emptyMap());
     }
 
     public CompletableFuture invoke(Map<String, Object> parameters) {
@@ -75,22 +91,5 @@ public class ConsumedThingAction extends ThingAction {
         catch (ConsumedThingException e) {
             throw new CompletionException(e);
         }
-    }
-
-    public CompletableFuture invoke() {
-        return invoke(Collections.emptyMap());
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingAction{" +
-                "name='" + name + '\'' +
-                ", input=" + input +
-                ", output=" + output +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 }

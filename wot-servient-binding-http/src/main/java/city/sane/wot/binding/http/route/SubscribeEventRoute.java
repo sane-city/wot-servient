@@ -47,7 +47,6 @@ public class SubscribeEventRoute extends AbstractInteractionRoute {
                             response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                             result.complete("Invalid Event Data");
                         }
-
                     },
                     e -> {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);

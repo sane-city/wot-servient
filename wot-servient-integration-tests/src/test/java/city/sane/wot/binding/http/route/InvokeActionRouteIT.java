@@ -40,47 +40,6 @@ public class InvokeActionRouteIT {
         service.post(":id/actions/:name", new InvokeActionRoute(Map.of("counter", getCounterThing())));
     }
 
-    @After
-    public void teardown() {
-        service.stop();
-        service.awaitStop();
-    }
-
-    @Test
-    public void invokeAction() throws IOException {
-        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertEquals("43", EntityUtils.toString(response.getEntity()));
-    }
-
-    @Test
-    public void invokeActionWithUrlParameters() throws IOException {
-        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment?step=3");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertEquals("45", EntityUtils.toString(response.getEntity()));
-    }
-
-    @Test
-    public void invokeActionWithEntityParameters() throws IOException, ContentCodecException {
-        Map<String, Integer> parameters = Map.of("step", 3);
-        Content content = ContentManager.valueToContent(parameters, "application/json");
-
-        HttpPost request = new HttpPost("http://localhost:8080/counter/actions/increment");
-        request.setHeader("Content-Type", content.getType());
-        request.setEntity(new ByteArrayEntity(content.getBody()));
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertEquals("45", EntityUtils.toString(response.getEntity()));
-    }
-
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
@@ -155,5 +114,46 @@ public class InvokeActionRouteIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() {
+        service.stop();
+        service.awaitStop();
+    }
+
+    @Test
+    public void invokeAction() throws IOException {
+        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertEquals("43", EntityUtils.toString(response.getEntity()));
+    }
+
+    @Test
+    public void invokeActionWithUrlParameters() throws IOException {
+        HttpUriRequest request = new HttpPost("http://localhost:8080/counter/actions/increment?step=3");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertEquals("45", EntityUtils.toString(response.getEntity()));
+    }
+
+    @Test
+    public void invokeActionWithEntityParameters() throws IOException, ContentCodecException {
+        Map<String, Integer> parameters = Map.of("step", 3);
+        Content content = ContentManager.valueToContent(parameters, "application/json");
+
+        HttpPost request = new HttpPost("http://localhost:8080/counter/actions/increment");
+        request.setHeader("Content-Type", content.getType());
+        request.setEntity(new ByteArrayEntity(content.getBody()));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertEquals("45", EntityUtils.toString(response.getEntity()));
     }
 }

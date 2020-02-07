@@ -24,14 +24,13 @@ public class ServientConfig {
     private static final String CONFIG_CLIENT_FACTORIES = "wot.servient.client-factories";
     private static final String CONFIG_CREDENTIALS = "wot.servient.credentials";
     private static ScanResult scanResult = null;
-
     private final List<ProtocolServer> servers;
     private final Map<String, ProtocolClientFactory> clientFactories;
     private final Map<String, Object> credentialStore;
 
     ServientConfig(List<ProtocolServer> servers,
-                          Map<String, ProtocolClientFactory> clientFactories,
-                          Map<String, Object> credentialStore) {
+                   Map<String, ProtocolClientFactory> clientFactories,
+                   Map<String, Object> credentialStore) {
         this.servers = servers;
         this.clientFactories = clientFactories;
         this.credentialStore = credentialStore;
@@ -87,59 +86,15 @@ public class ServientConfig {
         }
     }
 
-    public List<ProtocolServer> getServers() {
-        return servers;
-    }
-
-    public Map<String, ProtocolClientFactory> getClientFactories() {
-        return clientFactories;
-    }
-
-    public Map<String, Object> getCredentialStore() {
-        return credentialStore;
-    }
-
-    /**
-     * Stores security credentials (e.g. username and password) for the thing with the id id <code>id</code>.<br>
-     * See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
-     *
-     * @param credentials
-     */
-    private void addCredentials(Map<String, Object> credentials) {
-        log.debug("Servient storing credentials for '{}'", credentials.keySet());
-        credentialStore.putAll(credentials);
-    }
-
-    @Override
-    public String toString() {
-        return "ServientConfig{" +
-                "servers=" + servers +
-                ", clientFactories=" + clientFactories +
-                ", credentialStore=" + credentialStore +
-                '}';
-    }
-
-    static Pair<String, ProtocolClientFactory> initializeClientFactory(Config config, String factoryName) throws ServientConfigException {
-        try {
-            Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
-            Constructor<ProtocolClientFactory> constructor;
-            ProtocolClientFactory factory;
-            if (hasConstructor(factoryKlass, Config.class)) {
-                constructor = factoryKlass.getConstructor(Config.class);
-                factory = constructor.newInstance(config);
-            }
-            else {
-                constructor = factoryKlass.getConstructor();
-                factory = constructor.newInstance();
-            }
-            return new Pair<>(factory.getScheme(), factory);
+    private static ScanResult scanClasspath() {
+        if (scanResult == null) {
+            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().enableAnnotationInfo().scan();
         }
-        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ServientConfigException(e);
-        }
+        return scanResult;
     }
 
-    static ProtocolServer initializeServer(Config config, String serverName) throws ServientConfigException {
+    static ProtocolServer initializeServer(Config config,
+                                           String serverName) throws ServientConfigException {
         try {
             Class<ProtocolServer> serverKlass = (Class<ProtocolServer>) Class.forName(serverName);
             Constructor<ProtocolServer> constructor;
@@ -159,11 +114,36 @@ public class ServientConfig {
         }
     }
 
-    private static ScanResult scanClasspath() {
-        if (scanResult == null) {
-            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().enableAnnotationInfo().scan();
+    static Pair<String, ProtocolClientFactory> initializeClientFactory(Config config,
+                                                                       String factoryName) throws ServientConfigException {
+        try {
+            Class<ProtocolClientFactory> factoryKlass = (Class<ProtocolClientFactory>) Class.forName(factoryName);
+            Constructor<ProtocolClientFactory> constructor;
+            ProtocolClientFactory factory;
+            if (hasConstructor(factoryKlass, Config.class)) {
+                constructor = factoryKlass.getConstructor(Config.class);
+                factory = constructor.newInstance(config);
+            }
+            else {
+                constructor = factoryKlass.getConstructor();
+                factory = constructor.newInstance();
+            }
+            return new Pair<>(factory.getScheme(), factory);
         }
-        return scanResult;
+        catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new ServientConfigException(e);
+        }
+    }
+
+    /**
+     * Stores security credentials (e.g. username and password) for the thing with the id id
+     * <code>id</code>.<br> See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
+     *
+     * @param credentials
+     */
+    private void addCredentials(Map<String, Object> credentials) {
+        log.debug("Servient storing credentials for '{}'", credentials.keySet());
+        credentialStore.putAll(credentials);
     }
 
     private static boolean hasConstructor(Class clazz, Class<?>... parameterTypes) {
@@ -174,5 +154,26 @@ public class ServientConfig {
         catch (NoSuchMethodException e) {
             return false;
         }
+    }
+
+    public List<ProtocolServer> getServers() {
+        return servers;
+    }
+
+    public Map<String, ProtocolClientFactory> getClientFactories() {
+        return clientFactories;
+    }
+
+    public Map<String, Object> getCredentialStore() {
+        return credentialStore;
+    }
+
+    @Override
+    public String toString() {
+        return "ServientConfig{" +
+                "servers=" + servers +
+                ", clientFactories=" + clientFactories +
+                ", credentialStore=" + credentialStore +
+                '}';
     }
 }

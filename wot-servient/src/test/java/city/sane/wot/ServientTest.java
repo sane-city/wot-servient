@@ -17,9 +17,10 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -53,7 +54,7 @@ public class ServientTest {
 
     @Test(expected = ProtocolServerException.class)
     public void startFails() throws Throwable {
-        when(server.start()).thenReturn(CompletableFuture.failedFuture(new ProtocolServerException()));
+        when(server.start()).thenReturn(failedFuture(new ProtocolServerException()));
         when(config.getServers()).thenReturn(List.of(server));
 
         Servient servient = new Servient(config);
@@ -75,7 +76,7 @@ public class ServientTest {
 
     @Test(expected = ProtocolServerException.class)
     public void shutdownFails() throws Throwable {
-        when(server.stop()).thenReturn(CompletableFuture.failedFuture(new ProtocolServerException()));
+        when(server.stop()).thenReturn(failedFuture(new ProtocolServerException()));
         when(config.getServers()).thenReturn(List.of(server));
 
         Servient servient = new Servient(config);
@@ -90,7 +91,7 @@ public class ServientTest {
 
     @Test
     public void expose() throws InterruptedException, ExecutionException {
-        when(server.expose(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(server.expose(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
@@ -124,7 +125,7 @@ public class ServientTest {
 
     @Test
     public void destroy() throws ExecutionException, InterruptedException {
-        when(server.destroy(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(server.destroy(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
@@ -159,7 +160,7 @@ public class ServientTest {
     @Test
     public void fetch() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.readResource(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetch("test:/counter").get();
@@ -182,7 +183,7 @@ public class ServientTest {
     @Test
     public void fetchDirectory() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.readResource(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetchDirectory(new URI("test:/")).get();
@@ -193,7 +194,7 @@ public class ServientTest {
     @Test
     public void fetchDirectoryString() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.readResource(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetchDirectory("test:/").get();
@@ -204,7 +205,7 @@ public class ServientTest {
     @Test
     public void discover() throws ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.discover(any())).thenReturn(CompletableFuture.completedFuture(List.of(thing)));
+        when(client.discover(any())).thenReturn(completedFuture(List.of(thing)));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.discover().get();
@@ -216,7 +217,7 @@ public class ServientTest {
     public void discoverWithQuery() throws ExecutionException, InterruptedException, ThingQueryException, ProtocolClientException {
         ThingFilter filter = new ThingFilter().setQuery(new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> ."));
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.discover(any())).thenReturn(CompletableFuture.completedFuture(List.of(thing)));
+        when(client.discover(any())).thenReturn(completedFuture(List.of(thing)));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.discover(filter).get();
@@ -237,7 +238,7 @@ public class ServientTest {
     public void discoverDirectory() throws ExecutionException, InterruptedException, URISyntaxException, ProtocolClientException {
         ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.DIRECTORY).setUrl(new URI("test:/"));
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.readResource(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.discover(filter).get();

@@ -28,33 +28,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * The Servient hosts, exposes and consumes things based on provided protocol bindings.
- * https://w3c.github.io/wot-architecture/#sec-servient-implementation<br>
- * It reads the servers contained in the configuration parameter "wot.servient.servers", starts them and thus exposes Things via the protocols supported by the
- * servers. "wot.servient.servers" should contain an array of strings of fully qualified class names implementing {@link ProtocolServer}.<br>
- * It also reads the clients contained in the configuration parameter "wot.servient.client-factories" and is then able to consume Things via the protocols
- * supported by the clients. "wot.servient.client-factories" should contain an array of strings of fully qualified class names implementing
- * {@link ProtocolClientFactory}.<br>
- * The optional configuration parameter "wot.servient.credentials" can contain credentials (e.g. username and password) for the different things.  The parameter
- * should contain a map that uses the thing ids as key.
+ * https://w3c.github.io/wot-architecture/#sec-servient-implementation<br> It reads the servers
+ * contained in the configuration parameter "wot.servient.servers", starts them and thus exposes
+ * Things via the protocols supported by the servers. "wot.servient.servers" should contain an array
+ * of strings of fully qualified class names implementing {@link ProtocolServer}.<br> It also reads
+ * the clients contained in the configuration parameter "wot.servient.client-factories" and is then
+ * able to consume Things via the protocols supported by the clients.
+ * "wot.servient.client-factories" should contain an array of strings of fully qualified class names
+ * implementing {@link ProtocolClientFactory}.<br> The optional configuration parameter
+ * "wot.servient.credentials" can contain credentials (e.g. username and password) for the different
+ * things.  The parameter should contain a map that uses the thing ids as key.
  */
 public class Servient {
     private static final Logger log = LoggerFactory.getLogger(Servient.class);
-
     private final List<ProtocolServer> servers;
     private final Map<String, ProtocolClientFactory> clientFactories;
     private final Map<String, Object> credentialStore;
     private final Map<String, ExposedThing> things;
 
-    Servient(List<ProtocolServer> servers,
-             Map<String, ProtocolClientFactory> clientFactories,
-             Map<String, Object> credentialStore,
-             Map<String, ExposedThing> things) {
-        this.servers = servers;
-        this.clientFactories = clientFactories;
-        this.credentialStore = credentialStore;
-        this.things = things;
+    /**
+     * Creates a servient.
+     */
+    public Servient() throws ServientException {
+        this(ConfigFactory.load());
     }
 
     /**
@@ -66,15 +66,18 @@ public class Servient {
         this(new ServientConfig(config));
     }
 
-    /**
-     * Creates a servient.
-     */
-    public Servient() throws ServientException {
-        this(ConfigFactory.load());
-    }
-
     public Servient(ServientConfig config) {
         this(config.getServers(), config.getClientFactories(), config.getCredentialStore(), new HashMap<>());
+    }
+
+    Servient(List<ProtocolServer> servers,
+             Map<String, ProtocolClientFactory> clientFactories,
+             Map<String, Object> credentialStore,
+             Map<String, ExposedThing> things) {
+        this.servers = servers;
+        this.clientFactories = clientFactories;
+        this.credentialStore = credentialStore;
+        this.things = things;
     }
 
     @Override
@@ -88,17 +91,8 @@ public class Servient {
     }
 
     /**
-     * Returns a list of all servers supported by the servient.
-     *
-     * @return
-     */
-    public List<ProtocolServer> getServers() {
-        return servers;
-    }
-
-    /**
-     * Launch the servient. All servers supported by the servient (e.g. HTTP, CoAP, ...) are started. The servers are then ready to accept requests for the
-     * exposed Things.
+     * Launch the servient. All servers supported by the servient (e.g. HTTP, CoAP, ...) are
+     * started. The servers are then ready to accept requests for the exposed Things.
      *
      * @return
      */
@@ -113,8 +107,8 @@ public class Servient {
     }
 
     /**
-     * Shut down the servient. All servers supported by the servient (e.g. HTTP, CoAP, ...) are shut down. Interaction with exposed Things is then no longer
-     * possible.
+     * Shut down the servient. All servers supported by the servient (e.g. HTTP, CoAP, ...) are shut
+     * down. Interaction with exposed Things is then no longer possible.
      *
      * @return
      */
@@ -129,22 +123,22 @@ public class Servient {
     }
 
     /**
-     * All servers supported by Servient are instructed to expose the Thing with the given <code>id</code>. Then it is possible to interact with the Thing via
-     * different protocols (e.g. HTTP, CoAP, ...). Before a thing can be exposed, it must be added via {@link #addThing}.
+     * All servers supported by Servient are instructed to expose the Thing with the given
+     * <code>id</code>. Then it is possible to interact with the Thing via different protocols (e.g.
+     * HTTP, CoAP, ...). Before a thing can be exposed, it must be added via {@link #addThing}.
      *
      * @param id
-     *
      * @return
      */
     public CompletableFuture<ExposedThing> expose(String id) {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return CompletableFuture.failedFuture(new ServientException("Servient was started without any servers and is therefore not able to expose things."));
+            return failedFuture(new ServientException("Servient was started without any servers and is therefore not able to expose things."));
         }
 
         if (thing == null) {
-            return CompletableFuture.failedFuture(new ServientException("Thing must first be added to the Servient before it can be exposed."));
+            return failedFuture(new ServientException("Thing must first be added to the Servient before it can be exposed."));
         }
 
         log.info("Servient exposing '{}'", id);
@@ -163,18 +157,27 @@ public class Servient {
     }
 
     /**
-     * All servers supported by Servient are instructed not to expose the Thing with the given <code>id</code> any longer. After that it is not possible to
-     * interact with the Thing via the different protocols (e.g. HTTP, CoAP, ...).
+     * Returns a list of all servers supported by the servient.
+     *
+     * @return
+     */
+    public List<ProtocolServer> getServers() {
+        return servers;
+    }
+
+    /**
+     * All servers supported by Servient are instructed not to expose the Thing with the given
+     * <code>id</code> any longer. After that it is not possible to interact with the Thing via the
+     * different protocols (e.g. HTTP, CoAP, ...).
      *
      * @param id
-     *
      * @return
      */
     public CompletableFuture<ExposedThing> destroy(String id) {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
+            return failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
         }
 
         log.info("Servient stop exposing '{}'", thing);
@@ -195,7 +198,6 @@ public class Servient {
      * Adds <code>thing</code> to the servient. This allows the Thing to be exposed later.
      *
      * @param exposedThing
-     *
      * @return
      */
     public boolean addThing(ExposedThing exposedThing) {
@@ -209,39 +211,21 @@ public class Servient {
     }
 
     /**
-     * Searches for the matching {@link ProtocolClient} for <code>scheme</code> (e.g. http, coap, mqtt, etc.). If no client can be found, <code>null</code> is
-     * returned.
-     *
-     * @param scheme
-     *
-     * @return
-     * @throws ProtocolClientException
-     */
-    public ProtocolClient getClientFor(String scheme) throws ProtocolClientException {
-        ProtocolClientFactory factory = clientFactories.get(scheme);
-        if (factory != null) {
-            return factory.getClient();
-        }
-        else {
-            log.warn("Servient has no ClientFactory for scheme '{}'", scheme);
-            return null;
-        }
-    }
-
-    /**
-     * Returns all things that have been added to the servient.
-     *
-     * @return
-     */
-    private Map<String, ExposedThing> getThings() {
-        return things;
-    }
-
-    /**
-     * Calls <code>url</code> and expects a Thing Description there. Returns the description as a {@link Thing}.
+     * Calls <code>url</code> and expects a Thing Description there. Returns the description as a
+     * {@link Thing}.
      *
      * @param url
+     * @return
+     */
+    public CompletableFuture<Thing> fetch(String url) throws URISyntaxException {
+        return fetch(new URI(url));
+    }
+
+    /**
+     * Calls <code>url</code> and expects a Thing Description there. Returns the description as a
+     * {@link Thing}.
      *
+     * @param url
      * @return
      */
     public CompletableFuture<Thing> fetch(URI url) {
@@ -263,33 +247,52 @@ public class Servient {
                         throw new CompletionException(new ServientException("Error while fetching TD: " + e.toString()));
                     }
                 });
-
             }
             else {
-                return CompletableFuture.failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
     /**
-     * Calls <code>url</code> and expects a Thing Description there. Returns the description as a {@link Thing}.
+     * Searches for the matching {@link ProtocolClient} for <code>scheme</code> (e.g. http, coap,
+     * mqtt, etc.). If no client can be found, <code>null</code> is returned.
      *
-     * @param url
-     *
+     * @param scheme
      * @return
+     * @throws ProtocolClientException
      */
-    public CompletableFuture<Thing> fetch(String url) throws URISyntaxException {
-        return fetch(new URI(url));
+    public ProtocolClient getClientFor(String scheme) throws ProtocolClientException {
+        ProtocolClientFactory factory = clientFactories.get(scheme);
+        if (factory != null) {
+            return factory.getClient();
+        }
+        else {
+            log.warn("Servient has no ClientFactory for scheme '{}'", scheme);
+            return null;
+        }
     }
 
     /**
-     * Calls <code>url</code> and expects a Thing Directory there. Returns a list with all found {@link Thing}.
+     * Calls <code>url</code> and expects a Thing Directory there. Returns a list with all found
+     * {@link Thing}.
      *
      * @param url
+     * @return
+     * @throws URISyntaxException
+     */
+    public CompletableFuture<Map<String, Thing>> fetchDirectory(String url) throws URISyntaxException {
+        return fetchDirectory(new URI(url));
+    }
+
+    /**
+     * Calls <code>url</code> and expects a Thing Directory there. Returns a list with all found
+     * {@link Thing}.
      *
+     * @param url
      * @return
      */
     public CompletableFuture<Map<String, Thing>> fetchDirectory(URI url) {
@@ -323,67 +326,39 @@ public class Servient {
                         throw new CompletionException(new ServientException("Error while fetching TD directory: " + e2.toString()));
                     }
                 });
-
             }
             else {
-                return CompletableFuture.failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
     /**
-     * Calls <code>url</code> and expects a Thing Directory there. Returns a list with all found {@link Thing}.
-     *
-     * @param url
-     *
-     * @return
-     * @throws URISyntaxException
-     */
-    public CompletableFuture<Map<String, Thing>> fetchDirectory(String url) throws URISyntaxException {
-        return fetchDirectory(new URI(url));
-
-    }
-
-    /**
      * Adds <code>thing</code> to the Thing Directory <code>directory</code>.
      *
      * @param directory
      * @param thing
-     *
-     * @return
-     */
-    private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
-        // FIXME: implement
-        return CompletableFuture.failedFuture(new ServientException("not implemented"));
-    }
-
-    /**
-     * Adds <code>thing</code> to the Thing Directory <code>directory</code>.
-     *
-     * @param directory
-     * @param thing
-     *
      * @return
      * @throws URISyntaxException
      */
-    public CompletableFuture<Void> register(String directory, ExposedThing thing) throws URISyntaxException {
+    public CompletableFuture<Void> register(String directory,
+                                            ExposedThing thing) throws URISyntaxException {
         return register(new URI(directory), thing);
     }
 
     /**
-     * Removes <code>thing</code> from Thing Directory <code>directory</code>.
+     * Adds <code>thing</code> to the Thing Directory <code>directory</code>.
      *
      * @param directory
      * @param thing
-     *
      * @return
      */
-    private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
+    private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new ServientException("not implemented"));
+        return failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -391,21 +366,43 @@ public class Servient {
      *
      * @param directory
      * @param thing
-     *
      * @return
      * @throws URISyntaxException
      */
-    public CompletableFuture<Void> unregister(String directory, ExposedThing thing) throws URISyntaxException {
+    public CompletableFuture<Void> unregister(String directory,
+                                              ExposedThing thing) throws URISyntaxException {
         return unregister(new URI(directory), thing);
     }
 
     /**
-     * Starts a discovery process and searches for the things defined in <code>filter</code>.
-     * Not all {@link ProtocolClient} implementations support discovery. If none of the available clients support discovery, a
+     * Removes <code>thing</code> from Thing Directory <code>directory</code>.
+     *
+     * @param directory
+     * @param thing
+     * @return
+     */
+    private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
+        // FIXME: implement
+        return failedFuture(new ServientException("not implemented"));
+    }
+
+    /**
+     * Starts a discovery process for all available Things. Not all {@link ProtocolClient}
+     * implementations support discovery. If none of the available clients support discovery, a
      * {@link ProtocolClientNotImplementedException} will be thrown.
      *
-     * @param filter
+     * @return
+     */
+    public CompletableFuture<Collection<Thing>> discover() {
+        return discover(new ThingFilter(DiscoveryMethod.ANY));
+    }
+
+    /**
+     * Starts a discovery process and searches for the things defined in <code>filter</code>. Not
+     * all {@link ProtocolClient} implementations support discovery. If none of the available
+     * clients support discovery, a {@link ProtocolClientNotImplementedException} will be thrown.
      *
+     * @param filter
      * @return
      */
     public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
@@ -432,13 +429,22 @@ public class Servient {
                 return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
             }
             catch (ProtocolClientException e) {
-                return CompletableFuture.failedFuture(e);
+                return failedFuture(e);
             }
         }
     }
 
     private CompletableFuture<Collection<Thing>> discoverDirectory(ThingFilter filter) {
         return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+    }
+
+    /**
+     * Returns all things that have been added to the servient.
+     *
+     * @return
+     */
+    private Map<String, ExposedThing> getThings() {
+        return things;
     }
 
     private CompletableFuture<Collection<Thing>> discoverLocal(Set<Thing> discoveredThings) {
@@ -484,22 +490,11 @@ public class Servient {
     }
 
     /**
-     * Starts a discovery process for all available Things.
-     * Not all {@link ProtocolClient} implementations support discovery. If none of the available clients support discovery, a
-     * {@link ProtocolClientNotImplementedException} will be thrown.
-     *
-     * @return
-     */
-    public CompletableFuture<Collection<Thing>> discover() {
-        return discover(new ThingFilter(DiscoveryMethod.ANY));
-    }
-
-    /**
-     * Returns the server of type <code>server</code>. If the serving does not support this type, <code>null</code> is returned.
+     * Returns the server of type <code>server</code>. If the serving does not support this type,
+     * <code>null</code> is returned.
      *
      * @param server
      * @param <T>
-     *
      * @return
      */
     public <T extends ProtocolServer> T getServer(Class<T> server) {
@@ -508,11 +503,10 @@ public class Servient {
     }
 
     /**
-     * Returns the security credentials (e.g. username and password) for the thing with the id <code>id</code>.<br>
-     * See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
+     * Returns the security credentials (e.g. username and password) for the thing with the id
+     * <code>id</code>.<br> See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
      *
      * @param id
-     *
      * @return
      */
     public Object getCredentials(String id) {
@@ -521,14 +515,13 @@ public class Servient {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT object.<br>
-     * Only the script languages known to the {@link ScriptingManager} are supported.
+     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT
+     * object.<br> Only the script languages known to the {@link ScriptingManager} are supported.
      *
      * @param file
      * @param wot
-     *
-     * @throws ServientException
      * @return
+     * @throws ServientException
      */
     public CompletableFuture<Void> runScript(File file, Wot wot) {
         return ScriptingManager.runScript(file, wot);
@@ -539,7 +532,8 @@ public class Servient {
     }
 
     /**
-     * Returns a list of the IP addresses of all network interfaces of the local computer. If no IP addresses can be obtained, 127.0.0.1 is returned.
+     * Returns a list of the IP addresses of all network interfaces of the local computer. If no IP
+     * addresses can be obtained, 127.0.0.1 is returned.
      *
      * @return
      */
@@ -597,8 +591,8 @@ public class Servient {
     }
 
     /**
-     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start any servers and can therefore only consume things
-     * and not expose any things.
+     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start
+     * any servers and can therefore only consume things and not expose any things.
      *
      * @param config
      */
@@ -610,7 +604,8 @@ public class Servient {
     }
 
     /**
-     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start any clients and can therefore only produce and expose things.
+     * Creates a {@link Servient} with the given <code>config</code>. The servient will not start
+     * any clients and can therefore only produce and expose things.
      *
      * @param config
      */

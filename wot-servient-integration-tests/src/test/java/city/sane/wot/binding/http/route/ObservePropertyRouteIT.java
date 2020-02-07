@@ -43,44 +43,6 @@ public class ObservePropertyRouteIT {
         service.get(":id/properties/:name/observable", new ObservePropertyRoute(Map.of("counter", thing)));
     }
 
-    @After
-    public void teardown() {
-        service.stop();
-        service.awaitStop();
-    }
-
-    @Test
-    public void observeProperty() throws InterruptedException, ExecutionException, ContentCodecException {
-        CompletableFuture<Content> result = new CompletableFuture<>();
-        CompletableFuture.runAsync(() -> {
-            try {
-                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
-                HttpResponse response = HttpClientBuilder.create().build().execute(request);
-                byte[] body = response.getEntity().getContent().readAllBytes();
-                Content content = new Content("application/json", body);
-                result.complete(content);
-            }
-            catch (IOException e) {
-                result.completeExceptionally(e);
-            }
-        });
-
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
-
-        // write new value
-        ExposedThingProperty property = thing.getProperty("count");
-        property.write(1337).get();
-
-        // wait until new value is received
-        Content content = result.get();
-
-        Object newValue = ContentManager.contentToValue(content, property);
-
-        assertEquals(1337, newValue);
-    }
-
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
@@ -155,5 +117,43 @@ public class ObservePropertyRouteIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() {
+        service.stop();
+        service.awaitStop();
+    }
+
+    @Test
+    public void observeProperty() throws InterruptedException, ExecutionException, ContentCodecException {
+        CompletableFuture<Content> result = new CompletableFuture<>();
+        CompletableFuture.runAsync(() -> {
+            try {
+                HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
+                HttpResponse response = HttpClientBuilder.create().build().execute(request);
+                byte[] body = response.getEntity().getContent().readAllBytes();
+                Content content = new Content("application/json", body);
+                result.complete(content);
+            }
+            catch (IOException e) {
+                result.completeExceptionally(e);
+            }
+        });
+
+        // wait until client establish subscription
+        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
+        Thread.sleep(5 * 1000L);
+
+        // write new value
+        ExposedThingProperty property = thing.getProperty("count");
+        property.write(1337).get();
+
+        // wait until new value is received
+        Content content = result.get();
+
+        Object newValue = ContentManager.contentToValue(content, property);
+
+        assertEquals(1337, newValue);
     }
 }

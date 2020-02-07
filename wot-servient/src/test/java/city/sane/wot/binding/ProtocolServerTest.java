@@ -13,6 +13,7 @@ public class ProtocolServerTest {
     public void setUp() {
         id = "counter";
     }
+
     @Test(expected = ProtocolServerNotImplementedException.class)
     public void getDirectoryUrl() throws ProtocolServerException {
         new MyProtocolServer().getDirectoryUrl();
@@ -25,7 +26,8 @@ public class ProtocolServerTest {
 
     class MyProtocolServer implements ProtocolServer {
         /**
-         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
+         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed
+         * things.
          *
          * @return
          */
@@ -48,7 +50,6 @@ public class ProtocolServerTest {
          * Exposes <code>thing</code> and allows interaction with it.
          *
          * @param thing
-         *
          * @return
          */
         @Override
@@ -57,10 +58,10 @@ public class ProtocolServerTest {
         }
 
         /**
-         * Stops the exposure of <code>thing</code> and allows no further interaction with the thing.
+         * Stops the exposure of <code>thing</code> and allows no further interaction with the
+         * thing.
          *
          * @param thing
-         *
          * @return
          */
         @Override

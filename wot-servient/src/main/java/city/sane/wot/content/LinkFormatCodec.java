@@ -19,7 +19,9 @@ public class LinkFormatCodec implements ContentCodec {
     }
 
     @Override
-    public <T> T bytesToValue(byte[] body, DataSchema<T> schema, Map<String, String> parameters) throws ContentCodecException {
+    public <T> T bytesToValue(byte[] body,
+                              DataSchema<T> schema,
+                              Map<String, String> parameters) throws ContentCodecException {
         Pattern pattern = Pattern.compile("^(.+)=\"(.+)\"");
         if (schema.getType().equals("object")) {
             Map<String, Map<String, String>> entries = new HashMap<>();

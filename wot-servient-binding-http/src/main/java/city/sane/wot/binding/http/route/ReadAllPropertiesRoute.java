@@ -17,7 +17,6 @@ import java.util.Map;
  */
 public class ReadAllPropertiesRoute extends AbstractRoute {
     static final Logger log = LoggerFactory.getLogger(ReadAllPropertiesRoute.class);
-
     private final Map<String, ExposedThing> things;
 
     public ReadAllPropertiesRoute(Map<String, ExposedThing> things) {

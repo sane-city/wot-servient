@@ -39,8 +39,8 @@ abstract class AbstractInteractionRoute extends AbstractRoute {
     }
 
     protected abstract Object handleInteraction(Request request,
-                                     Response response,
-                                     String requestContentType,
-                                     String name,
-                                     ExposedThing thing);
+                                                Response response,
+                                                String requestContentType,
+                                                String name,
+                                                ExposedThing thing);
 }

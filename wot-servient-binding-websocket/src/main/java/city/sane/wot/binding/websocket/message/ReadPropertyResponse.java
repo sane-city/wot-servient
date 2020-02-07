@@ -12,11 +12,6 @@ public class ReadPropertyResponse extends AbstractServerMessage implements Final
         content = null;
     }
 
-    @Override
-    public Content toContent() {
-        return getContent();
-    }
-
     public ReadPropertyResponse(String id, Content content) {
         super(id);
         this.content = Objects.requireNonNull(content);
@@ -25,6 +20,11 @@ public class ReadPropertyResponse extends AbstractServerMessage implements Final
     public ReadPropertyResponse(ReadProperty clientMessage, Content content) {
         super(clientMessage);
         this.content = content;
+    }
+
+    @Override
+    public Content toContent() {
+        return getContent();
     }
 
     public Content getContent() {

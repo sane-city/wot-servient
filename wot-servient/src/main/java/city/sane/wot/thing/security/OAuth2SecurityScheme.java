@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 /**
- * OAuth2 authentication security configuration for systems conformant with !RFC6749 and !RFC8252, identified by the term oauth2 (i.e.,
- * "scheme": "oauth2"). For the implicit flow authorization MUST be included. For the password and client flows token MUST be included. For
- * the code flow both authorization and token MUST be included. If no scopes are defined in the SecurityScheme then they are considered to
- * be empty.<br>
- * See also: https://www.w3.org/2019/wot/security#oauth2securityscheme
+ * OAuth2 authentication security configuration for systems conformant with !RFC6749 and !RFC8252,
+ * identified by the term oauth2 (i.e., "scheme": "oauth2"). For the implicit flow authorization
+ * MUST be included. For the password and client flows token MUST be included. For the code flow
+ * both authorization and token MUST be included. If no scopes are defined in the SecurityScheme
+ * then they are considered to be empty.<br> See also: https://www.w3.org/2019/wot/security#oauth2securityscheme
  */
 public class OAuth2SecurityScheme extends SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -23,7 +23,11 @@ public class OAuth2SecurityScheme extends SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> scopes;
 
-    public OAuth2SecurityScheme(String authorization, String flow, String token, String refresh, List<String> scopes) {
+    public OAuth2SecurityScheme(String authorization,
+                                String flow,
+                                String token,
+                                String refresh,
+                                List<String> scopes) {
         this.authorization = authorization;
         this.flow = flow;
         this.token = token;

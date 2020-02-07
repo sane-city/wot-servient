@@ -43,7 +43,7 @@ public class ContentManagerTest {
 
     @Test(expected = ContentCodecException.class)
     public void contentToValueBrokenByteArray() throws ContentCodecException {
-        Content content = new Content("application/xml", new byte[] { 0x4f });
+        Content content = new Content("application/xml", new byte[]{ 0x4f });
 
         ContentManager.contentToValue(content, new StringSchema());
     }

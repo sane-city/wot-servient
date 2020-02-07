@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package city.sane.wot.examples;
 
 import akka.actor.AbstractActor;

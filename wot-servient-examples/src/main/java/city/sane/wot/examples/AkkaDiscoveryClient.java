@@ -4,21 +4,19 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.Context;
-import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQuery;
 import city.sane.wot.thing.filter.ThingQueryException;
-import city.sane.wot.thing.property.ThingProperty;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
- * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link AkkaDiscovery}.
+ * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link
+ * AkkaDiscovery}.
  */
 class AkkaDiscoveryClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException, ThingQueryException {

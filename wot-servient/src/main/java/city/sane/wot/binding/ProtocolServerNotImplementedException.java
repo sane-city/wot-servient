@@ -1,7 +1,8 @@
 package city.sane.wot.binding;
 
 /**
- * This exception is thrown when the a {@link ProtocolServer} implementation does not support a requested functionality.
+ * This exception is thrown when the a {@link ProtocolServer} implementation does not support a
+ * requested functionality.
  */
 public class ProtocolServerNotImplementedException extends ProtocolServerException {
     public ProtocolServerNotImplementedException(Class clazz, String operation) {

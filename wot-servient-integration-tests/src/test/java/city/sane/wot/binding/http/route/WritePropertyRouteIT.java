@@ -35,49 +35,6 @@ public class WritePropertyRouteIT {
         service.put(":id/properties/:name", new WritePropertyRoute(Map.of("counter", getCounterThing())));
     }
 
-    @After
-    public void teardown() {
-        service.stop();
-        service.awaitStop();
-    }
-
-    @Test
-    public void writeProperty() throws IOException {
-        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/count");
-        request.setEntity(new StringEntity("1337"));
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(204, response.getStatusLine().getStatusCode());
-        assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
-    }
-
-    @Test
-    public void writePropertyUnknownThing() throws IOException {
-        HttpPut request = new HttpPut("http://localhost:8080/zaehler/properties/count");
-        request.setEntity(new StringEntity("1337"));
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(404, response.getStatusLine().getStatusCode());
-    }
-
-    @Test
-    public void writePropertyUnknownProperty() throws IOException {
-        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/county");
-        request.setEntity(new StringEntity("1337"));
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(404, response.getStatusLine().getStatusCode());
-    }
-
-    @Test
-    public void writePropertyReadOnly() throws IOException {
-        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/lastChange");
-        request.setEntity(new StringEntity("1337"));
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(400, response.getStatusLine().getStatusCode());
-    }
-
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
@@ -152,5 +109,48 @@ public class WritePropertyRouteIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() {
+        service.stop();
+        service.awaitStop();
+    }
+
+    @Test
+    public void writeProperty() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/count");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(204, response.getStatusLine().getStatusCode());
+        assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
+    }
+
+    @Test
+    public void writePropertyUnknownThing() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/zaehler/properties/count");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void writePropertyUnknownProperty() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/county");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void writePropertyReadOnly() throws IOException {
+        HttpPut request = new HttpPut("http://localhost:8080/counter/properties/lastChange");
+        request.setEntity(new StringEntity("1337"));
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(400, response.getStatusLine().getStatusCode());
     }
 }

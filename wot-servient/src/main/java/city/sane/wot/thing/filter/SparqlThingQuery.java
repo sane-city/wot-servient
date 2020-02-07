@@ -20,16 +20,15 @@ import java.util.stream.Collectors;
 /**
  * Allows filtering of things discovery process using a SPARQL query.
  * <p>
- * Example Query:
- * ?x &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; &lt;https://www.w3.org/2019/wot/td#Thing&gt; .
+ * Example Query: ?x &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt;
+ * &lt;https://www.w3.org/2019/wot/td#Thing&gt; .
+ * </p>
  */
 public class SparqlThingQuery implements ThingQuery {
     private static final Logger log = LoggerFactory.getLogger(SparqlThingQuery.class);
-
     // FIXME use tag: or urn: instead (see https://github.com/jsonld-java/jsonld-java/issues/232)
     private static final String DEFAULT_BASE_IRI = "https://sane.city/";
     private static final RDFFormat FORMAT = Rio.getParserFormatForMIMEType("application/td+json").orElse(RDFFormat.JSONLD);
-
     private final String query;
 
     public SparqlThingQuery(String query) throws ThingQueryException {

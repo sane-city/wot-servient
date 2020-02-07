@@ -10,7 +10,6 @@ import java.util.List;
 
 public class JsonEncoder<T> extends MessageToMessageEncoder<T> {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private final Logger log = LoggerFactory.getLogger(JsonDecoder.class);
 
     public JsonEncoder(Class<? extends T> clazz) {

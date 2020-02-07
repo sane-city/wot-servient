@@ -30,13 +30,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static jadex.commons.future.IFuture.DONE;
 
 /**
- * Allows consuming Things via Jadex Micro Agents.
- * The Jadex Platform created by {@link JadexProtocolClientFactory} is used for this purpose and thus enables interaction with exposed Things on other
- * platforms.
+ * Allows consuming Things via Jadex Micro Agents. The Jadex Platform created by {@link
+ * JadexProtocolClientFactory} is used for this purpose and thus enables interaction with exposed
+ * Things on other platforms.
  */
 public class JadexProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
-
     private final IExternalAccess platform;
 
     public JadexProtocolClient(IExternalAccess platform) {
@@ -132,7 +131,10 @@ public class JadexProtocolClient implements ProtocolClient {
         return result;
     }
 
-    private void discoverThingServices(ThingFilter filter, CompletableFuture<Collection<Thing>> result, AtomicInteger ai, Collection<ThingService> services) {
+    private void discoverThingServices(ThingFilter filter,
+                                       CompletableFuture<Collection<Thing>> result,
+                                       AtomicInteger ai,
+                                       Collection<ThingService> services) {
         Collection<Thing> things = new ArrayList<>();
         services.forEach(service -> {
             ai.incrementAndGet(); // start get()
@@ -163,6 +165,32 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
+    private Pair<String, String> parseAsWriteResourceHref(String href) throws ProtocolClientException {
+        try {
+            URI uri = new URI(href);
+
+            String path = uri.getPath();
+            if (path.startsWith("/ThingService_")) {
+                String[] pathFragments = path.split("/", 4);
+                if (pathFragments.length == 4) {
+                    String serviceId = pathFragments[1];
+                    String name = pathFragments[3];
+
+                    return new Pair<>(serviceId, name);
+                }
+                else {
+                    throw new ProtocolClientException("Bad href path: " + path);
+                }
+            }
+            else {
+                throw new ProtocolClientException("Href points to unexpected agent: " + uri);
+            }
+        }
+        catch (URISyntaxException e) {
+            throw new ProtocolClientException(e);
+        }
+    }
+
     private Triple<String, String, String> parseAsReadResourceHref(String href) throws ProtocolClientException {
         try {
             URI uri = new URI(href);
@@ -190,33 +218,8 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
-    private Pair<String, String> parseAsWriteResourceHref(String href) throws ProtocolClientException {
-        try {
-            URI uri = new URI(href);
-
-            String path = uri.getPath();
-            if (path.startsWith("/ThingService_")) {
-                String[] pathFragments = path.split("/", 4);
-                if (pathFragments.length == 4) {
-                    String serviceId = pathFragments[1];
-                    String name = pathFragments[3];
-
-                    return new Pair<>(serviceId, name);
-                }
-                else {
-                    throw new ProtocolClientException("Bad href path: " + path);
-                }
-            }
-            else {
-                throw new ProtocolClientException("Href points to unexpected agent: " + uri);
-            }
-        }
-        catch (URISyntaxException e) {
-            throw new ProtocolClientException(e);
-        }
-    }
-
-    private CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
+    private CompletableFuture<ThingService> getThingService(IInternalAccess agent,
+                                                            String serviceId) {
         log.debug("Search ThingService with id '{}'", serviceId);
         ServiceQuery<ThingService> query = new ServiceQuery(ThingService.class)
                 .setScope(ServiceScope.GLOBAL)

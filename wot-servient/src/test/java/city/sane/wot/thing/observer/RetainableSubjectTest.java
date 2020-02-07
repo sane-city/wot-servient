@@ -20,6 +20,5 @@ public class RetainableSubjectTest {
 
         subject.next("Awesome").join();
         assertEquals("BeerisAwesomeAwesome", sb.toString());
-
     }
 }

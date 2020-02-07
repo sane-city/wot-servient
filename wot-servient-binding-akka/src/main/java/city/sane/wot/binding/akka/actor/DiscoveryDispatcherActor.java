@@ -14,8 +14,10 @@ import java.util.Map;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
- * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolClient} and is responsible for serving of discovery requests.
- * A {@link DiscoverActor} is created for each discovery request, which executes the actual discovery process and sends the result back to this actor.
+ * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolClient} and is
+ * responsible for serving of discovery requests. A {@link DiscoverActor} is created for each
+ * discovery request, which executes the actual discovery process and sends the result back to this
+ * actor.
  */
 public class DiscoveryDispatcherActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);

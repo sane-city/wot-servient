@@ -44,50 +44,6 @@ public class ThingAgentTest {
         agent = new ThingAgent(ia, thing);
     }
 
-    @Test
-    public void created() {
-        agent.created().get();
-
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    @Test
-    public void killed() {
-        agent.killed().get();
-
-        // shot not fail
-        assertTrue(true);
-    }
-
-    @Test
-    public void get() throws JSONException {
-        JSONAssert.assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"properties\":{\"count\":{\"description\":\"current counter content\",\"type\":\"integer\",\"observable\":true},\"lastChange\":{\"description\":\"last change of counter content\",\"type\":\"string\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{\"description\":\"Incrementing counter content with optional step content as uriVariable\",\"uriVariables\":{\"step\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":250}},\"input\":{\"type\":\"object\"},\"output\":{\"type\":\"integer\"}},\"reset\":{}},\"events\":{\"change\":{}}}", agent.get().get(), JSONCompareMode.LENIENT);
-    }
-
-    @Test
-    public void readProperties() throws ContentCodecException {
-        Map values = ContentManager.contentToValue(agent.readProperties().get().fromJadex(), new ObjectSchema());
-
-        assertEquals(2, values.size());
-        assertEquals(42, values.get("count"));
-    }
-
-    @Test
-    public void readProperty() throws ContentCodecException {
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(42, value);
-    }
-
-    @Test
-    public void writeProperty() throws ContentCodecException {
-        agent.writeProperty("count",new JadexContent("application/json", "1337".getBytes())).get();
-
-        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
-        assertEquals(1337, value);
-    }
-
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
@@ -163,5 +119,49 @@ public class ThingAgentTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void created() {
+        agent.created().get();
+
+        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
+        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
+        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
+    }
+
+    @Test
+    public void killed() {
+        agent.killed().get();
+
+        // shot not fail
+        assertTrue(true);
+    }
+
+    @Test
+    public void get() throws JSONException {
+        JSONAssert.assertEquals("{\"id\":\"counter\",\"title\":\"counter\",\"properties\":{\"count\":{\"description\":\"current counter content\",\"type\":\"integer\",\"observable\":true},\"lastChange\":{\"description\":\"last change of counter content\",\"type\":\"string\",\"observable\":true,\"readOnly\":true}},\"actions\":{\"decrement\":{},\"increment\":{\"description\":\"Incrementing counter content with optional step content as uriVariable\",\"uriVariables\":{\"step\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":250}},\"input\":{\"type\":\"object\"},\"output\":{\"type\":\"integer\"}},\"reset\":{}},\"events\":{\"change\":{}}}", agent.get().get(), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void readProperties() throws ContentCodecException {
+        Map values = ContentManager.contentToValue(agent.readProperties().get().fromJadex(), new ObjectSchema());
+
+        assertEquals(2, values.size());
+        assertEquals(42, values.get("count"));
+    }
+
+    @Test
+    public void readProperty() throws ContentCodecException {
+        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
+        assertEquals(42, value);
+    }
+
+    @Test
+    public void writeProperty() throws ContentCodecException {
+        agent.writeProperty("count", new JadexContent("application/json", "1337".getBytes())).get();
+
+        int value = ContentManager.contentToValue(agent.readProperty("count").get().fromJadex(), new IntegerSchema());
+        assertEquals(1337, value);
     }
 }

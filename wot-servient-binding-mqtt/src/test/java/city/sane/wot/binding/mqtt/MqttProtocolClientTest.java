@@ -44,7 +44,6 @@ public class MqttProtocolClientTest {
             return null;
         }).when(mqttClient).subscribe(anyString(), anyObject());
 
-
         broker = "tcp://dummy-broker";
         MqttProtocolSettings settings = new MqttProtocolSettings(broker, "dummy-client", "", "");
         client = new MqttProtocolClient(settings, mqttClient);

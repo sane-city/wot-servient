@@ -27,17 +27,17 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
- * Represents an object that extends a Thing with methods for client interactions (send request for reading and
- * writing Properties), invoke Actions, subscribe and unsubscribe for Property changes and Events.
- * https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
+ * Represents an object that extends a Thing with methods for client interactions (send request for
+ * reading and writing Properties), invoke Actions, subscribe and unsubscribe for Property changes
+ * and Events. https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
 public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
-
     private static final String DEFAULT_OBJECT_TYPE = "Thing";
     private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
-
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();
 
@@ -83,17 +83,42 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         return super.equals(obj);
     }
 
+    @Override
+    public String toString() {
+        return "ConsumedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
+    }
+
+    public Pair<ProtocolClient, Form> getClientFor(Form form,
+                                                   Operation op) throws ConsumedThingException {
+        return getClientFor(List.of(form), op);
+    }
+
     /**
-     * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given <code>op</code>.
-     * Throws an exception when no client can be found.
+     * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given
+     * <code>op</code>. Throws an exception when no client can be found.
      *
      * @param forms
      * @param op
-     *
      * @return
      * @throws ConsumedThingException
      */
-    public Pair<ProtocolClient, Form> getClientFor(List<Form> forms, Operation op) throws ConsumedThingException {
+    public Pair<ProtocolClient, Form> getClientFor(List<Form> forms,
+                                                   Operation op) throws ConsumedThingException {
         if (forms.isEmpty()) {
             throw new NoFormForInteractionConsumedThingException(getId(), op);
         }
@@ -157,10 +182,6 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         return new Pair<>(client, form);
     }
 
-    public Pair<ProtocolClient, Form> getClientFor(Form form, Operation op) throws ConsumedThingException {
-        return getClientFor(List.of(form), op);
-    }
-
     private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
         try {
             for (String scheme : schemes) {
@@ -188,6 +209,24 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
         }
     }
 
+    public CompletableFuture<Map<String, Object>> readProperties(String... names) {
+        return readProperties(Arrays.asList(names));
+    }
+
+    /**
+     * Returns the values of the properties contained in <code>names</code>.
+     *
+     * @param names
+     * @return
+     */
+    public CompletableFuture<Map<String, Object>> readProperties(List<String> names) {
+        // TODO: read only requested properties
+        return readProperties().thenApply(values -> {
+            Stream<Map.Entry<String, Object>> stream = values.entrySet().stream().filter(e -> names.contains(e.getKey()));
+            return stream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        });
+    }
+
     /**
      * Returns the values of all properties.
      *
@@ -212,52 +251,13 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             });
         }
         catch (ConsumedThingException e) {
-            return CompletableFuture.failedFuture(e);
+            return failedFuture(e);
         }
     }
 
     /**
-     * Returns the values of the properties contained in <code>names</code>.
-     *
-     * @param names
-     *
-     * @return
-     */
-    public CompletableFuture<Map<String, Object>> readProperties(List<String> names) {
-        // TODO: read only requested properties
-        return readProperties().thenApply(values -> {
-            Stream<Map.Entry<String, Object>> stream = values.entrySet().stream().filter(e -> names.contains(e.getKey()));
-            return stream.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        });
-    }
-
-    public CompletableFuture<Map<String, Object>> readProperties(String ... names) {
-        return readProperties(Arrays.asList(names));
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThing{" +
-                "objectType='" + objectType + '\'' +
-                ", objectContext=" + objectContext +
-                ", id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", titles=" + titles +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", properties=" + properties +
-                ", actions=" + actions +
-                ", events=" + events +
-                ", forms=" + forms +
-                ", security=" + security +
-                ", securityDefinitions=" + securityDefinitions +
-                ", base='" + base + '\'' +
-                '}';
-    }
-
-    /**
-     * Creates new form (if needed) for URI Variables
-     * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
+     * Creates new form (if needed) for URI Variables http://192.168.178.24:8080/counter/actions/increment{?step}
+     * with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
      * see RFC6570 (https://tools.ietf.org/html/rfc6570) for URI Template syntax
      */
     public static Form handleUriVariables(Form form, Map<String, Object> parameters) {
