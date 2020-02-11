@@ -35,7 +35,7 @@ public class DiscoverActor extends AbstractActor {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
         else {
-            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            log.warning("DistributedPubSub extension missing. ANY Discovery via DistributedPubSub will not be supported.");
             mediator = null;
         }
 
