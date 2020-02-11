@@ -157,6 +157,13 @@ public class ThingsActor extends AbstractActor {
         public Discover(ThingFilter filter) {
             this.filter = filter;
         }
+
+        @Override
+        public String toString() {
+            return "Discover{" +
+                    "filter=" + filter +
+                    '}';
+        }
     }
 
     public static class Things implements Serializable {
@@ -164,6 +171,13 @@ public class ThingsActor extends AbstractActor {
 
         public Things(Map<String, Thing> entities) {
             this.entities = entities;
+        }
+
+        @Override
+        public String toString() {
+            return "Things{" +
+                    "entities=" + entities +
+                    '}';
         }
     }
 
@@ -173,6 +187,13 @@ public class ThingsActor extends AbstractActor {
         public Expose(String entity) {
             this.entity = entity;
         }
+
+        @Override
+        public String toString() {
+            return "Expose{" +
+                    "entity='" + entity + '\'' +
+                    '}';
+        }
     }
 
     public static class Created<E extends Serializable> {
@@ -180,6 +201,13 @@ public class ThingsActor extends AbstractActor {
 
         public Created(E entity) {
             this.entity = entity;
+        }
+
+        @Override
+        public String toString() {
+            return "Created{" +
+                    "entity=" + entity +
+                    '}';
         }
     }
 
@@ -189,6 +217,13 @@ public class ThingsActor extends AbstractActor {
         public Destroy(String id) {
             this.id = id;
         }
+
+        @Override
+        public String toString() {
+            return "Destroy{" +
+                    "id='" + id + '\'' +
+                    '}';
+        }
     }
 
     public static class Deleted<K extends Serializable> implements Serializable {
@@ -196,6 +231,13 @@ public class ThingsActor extends AbstractActor {
 
         public Deleted(K id) {
             this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return "Deleted{" +
+                    "id=" + id +
+                    '}';
         }
     }
 }
