@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
@@ -217,13 +216,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
             pipeline.addLast(new SimpleChannelInboundHandler<AbstractClientMessage>() {
                 @Override
-                protected void channelRead0(ChannelHandlerContext ctx, AbstractClientMessage message) throws Exception {
+                protected void channelRead0(ChannelHandlerContext ctx,
+                                            AbstractClientMessage message) throws Exception {
                     Consumer<AbstractServerMessage> replyConsumer = ctx.channel()::writeAndFlush;
                     message.reply(replyConsumer, things);
                 }
             });
         }
-
     }
-
 }

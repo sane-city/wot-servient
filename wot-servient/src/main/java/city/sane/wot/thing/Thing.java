@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * This class represents a read-only model of a thing.
- * The class {@link Builder} can be used to build new thing models.
+ * This class represents a read-only model of a thing. The class {@link Builder} can be used to
+ * build new thing models.
  *
  * @param <P>
  * @param <A>
@@ -31,51 +31,36 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Thing.class);
-
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String objectType;
-
     @JsonProperty("@context")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Context objectContext;
-
     String id;
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String title;
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, String> titles;
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String description;
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, String> descriptions;
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, P> properties = new HashMap<>();
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, A> actions = new HashMap<>();
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, E> events = new HashMap<>();
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     List<Form> forms = new ArrayList<>();
-
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     List<String> security = new ArrayList<>();
-
     @JsonProperty("securityDefinitions")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
-
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String base;
 
@@ -121,10 +106,6 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return objectContext;
     }
 
-    public String getId() {
-        return id;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -143,10 +124,6 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
     public List<Form> getForms() {
         return forms;
-    }
-
-    public Map<String, P> getProperties() {
-        return properties;
     }
 
     public P getProperty(String name) {
@@ -186,6 +163,10 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return getId().hashCode();
     }
 
+    public String getId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -220,6 +201,10 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
                 '}';
     }
 
+    public String toJson() {
+        return toJson(false);
+    }
+
     public String toJson(boolean prettyPrint) {
         try {
             if (prettyPrint) {
@@ -233,6 +218,34 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             log.warn("Unable to create json", e);
             return null;
         }
+    }
+
+    /**
+     * Returns a map of the properties and their keys that have the non-expanded JSON-LD type
+     * <code>objectType</code>.
+     *
+     * @param objectType
+     * @return
+     */
+    public Map<String, P> getPropertiesByObjectType(String objectType) {
+        return getPropertiesByExpandedObjectType(getExpandedObjectType(objectType));
+    }
+
+    /**
+     * Returns a map of the properties and their keys that have the expanded JSON-LD type
+     * <code>objectType</code>.
+     *
+     * @param objectType
+     * @return
+     */
+    public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
+        HashMap<String, P> results = new HashMap<>();
+        getProperties().forEach((key, property) -> {
+            if (getExpandedObjectType(property.getObjectType()) != null && getExpandedObjectType(property.getObjectType()).equals(objectType)) {
+                results.put(key, property);
+            }
+        });
+        return results;
     }
 
     public String getExpandedObjectType(String objectType) {
@@ -262,36 +275,8 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         }
     }
 
-    public String toJson() {
-        return toJson(false);
-    }
-
-    /**
-     * Returns a map of the properties and their keys that have the non-expanded JSON-LD type <code>objectType</code>.
-     *
-     * @param objectType
-     *
-     * @return
-     */
-    public Map<String, P> getPropertiesByObjectType(String objectType) {
-        return getPropertiesByExpandedObjectType(getExpandedObjectType(objectType));
-    }
-
-    /**
-     * Returns a map of the properties and their keys that have the expanded JSON-LD type <code>objectType</code>.
-     *
-     * @param objectType
-     *
-     * @return
-     */
-    public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
-        HashMap<String, P> results = new HashMap<>();
-        getProperties().forEach((key, property) -> {
-            if (getExpandedObjectType(property.getObjectType()) != null && getExpandedObjectType(property.getObjectType()).equals(objectType)) {
-                results.put(key, property);
-            }
-        });
-        return results;
+    public Map<String, P> getProperties() {
+        return properties;
     }
 
     public static String randomId() {

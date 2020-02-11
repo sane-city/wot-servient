@@ -46,6 +46,5 @@ public class JsonCodecTest {
         Object newValue = codec.bytesToValue(bytes, new ObjectSchema());
 
         assertThat(newValue, instanceOf(Map.class));
-
     }
 }

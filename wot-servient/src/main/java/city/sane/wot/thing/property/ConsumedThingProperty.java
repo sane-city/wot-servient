@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
  */
 public class ConsumedThingProperty extends ThingProperty {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
-
     private final String name;
     private final ConsumedThing thing;
 
@@ -46,16 +45,6 @@ public class ConsumedThingProperty extends ThingProperty {
         this.thing = thing;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
     private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
         return forms.stream().map(f -> normalizeHref(f, thing)).collect(Collectors.toList());
     }
@@ -69,6 +58,33 @@ public class ConsumedThingProperty extends ThingProperty {
         else {
             return form;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingProperty{" +
+                "name='" + name + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 
     public CompletableFuture<Object> read() {
@@ -122,6 +138,12 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
+    public CompletableFuture<Subscription> subscribe(Consumer<Object> next,
+                                                     Consumer<Throwable> error,
+                                                     Runnable complete) throws ConsumedThingException {
+        return subscribe(new Observer<>(next, error, complete));
+    }
+
     public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
@@ -146,28 +168,7 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next, Consumer<Throwable> error, Runnable complete) throws ConsumedThingException {
-        return subscribe(new Observer<>(next, error, complete));
-    }
-
     public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingProperty{" +
-                "name='" + name + '\'' +
-                ", objectType='" + objectType + '\'' +
-                ", type='" + type + '\'' +
-                ", observable=" + observable +
-                ", readOnly=" + readOnly +
-                ", writeOnly=" + writeOnly +
-                ", optionalProperties=" + optionalProperties +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 }

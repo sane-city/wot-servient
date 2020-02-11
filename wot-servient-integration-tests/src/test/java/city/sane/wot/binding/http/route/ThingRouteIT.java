@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ThingRouteIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private Service service;
 
     @Before
@@ -37,25 +36,6 @@ public class ThingRouteIT {
         service.init();
         service.awaitInitialization();
         service.get(":id", new ThingRoute(Map.of("counter", getCounterThing())));
-    }
-
-    @After
-    public void teardown() {
-        service.stop();
-        service.awaitStop();
-    }
-
-    @Test
-    public void getThing() throws IOException {
-        HttpUriRequest request = new HttpGet("http://localhost:8080/counter");
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertTrue(
-                "Should return map with \"id\" element",
-                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("id")
-        );
     }
 
     private ExposedThing getCounterThing() {
@@ -132,5 +112,24 @@ public class ThingRouteIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() {
+        service.stop();
+        service.awaitStop();
+    }
+
+    @Test
+    public void getThing() throws IOException {
+        HttpUriRequest request = new HttpGet("http://localhost:8080/counter");
+        HttpResponse response = HttpClientBuilder.create().build().execute(request);
+
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
+        assertTrue(
+                "Should return map with \"id\" element",
+                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("id")
+        );
     }
 }

@@ -12,14 +12,14 @@ public class InvokeActionResponse extends AbstractServerMessage implements Final
         value = null;
     }
 
-    @Override
-    public Content toContent() {
-        return getValue();
-    }
-
     public InvokeActionResponse(String id, Content value) {
         super(id);
         this.value = Objects.requireNonNull(value);
+    }
+
+    @Override
+    public Content toContent() {
+        return getValue();
     }
 
     public Content getValue() {

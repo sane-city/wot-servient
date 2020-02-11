@@ -18,12 +18,14 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  */
 public class ExposedThingAction extends ThingAction {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
-
     private final String name;
     private final ExposedThing thing;
-
     @JsonIgnore
     private final ActionState state;
+
+    public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
+        this(name, thing, new ActionState(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
+    }
 
     ExposedThingAction(String name,
                        ExposedThing thing,
@@ -43,14 +45,6 @@ public class ExposedThingAction extends ThingAction {
         this.output = output;
     }
 
-    public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
-        this(name, thing, new ActionState(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
-    }
-
-    public ActionState getState() {
-        return state;
-    }
-
     @Override
     public int hashCode() {
         return super.hashCode();
@@ -61,13 +55,47 @@ public class ExposedThingAction extends ThingAction {
         return super.equals(obj);
     }
 
+    @Override
+    public String toString() {
+        return "ExposedThingAction{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
     /**
-     * Invokes the method and executes the handler defined in {@link #state}. <code>input</code> contains the request payload. <code>options</code> can contain
-     * additional data (for example, the query parameters when using COAP/HTTP).
+     * Invokes the method and executes the handler defined in {@link #state}.
+     *
+     * @return
+     */
+    public CompletableFuture<Object> invoke() {
+        return invoke(null);
+    }
+
+    /**
+     * Invokes the method and executes the handler defined in {@link #state}. <code>input</code>
+     * contains the request payload.
+     *
+     * @param input
+     * @return
+     */
+    public CompletableFuture<Object> invoke(Object input) {
+        return invoke(input, Collections.emptyMap());
+    }
+
+    /**
+     * Invokes the method and executes the handler defined in {@link #state}. <code>input</code>
+     * contains the request payload. <code>options</code> can contain additional data (for example,
+     * the query parameters when using COAP/HTTP).
      *
      * @param input
      * @param options
-     *
      * @return
      */
     public CompletableFuture<Object> invoke(Object input, Map<String, Object> options) {
@@ -93,37 +121,7 @@ public class ExposedThingAction extends ThingAction {
         }
     }
 
-    /**
-     * Invokes the method and executes the handler defined in {@link #state}. <code>input</code> contains the request payload.
-     *
-     * @param input
-     *
-     * @return
-     */
-    public CompletableFuture<Object> invoke(Object input) {
-        return invoke(input, Collections.emptyMap());
-    }
-
-    /**
-     * Invokes the method and executes the handler defined in {@link #state}.
-     *
-     * @return
-     */
-    public CompletableFuture<Object> invoke() {
-        return invoke(null);
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThingAction{" +
-                "name='" + name + '\'' +
-                ", state=" + state +
-                ", input=" + input +
-                ", output=" + output +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
+    public ActionState getState() {
+        return state;
     }
 }

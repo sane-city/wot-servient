@@ -14,8 +14,9 @@ public class SubscriptionTest {
         Subscription subscription = new Subscription(() -> executed.set(true));
         subscription.unsubscribe();
 
-        assertTrue("Subscription runnable should have been executed",executed.get());
+        assertTrue("Subscription runnable should have been executed", executed.get());
     }
+
     @Test
     public void unsubscribeOnce() {
         AtomicInteger counter = new AtomicInteger();

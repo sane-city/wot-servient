@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 
 /**
- * Describes properties of a security mechanism (e.g. password authentication).<br>
- * See also: https://www.w3.org/TR/wot-thing-description/#security-serialization-json
+ * Describes properties of a security mechanism (e.g. password authentication).<br> See also:
+ * https://www.w3.org/TR/wot-thing-description/#security-serialization-json
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "scheme")
 @JsonSubTypes({

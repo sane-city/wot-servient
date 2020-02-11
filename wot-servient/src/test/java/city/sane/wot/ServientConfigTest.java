@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
@@ -80,22 +81,22 @@ public class ServientConfigTest {
     public static class MyProtocolServer implements ProtocolServer {
         @Override
         public CompletableFuture<Void> start() {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         @Override
         public CompletableFuture<Void> stop() {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         @Override
         public CompletableFuture<Void> expose(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         @Override
         public CompletableFuture<Void> destroy(ExposedThing thing) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 
@@ -127,12 +128,12 @@ public class ServientConfigTest {
                     json = "{\"id\": \"counter\"}";
                     break;
             }
-            return CompletableFuture.completedFuture(new Content("application/json", json.getBytes()));
+            return completedFuture(new Content("application/json", json.getBytes()));
         }
 
         @Override
         public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-            return CompletableFuture.completedFuture(Collections.emptyList());
+            return completedFuture(Collections.emptyList());
         }
     }
 
@@ -144,7 +145,8 @@ public class ServientConfigTest {
 
     static class MyBadMissingConstructorProtocolServer implements ProtocolServer {
         /**
-         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
+         * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed
+         * things.
          *
          * @return
          */
@@ -167,7 +169,6 @@ public class ServientConfigTest {
          * Exposes <code>thing</code> and allows interaction with it.
          *
          * @param thing
-         *
          * @return
          */
         @Override
@@ -176,10 +177,10 @@ public class ServientConfigTest {
         }
 
         /**
-         * Stops the exposure of <code>thing</code> and allows no further interaction with the thing.
+         * Stops the exposure of <code>thing</code> and allows no further interaction with the
+         * thing.
          *
          * @param thing
-         *
          * @return
          */
         @Override

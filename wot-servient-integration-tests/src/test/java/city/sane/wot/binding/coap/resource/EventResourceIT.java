@@ -10,20 +10,15 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import org.eclipse.californium.core.*;
-import org.eclipse.californium.core.coap.Request;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertNull;
@@ -39,41 +34,6 @@ public class EventResourceIT {
         server = new CoapServer(5683);
         server.add(new EventResource("change", thing.getEvent("change")));
         server.start();
-    }
-
-    @After
-    public void teardown() throws TimeoutException {
-        server.stop();
-        CoapProtocolServer.waitForPort(5683);
-    }
-
-    @Test
-    public void subscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<Void> result = new CompletableFuture<>();
-        CoapClient client = new CoapClient("coap://localhost:5683/change");
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
-            @Override
-            public void onLoad(CoapResponse response) {
-                client.shutdown();
-                result.complete(null);
-            }
-
-            @Override
-            public void onError() {
-                client.shutdown();
-                result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
-            }
-        });
-
-        // wait until client establish subscription
-        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
-
-        // emit event
-        ExposedThingEvent event = thing.getEvent("change");
-        event.emit().get();
-
-        // future should complete within a few seconds
-        assertNull(result.get());
     }
 
     private ExposedThing getCounterThing() {
@@ -146,5 +106,40 @@ public class EventResourceIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() throws TimeoutException {
+        server.stop();
+        CoapProtocolServer.waitForPort(5683);
+    }
+
+    @Test
+    public void subscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<Void> result = new CompletableFuture<>();
+        CoapClient client = new CoapClient("coap://localhost:5683/change");
+        CoapObserveRelation relation = client.observe(new CoapHandler() {
+            @Override
+            public void onLoad(CoapResponse response) {
+                client.shutdown();
+                result.complete(null);
+            }
+
+            @Override
+            public void onError() {
+                client.shutdown();
+                result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
+            }
+        });
+
+        // wait until client establish subscription
+        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
+
+        // emit event
+        ExposedThingEvent event = thing.getEvent("change");
+        event.emit().get();
+
+        // future should complete within a few seconds
+        assertNull(result.get());
     }
 }

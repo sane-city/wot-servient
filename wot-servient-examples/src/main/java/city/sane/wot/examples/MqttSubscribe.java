@@ -11,7 +11,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Interacts with the thing produces by {@link MqttSubscribe}. Reads the counter and resets it periodically.
+ * Interacts with the thing produces by {@link MqttSubscribe}. Reads the counter and resets it
+ * periodically.
  */
 class MqttSubscribe {
     public static void main(String[] args) throws ConsumedThingException, IOException, WotException {

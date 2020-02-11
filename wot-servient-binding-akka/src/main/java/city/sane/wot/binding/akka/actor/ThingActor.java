@@ -19,11 +19,11 @@ import java.util.Set;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
- * This Actor is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
- * should no longer be exposed.<br>
- * For this purpose, the actuator creates a series of child actuators that allow interaction with a single
- * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link city.sane.wot.thing.action.ExposedThingAction}, or
- * {@link city.sane.wot.thing.event.ExposedThingEvent}.
+ * This Actor is responsible for the interaction with the respective Thing. It is started as soon as
+ * a thing is to be exposed and terminated when the thing should no longer be exposed.<br> For this
+ * purpose, the actuator creates a series of child actuators that allow interaction with a single
+ * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link
+ * city.sane.wot.thing.action.ExposedThingAction}, or {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
 class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);

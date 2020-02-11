@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 class Cli {
     private static final Logger log = LoggerFactory.getLogger(Cli.class);
-
     private static final String CONF = "wot-servient.conf";
     private static final String LOGLEVEL = "info";
     private static final String OPT_VERSION = "version";
@@ -65,11 +64,74 @@ class Cli {
         }
     }
 
+    private Options getOptions() {
+        Options options = new Options();
+
+        Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
+        options.addOption(version);
+
+        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: " + LOGLEVEL + ")").build();
+        options.addOption(loglevel);
+
+        Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();
+        options.addOption(clientonly);
+
+        Option configfile = Option.builder("f").longOpt(OPT_CONFIGFILE).hasArg().argName("file").desc("load configuration from specified file").build();
+        options.addOption(configfile);
+
+        Option help = Option.builder("h").longOpt(OPT_HELP).desc("show this file").build();
+        options.addOption(help);
+
+        return options;
+    }
+
     private void setLogLevel(String value) {
         Level level = Level.valueOf(value);
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.getLoggerList().stream().filter(l -> l.getName().startsWith("city.sane")).forEach(l -> l.setLevel(level));
+    }
+
+    private void printHelp(Options options) {
+        String header = "" +
+                "       wot-servient\n" +
+                "       wot-servient examples/scripts/counter.groovy examples/scripts/example-event.groovy\n" +
+                "       wot-servient -c counter-client.groovy\n" +
+                "       wot-servient -f ~/mywot.conf examples/testthing/testthing.groovy\n" +
+                "\n" +
+                "Run a WoT Servient in the current directory.\n" +
+                "If no SCRIPT is given, all .groovy files in the current directory are loaded.\n" +
+                "If one or more SCRIPT is given, these files are loaded instead of the directory.\n" +
+                "If the file '" + CONF + "' exists, that configuration is applied.\n" +
+                "The WoT Servient can be accessed using the \"wot\" variable inside scripts.\n" +
+                "\n" +
+                "Options:";
+
+        String footer = "\n" +
+                CONF + " syntax:\n" +
+                "wot {\n" +
+                "  servient {\n" +
+                "    http {\n" +
+                "      bind-host = \"0.0.0.0\"\n" +
+                "      bind-port = 8080\n" +
+                "    }\n" +
+                "\n" +
+                "    coap {\n" +
+                "      bind-port = 5683\n" +
+                "    }\n" +
+                "\n" +
+                "    mqtt {\n" +
+                "      broker = \"tcp://iot.eclipse.org\"\n" +
+                "      # username = \"myusername\"\n" +
+                "      # password = \"mysecretpassword\"\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(100);
+        formatter.setSyntaxPrefix("Usage: ");
+        formatter.printHelp("wot-servient [options] [SCRIPT]...", header, options, footer);
     }
 
     private void printVersion() {
@@ -152,69 +214,6 @@ class Cli {
             servient = Servient.clientOnly(config);
         }
         return servient;
-    }
-
-    private void printHelp(Options options) {
-        String header = "" +
-                "       wot-servient\n" +
-                "       wot-servient examples/scripts/counter.groovy examples/scripts/example-event.groovy\n" +
-                "       wot-servient -c counter-client.groovy\n" +
-                "       wot-servient -f ~/mywot.conf examples/testthing/testthing.groovy\n" +
-                "\n" +
-                "Run a WoT Servient in the current directory.\n" +
-                "If no SCRIPT is given, all .groovy files in the current directory are loaded.\n" +
-                "If one or more SCRIPT is given, these files are loaded instead of the directory.\n" +
-                "If the file '" + CONF + "' exists, that configuration is applied.\n" +
-                "The WoT Servient can be accessed using the \"wot\" variable inside scripts.\n" +
-                "\n" +
-                "Options:";
-
-        String footer = "\n" +
-                CONF + " syntax:\n" +
-                "wot {\n" +
-                "  servient {\n" +
-                "    http {\n" +
-                "      bind-host = \"0.0.0.0\"\n" +
-                "      bind-port = 8080\n" +
-                "    }\n" +
-                "\n" +
-                "    coap {\n" +
-                "      bind-port = 5683\n" +
-                "    }\n" +
-                "\n" +
-                "    mqtt {\n" +
-                "      broker = \"tcp://iot.eclipse.org\"\n" +
-                "      # username = \"myusername\"\n" +
-                "      # password = \"mysecretpassword\"\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.setWidth(100);
-        formatter.setSyntaxPrefix("Usage: ");
-        formatter.printHelp("wot-servient [options] [SCRIPT]...", header, options, footer);
-    }
-
-    private Options getOptions() {
-        Options options = new Options();
-
-        Option version = Option.builder("v").longOpt(OPT_VERSION).desc("display version").build();
-        options.addOption(version);
-
-        Option loglevel = Option.builder("l").longOpt(OPT_LOGLEVEL).hasArg().argName("level").desc("sets the log level (off, error, warn, info, debug, trace; default: " + LOGLEVEL + ")").build();
-        options.addOption(loglevel);
-
-        Option clientonly = Option.builder("c").longOpt(OPT_CLIENTONLY).desc("do not start any servers").build();
-        options.addOption(clientonly);
-
-        Option configfile = Option.builder("f").longOpt(OPT_CONFIGFILE).hasArg().argName("file").desc("load configuration from specified file").build();
-        options.addOption(configfile);
-
-        Option help = Option.builder("h").longOpt(OPT_HELP).desc("show this file").build();
-        options.addOption(help);
-
-        return options;
     }
 
     public static void main(String[] args) throws CliException {

@@ -4,8 +4,8 @@ import city.sane.wot.content.Content;
 import spark.ResponseTransformer;
 
 /**
- * Transformer for automatic conversion of {@link Content} objects to {@link String} objects.
- * Used by Spark HTTP server.
+ * Transformer for automatic conversion of {@link Content} objects to {@link String} objects. Used
+ * by Spark HTTP server.
  */
 public class ContentResponseTransformer implements ResponseTransformer {
     @Override

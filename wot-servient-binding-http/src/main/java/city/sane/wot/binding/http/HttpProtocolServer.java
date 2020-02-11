@@ -32,11 +32,9 @@ import java.util.stream.Collectors;
 public class HttpProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
     private static final String HTTP_METHOD_NAME = "htv:methodName";
-
     private final String bindHost;
     private final int bindPort;
     private final List<String> addresses;
-
     private final Service server;
     private final Map<String, ExposedThing> things = new HashMap<>();
     private boolean started = false;
@@ -125,7 +123,6 @@ public class HttpProtocolServer implements ProtocolServer {
                 exposeProperties(thing, address, contentType);
                 exposeActions(thing, address, contentType);
                 exposeEvents(thing, address, contentType);
-
             }
         }
 
@@ -230,7 +227,11 @@ public class HttpProtocolServer implements ProtocolServer {
         });
     }
 
-    private String getHrefWithVariablePattern(String address, ExposedThing thing, String type, String interactionName, ThingInteraction interaction) {
+    private String getHrefWithVariablePattern(String address,
+                                              ExposedThing thing,
+                                              String type,
+                                              String interactionName,
+                                              ThingInteraction interaction) {
         String variables = "";
         Set<String> uriVariables = interaction.getUriVariables().keySet();
         if (!uriVariables.isEmpty()) {

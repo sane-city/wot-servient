@@ -20,15 +20,14 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows exposing Things via Akka Actors.<br>
- * Starts an Actor System with an {@link ThingsActor} actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use in
- * an <a href="https://doc.akka.io/docs/akka/current/index-cluster.html">Akka Cluster</a> to discover and interact with other Actuator Systems.<br>
- * The Actor System can be configured via the configuration parameter "wot.servient.akka.server" (see
- * https://doc.akka.io/docs/akka/current/general/configuration.html).
+ * Allows exposing Things via Akka Actors.<br> Starts an Actor System with an {@link ThingsActor}
+ * actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use
+ * in an <a href="https://doc.akka.io/docs/akka/current/index-cluster.html">Akka Cluster</a> to
+ * discover and interact with other Actuator Systems.<br> The Actor System can be configured via the
+ * configuration parameter "wot.servient.akka.server" (see https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
-
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final String actorSystemName;
     private final Config actorSystemConfig;
@@ -44,7 +43,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         );
     }
 
-    AkkaProtocolServer(String actorSystemName, Config actorSystemConfig, AkkaProtocolPattern pattern) {
+    AkkaProtocolServer(String actorSystemName,
+                       Config actorSystemConfig,
+                       AkkaProtocolPattern pattern) {
         this.actorSystemName = actorSystemName;
         this.actorSystemConfig = actorSystemConfig;
         this.pattern = pattern;

@@ -40,48 +40,6 @@ public class ObservePropertyResourceIT {
         server.start();
     }
 
-    @After
-    public void teardown() throws TimeoutException {
-        server.stop();
-        CoapProtocolServer.waitForPort(5683);
-    }
-
-    @Test(timeout = 20 * 1000)
-    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
-        CompletableFuture<Content> result = new CompletableFuture<>();
-        CoapClient client = new CoapClient("coap://localhost:5683/observable");
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
-            @Override
-            public void onLoad(CoapResponse response) {
-                client.shutdown();
-                String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
-                byte[] body = response.getPayload();
-                Content output = new Content(type, body);
-                result.complete(output);
-            }
-
-            @Override
-            public void onError() {
-                client.shutdown();
-                result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
-            }
-        });
-
-        // wait until client establish subscription
-        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
-
-        // write new value
-        ExposedThingProperty property = thing.getProperty("count");
-        property.write(1337).get();
-
-        // wait until new value is received
-        Content content = result.get();
-
-        Object newValue = ContentManager.contentToValue(content, property);
-
-        assertEquals(1337, newValue);
-    }
-
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
@@ -152,5 +110,47 @@ public class ObservePropertyResourceIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() throws TimeoutException {
+        server.stop();
+        CoapProtocolServer.waitForPort(5683);
+    }
+
+    @Test(timeout = 20 * 1000)
+    public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
+        CompletableFuture<Content> result = new CompletableFuture<>();
+        CoapClient client = new CoapClient("coap://localhost:5683/observable");
+        CoapObserveRelation relation = client.observe(new CoapHandler() {
+            @Override
+            public void onLoad(CoapResponse response) {
+                client.shutdown();
+                String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
+                byte[] body = response.getPayload();
+                Content output = new Content(type, body);
+                result.complete(output);
+            }
+
+            @Override
+            public void onError() {
+                client.shutdown();
+                result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
+            }
+        });
+
+        // wait until client establish subscription
+        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
+
+        // write new value
+        ExposedThingProperty property = thing.getProperty("count");
+        property.write(1337).get();
+
+        // wait until new value is received
+        Content content = result.get();
+
+        Object newValue = ContentManager.contentToValue(content, property);
+
+        assertEquals(1337, newValue);
     }
 }

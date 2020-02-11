@@ -79,7 +79,6 @@ public class ActionActor extends AbstractActor {
                     }
                 }
             });
-
         }
         catch (ContentCodecException e) {
             log.warning("Unable to write property: {}", e.getMessage());
@@ -89,5 +88,4 @@ public class ActionActor extends AbstractActor {
     public static Props props(String name, ExposedThingAction action) {
         return Props.create(ActionActor.class, () -> new ActionActor(name, action));
     }
-
 }

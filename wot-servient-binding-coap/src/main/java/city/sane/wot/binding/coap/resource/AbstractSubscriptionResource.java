@@ -14,14 +14,15 @@ import org.slf4j.LoggerFactory;
 
 abstract class AbstractSubscriptionResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(AbstractSubscriptionResource.class);
-
     private final String name;
     private final Subscribable<Object> subscribable;
     private Subscription subscription = null;
     private Object data;
     private Throwable e;
 
-    AbstractSubscriptionResource(String resourceName, String name, Subscribable<Object> subscribable) {
+    AbstractSubscriptionResource(String resourceName,
+                                 String name,
+                                 Subscribable<Object> subscribable) {
         super(resourceName);
 
         this.name = name;
@@ -62,6 +63,17 @@ abstract class AbstractSubscriptionResource extends AbstractResource {
         }
     }
 
+    private synchronized void ensureSubscription() {
+        if (subscription == null) {
+            subscription = subscribable.subscribe(
+                    next -> changeResource(next, null),
+                    ex -> changeResource(null, ex),
+                    () -> {
+                    }
+            );
+        }
+    }
+
     private void respondSubscriptionData(CoapExchange exchange, String requestContentFormat) {
         String subscribableType = subscribable.getClass().getSimpleName();
         if (e == null) {
@@ -86,17 +98,6 @@ abstract class AbstractSubscriptionResource extends AbstractResource {
         else {
             log.warn("Cannot process data for {} '{}': {}", subscribableType, name, e.getMessage());
             exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
-        }
-    }
-
-    private synchronized void ensureSubscription() {
-        if (subscription == null) {
-            subscription = subscribable.subscribe(
-                    next -> changeResource(next, null),
-                    ex -> changeResource(null, ex),
-                    () -> {
-                    }
-            );
         }
     }
 

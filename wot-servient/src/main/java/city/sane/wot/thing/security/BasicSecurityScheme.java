@@ -5,29 +5,30 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Objects;
 
 /**
- * Basic authentication security configuration identified by the term basic (i.e., "scheme": "basic"), using an unencrypted username and
- * password. This scheme should be used with some other security mechanism providing confidentiality, for example, TLS.<br>
- * See also: https://www.w3.org/2019/wot/security#basicsecurityscheme
+ * Basic authentication security configuration identified by the term basic (i.e., "scheme":
+ * "basic"), using an unencrypted username and password. This scheme should be used with some other
+ * security mechanism providing confidentiality, for example, TLS.<br> See also:
+ * https://www.w3.org/2019/wot/security#basicsecurityscheme
  */
 public class BasicSecurityScheme extends SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final String in;
 
-    public BasicSecurityScheme(String in) {
-        this.in = in;
-    }
-
     public BasicSecurityScheme() {
         this(null);
     }
 
-    public String getIn() {
-        return in;
+    public BasicSecurityScheme(String in) {
+        this.in = in;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getIn());
+    }
+
+    public String getIn() {
+        return in;
     }
 
     @Override

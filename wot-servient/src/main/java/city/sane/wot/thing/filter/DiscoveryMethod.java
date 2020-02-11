@@ -5,7 +5,8 @@ package city.sane.wot.thing.filter;
  */
 public enum DiscoveryMethod {
     /**
-     * Uses the discovery mechanisms provided by all {@link city.sane.wot.binding.ProtocolClient} implementations to consider all available Things.
+     * Uses the discovery mechanisms provided by all {@link city.sane.wot.binding.ProtocolClient}
+     * implementations to consider all available Things.
      */
     ANY,
 

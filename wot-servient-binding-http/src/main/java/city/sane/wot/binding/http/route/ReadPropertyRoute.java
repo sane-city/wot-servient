@@ -52,5 +52,4 @@ public class ReadPropertyRoute extends AbstractInteractionRoute {
             return "Property not found";
         }
     }
-
 }

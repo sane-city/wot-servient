@@ -1,7 +1,6 @@
 package city.sane.wot.thing.form;
 
 import city.sane.ObjectBuilder;
-import city.sane.wot.thing.ConsumedThing;
 import com.fasterxml.jackson.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,39 +11,23 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 /**
- * A form contains all the information from an endpoint for communication.<br>
- * See also: https://www.w3.org/TR/wot-thing-description/#form
+ * A form contains all the information from an endpoint for communication.<br> See also:
+ * https://www.w3.org/TR/wot-thing-description/#form
  */
 public class Form implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Form.class);
-
     private String href;
-
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Operation> op;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String subprotocol;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String contentType;
-
     private Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getHref() {
         return href;
-    }
-
-    @Override
-    public String toString() {
-        return "Form{" +
-                "href='" + href + '\'' +
-                ", op=" + op +
-                ", subprotocol='" + subprotocol + '\'' +
-                ", contentType='" + contentType + '\'' +
-                ", optionalProperties=" + optionalProperties +
-                '}';
     }
 
     @JsonIgnore
@@ -76,18 +59,23 @@ public class Form implements Serializable {
         return contentType;
     }
 
-    @JsonAnyGetter
-    public Map<String, Object> getOptionalProperties() {
-        return optionalProperties;
-    }
-
     @JsonAnySetter
     private void setOptionalForJackson(String name, String value) {
         getOptionalProperties().put(name, value);
     }
 
+    @JsonAnyGetter
+    public Map<String, Object> getOptionalProperties() {
+        return optionalProperties;
+    }
+
     public Object getOptional(String name) {
         return optionalProperties.get(name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(href, op, subprotocol, contentType, optionalProperties);
     }
 
     @Override
@@ -107,8 +95,14 @@ public class Form implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(href, op, subprotocol, contentType, optionalProperties);
+    public String toString() {
+        return "Form{" +
+                "href='" + href + '\'' +
+                ", op=" + op +
+                ", subprotocol='" + subprotocol + '\'' +
+                ", contentType='" + contentType + '\'' +
+                ", optionalProperties=" + optionalProperties +
+                '}';
     }
 
     /**
@@ -139,14 +133,14 @@ public class Form implements Serializable {
             return this;
         }
 
+        public Builder setOp(Operation... op) {
+            return setOp(new ArrayList<>(Arrays.asList(op)));
+        }
+
         @JsonSetter
         public Builder setOp(List<Operation> op) {
             this.op = op;
             return this;
-        }
-
-        public Builder setOp(Operation ... op) {
-            return setOp(new ArrayList<>(Arrays.asList(op)));
         }
 
         public Builder setOp(Operation op) {

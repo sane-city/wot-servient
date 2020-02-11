@@ -108,11 +108,11 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'humidity',
                         [
-                                '@type'             : 'saref:Humidity',
-                                description         : 'Luftfeuchtigkeit in %',
-                                type                : 'number',
-                                readOnly            : true,
-                                observable          : true
+                                '@type'    : 'saref:Humidity',
+                                description: 'Luftfeuchtigkeit in %',
+                                type       : 'number',
+                                readOnly   : true,
+                                observable : true
                         ]
                 )
             }
@@ -121,10 +121,10 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'pressure',
                         [
-                                '@type'             : 'saref:Pressure',
-                                type                : 'number',
-                                readOnly            : true,
-                                observable          : true
+                                '@type'   : 'saref:Pressure',
+                                type      : 'number',
+                                readOnly  : true,
+                                observable: true
                         ]
                 )
             }
@@ -133,10 +133,10 @@ new Timer().schedule({
                 exposedThing.addProperty(
                         'pressure_at_sealevel',
                         [
-                                '@type'             : 'saref:Pressure',
-                                type                : 'number',
-                                readOnly            : true,
-                                observable          : true
+                                '@type'   : 'saref:Pressure',
+                                type      : 'number',
+                                readOnly  : true,
+                                observable: true
                         ]
                 )
             }

@@ -17,7 +17,7 @@ public class ReadPropertyResponseTest {
 
     @Before
     public void setUp() throws Exception {
-        clientMessage = new ReadProperty("123","test");
+        clientMessage = new ReadProperty("123", "test");
         value = ContentManager.valueToContent(24);
         rpr1 = new ReadPropertyResponse(clientMessage, value);
     }
@@ -28,7 +28,7 @@ public class ReadPropertyResponseTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructorWithNull() {
-        rpr2 = new ReadPropertyResponse((ReadProperty)null,null);
+        rpr2 = new ReadPropertyResponse((ReadProperty) null, null);
     }
 
     @Test

@@ -22,7 +22,6 @@ import java.util.function.Consumer;
  */
 public class ConsumedThingEvent extends ThingEvent {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
-
     private final String name;
     private final ConsumedThing thing;
 
@@ -42,6 +41,25 @@ public class ConsumedThingEvent extends ThingEvent {
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingEvent{" +
+                "name='" + name + '\'' +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public CompletableFuture<Subscription> subscribe(Consumer<Object> next,
+                                                     Consumer<Throwable> error,
+                                                     Runnable complete) throws ConsumedThingException {
+        return subscribe(new Observer<>(next, error, complete));
     }
 
     public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
@@ -67,24 +85,7 @@ public class ConsumedThingEvent extends ThingEvent {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next, Consumer<Throwable> error, Runnable complete) throws ConsumedThingException {
-        return subscribe(new Observer<>(next, error, complete));
-    }
-
     public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingEvent{" +
-                "name='" + name + '\'' +
-                ", data=" + data +
-                ", type='" + type + '\'' +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 }

@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolServer} to {@link city.sane.wot.binding.websocket.WebsocketProtocolClient}.
+ * Abstract class for all messages sent from {@link city.sane.wot.binding.websocket.WebsocketProtocolServer}
+ * to {@link city.sane.wot.binding.websocket.WebsocketProtocolClient}.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -19,17 +20,16 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = SubscribeCompleteResponse.class, name = "SubscribeCompleteResponse"),
         @JsonSubTypes.Type(value = ServerErrorResponse.class, name = "ServerErrorResponse"),
         @JsonSubTypes.Type(value = ClientErrorResponse.class, name = "ClientErrorResponse")
-
 })
 public abstract class AbstractServerMessage {
     protected final String id;
 
-    public AbstractServerMessage(String id) {
-        this.id = id;
-    }
-
     public AbstractServerMessage(AbstractClientMessage message) {
         this(message.getId());
+    }
+
+    public AbstractServerMessage(String id) {
+        this.id = id;
     }
 
     protected AbstractServerMessage() {

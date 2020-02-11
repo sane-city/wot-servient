@@ -23,7 +23,8 @@ public class SubscribeEvent extends ThingInteraction {
     }
 
     @Override
-    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer,
+                      Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 

@@ -9,7 +9,6 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.schema.DataSchema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -39,7 +38,6 @@ import static org.junit.Assert.assertEquals;
 
 public class WebsocketProtocolClientIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     private WebsocketProtocolClientFactory clientFactory;
     private ProtocolClient client;
     private NioEventLoopGroup serverBossGroup;
@@ -156,7 +154,7 @@ public class WebsocketProtocolClientIT {
         assertEquals(Content.EMPTY_CONTENT, future.get());
     }
 
-    private class WebSocketServerInitializer  extends ChannelInitializer<SocketChannel> {
+    private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
@@ -169,7 +167,8 @@ public class WebsocketProtocolClientIT {
 
         private class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
             @Override
-            protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+            protected void channelRead0(ChannelHandlerContext ctx,
+                                        WebSocketFrame frame) throws Exception {
                 if (frame instanceof TextWebSocketFrame) {
                     // Send the uppercase string back.
                     String requestJson = ((TextWebSocketFrame) frame).text();

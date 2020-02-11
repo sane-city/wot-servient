@@ -7,8 +7,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * This class represented the container for the read and write handlers of a {@link ThingProperty}. The handlers are executed when the property is read or
- * written.
+ * This class represented the container for the read and write handlers of a {@link ThingProperty}.
+ * The handlers are executed when the property is read or written.
  */
 public class PropertyState {
     private final Subject subject;
@@ -16,13 +16,13 @@ public class PropertyState {
     private Supplier readHandler;
     private Function<Object, CompletableFuture<Object>> writeHandler;
 
+    public PropertyState() {
+        this(null);
+    }
+
     private PropertyState(Object value) {
         this.subject = new Subject();
         this.value = value;
-    }
-
-    public PropertyState() {
-        this(null);
     }
 
     public Subject getSubject() {

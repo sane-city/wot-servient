@@ -73,15 +73,6 @@ public class ProtocolServerIT {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-        server.destroy(thing).join();
-
-        assertNull(server.destroy(thing).get());
-    }
-
     private ExposedThing getCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
@@ -136,6 +127,15 @@ public class ProtocolServerIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+        server.destroy(thing).join();
+
+        assertNull(server.destroy(thing).get());
     }
 
     @Parameterized.Parameters(name = "{0}")

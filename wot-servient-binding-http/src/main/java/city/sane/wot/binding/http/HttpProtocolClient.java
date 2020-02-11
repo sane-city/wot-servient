@@ -40,12 +40,12 @@ public class HttpProtocolClient implements ProtocolClient {
     private final HttpClient requestClient;
     private String authorization = null;
 
-    HttpProtocolClient(HttpClient requestClient) {
-        this.requestClient = requestClient;
-    }
-
     public HttpProtocolClient() {
         this(HttpClientBuilder.create().build());
+    }
+
+    HttpProtocolClient(HttpClient requestClient) {
+        this.requestClient = requestClient;
     }
 
     @Override
@@ -56,7 +56,6 @@ public class HttpProtocolClient implements ProtocolClient {
             try {
                 HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -73,7 +72,6 @@ public class HttpProtocolClient implements ProtocolClient {
             try {
                 HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -90,7 +88,6 @@ public class HttpProtocolClient implements ProtocolClient {
             try {
                 HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -99,7 +96,8 @@ public class HttpProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         HttpUriRequest request = generateRequest(form);
 
         // long timeout for long polling
@@ -173,35 +171,6 @@ public class HttpProtocolClient implements ProtocolClient {
         }
     }
 
-    private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
-        String href = form.getHref();
-        String method = defaultMethod;
-        if (form.getOptional(HTTP_METHOD_NAME) != null) {
-            method = (String) form.getOptional(HTTP_METHOD_NAME);
-        }
-
-        RequestBuilder builder = RequestBuilder.create(method)
-                .setUri(href);
-
-        if (authorization != null) {
-            String authorizationHeader = HttpHeaders.AUTHORIZATION;
-            builder.addHeader(authorizationHeader, authorization);
-        }
-
-        if (content != null) {
-            builder.setHeader("Content-Type", content.getType());
-            byte[] body = content.getBody();
-//            builder.setHeader("Content-Length", Integer.toString(body.length));
-            builder.setEntity(new ByteArrayEntity(body));
-        }
-
-        return builder.build();
-    }
-
-    private HttpUriRequest generateRequest(Form form, Content content) {
-        return generateRequest(form, "GET", content);
-    }
-
     private HttpUriRequest generateRequest(Form form) {
         return generateRequest(form, null);
     }
@@ -247,5 +216,34 @@ public class HttpProtocolClient implements ProtocolClient {
 //            String body = EntityUtils.toString(response.getEntity());
             throw new ProtocolClientException("Server error: " + statusLine.toString());
         }
+    }
+
+    private HttpUriRequest generateRequest(Form form, Content content) {
+        return generateRequest(form, "GET", content);
+    }
+
+    private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
+        String href = form.getHref();
+        String method = defaultMethod;
+        if (form.getOptional(HTTP_METHOD_NAME) != null) {
+            method = (String) form.getOptional(HTTP_METHOD_NAME);
+        }
+
+        RequestBuilder builder = RequestBuilder.create(method)
+                .setUri(href);
+
+        if (authorization != null) {
+            String authorizationHeader = HttpHeaders.AUTHORIZATION;
+            builder.addHeader(authorizationHeader, authorization);
+        }
+
+        if (content != null) {
+            builder.setHeader("Content-Type", content.getType());
+            byte[] body = content.getBody();
+//            builder.setHeader("Content-Length", Integer.toString(body.length));
+            builder.setEntity(new ByteArrayEntity(body));
+        }
+
+        return builder.build();
     }
 }

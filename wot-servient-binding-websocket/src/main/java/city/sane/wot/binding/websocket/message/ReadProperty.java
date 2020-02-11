@@ -18,7 +18,8 @@ public class ReadProperty extends ThingInteraction {
     }
 
     @Override
-    public void reply(Consumer<AbstractServerMessage> replyConsumer, Map<String, ExposedThing> things) {
+    public void reply(Consumer<AbstractServerMessage> replyConsumer,
+                      Map<String, ExposedThing> things) {
         String id = getThingId();
         ExposedThing thing = things.get(id);
 
@@ -32,14 +33,16 @@ public class ReadProperty extends ThingInteraction {
                         replyConsumer.accept(new ReadPropertyResponse(this, ContentManager.valueToContent(value)));
                     }
                     catch (ContentCodecException e) {
-                        replyConsumer.accept(new ServerErrorResponse(this,"Unable to parse output of write operation: " + e.getMessage()));
+                        replyConsumer.accept(new ServerErrorResponse(this, "Unable to parse output of write operation: " + e.getMessage()));
                     }
                 });
-            } else {
+            }
+            else {
                 // Property not found
                 replyConsumer.accept(new ClientErrorResponse(this, "Property not found"));
             }
-        } else {
+        }
+        else {
             // Thing not found
             replyConsumer.accept(new ClientErrorResponse(this, "Thing not found"));
         }

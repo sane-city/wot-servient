@@ -7,8 +7,8 @@ import org.junit.Test;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class LinkFormatCodecTest {
     private LinkFormatCodec codec;

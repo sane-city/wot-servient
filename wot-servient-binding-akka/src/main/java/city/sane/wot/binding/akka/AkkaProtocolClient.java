@@ -25,13 +25,12 @@ import java.util.concurrent.CompletableFuture;
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 
 /**
- * Allows consuming Things via Akka Actors.<br>
- * The Actor System created by {@link AkkaProtocolClientFactory} is used for this purpose and thus enables interaction with exposed Things on other actuator
- * systems.
+ * Allows consuming Things via Akka Actors.<br> The Actor System created by {@link
+ * AkkaProtocolClientFactory} is used for this purpose and thus enables interaction with exposed
+ * Things on other actuator systems.
  */
 public class AkkaProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
-
     private final ActorSystem system;
     private final ActorRef discoveryActor;
     private final AkkaProtocolPattern pattern;
@@ -95,7 +94,8 @@ public class AkkaProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) throws ProtocolClientNotImplementedException {
         String href = form.getHref();
         if (href == null) {
             return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));

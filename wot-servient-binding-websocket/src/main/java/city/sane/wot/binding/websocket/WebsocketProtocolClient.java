@@ -37,12 +37,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
- * TODO: Currently a WebsocketProtocolClient and therefore also a WebsocketClient is created for each Thing. Even if each thing is reachable via the same socket. It would be better if there was only one WebsocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
+ * TODO: Currently a WebsocketProtocolClient and therefore also a WebsocketClient is created for
+ * each Thing. Even if each thing is reachable via the same socket. It would be better if there was
+ * only one WebsocketClient per socket and that is shared by all WebsocketProtocolClient instanceis.
  * TODO: WebsocketClient.close() is never called!
  */
 public class WebsocketProtocolClient implements ProtocolClient {
     private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
-
     private static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Map<URI, WebsocketClient> clients = new HashMap<>();
     private final Map<String, Consumer<AbstractServerMessage>> openRequests = new HashMap<>();
@@ -66,7 +67,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) throws ProtocolClientNotImplementedException {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) throws ProtocolClientNotImplementedException {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
@@ -93,11 +95,34 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
     }
 
-    private CompletableFuture<Content> sendMessage(Form form) {
+    private Subscription observe(WebsocketClient client,
+                                 AbstractClientMessage request,
+                                 Observer<Content> observer) throws ProtocolClientException {
+        log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
+        openRequests.put(request.getId(), m -> {
+            if (m instanceof SubscribeNextResponse) {
+                observer.next(m.toContent());
+            }
+            else if (m instanceof SubscribeCompleteResponse) {
+                observer.complete();
+            }
+            else if (m instanceof SubscribeErrorResponse) {
+                observer.error(((SubscribeErrorResponse) m).getError());
+            }
+        });
+
+        client.send(request);
+
+        // TODO: inform server to stop?
+        return new Subscription(() -> openRequests.remove(request.getId()));
+    }
+
+    private CompletableFuture<Content> sendMessageWithContent(Form form, Content content) {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
-                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+                ThingInteractionWithContent clientMessage = JSON_MAPPER.convertValue(message, ThingInteractionWithContent.class);
+                clientMessage.setValue(content);
 
                 try {
                     WebsocketClient client = getClientFor(form).get();
@@ -120,12 +145,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
     }
 
-    private CompletableFuture<Content> sendMessageWithContent(Form form, Content content) {
+    private CompletableFuture<Content> sendMessage(Form form) {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
-                ThingInteractionWithContent clientMessage = JSON_MAPPER.convertValue(message, ThingInteractionWithContent.class);
-                clientMessage.setValue(content);
+                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
 
                 try {
                     WebsocketClient client = getClientFor(form).get();
@@ -176,8 +200,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
         }
     }
 
-
-    private CompletableFuture<AbstractServerMessage> ask(WebsocketClient client, AbstractClientMessage request) {
+    private CompletableFuture<AbstractServerMessage> ask(WebsocketClient client,
+                                                         AbstractClientMessage request) {
         log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
         CompletableFuture<AbstractServerMessage> result = new CompletableFuture<>();
         openRequests.put(request.getId(), result::complete);
@@ -185,26 +209,6 @@ public class WebsocketProtocolClient implements ProtocolClient {
         client.send(request);
 
         return result;
-    }
-
-    private Subscription observe(WebsocketClient client, AbstractClientMessage request, Observer<Content> observer) throws ProtocolClientException {
-        log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
-        openRequests.put(request.getId(), m -> {
-            if (m instanceof SubscribeNextResponse) {
-                observer.next(m.toContent());
-            }
-            else if (m instanceof SubscribeCompleteResponse) {
-                observer.complete();
-            }
-            else if (m instanceof SubscribeErrorResponse) {
-                observer.error(((SubscribeErrorResponse) m).getError());
-            }
-        });
-
-        client.send(request);
-
-        // TODO: inform server to stop?
-        return new Subscription(() -> openRequests.remove(request.getId()));
     }
 
     public void destroy() {

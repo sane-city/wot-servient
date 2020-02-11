@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
+ * This actor is temporarily created for a discovery process. The actor searches for the desired
+ * things, returns them, and then terminates itself.
  */
 public class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -90,7 +91,6 @@ public class DiscoverActor extends AbstractActor {
 
     // CrudMessages
     public static class DiscoverTimeout {
-
     }
 
     public static class Done {
