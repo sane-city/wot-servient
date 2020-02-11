@@ -83,6 +83,8 @@ public class ThingsActor extends AbstractActor {
     }
 
     private void getThings() throws ContentCodecException {
+        log.debug("Read message received. Respond with my things.");
+
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
