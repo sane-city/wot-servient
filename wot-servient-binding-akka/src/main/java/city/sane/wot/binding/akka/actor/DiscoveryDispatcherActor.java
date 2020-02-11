@@ -50,7 +50,7 @@ public class DiscoveryDispatcherActor extends AbstractActor {
         ActorRef requester = m.requester;
         Map<String, Thing> things = m.things;
 
-        log.debug("AkkaDiscovery finished. Send result requester '{}'", requester);
+        log.debug("AkkaDiscovery finished. Send all things collected so far to the requester '{}'", requester);
         requester.tell(new Things(things), getSelf());
     }
 
