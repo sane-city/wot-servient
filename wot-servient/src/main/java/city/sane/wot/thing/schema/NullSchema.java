@@ -13,4 +13,9 @@ public class NullSchema extends AbstractDataSchema {
     public Class getClassType() {
         return Object.class;
     }
+
+    @Override
+    public String toString() {
+        return "NullSchema{}";
+    }
 }

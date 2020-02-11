@@ -15,4 +15,9 @@ public class ArraySchema extends AbstractDataSchema<List> {
     public Class<List> getClassType() {
         return List.class;
     }
+
+    @Override
+    public String toString() {
+        return "ArraySchema{}";
+    }
 }

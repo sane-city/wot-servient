@@ -15,4 +15,9 @@ public class ObjectSchema extends AbstractDataSchema<Map> {
     public Class<Map> getClassType() {
         return Map.class;
     }
+
+    @Override
+    public String toString() {
+        return "ObjectSchema{}";
+    }
 }

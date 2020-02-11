@@ -13,4 +13,9 @@ public class IntegerSchema extends AbstractDataSchema<Integer> {
     public Class<Integer> getClassType() {
         return Integer.class;
     }
+
+    @Override
+    public String toString() {
+        return "IntegerSchema{}";
+    }
 }

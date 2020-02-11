@@ -13,4 +13,9 @@ public class BooleanSchema extends AbstractDataSchema<Boolean> {
     public Class<Boolean> getClassType() {
         return Boolean.class;
     }
+
+    @Override
+    public String toString() {
+        return "BooleanSchema{}";
+    }
 }
