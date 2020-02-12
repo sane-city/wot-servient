@@ -31,7 +31,7 @@ public class DiscoverActor extends AbstractActor {
     private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
-        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
         else {
