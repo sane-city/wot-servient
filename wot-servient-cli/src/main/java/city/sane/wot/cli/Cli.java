@@ -202,8 +202,8 @@ class Cli {
         }
         else {
             File file = new File(cmd.getOptionValue(OPT_CONFIGFILE));
-            config = ConfigFactory.parseFile(file).withFallback(ConfigFactory.load());
             log.info("Servient is using configuration file '{}'", file);
+            config = ConfigFactory.parseFile(file).withFallback(ConfigFactory.load());
         }
 
         Servient servient;
