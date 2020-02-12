@@ -21,15 +21,15 @@ public class ExposedThingAction extends ThingAction {
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
-    private final ActionState state;
+    private final ActionState<Object, Object> state;
 
     public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
-        this(name, thing, new ActionState(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
+        this(name, thing, new ActionState<>(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
     }
 
     ExposedThingAction(String name,
                        ExposedThing thing,
-                       ActionState state,
+                       ActionState<Object, Object> state,
                        String description,
                        Map<String, String> descriptions,
                        Map<String, Map> uriVariables,
@@ -121,7 +121,7 @@ public class ExposedThingAction extends ThingAction {
         }
     }
 
-    public ActionState getState() {
+    public ActionState<Object, Object> getState() {
         return state;
     }
 }

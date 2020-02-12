@@ -17,7 +17,7 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
     private static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
     private final String name;
     @JsonIgnore
-    private final EventState state = new EventState();
+    private final EventState<Object> state = new EventState<Object>();
 
     public ExposedThingEvent(String name, ThingEvent event) {
         this.name = name;
@@ -52,7 +52,7 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
                 '}';
     }
 
-    public EventState getState() {
+    public EventState<Object> getState() {
         return state;
     }
 

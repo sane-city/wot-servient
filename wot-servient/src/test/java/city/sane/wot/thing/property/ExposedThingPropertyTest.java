@@ -17,8 +17,8 @@ import static org.mockito.Mockito.*;
 public class ExposedThingPropertyTest {
     private ExposedThing thing;
     private String name;
-    private ThingProperty property;
-    private PropertyState state;
+    private ThingProperty<Object> property;
+    private PropertyState<Object> state;
     private String objectType;
     private String description;
     private Map<String, String> descriptions;

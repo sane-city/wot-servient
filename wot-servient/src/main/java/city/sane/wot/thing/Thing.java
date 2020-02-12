@@ -29,7 +29,7 @@ import java.util.*;
  * @param <E>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
+public class Thing<P extends ThingProperty<Object>, A extends ThingAction, E extends ThingEvent> implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Thing.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     @JsonProperty("@type")
@@ -318,7 +318,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         private Map<String, String> titles;
         private String description;
         private Map<String, String> descriptions;
-        private Map<String, ThingProperty> properties = new HashMap<>();
+        private Map<String, ThingProperty<Object>> properties = new HashMap<>();
         private Map<String, ThingAction> actions = new HashMap<>();
         private Map<String, ThingEvent> events = new HashMap<>();
         private List<Form> forms = new ArrayList<>();
@@ -361,7 +361,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
-        public Builder addProperty(String name, ThingProperty property) {
+        public Builder addProperty(String name, ThingProperty<Object> property) {
             properties.put(name, property);
             return this;
         }
@@ -386,7 +386,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
-        public Builder setProperties(Map<String, ThingProperty> properties) {
+        public Builder setProperties(Map<String, ThingProperty<Object>> properties) {
             this.properties = properties;
             return this;
         }

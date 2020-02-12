@@ -18,16 +18,16 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingProperty}.
  */
-public class ExposedThingProperty extends ThingProperty implements Subscribable<Object> {
+public class ExposedThingProperty extends ThingProperty<Object> implements Subscribable<Object> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
-    private final PropertyState state;
+    private final PropertyState<Object> state;
 
     public ExposedThingProperty(String name,
                                 ExposedThing thing,
-                                PropertyState state,
+                                PropertyState<Object> state,
                                 String objectType,
                                 String description,
                                 Map<String, String> descriptions,
@@ -51,10 +51,10 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
         this.optionalProperties = optionalProperties;
     }
 
-    public ExposedThingProperty(String name, ThingProperty property, ExposedThing thing) {
+    public ExposedThingProperty(String name, ThingProperty<Object> property, ExposedThing thing) {
         this.name = name;
         this.thing = thing;
-        state = new PropertyState();
+        state = new PropertyState<Object>();
 
         if (property != null) {
             objectType = property.getObjectType();
@@ -160,7 +160,7 @@ public class ExposedThingProperty extends ThingProperty implements Subscribable<
         return state.getSubject().subscribe(observer);
     }
 
-    public PropertyState getState() {
+    public PropertyState<Object> getState() {
         return state;
     }
 }

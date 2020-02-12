@@ -18,7 +18,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsumedThingPropertyTest {
-    private ThingProperty property;
+    private ThingProperty<Object> property;
     private ConsumedThing thing;
     private Form form;
     private ProtocolClient client;

@@ -16,7 +16,7 @@ import java.util.Objects;
  * used to build new thing property models. Used in combination with {@link
  * city.sane.wot.thing.Thing}
  */
-public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema {
+public class ThingProperty<T> extends ThingInteraction<ThingProperty<T>> implements DataSchema<T> {
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String objectType;
@@ -81,7 +81,7 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         if (!super.equals(o)) {
             return false;
         }
-        ThingProperty that = (ThingProperty) o;
+        ThingProperty<Object> that = (ThingProperty<Object>) o;
         return observable == that.observable &&
                 readOnly == that.readOnly &&
                 writeOnly == that.writeOnly &&
@@ -154,8 +154,8 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         }
 
         @Override
-        public ThingProperty build() {
-            ThingProperty property = new ThingProperty();
+        public ThingProperty<Object> build() {
+            ThingProperty<Object> property = new ThingProperty<>();
             property.objectType = objectType;
             property.type = type;
             property.observable = observable;
