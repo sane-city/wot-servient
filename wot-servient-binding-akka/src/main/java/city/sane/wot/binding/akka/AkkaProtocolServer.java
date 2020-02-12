@@ -43,9 +43,9 @@ public class AkkaProtocolServer implements ProtocolServer {
         );
     }
 
-    AkkaProtocolServer(String actorSystemName,
-                       Config actorSystemConfig,
-                       AkkaProtocolPattern pattern) {
+    protected AkkaProtocolServer(String actorSystemName,
+                                 Config actorSystemConfig,
+                                 AkkaProtocolPattern pattern) {
         this.actorSystemName = actorSystemName;
         this.actorSystemConfig = actorSystemConfig;
         this.pattern = pattern;
