@@ -12,6 +12,8 @@ maven-verify:
   stage: test
   services:
     - eclipse-mosquitto:1.6 # for mqtt client/server tests
+  before_script:
+    - sed 's/localhost/eclipse-mosquitto/g' wot-servient-integration-tests/src/test/resources/application.conf
   script:
     - 'mvn $MAVEN_CLI_OPTS verify sonar:sonar'
     - mv wot-servient-cli/target/wot-servient-*.zip .
@@ -33,6 +35,8 @@ maven-deploy:
   stage: deploy
   services:
     - eclipse-mosquitto:1.6 # for mqtt client/server tests
+  before_script:
+    - sed 's/localhost/eclipse-mosquitto/g' wot-servient-integration-tests/src/test/resources/application.conf
   script:
     - 'mvn $MAVEN_CLI_OPTS deploy sonar:sonar'
     - mv wot-servient-cli/target/wot-servient-*.zip .
