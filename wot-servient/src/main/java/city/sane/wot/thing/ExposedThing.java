@@ -89,7 +89,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
         security = thing.getSecurity();
         securityDefinitions = thing.getSecurityDefinitions();
         base = thing.getBase();
-        ((Map<String, ThingProperty>) thing.getProperties()).forEach(this::addProperty);
+        ((Map<String, ThingProperty<Object>>) thing.getProperties()).forEach(this::addProperty);
         ((Map<String, ThingAction>) thing.getActions()).forEach(this::addAction);
         ((Map<String, ThingEvent>) thing.getEvents()).forEach(this::addEvent);
     }
@@ -106,7 +106,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @param property
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property) {
+    public ExposedThing addProperty(String name, ThingProperty<Object> property) {
         return addProperty(name, property, null, null);
     }
 
@@ -152,7 +152,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addProperty(String name,
-                                    ThingProperty property,
+                                    ThingProperty<Object> property,
                                     Supplier<CompletableFuture<Object>> readHandler,
                                     Function<Object, CompletableFuture<Object>> writeHandler) {
         log.debug("'{}' adding Property '{}'", getId(), name);
@@ -380,7 +380,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
     public ExposedThing addProperty(String name,
                                     Supplier<CompletableFuture<Object>> readHandler,
                                     Function<Object, CompletableFuture<Object>> writeHandler) {
-        return addProperty(name, new ThingProperty(), readHandler, writeHandler);
+        return addProperty(name, new ThingProperty<Object>(), readHandler, writeHandler);
     }
 
     /**
@@ -392,7 +392,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @param init
      * @return
      */
-    public ExposedThing addProperty(String name, ThingProperty property, Object init) {
+    public ExposedThing addProperty(String name, ThingProperty<Object> property, Object init) {
         return addProperty(name, property, null, null, init);
     }
 
@@ -412,7 +412,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     private ExposedThing addProperty(String name,
-                                     ThingProperty property,
+                                     ThingProperty<Object> property,
                                      Supplier<CompletableFuture<Object>> readHandler,
                                      Function<Object, CompletableFuture<Object>> writeHandler,
                                      Object init) {
@@ -440,7 +440,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
      * @return
      */
     public ExposedThing addProperty(String name) {
-        return addProperty(name, new ThingProperty());
+        return addProperty(name, new ThingProperty<Object>());
     }
 
     /**

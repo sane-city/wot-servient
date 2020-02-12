@@ -11,15 +11,15 @@ import static org.junit.Assert.assertFalse;
 public class ThingPropertyTest {
     @Test
     public void testEquals() {
-        ThingProperty property1 = new ThingProperty();
-        ThingProperty property2 = new ThingProperty();
+        ThingProperty<Object> property1 = new ThingProperty<Object>();
+        ThingProperty<Object> property2 = new ThingProperty<Object>();
 
         assertEquals(property1, property2);
     }
 
     @Test
     public void builder() {
-        ThingProperty property = new ThingProperty.Builder()
+        ThingProperty<Object> property = new ThingProperty.Builder()
                 .setObjectType("saref:Temperature")
                 .setType("integer")
                 .setObservable(true)

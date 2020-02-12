@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
-public class ConsumedThingProperty extends ThingProperty {
+public class ConsumedThingProperty extends ThingProperty<Object> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingProperty(String name, ThingProperty property, ConsumedThing thing) {
+    public ConsumedThingProperty(String name, ThingProperty<Object> property, ConsumedThing thing) {
         this.name = name;
 
         objectType = property.getObjectType();

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 public class ExposedThingActionTest {
     private ExposedThing thing;
-    private ActionState state;
+    private ActionState<Object, Object> state;
     private String description;
     private DataSchema input;
     private DataSchema output;

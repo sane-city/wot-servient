@@ -32,7 +32,7 @@ public class ThingTest {
     private String base;
     private Map<String, String> titles;
     private Map<String, String> descriptions;
-    private Map<Object, ThingProperty> properties;
+    private Map<Object, ThingProperty<Object>> properties;
     private Map<Object, ThingAction> actions;
     private Map<Object, ThingEvent> events;
     private Map<Object, SecurityScheme> securityDefinitions;
@@ -256,8 +256,8 @@ public class ThingTest {
         assertThat((Map<String, String>) thing.getTitles(), hasEntry("de", "Zähler"));
         assertThat((Map<String, String>) thing.getDescriptions(), hasEntry("de", "Zähler Ding"));
 
-        assertThat((Map<String, ThingProperty>) thing.getProperties(), hasEntry("lastChange", new ThingProperty.Builder().build()));
-        assertThat((Map<String, ThingProperty>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
+        assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("lastChange", new ThingProperty.Builder().build()));
+        assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
         assertEquals(new ThingProperty.Builder().build(), thing.getProperty("count"));
 
         assertThat((Map<String, ThingAction>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
