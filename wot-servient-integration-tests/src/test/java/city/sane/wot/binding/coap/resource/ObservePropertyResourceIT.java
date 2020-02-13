@@ -143,7 +143,7 @@ public class ObservePropertyResourceIT {
         CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
 
         // write new value
-        ExposedThingProperty property = thing.getProperty("count");
+        ExposedThingProperty<Object> property = thing.getProperty("count");
         property.write(1337).get();
 
         // wait until new value is received

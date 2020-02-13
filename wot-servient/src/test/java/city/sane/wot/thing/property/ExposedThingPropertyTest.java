@@ -28,7 +28,7 @@ public class ExposedThingPropertyTest {
     private boolean writeOnly;
     private Map<String, Map> uriVariables;
     private Map<String, Object> optionalProperties;
-    private ExposedThingProperty exposedProperty;
+    private ExposedThingProperty<Object> exposedProperty;
     private Supplier<CompletableFuture<Object>> readHandler;
     private Subject subject;
     private Function<Object, CompletableFuture<Object>> writeHandler;
@@ -46,7 +46,7 @@ public class ExposedThingPropertyTest {
 
     @Test
     public void readWithoutHandlerShouldReturnStateValue() {
-        exposedProperty = new ExposedThingProperty(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
         exposedProperty.read();
 
@@ -57,7 +57,7 @@ public class ExposedThingPropertyTest {
     public void readWithHandlerShouldCallHandler() {
         when(state.getReadHandler()).thenReturn(readHandler);
 
-        exposedProperty = new ExposedThingProperty(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
         exposedProperty.read();
 
@@ -69,7 +69,7 @@ public class ExposedThingPropertyTest {
         when(readHandler.get()).thenThrow(new RuntimeException());
         when(state.getReadHandler()).thenReturn(readHandler);
 
-        exposedProperty = new ExposedThingProperty(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
         exposedProperty.read().get();
     }
@@ -78,7 +78,7 @@ public class ExposedThingPropertyTest {
     public void writeWithoutHandlerShouldSetStateValueAndInformSubject() {
         when(state.getSubject()).thenReturn(subject);
 
-        exposedProperty = new ExposedThingProperty(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
         exposedProperty.write(1337);
 
@@ -92,7 +92,7 @@ public class ExposedThingPropertyTest {
         when(state.getWriteHandler()).thenReturn(writeHandler);
         when(state.getSubject()).thenReturn(subject);
 
-        exposedProperty = new ExposedThingProperty(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
         exposedProperty.write(1337);
 

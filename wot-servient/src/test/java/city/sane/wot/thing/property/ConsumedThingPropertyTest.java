@@ -38,7 +38,7 @@ public class ConsumedThingPropertyTest {
         when(property.getForms()).thenReturn(List.of(form));
         when(form.getHref()).thenReturn("http://example.com/properties/count");
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
 
         assertEquals("http://example.com/properties/count", consumedThingProperty.getForms().get(0).getHref());
     }
@@ -49,7 +49,7 @@ public class ConsumedThingPropertyTest {
         when(property.getForms()).thenReturn(List.of(form));
         when(form.getHref()).thenReturn("/properties/count");
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
 
         assertEquals("http://example.com/properties/count", consumedThingProperty.getForms().get(0).getHref());
     }
@@ -60,7 +60,7 @@ public class ConsumedThingPropertyTest {
         when(property.getForms()).thenReturn(List.of(form));
         when(form.getHref()).thenReturn("http://example.com/properties/count");
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
 
         assertEquals("http://example.com/properties/count", consumedThingProperty.getForms().get(0).getHref());
     }
@@ -70,7 +70,7 @@ public class ConsumedThingPropertyTest {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.readResource(any())).thenReturn(completedFuture(null));
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.read();
 
         verify(client, times(1)).readResource(any());
@@ -81,7 +81,7 @@ public class ConsumedThingPropertyTest {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.writeResource(any(), any())).thenReturn(completedFuture(null));
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.write("123");
 
         verify(client, times(1)).writeResource(any(), any());
@@ -92,7 +92,7 @@ public class ConsumedThingPropertyTest {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.writeResource(any(), any())).thenReturn(completedFuture(null));
 
-        ConsumedThingProperty consumedThingProperty = new ConsumedThingProperty("myProperty", property, thing);
+        ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.subscribe(observer);
 
         verify(client, times(1)).subscribeResource(any(), any(), any(), any());

@@ -16,7 +16,7 @@ public class PropertyState<T> {
     private final Subject<T> subject;
     private T value;
     private Supplier<CompletableFuture<T>> readHandler;
-    private Function<T, CompletableFuture<Object>> writeHandler;
+    private Function<T, CompletableFuture<T>> writeHandler;
 
     public PropertyState() {
         this(new Subject<>(), null, null, null);
@@ -25,7 +25,7 @@ public class PropertyState<T> {
     PropertyState(Subject<T> subject,
                   T value,
                   Supplier<CompletableFuture<T>> readHandler,
-                  Function<T, CompletableFuture<Object>> writeHandler) {
+                  Function<T, CompletableFuture<T>> writeHandler) {
         this.subject = requireNonNull(subject);
         this.value = value;
         this.readHandler = readHandler;
@@ -36,7 +36,7 @@ public class PropertyState<T> {
         return subject;
     }
 
-    public Object getValue() {
+    public T getValue() {
         return value;
     }
 
@@ -52,11 +52,11 @@ public class PropertyState<T> {
         this.readHandler = readHandler;
     }
 
-    public Function<T, CompletableFuture<Object>> getWriteHandler() {
+    public Function<T, CompletableFuture<T>> getWriteHandler() {
         return writeHandler;
     }
 
-    public void setWriteHandler(Function<T, CompletableFuture<Object>> writeHandler) {
+    public void setWriteHandler(Function<T, CompletableFuture<T>> writeHandler) {
         this.writeHandler = writeHandler;
     }
 }

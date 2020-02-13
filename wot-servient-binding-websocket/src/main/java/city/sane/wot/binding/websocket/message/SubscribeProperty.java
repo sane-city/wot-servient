@@ -30,7 +30,7 @@ public class SubscribeProperty extends ThingInteraction {
 
         if (thing != null) {
             String name = getName();
-            ExposedThingProperty property = thing.getProperty(name);
+            ExposedThingProperty<Object> property = thing.getProperty(name);
 
             if (property != null) {
                 property.subscribe(next -> {

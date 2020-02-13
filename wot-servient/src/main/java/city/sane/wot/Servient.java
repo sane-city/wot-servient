@@ -145,7 +145,7 @@ public class Servient {
 
         // initializing forms
         thing.setBase("");
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
         Map<String, ExposedThingAction> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));
@@ -183,7 +183,7 @@ public class Servient {
         log.info("Servient stop exposing '{}'", thing);
 
         // reset forms
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
         Map<String, ExposedThingAction> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));

@@ -26,7 +26,7 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
                                        String requestContentType,
                                        String name,
                                        ExposedThing thing) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         if (property != null) {
             if (!property.isReadOnly()) {
                 return writeProperty(request, response, requestContentType, property);
@@ -45,7 +45,7 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
     private Object writeProperty(Request request,
                                  Response response,
                                  String requestContentType,
-                                 ExposedThingProperty property) {
+                                 ExposedThingProperty<Object> property) {
         try {
             Content content = new Content(requestContentType, request.bodyAsBytes());
             Object input = ContentManager.contentToValue(content, property);

@@ -180,7 +180,7 @@ public class CoapProtocolServer implements ProtocolServer {
                                   CoapResource thingResource,
                                   String address,
                                   String contentType) {
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         if (!properties.isEmpty()) {
             // make reporting of all properties optional?
             if (true) {

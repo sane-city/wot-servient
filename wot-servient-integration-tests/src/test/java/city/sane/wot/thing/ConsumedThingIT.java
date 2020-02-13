@@ -75,7 +75,7 @@ public class ConsumedThingIT {
 
         ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        ConsumedThingProperty counter = thing.getProperty("count");
+        ConsumedThingProperty<Object> counter = thing.getProperty("count");
 
         try {
             assertEquals(42, counter.read().get());
@@ -172,7 +172,7 @@ public class ConsumedThingIT {
 
         ConsumedThing thing = new ConsumedThing(servient, exposedThing);
 
-        ConsumedThingProperty counter = thing.getProperty("count");
+        ConsumedThingProperty<Object> counter = thing.getProperty("count");
 
         try {
             Object o = counter.write(1337).get();

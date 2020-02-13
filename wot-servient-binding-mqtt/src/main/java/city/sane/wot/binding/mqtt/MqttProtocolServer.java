@@ -109,7 +109,7 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     private void exposeProperties(ExposedThing thing) {
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
