@@ -25,7 +25,7 @@ public class ReadProperty extends ThingInteraction {
 
         if (thing != null) {
             String name = getName();
-            ExposedThingProperty property = thing.getProperty(name);
+            ExposedThingProperty<Object> property = thing.getProperty(name);
 
             if (property != null) {
                 property.read().thenAccept(value -> {

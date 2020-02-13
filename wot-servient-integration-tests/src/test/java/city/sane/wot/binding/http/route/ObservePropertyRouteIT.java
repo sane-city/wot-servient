@@ -146,7 +146,7 @@ public class ObservePropertyRouteIT {
         Thread.sleep(5 * 1000L);
 
         // write new value
-        ExposedThingProperty property = thing.getProperty("count");
+        ExposedThingProperty<Object> property = thing.getProperty("count");
         property.write(1337).get();
 
         // wait until new value is received

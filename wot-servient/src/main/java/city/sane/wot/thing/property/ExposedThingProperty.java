@@ -18,16 +18,16 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingProperty}.
  */
-public class ExposedThingProperty extends ThingProperty<Object> implements Subscribable<Object> {
+public class ExposedThingProperty<T> extends ThingProperty<T> implements Subscribable<T> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
-    private final PropertyState<Object> state;
+    private final PropertyState<T> state;
 
     public ExposedThingProperty(String name,
                                 ExposedThing thing,
-                                PropertyState<Object> state,
+                                PropertyState<T> state,
                                 String objectType,
                                 String description,
                                 Map<String, String> descriptions,
@@ -51,10 +51,10 @@ public class ExposedThingProperty extends ThingProperty<Object> implements Subsc
         this.optionalProperties = optionalProperties;
     }
 
-    public ExposedThingProperty(String name, ThingProperty<Object> property, ExposedThing thing) {
+    public ExposedThingProperty(String name, ThingProperty<T> property, ExposedThing thing) {
         this.name = name;
         this.thing = thing;
-        state = new PropertyState<Object>();
+        state = new PropertyState<>();
 
         if (property != null) {
             objectType = property.getObjectType();
@@ -97,7 +97,7 @@ public class ExposedThingProperty extends ThingProperty<Object> implements Subsc
                 '}';
     }
 
-    public CompletableFuture<Object> read() {
+    public CompletableFuture<T> read() {
         // call read handler (if any)
         if (state.getReadHandler() != null) {
             log.debug("'{}' calls registered readHandler for Property '{}'", thing.getId(), name);
@@ -111,9 +111,9 @@ public class ExposedThingProperty extends ThingProperty<Object> implements Subsc
             }
         }
         else {
-            CompletableFuture<Object> future = new CompletableFuture<>();
+            CompletableFuture<T> future = new CompletableFuture<>();
 
-            Object value = state.getValue();
+            T value = state.getValue();
             log.debug("'{}' gets internal value '{}' for Property '{}'", thing.getId(), value, name);
             future.complete(value);
 
@@ -121,7 +121,7 @@ public class ExposedThingProperty extends ThingProperty<Object> implements Subsc
         }
     }
 
-    public CompletableFuture<Object> write(Object value) {
+    public CompletableFuture<T> write(T value) {
         // call write handler (if any)
         if (state.getWriteHandler() != null) {
             log.debug("'{}' calls registered writeHandler for Property '{}'", thing.getId(), name);
@@ -155,12 +155,12 @@ public class ExposedThingProperty extends ThingProperty<Object> implements Subsc
     }
 
     @Override
-    public Subscription subscribe(Observer<Object> observer) {
+    public Subscription subscribe(Observer<T> observer) {
         log.debug("'{}' subscribe to Property '{}'", thing.getId(), name);
         return state.getSubject().subscribe(observer);
     }
 
-    public PropertyState<Object> getState() {
+    public PropertyState<T> getState() {
         return state;
     }
 }

@@ -36,7 +36,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  * Thing. An ExposedThing is created by the {@link city.sane.wot.Wot#produce(Thing)} method.
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
-public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
+public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThingAction, ExposedThingEvent> implements Subscribable<Object> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
     private final Servient servient;
     @JsonIgnore
@@ -55,7 +55,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
                  List<String> security,
                  Map<String, SecurityScheme> securityDefinitions,
                  String base,
-                 Map<String, ExposedThingProperty> properties,
+                 Map<String, ExposedThingProperty<Object>> properties,
                  Map<String, ExposedThingAction> actions,
                  Map<String, ExposedThingEvent> events) {
         this.servient = servient;
@@ -157,7 +157,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
                                     Function<Object, CompletableFuture<Object>> writeHandler) {
         log.debug("'{}' adding Property '{}'", getId(), name);
 
-        ExposedThingProperty exposedProperty = new ExposedThingProperty(name, property, this);
+        ExposedThingProperty<Object> exposedProperty = new ExposedThingProperty<Object>(name, property, this);
         exposedProperty.getState().setReadHandler(readHandler);
         exposedProperty.getState().setWriteHandler(writeHandler);
         properties.put(name, exposedProperty);
@@ -418,7 +418,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
                                      Object init) {
         addProperty(name, property, readHandler, writeHandler);
 
-        ExposedThingProperty exposedProperty = properties.get(name);
+        ExposedThingProperty<Object> exposedProperty = properties.get(name);
         try {
             // wait until init value has been written
             exposedProperty.write(init).get();
@@ -641,7 +641,7 @@ public class ExposedThing extends Thing<ExposedThingProperty, ExposedThingAction
 
         Map<String, Object> returnValues = new HashMap<>();
         values.forEach((name, value) -> {
-            ExposedThingProperty property = getProperty(name);
+            ExposedThingProperty<Object> property = getProperty(name);
             if (property != null) {
                 CompletableFuture<Object> future = property.write(value);
                 futures.add(future);

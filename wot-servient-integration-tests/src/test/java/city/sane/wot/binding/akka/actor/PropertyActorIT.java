@@ -156,7 +156,7 @@ public class PropertyActorIT {
         TestKit testKit = new TestKit(system);
 
         ExposedThing thing = getExposedCounterThing();
-        ExposedThingProperty property = thing.getProperty("count");
+        ExposedThingProperty<Object> property = thing.getProperty("count");
         Props props = PropertyActor.props("count", property);
         ActorRef actorRef = system.actorOf(props);
 

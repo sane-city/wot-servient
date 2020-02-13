@@ -40,7 +40,7 @@ class KlimabotschafterClient {
                 List<String> monitoredPropertyNames = Arrays.asList("Upload_time", "Temp_2m");
                 for (String name : monitoredPropertyNames) {
                     System.out.println("Monitor changes of Property \"" + name + "\"");
-                    ConsumedThingProperty property = consumedThing.getProperty(name);
+                    ConsumedThingProperty<Object> property = consumedThing.getProperty(name);
                     Object value = property.read().get();
                     System.out.println("Current value of \"" + name + "\" is " + value);
                     property.subscribe(newValue -> System.out.println("Value of \"" + name + "\" has changed to " + newValue));

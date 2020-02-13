@@ -161,7 +161,7 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     private void exposeProperties(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             String href = getHrefWithVariablePattern(address, thing, "properties", name, property);
             Form.Builder form = new Form.Builder();

@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
-public class ConsumedThingProperty extends ThingProperty<Object> {
+public class ConsumedThingProperty<T> extends ThingProperty<T> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingProperty(String name, ThingProperty<Object> property, ConsumedThing thing) {
+    public ConsumedThingProperty(String name, ThingProperty<T> property, ConsumedThing thing) {
         this.name = name;
 
         objectType = property.getObjectType();
@@ -87,7 +87,7 @@ public class ConsumedThingProperty extends ThingProperty<Object> {
                 '}';
     }
 
-    public CompletableFuture<Object> read() {
+    public CompletableFuture<T> read() {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.READ_PROPERTY);
             ProtocolClient client = clientAndForm.first();
@@ -110,7 +110,7 @@ public class ConsumedThingProperty extends ThingProperty<Object> {
         }
     }
 
-    public CompletableFuture<Object> write(Object value) {
+    public CompletableFuture<T> write(T value) {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.WRITE_PROPERTY);
             ProtocolClient client = clientAndForm.first();
@@ -138,13 +138,13 @@ public class ConsumedThingProperty extends ThingProperty<Object> {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next,
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next,
                                                      Consumer<Throwable> error,
                                                      Runnable complete) throws ConsumedThingException {
         return subscribe(new Observer<>(next, error, complete));
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Observer<T> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
@@ -154,7 +154,7 @@ public class ConsumedThingProperty extends ThingProperty<Object> {
             return client.subscribeResource(form,
                     content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, this);
+                            T value = ContentManager.contentToValue(content, this);
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {
@@ -168,7 +168,7 @@ public class ConsumedThingProperty extends ThingProperty<Object> {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
 }

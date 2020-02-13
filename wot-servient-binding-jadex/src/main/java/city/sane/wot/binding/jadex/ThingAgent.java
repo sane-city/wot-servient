@@ -61,7 +61,7 @@ public class ThingAgent implements ThingService {
         // properties
         //
 
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         if (!properties.isEmpty()) {
             // make reporting of all properties optional?
             if (true) {
@@ -164,7 +164,7 @@ public class ThingAgent implements ThingService {
 
     @Override
     public IFuture<JadexContent> readProperty(String name) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         CompletableFuture<JadexContent> result = property.read().thenApply(value -> {
             try {
                 Content content = ContentManager.valueToContent(value, ContentManager.DEFAULT);
@@ -181,7 +181,7 @@ public class ThingAgent implements ThingService {
 
     @Override
     public IFuture<JadexContent> writeProperty(String name, JadexContent content) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
 
         try {
             Object value = ContentManager.contentToValue(content.fromJadex(), property);

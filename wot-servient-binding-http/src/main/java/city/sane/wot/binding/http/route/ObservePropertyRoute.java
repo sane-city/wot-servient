@@ -32,7 +32,7 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
                                        String requestContentType,
                                        String name,
                                        ExposedThing thing) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         if (property != null) {
             if (!property.isWriteOnly() && property.isObservable()) {
                 CompletableFuture<Object> result = subscribeForNextData(response, requestContentType, name, property);
@@ -59,7 +59,7 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
     private CompletableFuture<Object> subscribeForNextData(Response response,
                                                            String requestContentType,
                                                            String name,
-                                                           ExposedThingProperty property) {
+                                                           ExposedThingProperty<Object> property) {
         CompletableFuture<Object> result = new CompletableFuture();
         Subscription subscription = property.subscribe(
                 data -> {

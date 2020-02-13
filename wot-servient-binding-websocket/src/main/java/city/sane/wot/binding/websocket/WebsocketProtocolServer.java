@@ -127,7 +127,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeProperties(ExposedThing thing, String address) {
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             if (!property.isWriteOnly()) {
                 property.addForm(new Form.Builder()
