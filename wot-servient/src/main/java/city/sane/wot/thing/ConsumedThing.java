@@ -34,7 +34,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  * reading and writing Properties), invoke Actions, subscribe and unsubscribe for Property changes
  * and Events. https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
-public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, ConsumedThingAction, ConsumedThingEvent> {
+public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, ConsumedThingAction<Object, Object>, ConsumedThingEvent<Object>> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
     private static final String DEFAULT_OBJECT_TYPE = "Thing";
     private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
@@ -65,11 +65,11 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
             Map<String, ThingProperty> properties = thing.getProperties();
             properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty<Object>(name, property, this)));
 
-            Map<String, ThingAction> actions = thing.getActions();
+            Map<String, ThingAction<Object, Object>> actions = thing.getActions();
             actions.forEach((name, action) -> this.actions.put(name, new ConsumedThingAction(name, action, this)));
 
-            Map<String, ThingEvent> events = thing.getEvents();
-            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent(name, event, this)));
+            Map<String, ThingEvent<Object>> events = thing.getEvents();
+            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent<Object>(name, event, this)));
         }
     }
 

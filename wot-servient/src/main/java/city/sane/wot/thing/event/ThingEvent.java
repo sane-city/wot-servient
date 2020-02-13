@@ -15,10 +15,10 @@ import java.util.Objects;
  * to build new thing event models. Used in combination with {@link city.sane.wot.thing.Thing}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ThingEvent extends ThingInteraction<ThingEvent> {
+public class ThingEvent<T> extends ThingInteraction<ThingEvent<T>> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    DataSchema data = new StringSchema();
+    DataSchema<T> data;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String type;
 
@@ -26,7 +26,7 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
         return type;
     }
 
-    public DataSchema getData() {
+    public DataSchema<T> getData() {
         return data;
     }
 
@@ -46,7 +46,7 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
         if (!super.equals(o)) {
             return false;
         }
-        ThingEvent that = (ThingEvent) o;
+        ThingEvent<Object> that = (ThingEvent<Object>) o;
         return Objects.equals(data, that.data) && Objects.equals(type, that.type);
     }
 
@@ -66,7 +66,7 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
      * Allows building new {@link ThingEvent} objects.
      */
     public static class Builder extends AbstractBuilder<Builder> {
-        private DataSchema data;
+        private DataSchema data = new StringSchema();
         private String type;
 
         public ThingEvent.Builder setData(DataSchema data) {
@@ -80,8 +80,8 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
         }
 
         @Override
-        public ThingEvent build() {
-            ThingEvent event = new ThingEvent();
+        public ThingEvent<Object> build() {
+            ThingEvent<Object> event = new ThingEvent<Object>();
             event.data = data;
             event.type = type;
             applyInteractionParameters(event);

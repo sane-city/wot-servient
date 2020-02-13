@@ -31,7 +31,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
                                        String requestContentType,
                                        String name,
                                        ExposedThing thing) {
-        ExposedThingAction action = thing.getAction(name);
+        ExposedThingAction<Object, Object> action = thing.getAction(name);
         if (action != null) {
             try {
                 Content content = new Content(requestContentType, request.bodyAsBytes());

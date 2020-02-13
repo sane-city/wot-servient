@@ -30,7 +30,7 @@ public class SubscribeEvent extends ThingInteraction {
 
         if (thing != null) {
             String name = getName();
-            ExposedThingEvent event = thing.getEvent(name);
+            ExposedThingEvent<Object> event = thing.getEvent(name);
 
             if (event != null) {
                 event.subscribe(next -> {

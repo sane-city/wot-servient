@@ -15,15 +15,15 @@ import java.util.Objects;
  * to build new thing action models. Used in combination with {@link city.sane.wot.thing.Thing}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ThingAction extends ThingInteraction<ThingAction> {
+public class ThingAction<I, O> extends ThingInteraction<ThingAction<I, O>> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    DataSchema input = new StringSchema();
+    DataSchema<I> input;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
-    DataSchema output = new StringSchema();
+    DataSchema<O> output;
 
-    ThingAction(DataSchema input, DataSchema output) {
+    ThingAction(DataSchema<I> input, DataSchema<O> output) {
         this.input = input;
         this.output = output;
     }
@@ -31,11 +31,11 @@ public class ThingAction extends ThingInteraction<ThingAction> {
     public ThingAction() {
     }
 
-    public DataSchema getInput() {
+    public DataSchema<I> getInput() {
         return input;
     }
 
-    public DataSchema getOutput() {
+    public DataSchema<O> getOutput() {
         return output;
     }
 
@@ -55,7 +55,7 @@ public class ThingAction extends ThingInteraction<ThingAction> {
         if (!super.equals(o)) {
             return false;
         }
-        ThingAction that = (ThingAction) o;
+        ThingAction<Object, Object> that = (ThingAction<Object, Object>) o;
         return Objects.equals(input, that.input) && Objects.equals(output, that.output);
     }
 
@@ -75,8 +75,8 @@ public class ThingAction extends ThingInteraction<ThingAction> {
      * Allows building new {@link ThingAction} objects.
      */
     public static class Builder extends AbstractBuilder<Builder> {
-        private DataSchema input;
-        private DataSchema output;
+        private DataSchema input = new StringSchema();
+        private DataSchema output = new StringSchema();
 
         public Builder setInput(DataSchema input) {
             this.input = input;
@@ -89,8 +89,8 @@ public class ThingAction extends ThingInteraction<ThingAction> {
         }
 
         @Override
-        public ThingAction build() {
-            ThingAction action = new ThingAction(input, output);
+        public ThingAction<Object, Object> build() {
+            ThingAction<Object, Object> action = new ThingAction<Object, Object>(input, output);
             applyInteractionParameters(action);
             return action;
         }

@@ -18,10 +18,10 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
  */
 class EventsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private final Map<String, ExposedThingEvent> events;
+    private final Map<String, ExposedThingEvent<Object>> events;
     private final Set<ActorRef> children = new HashSet<>();
 
-    private EventsActor(Map<String, ExposedThingEvent> events) {
+    private EventsActor(Map<String, ExposedThingEvent<Object>> events) {
         this.events = events;
     }
 
@@ -63,7 +63,7 @@ class EventsActor extends AbstractActor {
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    public static Props props(Map<String, ExposedThingEvent> properties) {
+    public static Props props(Map<String, ExposedThingEvent<Object>> properties) {
         return Props.create(EventsActor.class, () -> new EventsActor(properties));
     }
 }

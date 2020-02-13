@@ -13,13 +13,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingEvent}.
  */
-public class ExposedThingEvent extends ThingEvent implements Subscribable<Object> {
+public class ExposedThingEvent<T> extends ThingEvent<T> implements Subscribable<T> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
     private final String name;
     @JsonIgnore
-    private final EventState<Object> state = new EventState<Object>();
+    private final EventState<T> state = new EventState<>();
 
-    public ExposedThingEvent(String name, ThingEvent event) {
+    public ExposedThingEvent(String name, ThingEvent<T> event) {
         this.name = name;
         description = event.getDescription();
         descriptions = event.getDescriptions();
@@ -52,7 +52,7 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
                 '}';
     }
 
-    public EventState<Object> getState() {
+    public EventState<T> getState() {
         return state;
     }
 
@@ -66,7 +66,7 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
     }
 
     @Override
-    public Subscription subscribe(Observer<Object> observer) {
+    public Subscription subscribe(Observer<T> observer) {
         return state.getSubject().subscribe(observer);
     }
 }

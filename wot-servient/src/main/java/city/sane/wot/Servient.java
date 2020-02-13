@@ -147,9 +147,9 @@ public class Servient {
         thing.setBase("");
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.expose(thing)).toArray(CompletableFuture[]::new);
@@ -185,9 +185,9 @@ public class Servient {
         // reset forms
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.destroy(thing)).toArray(CompletableFuture[]::new);

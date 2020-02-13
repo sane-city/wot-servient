@@ -96,7 +96,7 @@ public class ObservePropertyRouteIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -106,7 +106,7 @@ public class ObservePropertyRouteIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -114,7 +114,7 @@ public class ObservePropertyRouteIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent());
+        thing.addEvent("change", new ThingEvent<Object>());
 
         return thing;
     }

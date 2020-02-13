@@ -15,7 +15,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsumedThingActionTest {
-    private ThingAction action;
+    private ThingAction<Object, Object> action;
     private ConsumedThing thing;
     private ProtocolClient client;
     private Form form;
@@ -29,7 +29,7 @@ public class ConsumedThingActionTest {
     }
 
     @Test
-    public void invoke() throws ConsumedThingException {
+    public void invokeShouldCallUnderlyingClient() throws ConsumedThingException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(form.getHref()).thenReturn("test:/myAction");
         when(client.invokeResource(any(), any())).thenReturn(completedFuture(null));

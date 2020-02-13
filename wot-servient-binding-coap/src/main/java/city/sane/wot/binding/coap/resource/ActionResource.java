@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ActionResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(ActionResource.class);
-    private final ExposedThingAction action;
+    private final ExposedThingAction<Object, Object> action;
 
-    public ActionResource(String name, ExposedThingAction action) {
+    public ActionResource(String name, ExposedThingAction<Object, Object> action) {
         super(name);
         this.action = action;
     }

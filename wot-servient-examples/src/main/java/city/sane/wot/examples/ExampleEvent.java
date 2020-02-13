@@ -31,7 +31,7 @@ class ExampleEvent {
         System.out.println("Produced " + exposedThing.getId());
 
         AtomicInteger counter = new AtomicInteger();
-        exposedThing.addAction("reset", new ThingAction(),
+        exposedThing.addAction("reset", new ThingAction<Object, Object>(),
                 () -> {
                     System.out.println("Resetting");
                     counter.set(0);
