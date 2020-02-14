@@ -37,7 +37,7 @@ public class InvokeActionRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.post(":id/actions/:name", new InvokeActionRoute(Map.of("counter", getCounterThing())));
+        service.post(":id/actions/:name", new InvokeActionRoute(null, null, Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {

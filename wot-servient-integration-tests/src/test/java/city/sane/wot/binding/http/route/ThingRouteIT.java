@@ -35,7 +35,7 @@ public class ThingRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id", new ThingRoute(Map.of("counter", getCounterThing())));
+        service.get(":id", new ThingRoute(null, null, Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {

@@ -42,7 +42,7 @@ public class WebsocketProtocolServerIT {
     @Before
     public void setup() {
         server = new WebsocketProtocolServer(ConfigFactory.load());
-        server.start().join();
+        server.start(null).join();
 
         thing = getCounterThing();
         server.expose(thing).join();

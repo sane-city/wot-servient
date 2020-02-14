@@ -44,7 +44,7 @@ public class ProtocolServerIT {
             server = protocolServerClass.getConstructor().newInstance();
         }
 
-        server.start().join();
+        server.start(null).join();
     }
 
     @After
@@ -54,7 +54,7 @@ public class ProtocolServerIT {
 
     @Test
     public void duplicateStart() throws ExecutionException, InterruptedException {
-        assertNull(server.start().get());
+        assertNull(server.start(null).get());
     }
 
     @Test

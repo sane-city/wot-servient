@@ -1,5 +1,6 @@
 package city.sane.wot.binding.jadex;
 
+import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
@@ -36,7 +37,7 @@ public class JadexProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("JadexServer is starting Jadex Platform");
 
         if (platform != null) {

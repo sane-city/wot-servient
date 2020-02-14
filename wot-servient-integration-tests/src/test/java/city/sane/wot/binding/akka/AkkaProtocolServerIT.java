@@ -21,7 +21,7 @@ public class AkkaProtocolServerIT {
     @Before
     public void setUp() {
         server = new AkkaProtocolServer(ConfigFactory.load());
-        server.start().join();
+        server.start(null).join();
     }
 
     @After

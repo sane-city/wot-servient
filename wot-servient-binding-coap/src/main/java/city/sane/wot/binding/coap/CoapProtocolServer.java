@@ -64,7 +64,7 @@ public class CoapProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("Starting on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server != null) {

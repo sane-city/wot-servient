@@ -21,7 +21,7 @@ public class CoapProtocolServerIT {
     @Before
     public void setUp() {
         server = new CoapProtocolServer(ConfigFactory.load());
-        server.start().join();
+        server.start(null).join();
     }
 
     @After

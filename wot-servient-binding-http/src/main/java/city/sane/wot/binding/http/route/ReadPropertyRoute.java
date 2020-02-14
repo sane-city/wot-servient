@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -16,8 +17,9 @@ import java.util.concurrent.ExecutionException;
  * Endpoint for reading values from a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class ReadPropertyRoute extends AbstractInteractionRoute {
-    public ReadPropertyRoute(Map<String, ExposedThing> things) {
-        super(things);
+    public ReadPropertyRoute(Servient servient, String securityScheme,
+                             Map<String, ExposedThing> things) {
+        super(servient, securityScheme, things);
     }
 
     @Override

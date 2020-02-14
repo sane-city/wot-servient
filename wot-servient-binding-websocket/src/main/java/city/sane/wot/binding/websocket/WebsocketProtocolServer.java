@@ -68,7 +68,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         if (serverChannel != null) {
             return CompletableFuture.completedFuture(null);
         }

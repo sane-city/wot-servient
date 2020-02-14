@@ -35,7 +35,7 @@ public class ReadAllPropertiesRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id/all/properties", new ReadAllPropertiesRoute(Map.of("counter", getCounterThing())));
+        service.get(":id/all/properties", new ReadAllPropertiesRoute(null, null, Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {
