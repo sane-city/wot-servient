@@ -17,7 +17,6 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,11 +40,8 @@ public class AkkaProtocolClientIT {
     public void setUp() {
         clientFactory = new AkkaProtocolClientFactory(ConfigFactory.load());
         clientFactory.init().join();
-
         client = clientFactory.getClient();
-
-        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server");
-        system = ActorSystem.create("my-server", config);
+        system = clientFactory.getActorSystem();
     }
 
     @After

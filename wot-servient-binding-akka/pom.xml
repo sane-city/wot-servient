@@ -17,6 +17,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>city.sane.wot-servient</groupId>
             <artifactId>wot-servient</artifactId>
             <version>${project.version}</version>
