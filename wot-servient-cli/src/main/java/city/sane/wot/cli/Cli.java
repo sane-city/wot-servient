@@ -176,7 +176,10 @@ class Cli {
             try {
                 future.get();
             }
-            catch (InterruptedException | ExecutionException | CancellationException e) {
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException | CancellationException e) {
                 throw new RuntimeException(e);
             }
         });

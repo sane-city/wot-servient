@@ -81,7 +81,7 @@ public class ThingEvent<T> extends ThingInteraction<ThingEvent<T>> {
 
         @Override
         public ThingEvent<Object> build() {
-            ThingEvent<Object> event = new ThingEvent<Object>();
+            ThingEvent<Object> event = new ThingEvent<>();
             event.data = data;
             event.type = type;
             applyInteractionParameters(event);

@@ -14,7 +14,7 @@ public class TextWebSocketFrameDecoder extends MessageToMessageDecoder<TextWebSo
 
     @Override
     protected void decode(ChannelHandlerContext ctx, TextWebSocketFrame frame, List<Object> out) {
-        String text = ((TextWebSocketFrame) frame).text();
+        String text = frame.text();
         log.info("Received text: {}", text);
         out.add(text);
     }

@@ -2,7 +2,6 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.handler.codec.JsonDecoder;
 import city.sane.wot.binding.handler.codec.JsonEncoder;
 import city.sane.wot.binding.websocket.handler.WebsocketClientHandshakerHandler;
@@ -68,7 +67,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) throws ProtocolClientNotImplementedException {
+                                                             Observer<Content> observer) {
         Object message = form.getOptional("websocket:message");
         if (message != null) {
             try {
@@ -97,7 +96,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     private Subscription observe(WebsocketClient client,
                                  AbstractClientMessage request,
-                                 Observer<Content> observer) throws ProtocolClientException {
+                                 Observer<Content> observer) {
         log.debug("Websocket client for socket '{}' is sending message: {}", client.getURI(), request);
         openRequests.put(request.getId(), m -> {
             if (m instanceof SubscribeNextResponse) {

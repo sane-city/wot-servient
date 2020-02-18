@@ -90,7 +90,7 @@ public class ThingAction<I, O> extends ThingInteraction<ThingAction<I, O>> {
 
         @Override
         public ThingAction<Object, Object> build() {
-            ThingAction<Object, Object> action = new ThingAction<Object, Object>(input, output);
+            ThingAction<Object, Object> action = new ThingAction<>(input, output);
             applyInteractionParameters(action);
             return action;
         }

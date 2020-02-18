@@ -39,7 +39,11 @@ public class ReadPropertyRoute extends AbstractInteractionRoute {
                     response.type(content.getType());
                     return content;
                 }
-                catch (ContentCodecException | InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                catch (ContentCodecException | ExecutionException e) {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                     return e;
                 }

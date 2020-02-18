@@ -4,7 +4,6 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
-import city.sane.wot.thing.ConsumedThingException;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -15,7 +14,7 @@ import java.util.TimerTask;
  * periodically.
  */
 class MqttSubscribe {
-    public static void main(String[] args) throws ConsumedThingException, IOException, WotException {
+    public static void main(String[] args) throws IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

@@ -72,7 +72,7 @@ class EventActor extends AbstractActor {
                         sender.tell(new SubscriptionNext(content), getSelf());
                     }
                     catch (ContentCodecException e) {
-                        // TODO: handle exception
+                        sender.tell(new SubscriptionError(e), getSelf());
                     }
                 },
                 e -> sender.tell(new SubscriptionError(e), getSelf()),

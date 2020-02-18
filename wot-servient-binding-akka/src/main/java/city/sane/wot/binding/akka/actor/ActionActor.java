@@ -53,7 +53,6 @@ public class ActionActor extends AbstractActor {
 
     @Override
     public AbstractActor.Receive createReceive() {
-        // FIXME: Add support for invoking this action
         return receiveBuilder()
                 .match(Invoke.class, this::read)
                 .build();

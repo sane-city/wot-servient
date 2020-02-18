@@ -418,8 +418,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
 
         @Override
         public Thing build() {
-            Thing thing = new Thing(objectType, objectContext, id, title, titles, description, descriptions, properties, actions, events, forms, security, securityDefinitions, base);
-            return thing;
+            return new Thing(objectType, objectContext, id, title, titles, description, descriptions, properties, actions, events, forms, security, securityDefinitions, base);
         }
     }
 }

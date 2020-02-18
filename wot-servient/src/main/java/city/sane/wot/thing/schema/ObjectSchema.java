@@ -2,10 +2,7 @@ package city.sane.wot.thing.schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Describes data of type <a href="https://www.w3.org/TR/wot-thing-description/#objectschema">object</a>.
@@ -41,6 +38,27 @@ public class ObjectSchema extends AbstractDataSchema<Map> {
     @Override
     public String toString() {
         return "ObjectSchema{}";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getProperties(), getRequired());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ObjectSchema)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ObjectSchema that = (ObjectSchema) o;
+        return Objects.equals(getProperties(), that.getProperties()) &&
+                Objects.equals(getRequired(), that.getRequired());
     }
 
     public Map<String, DataSchema> getProperties() {

@@ -42,7 +42,11 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
                 try {
                     return result.get();
                 }
-                catch (InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                catch (ExecutionException e) {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                     return e;
                 }

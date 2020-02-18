@@ -130,7 +130,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addEvent(String name, ThingEvent<Object> event) {
-        ExposedThingEvent<Object> exposedEvent = new ExposedThingEvent<Object>(name, event);
+        ExposedThingEvent<Object> exposedEvent = new ExposedThingEvent<>(name, event);
         events.put(name, exposedEvent);
 
         return this;
@@ -220,7 +220,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
                                   BiFunction<Object, Map<String, Object>, CompletableFuture<Object>> handler) {
         log.debug("'{}' adding Action '{}'", getId(), name);
 
-        ExposedThingAction<Object, Object> exposedAction = new ExposedThingAction<Object, Object>(name, action, this);
+        ExposedThingAction<Object, Object> exposedAction = new ExposedThingAction<>(name, action, this);
         exposedAction.getState().setHandler(handler);
         actions.put(name, exposedAction);
 

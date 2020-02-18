@@ -14,7 +14,6 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -37,7 +36,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
@@ -98,8 +96,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 serverChannel = null;
             }
             catch (InterruptedException e) {
-                log.warn("Stop failed", e);
-                throw new CompletionException(e);
+                Thread.currentThread().interrupt();
             }
         });
     }
