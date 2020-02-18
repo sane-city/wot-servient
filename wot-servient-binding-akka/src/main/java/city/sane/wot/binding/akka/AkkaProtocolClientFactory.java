@@ -50,9 +50,9 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     public CompletableFuture<Void> init() {
         String actorSystemName = config.getString("wot.servient.akka.client.system-name");
         Config actorSystemConfig = config.getConfig("wot.servient.akka.client")
-                .withFallback(ConfigFactory.defaultOverrides());
+                .withFallback(ConfigFactory.load());
 
-        log.debug("Expose Actor System");
+        log.debug("Init Actor System");
         system = ActorSystem.create(actorSystemName, actorSystemConfig);
 
         return CompletableFuture.runAsync(() -> {

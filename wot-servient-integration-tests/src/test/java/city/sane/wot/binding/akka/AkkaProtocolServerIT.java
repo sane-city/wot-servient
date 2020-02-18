@@ -31,7 +31,7 @@ public class AkkaProtocolServerIT {
 
     @Test
     public void getDirectoryUrl() throws URISyntaxException {
-        assertEquals(new URI("akka://wot@127.0.0.1:2552/user/things"), server.getDirectoryUrl());
+        assertEquals(new URI("akka://wot@127.0.0.1:25520/user/things"), server.getDirectoryUrl());
     }
 
     private ExposedThing getCounterThing() {

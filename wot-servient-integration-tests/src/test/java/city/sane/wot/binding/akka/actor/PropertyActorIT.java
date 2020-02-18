@@ -35,7 +35,7 @@ public class PropertyActorIT {
 
     @Before
     public void setUp() {
-        Config config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(ConfigFactory.load());
+        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server");
         system = ActorSystem.create("my-system", config);
     }
 
