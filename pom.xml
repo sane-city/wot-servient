@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>city.sane.wot-servient</groupId>
@@ -10,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
-        <akka.version>2.5.23</akka.version>
+        <akka.version>2.6.3</akka.version>
         <netty.version>4.1.39.Final</netty.version>
     </properties>
 
@@ -194,32 +193,32 @@
             <!-- akka -->
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-actor_2.12</artifactId>
+                <artifactId>akka-actor_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-remote_2.12</artifactId>
+                <artifactId>akka-remote_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-cluster_2.12</artifactId>
+                <artifactId>akka-cluster_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-cluster-tools_2.12</artifactId>
+                <artifactId>akka-cluster-tools_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-slf4j_2.12</artifactId>
+                <artifactId>akka-slf4j_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-testkit_2.12</artifactId>
+                <artifactId>akka-testkit_2.13</artifactId>
                 <version>${akka.version}</version>
                 <scope>test</scope>
             </dependency>
