@@ -11,23 +11,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor creates a {@link PropertyActor} for each {@link ExposedThingProperty}.
  */
-public class PropertiesActor extends AbstractActor {
+class PropertiesActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private final Map<String, ExposedThingProperty> properties;
+    private final Map<String, ExposedThingProperty<Object>> properties;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public PropertiesActor(Map<String, ExposedThingProperty> properties) {
+    private PropertiesActor(Map<String, ExposedThingProperty<Object>> properties) {
         this.properties = properties;
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!properties.isEmpty()) {
             properties.forEach((name, property) -> {
@@ -42,28 +42,28 @@ public class PropertiesActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::propertyExposed)
+                .match(Created.class, m -> propertyExposed())
                 .build();
     }
 
-    private void propertyExposed(Created m) {
+    private void propertyExposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }
     }
 
     private void done() {
-        log.info("All properties have been exposed");
+        log.debug("All properties have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    public static Props props(Map<String, ExposedThingProperty> properties) {
+    public static Props props(Map<String, ExposedThingProperty<Object>> properties) {
         return Props.create(PropertiesActor.class, () -> new PropertiesActor(properties));
     }
 }

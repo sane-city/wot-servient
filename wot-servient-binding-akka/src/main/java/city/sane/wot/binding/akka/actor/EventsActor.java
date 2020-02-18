@@ -11,23 +11,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor creates a {@link EventActor} for each {@link ExposedThingEvent}.
  */
-public class EventsActor extends AbstractActor {
+class EventsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private final Map<String, ExposedThingEvent> events;
+    private final Map<String, ExposedThingEvent<Object>> events;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public EventsActor(Map<String, ExposedThingEvent> events) {
+    private EventsActor(Map<String, ExposedThingEvent<Object>> events) {
         this.events = events;
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!events.isEmpty()) {
             events.forEach((name, event) -> {
@@ -42,28 +42,28 @@ public class EventsActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::eventExposed)
+                .match(Created.class, m -> eventExposed())
                 .build();
     }
 
-    private void eventExposed(Created m) {
+    private void eventExposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }
     }
 
     private void done() {
-        log.info("All events have been exposed");
+        log.debug("All events have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    public static Props props(Map<String, ExposedThingEvent> properties) {
+    public static Props props(Map<String, ExposedThingEvent<Object>> properties) {
         return Props.create(EventsActor.class, () -> new EventsActor(properties));
     }
 }

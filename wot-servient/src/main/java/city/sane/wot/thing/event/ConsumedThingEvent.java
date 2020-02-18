@@ -20,13 +20,12 @@ import java.util.function.Consumer;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingEvent}.
  */
-public class ConsumedThingEvent extends ThingEvent {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
-
+public class ConsumedThingEvent<T> extends ThingEvent<T> {
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingEvent(String name, ThingEvent event, ConsumedThing thing) {
+    public ConsumedThingEvent(String name, ThingEvent<T> event, ConsumedThing thing) {
         this.name = name;
         forms = event.getForms();
         type = event.getType();
@@ -34,34 +33,59 @@ public class ConsumedThingEvent extends ThingEvent {
         this.thing = thing;
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
-        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.subscribeevent);
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingEvent{" +
+                "name='" + name + '\'' +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next,
+                                                     Consumer<Throwable> error,
+                                                     Runnable complete) throws ConsumedThingException {
+        return subscribe(new Observer<>(next, error, complete));
+    }
+
+    public CompletableFuture<Subscription> subscribe(Observer<T> observer) throws ConsumedThingException {
+        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.SUBSCRIBE_EVENT);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 
-        log.debug("New subscription for '{}'", thing.getTitle());
+        log.debug("New subscription for Event '{}' from '{}'", name, thing.getId());
         try {
             return client.subscribeResource(form,
                     new Observer<>(content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, this.getData());
+                            T value = ContentManager.contentToValue(content, getData());
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {
                             observer.error(e);
                         }
-                    }, observer::next, observer::complete));
+                    }, observer::error, observer::complete));
         }
         catch (ProtocolClientException e) {
             throw new ConsumedThingException(e);
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next, Consumer<Throwable> error, Runnable complete) throws ConsumedThingException {
-        return subscribe(new Observer<>(next, error, complete));
-    }
-
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
 }

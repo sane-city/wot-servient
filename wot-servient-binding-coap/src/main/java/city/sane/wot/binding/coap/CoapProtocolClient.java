@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
  * Allows consuming Things via CoAP.
  */
 public class CoapProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
+    private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;
 
     public CoapProtocolClient(ExecutorService executor) {
@@ -40,9 +40,10 @@ public class CoapProtocolClient implements ProtocolClient {
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor)
                 .setTimeout(10 * 1000L);
-        log.debug("CoapClient sending {} to {}", "GET", url);
 
         Request request = generateRequest(form, CoAP.Code.GET);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
+
         client.advanced(new FutureCoapHandler(future), request);
 
         return future;
@@ -58,7 +59,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
-        log.debug("Sending '{}' to '{}'", request.getCode(), url);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
         if (content != null) {
             request.setPayload(content.getBody());
         }
@@ -78,7 +79,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.POST);
-        log.debug("Sending '{}' to '{}'", request.getCode(), url);
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
         if (content != null) {
             request.setPayload(content.getBody());
         }
@@ -89,7 +90,8 @@ public class CoapProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor);
@@ -99,7 +101,7 @@ public class CoapProtocolClient implements ProtocolClient {
         // Californium does not offer any method to wait until the observation is established...
         // This causes new values not being recognized directly after observation creation.
         // The client must wait "some" time before it can be sure that the observation is active.
-        log.debug("CoapClient subscribe {}", url);
+        log.debug("CoapClient subscribe to '{}'", url);
         client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
@@ -108,17 +110,17 @@ public class CoapProtocolClient implements ProtocolClient {
                     byte[] body = response.getPayload();
                     Content output = new Content(type, body);
                     if (response.isSuccess()) {
-                        log.debug("Next data received for subcription '{}'", url);
+                        log.debug("Next data received for subscription '{}'", url);
                         observer.next(output);
                     }
                     else {
                         subscription.unsubscribe();
                         try {
                             String error = ContentManager.contentToValue(output, new StringSchema());
-                            log.debug("Error received for subcription '{}': {}", url, error);
+                            log.debug("Error received for subscription '{}': {}", url, error);
                         }
                         catch (ContentCodecException e) {
-                            log.debug("Error received for subcription '{}': {}", url, e.getMessage());
+                            log.debug("Error received for subscription '{}': {}", url, e.getMessage());
                         }
                     }
                 }
@@ -128,12 +130,16 @@ public class CoapProtocolClient implements ProtocolClient {
             public void onError() {
                 if (!subscription.isClosed()) {
                     subscription.unsubscribe();
-                    log.debug("Error received for subcription '{}'", url);
+                    log.debug("Error received for subscription '{}'", url);
                 }
             }
         });
 
         return CompletableFuture.completedFuture(subscription);
+    }
+
+    private Request generateRequest(Form form, CoAP.Code code) {
+        return generateRequest(form, code, false);
     }
 
     private Request generateRequest(Form form, CoAP.Code code, boolean observable) {
@@ -153,20 +159,16 @@ public class CoapProtocolClient implements ProtocolClient {
         return request;
     }
 
-    private Request generateRequest(Form form, CoAP.Code code) {
-        return generateRequest(form, code, false);
-    }
-
     class FutureCoapHandler implements CoapHandler {
         private final CompletableFuture future;
 
-        public FutureCoapHandler(CompletableFuture future) {
+        FutureCoapHandler(CompletableFuture future) {
             this.future = future;
         }
 
         @Override
         public void onLoad(CoapResponse response) {
-            log.debug("Response receivend: {}", response.getCode());
+            log.debug("Response received: {}", response.getCode());
             String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
             byte[] body = response.getPayload();
             Content output = new Content(type, body);
@@ -176,17 +178,17 @@ public class CoapProtocolClient implements ProtocolClient {
             else {
                 try {
                     String error = ContentManager.contentToValue(output, new StringSchema());
-                    future.completeExceptionally(new ProtocolClientException("Response was not successful: " + error));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + response + " (" + error + ")"));
                 }
                 catch (ContentCodecException e) {
-                    future.completeExceptionally(new ProtocolClientException("Response was not successful: " + e.getMessage()));
+                    future.completeExceptionally(new ProtocolClientException("Request was not successful: " + response + " (" + e.getMessage() + ")"));
                 }
             }
         }
 
         @Override
         public void onError() {
-            future.completeExceptionally(new ProtocolClientException("Response was not successful"));
+            future.completeExceptionally(new ProtocolClientException("request timeouts or has been rejected by the server"));
         }
     }
 }

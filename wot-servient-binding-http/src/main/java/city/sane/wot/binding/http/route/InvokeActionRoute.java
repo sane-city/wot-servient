@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -13,83 +14,56 @@ import spark.Response;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Endpoint for invoking a {@link city.sane.wot.thing.action.ThingAction}.
  */
-public class InvokeActionRoute extends AbstractRoute {
+public class InvokeActionRoute extends AbstractInteractionRoute {
     static final Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
 
-    private final Map<String, ExposedThing> things;
-
-    public InvokeActionRoute(Map<String, ExposedThing> things) {
-        this.things = things;
+    public InvokeActionRoute(Servient servient, String securityScheme,
+                             Map<String, ExposedThing> things) {
+        super(servient, securityScheme, things);
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        log.info("Handle {} to '{}'", request.requestMethod(), request.url());
-        if (request.raw().getQueryString() != null && !request.raw().getQueryString().isEmpty()) {
-            log.info("Request parameters: {}", request.raw().getQueryString());
-        }
+    protected Object handleInteraction(Request request,
+                                       Response response,
+                                       String requestContentType,
+                                       String name,
+                                       ExposedThing thing) {
+        ExposedThingAction<Object, Object> action = thing.getAction(name);
+        if (action != null) {
+            try {
+                Content content = new Content(requestContentType, request.bodyAsBytes());
+                Object input = ContentManager.contentToValue(content, action.getInput());
 
-        String requestContentType = getOrDefaultRequestContentType(request);
-        if (!ContentManager.isSupportedMediaType(requestContentType)) {
-            log.warn("Unsupported media type: {}", requestContentType);
-            response.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415);
-            return "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
-        }
+                Map<String, Object> options = Map.of(
+                        "uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables())
+                );
 
-        String id = request.params(":id");
-        String name = request.params(":name");
+                Object value = action.invoke(input, options).get();
 
-        ExposedThing thing = things.get(id);
-        if (thing != null) {
-            ExposedThingAction action = thing.getAction(name);
-            if (action != null) {
-                try {
-                    Content content = new Content(requestContentType, request.bodyAsBytes());
-                    Object input = ContentManager.contentToValue(content, action.getInput());
-
-                    Map<String, Object> options = new HashMap<>() {{
-                        put("uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables()));
-                    }};
-
-                    Object value = action.invoke(input, options).get();
-
-                    try {
-                        Content outputContent = ContentManager.valueToContent(value, requestContentType);
-
-                        if (value != null) {
-                            response.type(content.getType());
-                            return outputContent;
-                        }
-                        else {
-                            return "";
-                        }
-                    }
-                    catch (ContentCodecException e) {
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        return e;
-                    }
-                }
-                catch (ContentCodecException e) {
-                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                    return e;
-                }
+                return respondWithValue(response, requestContentType, content, value);
             }
-            else {
-                response.status(HttpStatus.NOT_FOUND_404);
-                return "Action not found";
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+            catch (ContentCodecException | ExecutionException e) {
+                response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                return e;
             }
         }
         else {
             response.status(HttpStatus.NOT_FOUND_404);
-            return "Thing not found";
+            return "Action not found";
         }
     }
 
-    private Map<String, Object> parseUrlParameters(Map<String, String[]> urlParams, Map<String, Map> uriVariables) {
+    private Map<String, Object> parseUrlParameters(Map<String, String[]> urlParams,
+                                                   Map<String, Map> uriVariables) {
         log.debug("parse url parameters '{}' with uri variables '{}'", urlParams.keySet(), uriVariables);
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry<String, String[]> entry : urlParams.entrySet()) {
@@ -116,5 +90,26 @@ public class InvokeActionRoute extends AbstractRoute {
             }
         }
         return params;
+    }
+
+    private Object respondWithValue(Response response,
+                                    String requestContentType,
+                                    Content content,
+                                    Object value) {
+        try {
+            Content outputContent = ContentManager.valueToContent(value, requestContentType);
+
+            if (value != null) {
+                response.type(content.getType());
+                return outputContent;
+            }
+            else {
+                return "";
+            }
+        }
+        catch (ContentCodecException e) {
+            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+            return e;
+        }
     }
 }

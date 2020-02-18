@@ -20,13 +20,14 @@ import java.util.concurrent.CompletionException;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingAction}.
  */
-public class ConsumedThingAction extends ThingAction {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
-
+public class ConsumedThingAction<I, O> extends ThingAction<I, O> {
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingAction(String name, ThingAction action, ConsumedThing thing) {
+    public ConsumedThingAction(String name,
+                               ThingAction<I, O> action,
+                               ConsumedThing thing) {
         this.name = name;
         forms = action.getForms();
         input = action.getInput();
@@ -34,26 +35,66 @@ public class ConsumedThingAction extends ThingAction {
         this.thing = thing;
     }
 
-    public CompletableFuture invoke(Map<String, Object> parameters) {
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingAction{" +
+                "name='" + name + '\'' +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    /**
+     * Invokes this action without parameters. Returns a future with the return result of the
+     * action.
+     *
+     * @return
+     */
+    public CompletableFuture<O> invoke() {
+        return invoke(Collections.emptyMap());
+    }
+
+    /**
+     * Invokes this action and passes <code>parameters</codes> to it. Returns a future with the
+     * return result of the action.
+     *
+     * @param parameters contains a map with the names of the uri variables as keys and
+     *                   corresponding values (ex. <code>Map.of("step", 3)</code>).
+     * @return
+     */
+    public CompletableFuture<O> invoke(Map<String, Object> parameters) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.invokeaction);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.INVOKE_ACTION);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("Thing '{}' invoking Action '{}' with form '{}' and parameters '{}'", thing.getTitle(), name, form.getHref(), parameters);
+            log.debug("Thing '{}' invoking Action '{}' with form '{}' and parameters '{}'", thing.getId(), name, form.getHref(), parameters);
 
             Content input = null;
             if (!parameters.isEmpty()) {
                 input = ContentManager.valueToContent(parameters, form.getContentType());
             }
 
-            form = thing.handleUriVariables(form, parameters);
+            form = ConsumedThing.handleUriVariables(form, parameters);
 
             CompletableFuture<Content> result = client.invokeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this.getOutput());
-                    return value;
+                    return ContentManager.contentToValue(content, getOutput());
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
@@ -66,9 +107,5 @@ public class ConsumedThingAction extends ThingAction {
         catch (ConsumedThingException e) {
             throw new CompletionException(e);
         }
-    }
-
-    public CompletableFuture invoke() {
-        return invoke(Collections.emptyMap());
     }
 }

@@ -15,17 +15,15 @@ import scala.compat.java8.FutureConverters;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Creates new {@link AkkaProtocolClient} instances.
- * An Actor System is created for this purpose. The Actor System is intended for use in an
- * <a href="https://doc.akka.io/docs/akka/current/index-cluster.html">Akka Cluster</a> to discover and interaction with other Actor Systems.<br>
- * The Actor System can be configured via the configuration parameter "wot.servient.akka.client" (see
- * https://doc.akka.io/docs/akka/current/general/configuration.html).
+ * Creates new {@link AkkaProtocolClient} instances. An Actor System is created for this purpose.
+ * The Actor System is intended for use in an
+ * <a href="https://doc.akka.io/docs/akka/current/index-cluster.html">Akka Cluster</a> to discover
+ * and interaction with other Actor Systems.<br> The Actor System can be configured via the
+ * configuration parameter "wot.servient.akka.client" (see https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolClientFactory implements ProtocolClientFactory {
-    static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
-
+    private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
     private final Config config;
-
     private ActorSystem system = null;
     private ActorRef discoveryActor = null;
 
@@ -54,7 +52,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         Config actorSystemConfig = config.getConfig("wot.servient.akka.client")
                 .withFallback(ConfigFactory.defaultOverrides());
 
-        log.debug("Create Actor System");
+        log.debug("Expose Actor System");
         system = ActorSystem.create(actorSystemName, actorSystemConfig);
 
         return CompletableFuture.runAsync(() -> {

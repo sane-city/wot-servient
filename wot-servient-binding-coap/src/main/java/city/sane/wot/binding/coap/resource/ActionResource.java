@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.WotCoapServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -15,20 +14,17 @@ import org.slf4j.LoggerFactory;
  * Endpoint for interaction with a {@link city.sane.wot.thing.action.ThingAction}.
  */
 public class ActionResource extends AbstractResource {
-    static final Logger log = LoggerFactory.getLogger(ActionResource.class);
+    private static final Logger log = LoggerFactory.getLogger(ActionResource.class);
+    private final ExposedThingAction<Object, Object> action;
 
-    private final WotCoapServer server;
-    private final ExposedThingAction action;
-
-    public ActionResource(WotCoapServer server, String name, ExposedThingAction action) {
+    public ActionResource(String name, ExposedThingAction<Object, Object> action) {
         super(name);
-        this.server = server;
         this.action = action;
     }
 
     @Override
     public void handlePOST(CoapExchange exchange) {
-        log.info("Handle POST to '{}'", getURI());
+        log.debug("Handle POST to '{}'", getURI());
 
         String requestContentFormat = getOrDefaultRequestContentType(exchange);
         if (!ContentManager.isSupportedMediaType(requestContentFormat)) {

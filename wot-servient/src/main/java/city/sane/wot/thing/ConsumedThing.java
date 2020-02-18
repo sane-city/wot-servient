@@ -27,17 +27,17 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
- * Represents an object that extends a Thing with methods for client interactions (send request for reading and
- * writing Properties), invoke Actions, subscribe and unsubscribe for Property changes and Events.
- * https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
+ * Represents an object that extends a Thing with methods for client interactions (send request for
+ * reading and writing Properties), invoke Actions, subscribe and unsubscribe for Property changes
+ * and Events. https://w3c.github.io/wot-scripting-api/#the-consumedthing-interface
  */
-public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAction, ConsumedThingEvent> {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
-
-    public static final String DEFAULT_OBJECT_TYPE = "Thing";
-    public static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
-
+public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, ConsumedThingAction<Object, Object>, ConsumedThingEvent<Object>> {
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
+    private static final String DEFAULT_OBJECT_TYPE = "Thing";
+    private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();
 
@@ -63,34 +63,73 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
             base = thing.getBase();
 
             Map<String, ThingProperty> properties = thing.getProperties();
-            properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty(name, property, this)));
+            properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty<Object>(name, property, this)));
 
-            Map<String, ThingAction> actions = thing.getActions();
+            Map<String, ThingAction<Object, Object>> actions = thing.getActions();
             actions.forEach((name, action) -> this.actions.put(name, new ConsumedThingAction(name, action, this)));
 
-            Map<String, ThingEvent> events = thing.getEvents();
-            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent(name, event, this)));
+            Map<String, ThingEvent<Object>> events = thing.getEvents();
+            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent<Object>(name, event, this)));
         }
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
+    }
+
+    public Pair<ProtocolClient, Form> getClientFor(Form form,
+                                                   Operation op) throws ConsumedThingException {
+        return getClientFor(List.of(form), op);
+    }
+
     /**
-     * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given <code>op</code>.
-     * Throws an exception when no client can be found.
+     * Searches and returns a ProtocolClient in given <code>forms</code> that matches the given
+     * <code>op</code>. Throws an exception when no client can be found.
      *
      * @param forms
      * @param op
-     *
      * @return
      * @throws ConsumedThingException
      */
-    public Pair<ProtocolClient, Form> getClientFor(List<Form> forms, Operation op) throws ConsumedThingException {
+    public Pair<ProtocolClient, Form> getClientFor(List<Form> forms,
+                                                   Operation op) throws ConsumedThingException {
         if (forms.isEmpty()) {
-            throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+            throw new NoFormForInteractionConsumedThingException(getId(), op);
         }
 
-        Set<String> schemes = forms.stream().map(Form::getHrefScheme)
+        List<String> supportedSchemes = servient.getClientSchemes();
+        Set<String> schemes = forms.stream().map(Form::getHrefScheme).filter(Objects::nonNull).sorted(Comparator.comparingInt(supportedSchemes::indexOf))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        // TODO: sort schemes by priority?
+
+        if (schemes.isEmpty()) {
+            throw new NoFormForInteractionConsumedThingException("No schemes in forms found");
+        }
 
         String scheme = null;
         ProtocolClient client = null;
@@ -105,104 +144,79 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
 
         if (client != null) {
             // from cache
-            log.debug("'{}' chose cached client for '{}'", getTitle(), scheme);
+            log.debug("'{}' chose cached client for scheme '{}'", getId(), scheme);
         }
         else {
             // new client
-            log.debug("'{}' has no client in cache", getTitle());
+            log.debug("'{}' has no client in cache. Try to init client for one of the following schemes: {}", getId(), schemes);
 
-            try {
-                for (String s : schemes) {
-                    ProtocolClient c = servient.getClientFor(s);
-                    if (c != null) {
-                        scheme = s;
-                        client = c;
-                        break;
-                    }
-                }
-            }
-            catch (ProtocolClientException e) {
-                throw new ConsumedThingException("Unable to create client: " + e.getMessage());
-            }
+            Pair<String, ProtocolClient> protocolClient = initNewClientFor(schemes);
+            scheme = protocolClient.first();
+            client = protocolClient.second();
 
-            if (client == null) {
-                throw new ConsumedThingException("'" + getTitle() + "' missing ClientFactory for '" + schemes + "'");
-            }
-
-            // init client's security system
-            List<String> security = getSecurity();
-            if (!security.isEmpty()) {
-                log.debug("'{}' setting credentials for '{}'", getTitle(), client);
-                Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
-                List<SecurityScheme> metadata = security.stream().map(s -> securityDefinitions.get(s))
-                        .filter(Objects::nonNull).collect(Collectors.toList());
-
-                client.setSecurity(metadata, servient.getCredentials(id));
-            }
-
-            log.debug("'{}' got new client for '{}'", getTitle(), scheme);
+            log.debug("'{}' got new client for scheme '{}'", getId(), scheme);
             clients.put(scheme, client);
         }
 
         // find right operation and corresponding scheme in the array form
         Form form = null;
         for (Form f : forms) {
-            if (f.getOp() != null) {
-                if (f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
-                    form = f;
-                    break;
-                }
+            if (f.getOp() != null && f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
+                form = f;
+                break;
             }
         }
 
         if (form == null) {
             // if there no op was defined use default assignment
-            Optional<Form> nonOpForm = forms.stream().filter(f -> f.getOp().isEmpty()).findFirst();
+            String finalScheme = scheme;
+            Optional<Form> nonOpForm = forms.stream().filter(f -> (f.getOp() == null || f.getOp().isEmpty()) && f.getHrefScheme().equals(finalScheme)).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
             }
             else {
-                throw new NoFormForInteractionConsumedThingException("'" + getTitle() + "' has no form for interaction '" + op + "'");
+                throw new NoFormForInteractionConsumedThingException(getId(), op);
             }
         }
 
-        return new Pair(client, form);
+        return new Pair<>(client, form);
     }
 
-    /**
-     * Returns the values of all properties.
-     *
-     * @return
-     */
-    public CompletableFuture<Map<String, Object>> readProperties() {
+    private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.readallproperties);
-            ProtocolClient client = clientAndForm.first();
-            Form form = clientAndForm.second();
+            for (String scheme : schemes) {
+                ProtocolClient client = servient.getClientFor(scheme);
+                if (client != null) {
+                    // init client's security system
+                    List<String> security = getSecurity();
+                    if (!security.isEmpty()) {
+                        log.debug("'{}' setting credentials for '{}'", getId(), client);
+                        Map<String, SecurityScheme> securityDefinitions = getSecurityDefinitions();
+                        List<SecurityScheme> metadata = security.stream().map(securityDefinitions::get)
+                                .filter(Objects::nonNull).collect(Collectors.toList());
 
-            log.debug("'{}' reading '{}'", getTitle(), form.getHref());
+                        client.setSecurity(metadata, servient.getCredentials(id));
+                    }
 
-            CompletableFuture<Content> result = client.readResource(form);
-            return result.thenApply(content -> {
-                try {
-                    Map values = ContentManager.contentToValue(content, new ObjectSchema());
-                    return values;
+                    return new Pair<>(scheme, client);
                 }
-                catch (ContentCodecException e) {
-                    throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
-                }
-            });
+            }
+
+            throw new NoClientFactoryForSchemesConsumedThingException(getId(), schemes);
         }
-        catch (ConsumedThingException e) {
-            return CompletableFuture.failedFuture(e);
+        catch (ProtocolClientException e) {
+            throw new ConsumedThingException("Unable to create client: " + e.getMessage());
         }
+    }
+
+    public CompletableFuture<Map<String, Object>> readProperties(String... names) {
+        return readProperties(Arrays.asList(names));
     }
 
     /**
      * Returns the values of the properties contained in <code>names</code>.
      *
      * @param names
-     *
      * @return
      */
     public CompletableFuture<Map<String, Object>> readProperties(List<String> names) {
@@ -214,11 +228,39 @@ public class ConsumedThing extends Thing<ConsumedThingProperty, ConsumedThingAct
     }
 
     /**
-     * Creates new form (if needed) for URI Variables
-     * http://192.168.178.24:8080/counter/actions/increment{?step} with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
+     * Returns the values of all properties.
+     *
+     * @return
+     */
+    public CompletableFuture<Map<String, Object>> readProperties() {
+        try {
+            Pair<ProtocolClient, Form> clientAndForm = getClientFor(getForms(), Operation.READ_ALL_PROPERTIES);
+            ProtocolClient client = clientAndForm.first();
+            Form form = clientAndForm.second();
+
+            log.debug("'{}' reading '{}'", getId(), form.getHref());
+
+            CompletableFuture<Content> result = client.readResource(form);
+            return result.thenApply(content -> {
+                try {
+                    return ContentManager.contentToValue(content, new ObjectSchema());
+                }
+                catch (ContentCodecException e) {
+                    throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
+                }
+            });
+        }
+        catch (ConsumedThingException e) {
+            return failedFuture(e);
+        }
+    }
+
+    /**
+     * Creates new form (if needed) for URI Variables http://192.168.178.24:8080/counter/actions/increment{?step}
+     * with '{'step' : 3}' -&gt; http://192.168.178.24:8080/counter/actions/increment?step=3.<br>
      * see RFC6570 (https://tools.ietf.org/html/rfc6570) for URI Template syntax
      */
-    public Form handleUriVariables(Form form, Map<String, Object> parameters) {
+    public static Form handleUriVariables(Form form, Map<String, Object> parameters) {
         String href = form.getHref();
         UriTemplate uriTemplate = UriTemplate.fromTemplate(href);
         String updatedHref = uriTemplate.expand(parameters);

@@ -2,7 +2,9 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.property.ConsumedThingProperty;
 
 import java.io.IOException;
@@ -13,10 +15,11 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
+ * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some
+ * properties.
  */
-public class KlimabotschafterClient {
-    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, IOException {
+class KlimabotschafterClient {
+    public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 
@@ -24,7 +27,7 @@ public class KlimabotschafterClient {
         wot.fetch(url).whenComplete((thing, e) -> {
             try {
                 if (e != null) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
 
                 System.out.println("=== TD ===");
@@ -37,14 +40,16 @@ public class KlimabotschafterClient {
                 List<String> monitoredPropertyNames = Arrays.asList("Upload_time", "Temp_2m");
                 for (String name : monitoredPropertyNames) {
                     System.out.println("Monitor changes of Property \"" + name + "\"");
-                    ConsumedThingProperty property = consumedThing.getProperty(name);
+                    ConsumedThingProperty<Object> property = consumedThing.getProperty(name);
                     Object value = property.read().get();
                     System.out.println("Current value of \"" + name + "\" is " + value);
                     property.subscribe(newValue -> System.out.println("Value of \"" + name + "\" has changed to " + newValue));
                 }
-
             }
-            catch (Throwable ex) {
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException | ConsumedThingException ex) {
                 throw new RuntimeException(ex);
             }
         }).join();

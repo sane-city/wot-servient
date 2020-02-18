@@ -11,10 +11,10 @@ import java.util.List;
  */
 public interface ThingQuery extends Serializable {
     /**
-     * Applies the filter to the found things and returns only those things that meet the desired criteria
+     * Applies the filter to the found things and returns only those things that meet the desired
+     * criteria
      *
      * @param things
-     *
      * @return
      */
     List<Thing> filter(Collection<Thing> things);

@@ -1,15 +1,18 @@
-services:
-  - eclipse-mosquitto:1.6 # for mqtt client/server tests
 
 include:
   - local: /.gitlab-ci/Maven.gitlab-ci.yml # we have to use our own template, since GitLab's template uses JDK8, but we need JDK11
-  - template: Dependency-Scanning.gitlab-ci.yml
-  - template: Code-Quality.gitlab-ci.yml
-  - template: Docker.gitlab-ci.yml
-  - local: /.gitlab-ci/Docker-Testing.gitlab-ci.yml
-  - template: License-Management.gitlab-ci.yml
+#  - template: Dependency-Scanning.gitlab-ci.yml
+#  - template: Code-Quality.gitlab-ci.yml
+  - local: /.gitlab-ci/Docker.gitlab-ci.yml
+#  - template: License-Management.gitlab-ci.yml
+#  - template: SAST.gitlab-ci.yml
 
-license_management:
-  variables:
-    MAVEN_CLI_OPTS: -DskipTests
-    LM_JAVA_VERSION: 11
+#license_management:
+#  variables:
+#    MAVEN_CLI_OPTS: -DskipTests
+#    LM_JAVA_VERSION: 11
+#
+#sast:
+#  variables:
+#    MAVEN_CLI_OPTS: -DskipTests
+#    SAST_JAVA_VERSION: 11

@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
@@ -10,8 +11,8 @@ import city.sane.wot.thing.property.ThingProperty;
 /**
  * Produces and exposes a thing with change its description on interaction.
  */
-public class ExampleDynamic {
-    public static void main(String[] args) {
+class ExampleDynamic {
+    public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -21,9 +22,9 @@ public class ExampleDynamic {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
-        exposedThing.addAction("addProperty", new ThingAction(),
+        exposedThing.addAction("addProperty", new ThingAction<Object, Object>(),
                 () -> {
                     System.out.println("Adding Property");
                     exposedThing.addProperty("dynProperty",
@@ -34,7 +35,7 @@ public class ExampleDynamic {
                 }
         );
 
-        exposedThing.addAction("remProperty", new ThingAction(),
+        exposedThing.addAction("remProperty", new ThingAction<Object, Object>(),
                 () -> {
                     System.out.println("Removing Property");
                     exposedThing.removeProperty("dynProperty");

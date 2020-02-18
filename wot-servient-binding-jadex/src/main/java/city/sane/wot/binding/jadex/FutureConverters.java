@@ -6,10 +6,12 @@ import jadex.commons.future.IFuture;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Helper class for translating between jadex futures ({@link IFuture}) and java futures ({@link CompletableFuture}).
+ * Helper class for translating between jadex futures ({@link IFuture}) and java futures ({@link
+ * CompletableFuture}).
  */
-public class FutureConverters {
-    private FutureConverters() {}
+class FutureConverters {
+    private FutureConverters() {
+    }
 
     public static <T> CompletableFuture<T> fromJadex(IFuture<T> jadexFuture) {
         CompletableFuture<T> future = new CompletableFuture<>();

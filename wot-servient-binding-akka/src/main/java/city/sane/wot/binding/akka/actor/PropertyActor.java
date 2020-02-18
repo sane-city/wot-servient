@@ -12,67 +12,63 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 
-import java.io.Serializable;
-import java.util.Arrays;
-
-import static city.sane.wot.binding.akka.CrudMessages.Created;
 import static city.sane.wot.binding.akka.Messages.*;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This actor is responsible for the interaction with a {@link ExposedThingProperty}.
  */
-public class PropertyActor extends AbstractActor {
+class PropertyActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
-    private final ExposedThingProperty property;
+    private final ExposedThingProperty<Object> property;
 
-    public PropertyActor(String name, ExposedThingProperty property) {
+    private PropertyActor(String name, ExposedThingProperty<Object> property) {
         this.name = name;
         this.property = property;
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         String href = getSelf().path().toStringWithAddress(getContext().getSystem().provider().getDefaultAddress());
         Form.Builder builder = new Form.Builder()
                 .setHref(href)
                 .setContentType(ContentManager.DEFAULT);
-        if (property.isReadOnly()) {
-            builder.setOp(Operation.readproperty);
+        if (!property.isWriteOnly()) {
+            builder.setOp(Operation.READ_PROPERTY);
         }
-        else if (property.isWriteOnly()) {
-            builder.setOp(Operation.writeproperty);
+        if (!property.isReadOnly()) {
+            builder.addOp(Operation.WRITE_PROPERTY);
         }
-        else {
-            builder.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
+        if (property.isObservable()) {
+            builder.addOp(Operation.OBSERVE_PROPERTY);
         }
 
         property.addForm(builder.build());
-        log.info("Assign '{}' to Property '{}'", href, name);
+        log.debug("Assign '{}' to Property '{}'", href, name);
 
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
-
-        // TODO: add support for property observation
     }
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Read.class, this::read)
+                .match(Read.class, m -> read())
                 .match(Write.class, this::write)
-                .match(Subscribe.class, this::subscribe)
+                .match(Subscribe.class, m -> subscribe())
                 .build();
     }
 
-    private void read(Read m) {
+    private void read() {
         ActorRef sender = getSender();
+        log.debug("Received read message from {}", sender);
 
         property.read().whenComplete((value, e) -> {
             if (e != null) {
@@ -91,8 +87,10 @@ public class PropertyActor extends AbstractActor {
     }
 
     private void write(Write m) {
+        ActorRef sender = getSender();
+        log.debug("Received write message from {}", sender);
+
         try {
-            ActorRef sender = getSender();
             Content inputContent = m.content;
             Object input = ContentManager.contentToValue(inputContent, property);
 
@@ -102,25 +100,35 @@ public class PropertyActor extends AbstractActor {
                 }
                 else {
                     // TODO: return output if available
-                    sender.tell(new Written(new Content(ContentManager.DEFAULT, new byte[0])), getSelf());
+                    sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
                 }
             });
-
         }
         catch (ContentCodecException e) {
             log.warning("Unable to write property: {}", e.getMessage());
         }
     }
 
-    private void subscribe(Subscribe m) {
-        // FIXME: Implement
+    private void subscribe() {
+        ActorRef sender = getSender();
+        log.debug("Received subscribe message from {}", sender);
+
+        property.subscribe(
+                next -> {
+                    try {
+                        Content content = ContentManager.valueToContent(next);
+                        sender.tell(new SubscriptionNext(content), getSelf());
+                    }
+                    catch (ContentCodecException e) {
+                        // TODO: handle exception
+                    }
+                },
+                e -> sender.tell(new SubscriptionError(e), getSelf()),
+                () -> sender.tell(new SubscriptionComplete(), getSelf())
+        );
     }
 
-    public static Props props(String name, ExposedThingProperty property) {
+    public static Props props(String name, ExposedThingProperty<Object> property) {
         return Props.create(PropertyActor.class, () -> new PropertyActor(name, property));
-    }
-
-    public static class Subscribe implements Serializable {
-        // FIXME: Implement
     }
 }

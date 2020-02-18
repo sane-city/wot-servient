@@ -9,12 +9,21 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static java.util.concurrent.CompletableFuture.failedFuture;
 
 /**
  * The ScriptingManager executes WoT scripts in certain scripting languages.
  */
 public class ScriptingManager {
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
     private static final Map<String, ScriptingEngine> ENGINES = new HashMap();
+
+    private ScriptingManager() {
+    }
 
     /**
      * Adds support for the script language specified in <code>engine</code>.
@@ -35,13 +44,15 @@ public class ScriptingManager {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT object.
+     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT
+     * object.
      *
      * @param file
      * @param wot
+     * @return
      * @throws ScriptingManagerException
      */
-    public static void runScript(File file, Wot wot) throws ScriptingManagerException {
+    public static CompletableFuture<Void> runScript(File file, Wot wot) {
         Path path = file.toPath();
         try {
             String script = Files.readString(path);
@@ -49,38 +60,20 @@ public class ScriptingManager {
             String mediaType = extensionToMediaType(extension);
 
             if (mediaType == null) {
-                throw new ScriptingManagerException("No scripting engine available for extension '" + extension + "'");
+                return failedFuture(new ScriptingManagerException("No scripting engine available for extension '" + extension + "'"));
             }
 
-            runScript(script, mediaType, wot);
+            return runScript(script, mediaType, wot);
         }
         catch (IOException e) {
-            throw new ScriptingManagerException(e);
+            return failedFuture(new ScriptingManagerException(e));
         }
-    }
-
-    /**
-     * Executes the WoT script in <code>script</code> using engine that matches <code>mediaType</code> and passes <code>wot</code> to the script as WoT object.
-     *
-     * @param script
-     * @param mediaType
-     * @param wot
-     * @throws ScriptingManagerException
-     */
-    public static void runScript(String script, String mediaType, Wot wot) throws ScriptingManagerException {
-        ScriptingEngine engine = ENGINES.get(mediaType);
-
-        if (engine == null) {
-            throw new ScriptingManagerException("No scripting engine available for media type '" + mediaType + "'");
-        }
-
-        engine.runScript(script, wot);
     }
 
     private static String pathToExtension(Path path) {
         String pathStr = path.toString();
         if (pathStr.contains(".")) {
-            return pathStr.substring(pathStr.lastIndexOf("."));
+            return pathStr.substring(pathStr.lastIndexOf('.'));
         }
         else {
             return null;
@@ -89,11 +82,26 @@ public class ScriptingManager {
 
     private static String extensionToMediaType(String extension) {
         Optional<ScriptingEngine> engine = ENGINES.values().stream().filter(e -> e.getFileExtension().equals(extension)).findFirst();
-        if (engine.isPresent()) {
-            return engine.get().getMediaType();
+        return engine.map(ScriptingEngine::getMediaType).orElse(null);
+    }
+
+    /**
+     * Executes the WoT script in <code>script</code> using engine that matches
+     * <code>mediaType</code> and passes <code>wot</code> to the script as WoT object.
+     *
+     * @param script
+     * @param mediaType
+     * @param wot
+     * @return
+     * @throws ScriptingManagerException
+     */
+    public static CompletableFuture<Void> runScript(String script, String mediaType, Wot wot) {
+        ScriptingEngine engine = ENGINES.get(mediaType);
+
+        if (engine == null) {
+            return failedFuture(new ScriptingManagerException("No scripting engine available for media type '" + mediaType + "'"));
         }
-        else {
-            return null;
-        }
+
+        return engine.runScript(script, wot, EXECUTOR_SERVICE);
     }
 }

@@ -30,13 +30,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static jadex.commons.future.IFuture.DONE;
 
 /**
- * Allows consuming Things via Jadex Micro Agents.
- * The Jadex Platform created by {@link JadexProtocolClientFactory} is used for this purpose and thus enables interaction with exposed Things on other
- * platforms.
+ * Allows consuming Things via Jadex Micro Agents. The Jadex Platform created by {@link
+ * JadexProtocolClientFactory} is used for this purpose and thus enables interaction with exposed
+ * Things on other platforms.
  */
 public class JadexProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
-
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolClient.class);
     private final IExternalAccess platform;
 
     public JadexProtocolClient(IExternalAccess platform) {
@@ -124,26 +123,25 @@ public class JadexProtocolClient implements ProtocolClient {
             AtomicInteger ai = new AtomicInteger();
             ai.incrementAndGet(); // start searchServices()
             ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-            search.addResultListener(services -> {
-                Collection<Thing> things = new ArrayList<>();
-                services.forEach(service -> {
-                    ai.incrementAndGet(); // start get()
-                    service.get().addResultListener(json -> {
-                        Thing thing = Thing.fromJson(json);
-                        things.add(thing);
-                        if (ai.decrementAndGet() < 1) { // end get()
-                            if (filter.getQuery() != null) {
-                                // TODO: move filter to server-side
-                                List<Thing> filtered = filter.getQuery().filter(things);
-                                result.complete(filtered);
-                            }
-                            else {
-                                result.complete(things);
-                            }
-                        }
-                    }, result::completeExceptionally);
-                });
-                if (ai.decrementAndGet() < 1) { // end searchServices()
+            search.addResultListener(services -> discoverThingServices(filter, result, ai, services), result::completeExceptionally);
+
+            return DONE;
+        });
+
+        return result;
+    }
+
+    private void discoverThingServices(ThingFilter filter,
+                                       CompletableFuture<Collection<Thing>> result,
+                                       AtomicInteger ai,
+                                       Collection<ThingService> services) {
+        Collection<Thing> things = new ArrayList<>();
+        services.forEach(service -> {
+            ai.incrementAndGet(); // start get()
+            service.get().addResultListener(json -> {
+                Thing thing = Thing.fromJson(json);
+                things.add(thing);
+                if (ai.decrementAndGet() < 1) { // end get()
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side
                         List<Thing> filtered = filter.getQuery().filter(things);
@@ -154,36 +152,16 @@ public class JadexProtocolClient implements ProtocolClient {
                     }
                 }
             }, result::completeExceptionally);
-            return DONE;
         });
-
-        return result;
-    }
-
-    private Triple<String, String, String> parseAsReadResourceHref(String href) throws ProtocolClientException {
-        try {
-            URI uri = new URI(href);
-
-            String path = uri.getPath();
-            if (path.startsWith("/ThingService_")) {
-                String[] pathFragments = path.split("/", 4);
-                if (pathFragments.length == 4) {
-                    String serviceId = pathFragments[1];
-                    String type = pathFragments[2];
-                    String name = pathFragments[3];
-
-                    return new Triple<>(serviceId, type, name);
-                }
-                else {
-                    throw new ProtocolClientException("Bad href path: " + path);
-                }
+        if (ai.decrementAndGet() < 1) { // end searchServices()
+            if (filter.getQuery() != null) {
+                // TODO: move filter to server-side
+                List<Thing> filtered = filter.getQuery().filter(things);
+                result.complete(filtered);
             }
             else {
-                throw new ProtocolClientException("Href points to unexpected agent: " + uri);
+                result.complete(things);
             }
-        }
-        catch (URISyntaxException e) {
-            throw new ProtocolClientException(e);
         }
     }
 
@@ -213,7 +191,35 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
-    public CompletableFuture<ThingService> getThingService(IInternalAccess agent, String serviceId) {
+    private Triple<String, String, String> parseAsReadResourceHref(String href) throws ProtocolClientException {
+        try {
+            URI uri = new URI(href);
+
+            String path = uri.getPath();
+            if (path.startsWith("/ThingService_")) {
+                String[] pathFragments = path.split("/", 4);
+                if (pathFragments.length == 4) {
+                    String serviceId = pathFragments[1];
+                    String type = pathFragments[2];
+                    String name = pathFragments[3];
+
+                    return new Triple<>(serviceId, type, name);
+                }
+                else {
+                    throw new ProtocolClientException("Bad href path: " + path);
+                }
+            }
+            else {
+                throw new ProtocolClientException("Href points to unexpected agent: " + uri);
+            }
+        }
+        catch (URISyntaxException e) {
+            throw new ProtocolClientException(e);
+        }
+    }
+
+    private CompletableFuture<ThingService> getThingService(IInternalAccess agent,
+                                                            String serviceId) {
         log.debug("Search ThingService with id '{}'", serviceId);
         ServiceQuery<ThingService> query = new ServiceQuery(ThingService.class)
                 .setScope(ServiceScope.GLOBAL)

@@ -24,34 +24,34 @@ import java.util.stream.Collectors;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
-public class ConsumedThingProperty extends ThingProperty {
-    static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
-
+public class ConsumedThingProperty<T> extends ThingProperty<T> {
+    private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingProperty(String name, ThingProperty property, ConsumedThing thing) {
+    public ConsumedThingProperty(String name, ThingProperty<T> property, ConsumedThing thing) {
         this.name = name;
 
-        this.objectType = property.getObjectType();
-        this.description = property.getDescription();
-        this.type = property.getType();
-        this.observable = property.isObservable();
-        this.readOnly = property.isReadOnly();
-        this.writeOnly = property.isWriteOnly();
-        this.forms = normalizeHrefs(property.getForms(), thing);
-        this.uriVariables = property.getUriVariables();
-        this.optionalProperties = property.getOptionalProperties();
+        objectType = property.getObjectType();
+        description = property.getDescription();
+        type = property.getType();
+        observable = property.isObservable();
+        readOnly = property.isReadOnly();
+        writeOnly = property.isWriteOnly();
+        forms = normalizeHrefs(property.getForms(), thing);
+        uriVariables = property.getUriVariables();
+        optionalProperties = property.getOptionalProperties();
 
         this.thing = thing;
     }
+
     private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
         return forms.stream().map(f -> normalizeHref(f, thing)).collect(Collectors.toList());
     }
 
     private Form normalizeHref(Form form, ConsumedThing thing) {
         String base = thing.getBase();
-        if(base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
+        if (base != null && !base.isEmpty() && !form.getHref().matches("^(?i:[a-z+]+:).*")) {
             String normalizedHref = base + form.getHref();
             return new Form.Builder(form).setHref(normalizedHref).build();
         }
@@ -60,19 +60,45 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Object> read() {
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingProperty{" +
+                "name='" + name + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public CompletableFuture<T> read() {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.readproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.READ_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("Thing '{}' reading Property '{}' from '{}'", thing.getTitle(), name, form.getHref());
+            log.debug("Thing '{}' reading Property '{}' from '{}'", thing.getId(), name, form.getHref());
 
             CompletableFuture<Content> result = client.readResource(form);
             return result.thenApply(content -> {
                 try {
-                    Object value = ContentManager.contentToValue(content, this);
-                    return value;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
@@ -84,21 +110,20 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Object> write(Object value) {
+    public CompletableFuture<T> write(T value) {
         try {
-            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.writeproperty);
+            Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.WRITE_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("ConsumedThing {} reading {}", thing.getTitle(), form.getHref());
+            log.debug("ConsumedThing {} writing {}", thing.getId(), form.getHref());
 
             Content input = ContentManager.valueToContent(value, form.getContentType());
 
             CompletableFuture<Content> result = client.writeResource(form, input);
             return result.thenApply(content -> {
                 try {
-                    Object output = ContentManager.contentToValue(content, this);
-                    return output;
+                    return ContentManager.contentToValue(content, this);
                 }
                 catch (ContentCodecException e) {
                     throw new CompletionException(new ConsumedThingException("Received invalid writeResource from Thing: " + e.getMessage()));
@@ -113,17 +138,23 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
-        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.observeproperty);
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next,
+                                                     Consumer<Throwable> error,
+                                                     Runnable complete) throws ConsumedThingException {
+        return subscribe(new Observer<>(next, error, complete));
+    }
+
+    public CompletableFuture<Subscription> subscribe(Observer<T> observer) throws ConsumedThingException {
+        Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
 
-        log.debug("New subscription for '{}'", thing.getTitle());
+        log.debug("New subscription for '{}'", thing.getId());
         try {
             return client.subscribeResource(form,
                     content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, this);
+                            T value = ContentManager.contentToValue(content, this);
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {
@@ -137,11 +168,7 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next, Consumer<Throwable> error, Runnable complete) throws ConsumedThingException {
-        return subscribe(new Observer<>(next, error, complete));
-    }
-
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
 }

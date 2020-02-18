@@ -7,7 +7,8 @@ import jadex.commons.future.IFuture;
  */
 public interface ThingService {
     /**
-     * Return Thing as string because Jadex is not able to (de)serialize it properly without additional adjustments.
+     * Return Thing as string because Jadex is not able to (de)serialize it properly without
+     * additional adjustments.
      *
      * @return
      */
@@ -18,4 +19,6 @@ public interface ThingService {
     IFuture<JadexContent> readProperty(String name);
 
     IFuture<JadexContent> writeProperty(String name, JadexContent content);
+
+    String getThingServiceId();
 }

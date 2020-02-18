@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -20,8 +21,8 @@ import java.util.Map;
 /**
  * Receives data from a The Things Network-connected LoRa Sensor deployed on a HOCHBAHN bus.
  */
-public class BusSensor {
-    public static void main(String[] args) throws ConsumedThingException {
+class BusSensor {
+    public static void main(String[] args) throws ConsumedThingException, WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -119,7 +120,6 @@ public class BusSensor {
                 Number trackedSats = values.get(13);
                 System.out.println("Tracked Sats = " + trackedSats);
             }
-
         }
         catch (ContentCodecException e) {
             System.err.println("Unable to extract received content: " + e.getMessage());

@@ -6,13 +6,13 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
+import city.sane.wot.thing.security.BasicSecurityScheme;
+import city.sane.wot.thing.security.BearerSecurityScheme;
+import city.sane.wot.thing.security.NoSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
-import com.typesafe.config.ConfigValue;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -34,10 +35,19 @@ import java.util.concurrent.CompletionException;
  * Allows consuming Things via HTTP.
  */
 public class HttpProtocolClient implements ProtocolClient {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
-
-    private String authorizationHeader = HttpHeaders.AUTHORIZATION;
+    private static final Logger log = LoggerFactory.getLogger(HttpProtocolClient.class);
+    private static final String HTTP_METHOD_NAME = "htv:methodName";
+    private static final Duration LONG_POLLING_TIMEOUT = Duration.ofMinutes(60);
+    private final HttpClient requestClient;
     private String authorization = null;
+
+    public HttpProtocolClient() {
+        this(HttpClientBuilder.create().build());
+    }
+
+    HttpProtocolClient(HttpClient requestClient) {
+        this.requestClient = requestClient;
+    }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
@@ -45,9 +55,8 @@ public class HttpProtocolClient implements ProtocolClient {
             HttpUriRequest request = generateRequest(form);
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
-                HttpResponse response = HttpClientBuilder.create().build().execute(request);
+                HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -62,9 +71,8 @@ public class HttpProtocolClient implements ProtocolClient {
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
-                HttpResponse response = HttpClientBuilder.create().build().execute(request);
+                HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -75,13 +83,12 @@ public class HttpProtocolClient implements ProtocolClient {
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         return CompletableFuture.supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form, content);
+            HttpUriRequest request = generateRequest(form, "POST", content);
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
-                HttpResponse response = HttpClientBuilder.create().build().execute(request);
+                HttpResponse response = requestClient.execute(request);
                 return checkResponse(response);
-
             }
             catch (IOException | ProtocolClientException e) {
                 throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
@@ -90,15 +97,15 @@ public class HttpProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         HttpUriRequest request = generateRequest(form);
 
         // long timeout for long polling
-        int timeout = 60 * 60;
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeout * 1000)
-                .setConnectionRequestTimeout(timeout * 1000)
-                .setSocketTimeout(timeout * 1000).build();
+                .setConnectTimeout((int) LONG_POLLING_TIMEOUT.toMillis())
+                .setConnectionRequestTimeout((int) LONG_POLLING_TIMEOUT.toMillis())
+                .setSocketTimeout((int) LONG_POLLING_TIMEOUT.toMillis()).build();
 
         CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
 
@@ -126,7 +133,7 @@ public class HttpProtocolClient implements ProtocolClient {
                 }
                 catch (IOException | ProtocolClientException e) {
                     if (!subscription.isClosed()) {
-                        log.warn("Error received for Event connection: {}", e);
+                        log.warn("Error received for Event connection", e);
 
                         observer.error(e);
                         subscription.unsubscribe();
@@ -148,50 +155,27 @@ public class HttpProtocolClient implements ProtocolClient {
         // TODO: add support for multiple security schemes
         SecurityScheme security = metadata.get(0);
 
-        String scheme = security.getScheme();
-        if (scheme.equals("basic")) {
-            Map credentialsMap = (Map) credentials;
-            String username = (String) ((ConfigValue) credentialsMap.get("username")).unwrapped();
-            String password = (String) ((ConfigValue) credentialsMap.get("password")).unwrapped();
+        if (security instanceof BasicSecurityScheme) {
+            Map<String, String> credentialsMap = (Map) credentials;
+            String username = credentialsMap.get("username");
+            String password = credentialsMap.get("password");
             authorization = "Basic " + new String(Base64.encodeBase64((username + ":" + password).getBytes()));
             return true;
         }
-        else if (scheme.equals("nosec")) {
+        else if (security instanceof BearerSecurityScheme) {
+            Map<String, String> credentialsMap = (Map) credentials;
+            String token = credentialsMap.get("token");
+            authorization = "Bearer " + token;
+            return true;
+        }
+        else if (security instanceof NoSecurityScheme) {
             // nothing to do
             return true;
         }
         else {
-            log.error("HttpClient cannot set security scheme '{}'", scheme);
+            log.error("HttpClient cannot set security scheme '{}'", security);
             return false;
         }
-    }
-
-    private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
-        String href = form.getHref();
-        String method = defaultMethod;
-        if (form.getOptional("htv:methodName") != null) {
-            method = (String) form.getOptional("htv:methodName");
-        }
-
-        RequestBuilder builder = RequestBuilder.create(method)
-                .setUri(href);
-
-        if (authorization != null) {
-            builder.addHeader(authorizationHeader, authorization);
-        }
-
-        if (content != null) {
-            builder.setHeader("Content-Type", content.getType());
-            byte[] body = content.getBody();
-//            builder.setHeader("Content-Length", Integer.toString(body.length));
-            builder.setEntity(new ByteArrayEntity(body));
-        }
-
-        return builder.build();
-    }
-
-    private HttpUriRequest generateRequest(Form form, Content content) {
-        return generateRequest(form, "GET", content);
     }
 
     private HttpUriRequest generateRequest(Form form) {
@@ -202,10 +186,10 @@ public class HttpProtocolClient implements ProtocolClient {
         StatusLine statusLine = response.getStatusLine();
         int statusCode = statusLine.getStatusCode();
 
-        if (statusCode < 200) {
+        if (statusCode < HttpStatus.SC_OK) {
             throw new ProtocolClientException("Received '" + statusCode + "' and cannot continue (not implemented)");
         }
-        else if (statusCode < 300) {
+        else if (statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
             HttpEntity entity = response.getEntity();
 
             ContentType contentType = ContentType.get(entity);
@@ -229,15 +213,44 @@ public class HttpProtocolClient implements ProtocolClient {
                 throw new ProtocolClientException("Error during http request: " + e.getMessage());
             }
         }
-        else if (statusCode < 400) {
+        else if (statusCode < HttpStatus.SC_BAD_REQUEST) {
             throw new ProtocolClientException("Received '" + statusCode + "' and cannot continue (not implemented)");
         }
-        else if (statusCode < 500) {
+        else if (statusCode < HttpStatus.SC_INTERNAL_SERVER_ERROR) {
             throw new ProtocolClientException("Client error: " + statusLine.toString());
         }
         else {
 //            String body = EntityUtils.toString(response.getEntity());
             throw new ProtocolClientException("Server error: " + statusLine.toString());
         }
+    }
+
+    private HttpUriRequest generateRequest(Form form, Content content) {
+        return generateRequest(form, "GET", content);
+    }
+
+    private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {
+        String href = form.getHref();
+        String method = defaultMethod;
+        if (form.getOptional(HTTP_METHOD_NAME) != null) {
+            method = (String) form.getOptional(HTTP_METHOD_NAME);
+        }
+
+        RequestBuilder builder = RequestBuilder.create(method)
+                .setUri(href);
+
+        if (authorization != null) {
+            String authorizationHeader = HttpHeaders.AUTHORIZATION;
+            builder.addHeader(authorizationHeader, authorization);
+        }
+
+        if (content != null) {
+            builder.setHeader("Content-Type", content.getType());
+            byte[] body = content.getBody();
+//            builder.setHeader("Content-Length", Integer.toString(body.length));
+            builder.setEntity(new ByteArrayEntity(body));
+        }
+
+        return builder.build();
     }
 }

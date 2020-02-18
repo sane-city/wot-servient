@@ -2,6 +2,7 @@ package city.sane.wot.binding.http;
 
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.http.route.*;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
@@ -18,31 +19,57 @@ import spark.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via HTTP.
  */
 public class HttpProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
-
+    private static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
+    private static final String HTTP_METHOD_NAME = "htv:methodName";
     private final String bindHost;
     private final int bindPort;
     private final List<String> addresses;
-
     private final Service server;
     private final Map<String, ExposedThing> things = new HashMap<>();
+    private final Map<String, Object> security;
+    private final String securityScheme;
+    private boolean started = false;
 
-    public HttpProtocolServer(Config config) {
+    public HttpProtocolServer(Config config) throws ProtocolServerException {
         bindHost = config.getString("wot.servient.http.bind-host");
         bindPort = config.getInt("wot.servient.http.bind-port");
         if (!config.getStringList("wot.servient.http.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.http.addresses");
         }
         else {
-            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort + "/things").collect(Collectors.toList());
+            addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort).collect(Collectors.toList());
+        }
+        security = config.getObject("wot.servient.http.security").unwrapped();
+
+        // Auth
+        if (security != null && security.get("scheme") != null) {
+            // storing HTTP header compatible string
+            switch ((String) security.get("scheme")) {
+                case "basic":
+                    this.securityScheme = "Basic";
+                    break;
+                case "bearer":
+                    this.securityScheme = "Bearer";
+                    break;
+                default:
+                    throw new ProtocolServerException("HttpServer does not support security scheme '" + security.get("scheme") + "'");
+            }
+        }
+        else {
+            this.securityScheme = null;
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
@@ -54,36 +81,37 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("Starting on '{}' port '{}'", bindHost, bindPort);
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             server.defaultResponseTransformer(new ContentResponseTransformer());
             server.init();
             server.awaitInitialization();
 
-            server.path("/things", () -> {
-                server.get("", new ThingsRoute(things));
-                server.path("/:id", () -> {
-                    server.path("/properties/:name", () -> {
-                        server.get("/observable", new ObservePropertyRoute(things));
-                        server.get("", new ReadPropertyRoute(things));
-                        server.put("", new WritePropertyRoute(things));
-                    });
-                    server.post("/actions/:name", new InvokeActionRoute(things));
-                    server.get("/events/:name", new SubscribeEventRoute(things));
-                    server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
-                    server.get("", new ThingRoute(things));
+            server.get("/", new ThingsRoute(things));
+            server.path("/:id", () -> {
+                server.path("/properties/:name", () -> {
+                    server.get("/observable", new ObservePropertyRoute(servient, securityScheme, things));
+                    server.get("", new ReadPropertyRoute(servient, securityScheme, things));
+                    server.put("", new WritePropertyRoute(servient, securityScheme, things));
                 });
+                server.post("/actions/:name", new InvokeActionRoute(servient, securityScheme, things));
+                server.get("/events/:name", new SubscribeEventRoute(servient, securityScheme, things));
+                server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(servient, securityScheme, things)));
+                server.get("", new ThingRoute(servient, securityScheme, things));
             });
+
+            started = true;
         });
     }
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on port '{}'", bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
+            started = false;
             server.stop();
             server.awaitStop();
         });
@@ -91,95 +119,33 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' exposes '{}' at http://{}:{}/things/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
+
+        if (!started) {
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before HttpServer has been started"));
+        }
+
         things.put(thing.getId(), thing);
 
         for (String address : addresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
-                //
-                // properties
-                //
-
                 // make reporting of all properties optional?
                 if (true) {
                     String href = address + "/" + thing.getId() + "/all/properties";
                     Form form = new Form.Builder()
                             .setHref(href)
                             .setContentType(contentType)
-                            .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                            .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                             .build();
 
                     thing.addForm(form);
-                    log.info("Assign '{}' for reading all properties", href);
+                    log.debug("Assign '{}' for reading all properties", href);
                 }
 
-                Map<String, ExposedThingProperty> properties = thing.getProperties();
-                properties.forEach((name, property) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "properties", name, property);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    if (property.isReadOnly()) {
-                        form.setOp(Operation.readproperty);
-                        form.setOptional("htv:methodName", "GET");
-                    }
-                    else if (property.isWriteOnly()) {
-                        form.setOp(Operation.writeproperty);
-                        form.setOptional("htv:methodName", "PUT");
-                    }
-                    else {
-                        form.setOp(Arrays.asList(Operation.readproperty, Operation.writeproperty));
-                    }
-
-                    property.addForm(form.build());
-                    log.info("Assign '{}' to Property '{}'", href, name);
-
-                    // if property is observable add an additional form with a observable href
-                    if (property.isObservable()) {
-                        String observableHref = href + "/observable";
-                        Form.Builder observableForm = new Form.Builder();
-                        observableForm.setHref(observableHref);
-                        observableForm.setContentType(contentType);
-                        observableForm.setOp(Operation.observeproperty);
-                        observableForm.setSubprotocol("longpoll");
-
-                        property.addForm(observableForm.build());
-                        log.info("Assign '{}' to observable Property '{}'", observableHref, name);
-                    }
-                });
-
-                //
-                // actions
-                //
-                Map<String, ExposedThingAction> actions = thing.getActions();
-                actions.forEach((name, action) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    form.setOp(Operation.invokeaction);
-                    form.setOptional("htv:methodName", "POST");
-
-                    action.addForm(form.build());
-                    log.info("Assign '{}' to Action '{}'", href, name);
-                });
-
-                //
-                // events
-                //
-                Map<String, ExposedThingEvent> events = thing.getEvents();
-                events.forEach((name, event) -> {
-                    String href = getHrefWithVariablePattern(address, thing, "events", name, event);
-                    Form.Builder form = new Form.Builder();
-                    form.setHref(href);
-                    form.setContentType(contentType);
-                    form.setSubprotocol("longpoll");
-                    form.setOp(Operation.subscribeevent);
-
-                    event.addForm(form.build());
-                    log.info("Assign '{}' to Event '{}'", href, name);
-                });
+                exposeProperties(thing, address, contentType);
+                exposeActions(thing, address, contentType);
+                exposeEvents(thing, address, contentType);
             }
         }
 
@@ -188,7 +154,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("HttpServer on '{}' stop exposing '{}' at http://{}:{}/{}", bindPort, thing.getTitle(),
+        log.info("HttpServer on '{}' port '{}' stop exposing '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
                 bindHost, bindPort, thing.getId());
         things.remove(thing.getId());
 
@@ -201,7 +167,7 @@ public class HttpProtocolServer implements ProtocolServer {
             return new URI(addresses.get(0));
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to create directory url: {}", e);
+            log.warn("Unable to create directory url", e);
             return null;
         }
     }
@@ -209,15 +175,86 @@ public class HttpProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            return new URI(addresses.get(0) + "/" + id);
+            return new URI(addresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
-            log.warn("Unable to thing url: {}", e);
+            log.warn("Unable to thing url", e);
             return null;
         }
     }
 
-    private String getHrefWithVariablePattern(String address, ExposedThing thing, String type, String interactionName, ThingInteraction interaction) {
+    private void exposeProperties(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
+        properties.forEach((name, property) -> {
+            String href = getHrefWithVariablePattern(address, thing, "properties", name, property);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            if (property.isReadOnly()) {
+                form.setOp(Operation.READ_PROPERTY);
+                form.setOptional(HTTP_METHOD_NAME, "GET");
+            }
+            else if (property.isWriteOnly()) {
+                form.setOp(Operation.WRITE_PROPERTY);
+                form.setOptional(HTTP_METHOD_NAME, "PUT");
+            }
+            else {
+                form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
+            }
+
+            property.addForm(form.build());
+            log.debug("Assign '{}' to Property '{}'", href, name);
+
+            // if property is observable add an additional form with a observable href
+            if (property.isObservable()) {
+                String observableHref = href + "/observable";
+                Form.Builder observableForm = new Form.Builder();
+                observableForm.setHref(observableHref);
+                observableForm.setContentType(contentType);
+                observableForm.setOp(Operation.OBSERVE_PROPERTY);
+                observableForm.setSubprotocol("longpoll");
+
+                property.addForm(observableForm.build());
+                log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
+            }
+        });
+    }
+
+    private void exposeActions(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
+        actions.forEach((name, action) -> {
+            String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            form.setOp(Operation.INVOKE_ACTION);
+            form.setOptional(HTTP_METHOD_NAME, "POST");
+
+            action.addForm(form.build());
+            log.debug("Assign '{}' to Action '{}'", href, name);
+        });
+    }
+
+    private void exposeEvents(ExposedThing thing, String address, String contentType) {
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
+        events.forEach((name, event) -> {
+            String href = getHrefWithVariablePattern(address, thing, "events", name, event);
+            Form.Builder form = new Form.Builder();
+            form.setHref(href);
+            form.setContentType(contentType);
+            form.setSubprotocol("longpoll");
+            form.setOp(Operation.SUBSCRIBE_EVENT);
+
+            event.addForm(form.build());
+            log.debug("Assign '{}' to Event '{}'", href, name);
+        });
+    }
+
+    private String getHrefWithVariablePattern(String address,
+                                              ExposedThing thing,
+                                              String type,
+                                              String interactionName,
+                                              ThingInteraction interaction) {
         String variables = "";
         Set<String> uriVariables = interaction.getUriVariables().keySet();
         if (!uriVariables.isEmpty()) {
@@ -225,9 +262,5 @@ public class HttpProtocolServer implements ProtocolServer {
         }
 
         return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
-    }
-
-    public Service getHTTPServer () {
-        return this.server;
     }
 }

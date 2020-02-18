@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientFactory;
@@ -8,6 +9,7 @@ import com.typesafe.config.Config;
 /**
  * Creates new {@link MqttProtocolClient} instances.
  */
+@ServientDiscoveryIgnore
 public class MqttProtocolClientFactory implements ProtocolClientFactory {
     private final Config config;
 

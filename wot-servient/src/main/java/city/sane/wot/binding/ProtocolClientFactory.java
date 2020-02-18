@@ -2,9 +2,11 @@ package city.sane.wot.binding;
 
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 /**
- * A ProtocolClientFactory is responsible for creating new {@link ProtocolClient} instances. There is a separate client instance for each
- * {@link city.sane.wot.thing.ConsumedThing}.
+ * A ProtocolClientFactory is responsible for creating new {@link ProtocolClient} instances. There
+ * is a separate client instance for each {@link city.sane.wot.thing.ConsumedThing}.
  */
 public interface ProtocolClientFactory {
     String getScheme();
@@ -17,7 +19,7 @@ public interface ProtocolClientFactory {
      * @return
      */
     default CompletableFuture<Void> init() {
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     /**
@@ -26,6 +28,6 @@ public interface ProtocolClientFactory {
      * @return
      */
     default CompletableFuture<Void> destroy() {
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 }

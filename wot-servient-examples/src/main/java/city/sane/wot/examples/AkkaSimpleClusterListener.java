@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
  */
-
 package city.sane.wot.examples;
 
 import akka.actor.AbstractActor;
@@ -16,6 +15,7 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.wot.Servient;
+import city.sane.wot.ServientException;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -23,9 +23,9 @@ import com.typesafe.config.ConfigFactory;
 /**
  * This example lists the members found in the Akka Cluster.
  */
-public class AkkaSimpleClusterListener extends AbstractActor {
-    LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    Cluster cluster = Cluster.get(getContext().getSystem());
+class AkkaSimpleClusterListener extends AbstractActor {
+    private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private Cluster cluster = Cluster.get(getContext().getSystem());
 
     // subscribe to cluster changes
     @Override
@@ -47,19 +47,13 @@ public class AkkaSimpleClusterListener extends AbstractActor {
         return receiveBuilder()
                 .match(
                         MemberUp.class,
-                        mUp -> {
-                            log.info("Member is Up: {}", mUp.member());
-                        })
+                        mUp -> log.debug("Member is Up: {}", mUp.member()))
                 .match(
                         UnreachableMember.class,
-                        mUnreachable -> {
-                            log.info("Member detected as unreachable: {}", mUnreachable.member());
-                        })
+                        mUnreachable -> log.debug("Member detected as unreachable: {}", mUnreachable.member()))
                 .match(
                         MemberRemoved.class,
-                        mRemoved -> {
-                            log.info("Member is Removed: {}", mRemoved.member());
-                        })
+                        mRemoved -> log.debug("Member is Removed: {}", mRemoved.member()))
                 .match(
                         MemberEvent.class,
                         message -> {
@@ -68,7 +62,7 @@ public class AkkaSimpleClusterListener extends AbstractActor {
                 .build();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ServientException {
         Config config = ConfigFactory.load();
 
         Servient servient = new Servient(config);

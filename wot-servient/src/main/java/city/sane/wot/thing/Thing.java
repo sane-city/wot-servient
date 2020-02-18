@@ -21,66 +21,81 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * This class represents a read-only model of a thing.
- * The class {@link Builder} can be used to build new thing models.
+ * This class represents a read-only model of a thing. The class {@link Builder} can be used to
+ * build new thing models.
  *
  * @param <P>
  * @param <A>
  * @param <E>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Thing<P extends ThingProperty, A extends ThingAction, E extends ThingEvent> implements Serializable {
-    static final Logger log = LoggerFactory.getLogger(Thing.class);
-
+public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object, Object>, E extends ThingEvent<Object>> implements Serializable {
+    private static final Logger log = LoggerFactory.getLogger(Thing.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String objectType;
-
+    String objectType;
     @JsonProperty("@context")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Context objectContext;
-
-    protected String id;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String title;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Map<String, String> titles;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String description;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected Map<String, String> descriptions;
-
+    Context objectContext;
+    String id;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, P> properties = new HashMap<>();
-
+    String title;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, A> actions = new HashMap<>();
-
+    Map<String, String> titles;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, E> events = new HashMap<>();
-
+    String description;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<Form> forms = new ArrayList<>();
-
+    Map<String, String> descriptions;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    Map<String, P> properties = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    Map<String, A> actions = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    Map<String, E> events = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    List<Form> forms = new ArrayList<>();
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<String> security = new ArrayList<>();
-
+    List<String> security = new ArrayList<>();
+    @JsonProperty("securityDefinitions")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
+    Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    String base;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String base;
+    Thing(String objectType,
+          Context objectContext,
+          String id,
+          String title,
+          Map<String, String> titles,
+          String description,
+          Map<String, String> descriptions,
+          Map<String, P> properties,
+          Map<String, A> actions,
+          Map<String, E> events,
+          List<Form> forms,
+          List<String> security,
+          Map<String, SecurityScheme> securityDefinitions,
+          String base) {
+        this.objectType = objectType;
+        this.objectContext = objectContext;
+        this.id = id;
+        this.title = title;
+        this.titles = titles;
+        this.description = description;
+        this.descriptions = descriptions;
+        this.properties = properties;
+        this.actions = actions;
+        this.events = events;
+        this.forms = forms;
+        this.security = security;
+        this.securityDefinitions = securityDefinitions;
+        this.base = base;
+    }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " [id=" + getId() + ", title=" + getTitle() + "]";
+    public Thing() {
+
     }
 
     public String getObjectType() {
@@ -89,10 +104,6 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
     public Context getObjectContext() {
         return objectContext;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getTitle() {
@@ -115,10 +126,6 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return forms;
     }
 
-    public Map<String, P> getProperties() {
-        return properties;
-    }
-
     public P getProperty(String name) {
         return properties.get(name);
     }
@@ -139,19 +146,25 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         return events.get(name);
     }
 
-    public List<String> getSecurity() {
+    List<String> getSecurity() {
         return security;
     }
 
-    public Map<String, SecurityScheme> getSecurityDefinitions() {
+    Map<String, SecurityScheme> getSecurityDefinitions() {
         return securityDefinitions;
     }
 
-    public String getBase() { return base; }
+    public String getBase() {
+        return base;
+    }
 
     @Override
     public int hashCode() {
-        return this.getId().hashCode();
+        return getId().hashCode();
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -165,7 +178,31 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         if (!(obj instanceof Thing)) {
             return false;
         }
-        return this.getId().equals(((Thing) obj).getId());
+        return getId().equals(((Thing) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "Thing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
+    }
+
+    public String toJson() {
+        return toJson(false);
     }
 
     public String toJson(boolean prettyPrint) {
@@ -178,9 +215,37 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             }
         }
         catch (JsonProcessingException e) {
-            log.warn("Unable to create json: {}", e);
+            log.warn("Unable to create json", e);
             return null;
         }
+    }
+
+    /**
+     * Returns a map of the properties and their keys that have the non-expanded JSON-LD type
+     * <code>objectType</code>.
+     *
+     * @param objectType
+     * @return
+     */
+    public Map<String, P> getPropertiesByObjectType(String objectType) {
+        return getPropertiesByExpandedObjectType(getExpandedObjectType(objectType));
+    }
+
+    /**
+     * Returns a map of the properties and their keys that have the expanded JSON-LD type
+     * <code>objectType</code>.
+     *
+     * @param objectType
+     * @return
+     */
+    public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
+        HashMap<String, P> results = new HashMap<>();
+        getProperties().forEach((key, property) -> {
+            if (getExpandedObjectType(property.getObjectType()) != null && getExpandedObjectType(property.getObjectType()).equals(objectType)) {
+                results.put(key, property);
+            }
+        });
+        return results;
     }
 
     public String getExpandedObjectType(String objectType) {
@@ -210,43 +275,12 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         }
     }
 
-    public String toJson() {
-        return toJson(false);
-    }
-
-    /**
-     * Returns a map of the properties and their keys that have the non-expanded JSON-LD type <code>objectType</code>.
-     *
-     * @param objectType
-     * @return
-     */
-    public Map<String, P> getPropertiesByObjectType(String objectType) {
-        return getPropertiesByExpandedObjectType(getExpandedObjectType(objectType));
-    }
-
-    /**
-     * Returns a map of the properties and their keys that have the expanded JSON-LD type <code>objectType</code>.
-     *
-     * @param objectType
-     * @return
-     */
-    public Map<String, P> getPropertiesByExpandedObjectType(String objectType) {
-        HashMap<String, P> results = new HashMap<>();
-        getProperties().forEach((key, property) -> {
-            if (getExpandedObjectType(property.getObjectType()) != null && getExpandedObjectType(property.getObjectType()).equals(objectType)) {
-                results.put(key, property);
-            }
-        });
-        return results;
+    public Map<String, P> getProperties() {
+        return properties;
     }
 
     public static String randomId() {
         return "urn:uuid:" + UUID.randomUUID();
-    }
-
-    public static String sanitizeFilename(String filename) {
-        // https://stackoverflow.com/a/15075907/1074188
-        return filename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
     }
 
     public static Thing fromJson(String json) {
@@ -254,7 +288,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            log.warn("Unable to read json: {}", e);
+            log.warn("Unable to read json", e);
             return null;
         }
     }
@@ -264,7 +298,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return JSON_MAPPER.readValue(json, Thing.class);
         }
         catch (IOException e) {
-            log.warn("Unable to read json: {}", e);
+            log.warn("Unable to read json", e);
             return null;
         }
     }
@@ -284,9 +318,9 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
         private Map<String, String> titles;
         private String description;
         private Map<String, String> descriptions;
-        private Map<String, ThingProperty> properties = new HashMap<>();
-        private Map<String, ThingAction> actions = new HashMap<>();
-        private Map<String, ThingEvent> events = new HashMap<>();
+        private Map<String, ThingProperty<Object>> properties = new HashMap<>();
+        private Map<String, ThingAction<Object, Object>> actions = new HashMap<>();
+        private Map<String, ThingEvent<Object>> events = new HashMap<>();
         private List<Form> forms = new ArrayList<>();
         private List<String> security = new ArrayList<>();
         private Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
@@ -327,17 +361,17 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
-        public Builder addProperty(String name, ThingProperty property) {
+        public Builder addProperty(String name, ThingProperty<Object> property) {
             properties.put(name, property);
             return this;
         }
 
-        public Builder addAction(String name, ThingAction action) {
+        public Builder addAction(String name, ThingAction<Object, Object> action) {
             actions.put(name, action);
             return this;
         }
 
-        public Builder addEvent(String name, ThingEvent event) {
+        public Builder addEvent(String name, ThingEvent<Object> event) {
             events.put(name, event);
             return this;
         }
@@ -352,17 +386,17 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
             return this;
         }
 
-        public Builder setProperties(Map<String, ThingProperty> properties) {
+        public Builder setProperties(Map<String, ThingProperty<Object>> properties) {
             this.properties = properties;
             return this;
         }
 
-        public Builder setActions(Map<String, ThingAction> actions) {
+        public Builder setActions(Map<String, ThingAction<Object, Object>> actions) {
             this.actions = actions;
             return this;
         }
 
-        public Builder setEvents(Map<String, ThingEvent> events) {
+        public Builder setEvents(Map<String, ThingEvent<Object>> events) {
             this.events = events;
             return this;
         }
@@ -384,22 +418,7 @@ public class Thing<P extends ThingProperty, A extends ThingAction, E extends Thi
 
         @Override
         public Thing build() {
-            Thing thing = new Thing();
-            thing.objectType = objectType;
-            thing.objectContext = objectContext;
-            thing.id = id;
-            thing.title = title;
-            thing.titles = titles;
-            thing.description = description;
-            thing.descriptions = descriptions;
-            thing.properties = properties;
-            thing.actions = actions;
-            thing.events = events;
-            thing.forms = forms;
-            thing.security = security;
-            thing.securityDefinitions = securityDefinitions;
-            thing.base = base;
-            return thing;
+            return new Thing(objectType, objectContext, id, title, titles, description, descriptions, properties, actions, events, forms, security, securityDefinitions, base);
         }
     }
 }

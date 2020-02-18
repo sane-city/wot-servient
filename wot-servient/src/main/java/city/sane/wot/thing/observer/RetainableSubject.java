@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <T>
  */
 public class RetainableSubject<T> extends Subject<T> {
-    static final Logger log = LoggerFactory.getLogger(RetainableSubject.class);
+    private static final Logger log = LoggerFactory.getLogger(RetainableSubject.class);
     // Todo: add size limit to prevent memory leaks
     private final ArrayList<T> storedValues = new ArrayList<>();
 

@@ -2,10 +2,13 @@ package city.sane.wot.scripting;
 
 import city.sane.wot.Wot;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+
 /**
  * A ScriptingEngine describes how a WoT script can be executed in a certain scripting language.
  */
-public interface ScriptingEngine {
+interface ScriptingEngine {
     /**
      * Returns the media type supported by the codec (e.g. application/javascript).
      *
@@ -20,5 +23,5 @@ public interface ScriptingEngine {
      */
     String getFileExtension();
 
-    void runScript(String script, Wot wot);
+    CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService);
 }

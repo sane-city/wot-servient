@@ -6,50 +6,57 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/**
- * This class represented the container for the read and write handlers of a {@link ThingProperty}. The handlers are executed when the property is read or
- * written.
- */
-public class PropertyState {
-    private final Subject subject;
-    private Object value;
-    private Supplier readHandler;
-    private Function<Object, CompletableFuture<Object>> writeHandler;
+import static java.util.Objects.requireNonNull;
 
-    public PropertyState(Object value) {
-        this.subject = new Subject();
-        this.value = value;
-    }
+/**
+ * This class represented the container for the read and write handlers of a {@link ThingProperty}.
+ * The handlers are executed when the property is read or written.
+ */
+public class PropertyState<T> {
+    private final Subject<T> subject;
+    private T value;
+    private Supplier<CompletableFuture<T>> readHandler;
+    private Function<T, CompletableFuture<T>> writeHandler;
 
     public PropertyState() {
-        this(null);
+        this(new Subject<>(), null, null, null);
     }
 
-    public Subject getSubject() {
+    PropertyState(Subject<T> subject,
+                  T value,
+                  Supplier<CompletableFuture<T>> readHandler,
+                  Function<T, CompletableFuture<T>> writeHandler) {
+        this.subject = requireNonNull(subject);
+        this.value = value;
+        this.readHandler = readHandler;
+        this.writeHandler = writeHandler;
+    }
+
+    public Subject<T> getSubject() {
         return subject;
     }
 
-    public Object getValue() {
+    public T getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(T value) {
         this.value = value;
     }
 
-    public Supplier<CompletableFuture<Object>> getReadHandler() {
+    public Supplier<CompletableFuture<T>> getReadHandler() {
         return readHandler;
     }
 
-    public void setReadHandler(Supplier<CompletableFuture<Object>> readHandler) {
+    public void setReadHandler(Supplier<CompletableFuture<T>> readHandler) {
         this.readHandler = readHandler;
     }
 
-    public Function<Object, CompletableFuture<Object>> getWriteHandler() {
+    public Function<T, CompletableFuture<T>> getWriteHandler() {
         return writeHandler;
     }
 
-    public void setWriteHandler(Function<Object, CompletableFuture<Object>> writeHandler) {
+    public void setWriteHandler(Function<T, CompletableFuture<T>> writeHandler) {
         this.writeHandler = writeHandler;
     }
 }

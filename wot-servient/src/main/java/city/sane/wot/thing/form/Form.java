@@ -2,41 +2,32 @@ package city.sane.wot.thing.form;
 
 import city.sane.ObjectBuilder;
 import com.fasterxml.jackson.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * A form contains all the information from an endpoint for communication.<br>
- * See also: https://www.w3.org/TR/wot-thing-description/#form
+ * A form contains all the information from an endpoint for communication.<br> See also:
+ * https://www.w3.org/TR/wot-thing-description/#form
  */
 public class Form implements Serializable {
-    protected String href;
-
+    private static final Logger log = LoggerFactory.getLogger(Form.class);
+    private String href;
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected List<Operation> op;
-
+    private List<Operation> op;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String subprotocol;
-
+    private String subprotocol;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected String contentType;
-
-    protected Map<String, Object> optionalProperties = new HashMap<>();
+    private String contentType;
+    private Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getHref() {
         return href;
-    }
-
-    @Override
-    public String toString() {
-        return "Form [href=" + getHref() + ", op=" + getOp() + "]";
     }
 
     @JsonIgnore
@@ -44,13 +35,14 @@ public class Form implements Serializable {
         try {
             // remove uri variables first
             String sanitizedHref = href;
-            int index = href.indexOf("{");
+            int index = href.indexOf('{');
             if (index != -1) {
                 sanitizedHref = sanitizedHref.substring(0, index);
             }
             return new URI(sanitizedHref).getScheme();
         }
         catch (URISyntaxException e) {
+            log.warn("Form href is invalid: ", e);
             return null;
         }
     }
@@ -67,18 +59,50 @@ public class Form implements Serializable {
         return contentType;
     }
 
-    @JsonAnyGetter
-    public Map<String, Object> getOptionalProperties() {
-        return optionalProperties;
-    }
-
     @JsonAnySetter
     private void setOptionalForJackson(String name, String value) {
         getOptionalProperties().put(name, value);
     }
 
+    @JsonAnyGetter
+    public Map<String, Object> getOptionalProperties() {
+        return optionalProperties;
+    }
+
     public Object getOptional(String name) {
         return optionalProperties.get(name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(href, op, subprotocol, contentType, optionalProperties);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Form)) {
+            return false;
+        }
+        Form form = (Form) o;
+        return Objects.equals(href, form.href) &&
+                Objects.equals(op, form.op) &&
+                Objects.equals(subprotocol, form.subprotocol) &&
+                Objects.equals(contentType, form.contentType) &&
+                Objects.equals(optionalProperties, form.optionalProperties);
+    }
+
+    @Override
+    public String toString() {
+        return "Form{" +
+                "href='" + href + '\'' +
+                ", op=" + op +
+                ", subprotocol='" + subprotocol + '\'' +
+                ", contentType='" + contentType + '\'' +
+                ", optionalProperties=" + optionalProperties +
+                '}';
     }
 
     /**
@@ -92,20 +116,25 @@ public class Form implements Serializable {
         private Map<String, Object> optionalProperties = new HashMap<>();
 
         public Builder(Form form) {
-            this.href = form.getHref();
-            this.op = form.getOp();
-            this.subprotocol = form.getSubprotocol();
-            this.contentType = form.getContentType();
-            this.optionalProperties = form.getOptionalProperties();
+            href = form.getHref();
+            op = form.getOp();
+            subprotocol = form.getSubprotocol();
+            contentType = form.getContentType();
+            optionalProperties = form.getOptionalProperties();
         }
 
         public Builder() {
-
+            op = new ArrayList<>();
+            optionalProperties = new HashMap<>();
         }
 
         public Builder setHref(String href) {
             this.href = href;
             return this;
+        }
+
+        public Builder setOp(Operation... op) {
+            return setOp(new ArrayList<>(Arrays.asList(op)));
         }
 
         @JsonSetter
@@ -115,7 +144,12 @@ public class Form implements Serializable {
         }
 
         public Builder setOp(Operation op) {
-            return setOp(Arrays.asList(op));
+            return setOp(new ArrayList<>(Arrays.asList(op)));
+        }
+
+        public Builder addOp(Operation op) {
+            this.op.add(op);
+            return this;
         }
 
         public Builder setSubprotocol(String subprotocol) {

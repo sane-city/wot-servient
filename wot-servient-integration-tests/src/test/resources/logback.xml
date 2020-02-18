@@ -1,0 +1,49 @@
+<configuration>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d [%t] %-5level %logger{36} %X{sourceThread} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- available levels: off, error, warn, info, debug, trace -->
+
+    <logger name="city.sane" level="debug" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.apache.http" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.eclipse.californium" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.eclipse.jetty" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.eclipse.paho" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="org.eclipse.rdf4j" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="com.github.jsonldjava" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="com.jayway.jsonpath" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <logger name="spark" level="warn" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+
+    <root level="trace">
+        <appender-ref ref="consoleAppender"/>
+    </root>
+</configuration>

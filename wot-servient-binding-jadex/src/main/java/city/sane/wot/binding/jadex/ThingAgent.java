@@ -11,7 +11,6 @@ import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import jadex.bridge.IInternalAccess;
 import jadex.bridge.service.IService;
-import jadex.bridge.service.IServiceIdentifier;
 import jadex.bridge.service.ServiceScope;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
@@ -21,38 +20,40 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static jadex.commons.future.IFuture.DONE;
 
 /**
- * This Agent is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
- * should no longer be exposed.
+ * This Agent is responsible for the interaction with the respective Thing. It is started as soon as
+ * a thing is to be exposed and terminated when the thing should no longer be exposed.
  */
 @Agent
 @ProvidedServices({
         @ProvidedService(type = ThingService.class, scope = ServiceScope.GLOBAL)
 })
 public class ThingAgent implements ThingService {
-    static final Logger log = LoggerFactory.getLogger(ThingAgent.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ThingAgent.class);
     @Agent
     private IInternalAccess agent;
-
     @AgentArgument("thing")
     private ExposedThing thing;
-
     private String thingServiceId;
+
+    public ThingAgent() {
+    }
+
+    ThingAgent(IInternalAccess agent, ExposedThing thing) {
+        this.agent = agent;
+        this.thing = thing;
+    }
 
     @AgentCreated
     public IFuture<Void> created() {
         log.debug("Agent created");
 
-        ThingService thingService = agent.getProvidedService(ThingService.class);
-        IServiceIdentifier serviceId = ((IService) thingService).getServiceId();
-        thingServiceId = serviceId.toString();
+        thingServiceId = getThingServiceId();
 
         log.debug("Agent has ThingService with id '{}'", thingServiceId);
 
@@ -60,7 +61,7 @@ public class ThingAgent implements ThingService {
         // properties
         //
 
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         if (!properties.isEmpty()) {
             // make reporting of all properties optional?
             if (true) {
@@ -68,11 +69,11 @@ public class ThingAgent implements ThingService {
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(ContentManager.DEFAULT)
-                        .setOp(Arrays.asList(Operation.readallproperties, Operation.readmultipleproperties/*, Operation.writeallproperties, Operation.writemultipleproperties*/))
+                        .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
                         .build();
 
                 thing.addForm(form);
-                log.info("Assign '{}' for reading all properties", href);
+                log.debug("Assign '{}' for reading all properties", href);
             }
         }
 
@@ -81,48 +82,56 @@ public class ThingAgent implements ThingService {
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Operation.readproperty)
+                    .setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY)
                     .build();
             property.addForm(form);
 
-            log.info("Assign '{}' to Property '{}'", href, name);
+            log.debug("Assign '{}' to Property '{}'", href, name);
         });
 
         //
         // actions
         //
 
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             String href = buildInteractionURI(thingServiceId, "actions", name).toString();
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Operation.invokeaction)
+                    .setOp(Operation.INVOKE_ACTION)
                     .build();
             action.addForm(form);
 
-            log.info("Assign '{}' to Action '{}'", href, name);
+            log.debug("Assign '{}' to Action '{}'", href, name);
         });
 
         //
         // events
         //
 
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String href = buildInteractionURI(thingServiceId, "events", name).toString();
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
-                    .setOp(Operation.subscribeevent)
+                    .setOp(Operation.SUBSCRIBE_EVENT)
                     .build();
             event.addForm(form);
 
-            log.info("Assign '{}' to Event '{}'", href, name);
+            log.debug("Assign '{}' to Event '{}'", href, name);
         });
 
         return DONE;
+    }
+
+    private URI buildAllPropertiesURI(String serviceInteractionId) {
+        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceInteractionId, "all", "properties").build().encode().toUri();
+    }
+
+    private static URI buildInteractionURI(String serviceId, String type, String name) {
+        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceId, type, name).build().encode().toUri();
     }
 
     @AgentKilled
@@ -130,10 +139,6 @@ public class ThingAgent implements ThingService {
         log.debug("Kill Agent with ThingService with id '{}'", thingServiceId);
 
         return DONE;
-    }
-
-    private URI buildAllPropertiesURI(String serviceInteractionId) {
-        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceInteractionId, "all", "properties").build().encode().toUri();
     }
 
     @Override
@@ -149,7 +154,7 @@ public class ThingAgent implements ThingService {
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read properties: {}", e);
+                log.warn("Unable to read properties", e);
                 return null;
             }
         });
@@ -159,14 +164,14 @@ public class ThingAgent implements ThingService {
 
     @Override
     public IFuture<JadexContent> readProperty(String name) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         CompletableFuture<JadexContent> result = property.read().thenApply(value -> {
             try {
                 Content content = ContentManager.valueToContent(value, ContentManager.DEFAULT);
                 return new JadexContent(content);
             }
             catch (ContentCodecException e) {
-                log.warn("Unable to read property: {}", e);
+                log.warn("Unable to read property", e);
                 return null;
             }
         });
@@ -176,7 +181,7 @@ public class ThingAgent implements ThingService {
 
     @Override
     public IFuture<JadexContent> writeProperty(String name, JadexContent content) {
-        ExposedThingProperty property = thing.getProperty(name);
+        ExposedThingProperty<Object> property = thing.getProperty(name);
 
         try {
             Object value = ContentManager.contentToValue(content.fromJadex(), property);
@@ -187,7 +192,7 @@ public class ThingAgent implements ThingService {
                     return new JadexContent(outputContent);
                 }
                 catch (ContentCodecException e) {
-                    log.warn("Unable to write property: {}", e);
+                    log.warn("Unable to write property", e);
                     return null;
                 }
             });
@@ -199,7 +204,8 @@ public class ThingAgent implements ThingService {
         }
     }
 
-    public static URI buildInteractionURI(String serviceId, String type, String name) {
-        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceId, type, name).build().encode().toUri();
+    @Override
+    public String getThingServiceId() {
+        return ((IService) agent.getProvidedService(ThingService.class)).getServiceId().toString();
     }
 }

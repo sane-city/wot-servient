@@ -15,9 +15,8 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Implementation of the org.eclipse.thingweb.directory.Resource
- * interface as an RDF dataset, where the actual content of a resource is stored
- * in an RDF graph.
+ * Implementation of the org.eclipse.thingweb.directory.Resource interface as an RDF dataset, where
+ * the actual content of a resource is stored in an RDF graph.
  * <p>
  * In this implementation, directory resources are interpreted as DCAT datasets.
  * <p>
@@ -28,19 +27,16 @@ import java.util.UUID;
  * DCAT RDF vocabulary
  * </a>
  */
-public class RdfResource {
-    static final Logger log = LoggerFactory.getLogger(RdfResource.class);
-
+class RdfResource {
+    private static final Logger log = LoggerFactory.getLogger(RdfResource.class);
     /**
      * DCAT meta-data
      */
     private final Model metadata = new LinkedHashModel();
-
     /**
      * Underlying RDF graph
      */
     private final Model content = new LinkedHashModel();
-
     private final Resource iri;
 
     public RdfResource(Model content) {
@@ -55,7 +51,18 @@ public class RdfResource {
         this.metadata.add(iri, RDF.TYPE, DCAT.DATASET);
         this.metadata.add(iri, DCTERMS.ISSUED, SimpleValueFactory.getInstance().createLiteral(new Date()));
 
-        log.info("Creating RDF resource object with id <" + iri + ">");
+        log.debug("Creating RDF resource object with id <{}>", iri);
+    }
+
+    /**
+     * Generates a default IRI for the given RDF graph
+     *
+     * @param g an RDF graph
+     * @return a UUID URN
+     */
+    private static IRI generate(Model g) {
+        // TODO normalize graph and always return the same id for a fixed graph
+        return SimpleValueFactory.getInstance().createIRI("urn:uuid:" + UUID.randomUUID());
     }
 
     public Model getMetadata() {
@@ -68,17 +75,5 @@ public class RdfResource {
 
     public Resource getIri() {
         return iri;
-    }
-
-    /**
-     * Generates a default IRI for the given RDF graph
-     *
-     * @param g an RDF graph
-     *
-     * @return a UUID URN
-     */
-    static IRI generate(Model g) {
-        // TODO normalize graph and always return the same id for a fixed graph
-        return SimpleValueFactory.getInstance().createIRI("urn:uuid:" + UUID.randomUUID());
     }
 }

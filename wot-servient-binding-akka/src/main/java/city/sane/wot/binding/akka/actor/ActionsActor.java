@@ -11,23 +11,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
  * This Actor creates a {@link ActionActor} for each {@link ExposedThingAction}.
  */
-public class ActionsActor extends AbstractActor {
+class ActionsActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private final Map<String, ExposedThingAction> actions;
+    private final Map<String, ExposedThingAction<Object, Object>> actions;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public ActionsActor(Map<String, ExposedThingAction> actions) {
+    private ActionsActor(Map<String, ExposedThingAction<Object, Object>> actions) {
         this.actions = actions;
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         if (!actions.isEmpty()) {
             actions.forEach((name, action) -> {
@@ -42,28 +42,28 @@ public class ActionsActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::actionExposed)
+                .match(Created.class, m -> actionExposed())
                 .build();
     }
 
-    private void actionExposed(Created m) {
+    private void actionExposed() {
         if (children.remove(getSender()) && children.isEmpty()) {
             done();
         }
     }
 
     private void done() {
-        log.info("All actions have been exposed");
+        log.debug("All actions have been exposed");
         getContext().getParent().tell(new Created<>(getSelf()), getSelf());
     }
 
-    public static Props props(Map<String, ExposedThingAction> properties) {
+    public static Props props(Map<String, ExposedThingAction<Object, Object>> properties) {
         return Props.create(ActionsActor.class, () -> new ActionsActor(properties));
     }
 }

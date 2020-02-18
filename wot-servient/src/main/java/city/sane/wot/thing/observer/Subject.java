@@ -1,6 +1,5 @@
 package city.sane.wot.thing.observer;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,86 +8,88 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
- * Defines a subject that can be observed by any number of {@link Observer} instances.
- * This class is part of the Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
+ * Defines a subject that can be observed by any number of {@link Observer} instances. This class is
+ * part of the Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
  *
  * @param <T>
  */
 public class Subject<T> implements Subscribable<T> {
-    static final Logger log = LoggerFactory.getLogger(Subject.class);
+    private static final Logger log = LoggerFactory.getLogger(Subject.class);
     private final Map<Subscription, Observer> observers = new HashMap<>();
-    protected boolean closed = false;
+    private boolean closed = false;
 
     public Map<Subscription, Observer> getObservers() {
         return observers;
     }
 
     /**
-     * Adds the <code>next</code> value to the subject. Informs all {@link #observers}. Returns a future which will be completed when all observers have been
-     * informed.
+     * Adds the <code>next</code> value to the subject. Informs all {@link #observers}. Returns a
+     * future which will be completed when all observers have been informed.
      *
      * @param value
-     *
      * @return
      */
     public CompletableFuture<Void> next(T value) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return failedFuture(new SubjectClosedException());
         }
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about next value '{}'", observers.size(), value);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
+        log.debug("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.next(value))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
     }
 
     /**
-     * Closes the subject with an error. Informs all {@link #observers}. Returns a future which will be completed when all observers have been informed.
-     * After that, no more values can be submitted to the subject.
+     * Closes the subject with an error. Informs all {@link #observers}. Returns a future which will
+     * be completed when all observers have been informed. After that, no more values can be
+     * submitted to the subject.
      *
      * @param e
-     *
      * @return
      */
     public CompletableFuture<Void> error(Throwable e) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about error '{}'", observers.size(), e);
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
+        log.debug("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
                 .map(o -> CompletableFuture.runAsync(() -> o.error(e))).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
     }
 
     /**
-     * Complete the subject. Informs all {@link #observers}. Returns a future which will be completed when all observers have been informed.
-     * After that, no more values can be submitted to the subject.
+     * Complete the subject. Informs all {@link #observers}. Returns a future which will be
+     * completed when all observers have been informed. After that, no more values can be submitted
+     * to the subject.
      *
      * @return
      */
     public CompletableFuture<Void> complete() {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectException("Subject is closed"));
+            return failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observers = new ArrayList<>(this.observers.values());
-        log.info("Inform {} observer(s) about completion", observers.size());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
+        log.debug("Inform {} observer(s) about completion", observersSnapshot.size());
 
         // call all observers in parallel
-        CompletableFuture[] nextFutures = observers.stream()
-                .map(o -> CompletableFuture.runAsync(() -> o.complete())).toArray(CompletableFuture[]::new);
+        CompletableFuture[] nextFutures = observersSnapshot.stream()
+                .map(o -> CompletableFuture.runAsync(o::complete)).toArray(CompletableFuture[]::new);
 
         return CompletableFuture.allOf(nextFutures);
     }
@@ -97,7 +98,6 @@ public class Subject<T> implements Subscribable<T> {
      * Lets <code>observer</code> subscribe the subject.
      *
      * @param observer
-     *
      * @return
      */
     @Override
@@ -115,5 +115,13 @@ public class Subject<T> implements Subscribable<T> {
     private synchronized void unsubscribe(Subscription subscription) {
         log.debug("unsubscribe from Subject: {}", subscription);
         observers.remove(subscription);
+    }
+
+    @Override
+    public String toString() {
+        return "Subject{" +
+                "observers=" + observers +
+                ", closed=" + closed +
+                '}';
     }
 }

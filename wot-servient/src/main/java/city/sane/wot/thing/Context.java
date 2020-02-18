@@ -23,6 +23,15 @@ public class Context implements Serializable {
         addContext(url);
     }
 
+    public Context addContext(String url) {
+        return addContext(null, url);
+    }
+
+    public Context addContext(String prefix, String url) {
+        urls.put(prefix, url);
+        return this;
+    }
+
     public Context(String prefix, String url) {
         addContext(prefix, url);
     }
@@ -48,32 +57,25 @@ public class Context implements Serializable {
 
     @Override
     public String toString() {
-        return "Context [urls=" + urls + "]";
+        return "Context{" +
+                "urls=" + urls +
+                '}';
     }
 
-    public Context addContext(String prefix, String url) {
-        urls.put(prefix, url);
-        return this;
-    }
-
-    public Context addContext(String url) {
-        return addContext(null, url);
-    }
-
-    public String getUrl(String prefix) {
-        return urls.get(prefix);
+    private Map<String, String> getUrls() {
+        return urls;
     }
 
     public String getDefaultUrl() {
         return getUrl(null);
     }
 
-    public Map<String, String> getPrefixedUrls() {
-        return urls.entrySet().stream().filter(e -> e.getKey() != null)
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    public String getUrl(String prefix) {
+        return urls.get(prefix);
     }
 
-    public Map<String, String> getUrls() {
-        return urls;
+    public Map<String, String> getPrefixedUrls() {
+        return urls.entrySet().stream().filter(e -> e.getKey() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

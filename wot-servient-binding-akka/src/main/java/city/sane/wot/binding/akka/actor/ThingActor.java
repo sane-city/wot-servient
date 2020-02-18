@@ -6,34 +6,39 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.Pair;
+import city.sane.wot.binding.akka.Messages.Read;
+import city.sane.wot.binding.akka.Messages.RespondRead;
+import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static city.sane.wot.binding.akka.CrudMessages.Created;
+import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 
 /**
- * This Actor is responsible for the interaction with the respective Thing. It is started as soon as a thing is to be exposed and terminated when the thing
- * should no longer be exposed.<br>
- * For this purpose, the actuator creates a series of child actuators that allow interaction with a single
- * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link city.sane.wot.thing.action.ExposedThingAction}, or
- * {@link city.sane.wot.thing.event.ExposedThingEvent}.
+ * This Actor is responsible for the interaction with the respective Thing. It is started as soon as
+ * a thing is to be exposed and terminated when the thing should no longer be exposed.<br> For this
+ * purpose, the actuator creates a series of child actuators that allow interaction with a single
+ * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link
+ * city.sane.wot.thing.action.ExposedThingAction}, or {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
-public class ThingActor extends AbstractActor {
+class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ActorRef requestor;
     private final ExposedThing thing;
     private final Set<ActorRef> children = new HashSet<>();
 
-    public ThingActor(ActorRef requester, ExposedThing thing) {
-        this.requestor = requester;
+    private ThingActor(ActorRef requester, ExposedThing thing) {
+        requestor = requester;
         this.thing = thing;
     }
 
     @Override
     public void preStart() {
-        log.info("Started");
+        log.debug("Started");
 
         ActorRef allActor = getContext().actorOf(AllActor.props(thing), "all");
         children.add(allActor);
@@ -50,20 +55,31 @@ public class ThingActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.info("Stopped");
+        log.debug("Stopped");
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Created.class, this::created)
+                .match(Created.class, m -> created())
+                .match(Read.class, m -> read())
                 .build();
     }
 
-    private void created(Created m) {
+    private void created() {
         if (children.remove(getSender()) && children.isEmpty()) {
-            log.info("Thing has been exposed");
+            log.debug("Thing has been exposed");
             getContext().getParent().tell(new Created<>(new Pair<>(requestor, thing.getId())), getSelf());
+        }
+    }
+
+    private void read() {
+        try {
+            Content content = ContentManager.valueToContent(thing);
+            getSender().tell(new RespondRead(content), getSelf());
+        }
+        catch (ContentCodecException e) {
+            // TODO: handle exception
         }
     }
 

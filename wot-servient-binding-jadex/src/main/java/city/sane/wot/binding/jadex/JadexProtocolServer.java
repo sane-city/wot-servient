@@ -1,85 +1,80 @@
 package city.sane.wot.binding.jadex;
 
+import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
-import jadex.base.IPlatformConfiguration;
-import jadex.base.PlatformConfigurationHandler;
-import jadex.base.Starter;
 import jadex.bridge.IExternalAccess;
-import jadex.bridge.service.search.ServiceQuery;
-import jadex.bridge.service.types.cms.CreationInfo;
+import jadex.bridge.service.IService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows exposing Things via Jadex Micro Agents.<br>
- * Starts a Jadex Platform and a {@link ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically finds all other platforms
- * and thus enables interaction with their Things.
- * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.server".
+ * Allows exposing Things via Jadex Micro Agents.<br> Starts a Jadex Platform and a {@link
+ * ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically
+ * finds all other platforms and thus enables interaction with their Things. The Jadex Platform can
+ * be configured via the configuration parameter "wot.servient.jadex.server".
  */
 public class JadexProtocolServer implements ProtocolServer {
-    static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
-
+    private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final IPlatformConfiguration platformConfig;
-    private String serviceInteractionId;
+    private final JadexProtocolServerConfig config;
     private IExternalAccess platform;
     private ThingsService thingsService;
+    private String thingsServiceId;
 
-    public JadexProtocolServer(Config config) {
-        platformConfig = PlatformConfigurationHandler.getDefault();
-        ConfigObject objects = config.getObject("wot.servient.jadex.server");
-        objects.forEach((key, value) -> platformConfig.setValue(key, value.unwrapped()));
+    public JadexProtocolServer(Config wotConfig) {
+        this(new JadexProtocolServerConfig(wotConfig));
+    }
+
+    JadexProtocolServer(JadexProtocolServerConfig config) {
+        this.config = config;
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("JadexServer is starting Jadex Platform");
 
-        CompletableFuture<IExternalAccess> createPlatform = FutureConverters.fromJadex(Starter.createPlatform(platformConfig));
-        CompletableFuture<IExternalAccess> createThingsAgent = createPlatform.thenCompose(agent -> {
-            CreationInfo info = new CreationInfo()
-                    .setFilenameClass(ThingsAgent.class)
-                    .addArgument("things", things);
-            return FutureConverters.fromJadex(agent.createComponent(info));
+        if (platform != null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return config.createPlatform(things).thenAccept(result -> {
+            platform = result.first();
+            thingsService = result.second();
+            thingsServiceId = ((IService) thingsService).getServiceId().toString();
         });
-
-        CompletableFuture<ThingsService> searchThingsService = createThingsAgent.thenCompose(agent -> FutureConverters
-                .fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class))));
-
-        CompletableFuture<ThingsService> start = createPlatform
-                .thenCombine(searchThingsService, (platform, thingsService) -> {
-                    this.platform = platform;
-                    this.thingsService = thingsService;
-                    return thingsService;
-                });
-
-        return start.thenApply(r -> null);
     }
 
     @Override
     public CompletableFuture<Void> stop() {
         log.info("JadexServer is stopping Jadex Platform '{}'", platform);
 
-        return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> null);
+        if (platform != null) {
+            return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> {
+                platform = null;
+                return null;
+            });
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("AkkaServer exposes '{}'", thing.getTitle());
-        things.put(thing.getId(), thing);
+        log.info("JadexServer exposes '{}'", thing.getId());
 
         if (platform == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before JadexServer has been started"));
+            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before JadexServer has been started"));
         }
+
+        things.put(thing.getId(), thing);
 
         CompletableFuture<IExternalAccess> expose = FutureConverters.fromJadex(thingsService.expose(thing.getId()));
 
@@ -88,21 +83,15 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("JadexServer stop exposing '{}' at {}", thing.getId(), buildJadexURI(serviceInteractionId, thing.getId()));
-        things.remove(thing.getId());
+        if (things.remove(thing.getId()) == null) {
+            return CompletableFuture.completedFuture(null);
+        }
 
-        return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
-    }
-
-    public Map<String, ExposedThing> getThings() {
-        return things;
-    }
-
-    public void setServiceInteractionId(String serviceInteractionId) {
-        this.serviceInteractionId = serviceInteractionId;
-    }
-
-    public static URI buildJadexURI(String serviceId, String thingId) {
-        return UriComponentsBuilder.newInstance().scheme("jadex").pathSegment(serviceId, thingId).build().encode().toUri();
+        if (thingsService != null) {
+            return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
+        }
+        else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 }

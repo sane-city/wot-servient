@@ -2,6 +2,7 @@ package city.sane.wot.examples;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
+import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
@@ -13,8 +14,8 @@ import java.util.Date;
 /**
  * Produces and exposes a counter thing.
  */
-public class Counter {
-    public static void main(String[] args) {
+class Counter {
+    public static void main(String[] args) throws WotException {
         // create wot
         Wot wot = new DefaultWot();
 
@@ -25,7 +26,7 @@ public class Counter {
                 .build();
         ExposedThing exposedThing = wot.produce(thing);
 
-        System.out.println("Produced " + exposedThing.getTitle());
+        System.out.println("Produced " + exposedThing.getId());
 
         // expose counter
         exposedThing.addProperty("count",
@@ -46,41 +47,42 @@ public class Counter {
                         .build(),
                 new Date().toString());
 
-        exposedThing.addAction("increment", new ThingAction(),
-                () -> {
-                    exposedThing.getProperty("count").read().thenApply(value -> {
-                        int newValue = ((Integer) value) + 1;
-                        exposedThing.getProperty("count").write(newValue);
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                        return newValue;
-                    });
-                }
+        exposedThing.addAction("increment", new ThingAction<Object, Object>(),
+                () -> exposedThing.getProperty("count").read().thenApply(value -> {
+                    int newValue = ((Integer) value) + 1;
+                    exposedThing.getProperty("count").write(newValue);
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                    return newValue;
+                })
         );
 
-        exposedThing.addAction("decrement", new ThingAction(),
-                () -> {
-                    exposedThing.getProperty("count").read().thenApply(value -> {
-                        int newValue = ((Integer) value) - 1;
-                        exposedThing.getProperty("count").write(newValue);
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                        return newValue;
-                    });
-                }
+        exposedThing.addAction("decrement", new ThingAction<Object, Object>(),
+                () -> exposedThing.getProperty("count").read().thenApply(value -> {
+                    int newValue = ((Integer) value) - 1;
+                    exposedThing.getProperty("count").write(newValue);
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                    return newValue;
+                })
         );
 
-        exposedThing.addAction("reset", new ThingAction(),
-                () -> {
-                    exposedThing.getProperty("count").write(0).whenComplete((value, e) -> {
-                        exposedThing.getProperty("lastChange").write(new Date().toString());
-                        exposedThing.getEvent("change").emit();
-                    });
-                }
+        exposedThing.addAction("reset", new ThingAction<Object, Object>(),
+                () -> exposedThing.getProperty("count").write(0).whenComplete((value, e) -> {
+                    exposedThing.getProperty("lastChange").write(new Date().toString());
+                    exposedThing.getEvent("change").emit();
+                })
         );
 
-        exposedThing.addEvent("change", new ThingEvent());
+        exposedThing.addEvent("change", new ThingEvent<Object>());
 
-        exposedThing.expose().thenRun(() -> System.out.println(exposedThing.getTitle() + " ready"));
+        exposedThing.expose().whenComplete((r, e) -> {
+            if (e == null) {
+                System.out.println(exposedThing.getId() + " ready");
+            }
+            else {
+                System.err.println(e.getMessage());
+            }
+        });
     }
 }
