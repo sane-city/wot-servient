@@ -32,8 +32,8 @@ public class ExposedThingTest {
     private String description;
     private String base;
     private ExposedThingProperty<Object> property;
-    private ExposedThingAction action;
-    private ExposedThingEvent event;
+    private ExposedThingAction<Object, Object> action;
+    private ExposedThingEvent<Object> event;
     private Supplier<CompletableFuture<Object>> readHandler;
     private Function<Object, CompletableFuture<Object>> writeHandler;
     private BiConsumer biConsumerHandler;
@@ -70,7 +70,7 @@ public class ExposedThingTest {
 
     @Test
     public void getAction() {
-        Map<String, ExposedThingAction> actions = Map.of("increment", action);
+        Map<String, ExposedThingAction<Object, Object>> actions = Map.of("increment", action);
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), actions, Map.of());
 
         assertEquals(action, exposedThing.getAction("increment"));
@@ -78,7 +78,7 @@ public class ExposedThingTest {
 
     @Test
     public void getEvent() {
-        Map<String, ExposedThingEvent> events = Map.of("change", event);
+        Map<String, ExposedThingEvent<Object>> events = Map.of("change", event);
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), events);
 
         assertEquals(event, exposedThing.getEvent("change"));
@@ -181,7 +181,7 @@ public class ExposedThingTest {
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
         exposedThing.addAction("increment", biConsumerHandler);
-        ExposedThingAction action = exposedThing.getAction("increment");
+        ExposedThingAction<Object, Object> action = exposedThing.getAction("increment");
 
         assertNotNull(action);
     }
@@ -191,7 +191,7 @@ public class ExposedThingTest {
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
         exposedThing.addAction("increment", runnableHandler);
-        ExposedThingAction action = exposedThing.getAction("increment");
+        ExposedThingAction<Object, Object> action = exposedThing.getAction("increment");
 
         assertNotNull(action);
     }
@@ -201,14 +201,14 @@ public class ExposedThingTest {
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), new HashMap(), Map.of());
 
         exposedThing.addAction("increment", supplierHandler);
-        ExposedThingAction action = exposedThing.getAction("increment");
+        ExposedThingAction<Object, Object> action = exposedThing.getAction("increment");
 
         assertNotNull(action);
     }
 
     @Test
     public void removeAction() {
-        Map<String, ExposedThingAction> actions = new HashMap(Map.of("increment", action));
+        Map<String, ExposedThingAction<Object, Object>> actions = new HashMap(Map.of("increment", action));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), actions, Map.of());
 
         exposedThing.removeAction("increment");
@@ -227,7 +227,7 @@ public class ExposedThingTest {
 
     @Test
     public void removeEvent() {
-        Map<String, ExposedThingEvent> events = new HashMap(Map.of("change", event));
+        Map<String, ExposedThingEvent<Object>> events = new HashMap(Map.of("change", event));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), events);
 
         exposedThing.removeEvent("change");

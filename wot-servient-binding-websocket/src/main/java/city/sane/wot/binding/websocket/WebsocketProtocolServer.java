@@ -168,7 +168,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeActions(ExposedThing thing, String address) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             action.addForm(new Form.Builder()
                     .setHref(address)
@@ -184,7 +184,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeEvents(ExposedThing thing, String address) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             event.addForm(new Form.Builder()
                     .setHref(address)

@@ -25,7 +25,22 @@ public class VariableDataSchema extends AbstractDataSchema<Object> {
 
     @Override
     public Class getClassType() {
-        return Object.class;
+        switch (type) {
+            case ArraySchema.TYPE:
+                return ArraySchema.CLASS_TYPE;
+            case BooleanSchema.TYPE:
+                return BooleanSchema.CLASS_TYPE;
+            case IntegerSchema.TYPE:
+                return IntegerSchema.CLASS_TYPE;
+            case NullSchema.TYPE:
+                return NullSchema.CLASS_TYPE;
+            case NumberSchema.TYPE:
+                return NumberSchema.CLASS_TYPE;
+            case ObjectSchema.TYPE:
+                return ObjectSchema.CLASS_TYPE;
+            default:
+                return StringSchema.CLASS_TYPE;
+        }
     }
 
     @Override

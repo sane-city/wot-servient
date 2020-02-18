@@ -33,8 +33,8 @@ public class ThingTest {
     private Map<String, String> titles;
     private Map<String, String> descriptions;
     private Map<Object, ThingProperty<Object>> properties;
-    private Map<Object, ThingAction> actions;
-    private Map<Object, ThingEvent> events;
+    private Map<Object, ThingAction<Object, Object>> actions;
+    private Map<Object, ThingEvent<Object>> events;
     private Map<Object, SecurityScheme> securityDefinitions;
     private List<Form> forms;
     private List<String> security;
@@ -260,12 +260,12 @@ public class ThingTest {
         assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
         assertEquals(new ThingProperty.Builder().build(), thing.getProperty("count"));
 
-        assertThat((Map<String, ThingAction>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
-        assertThat((Map<String, ThingAction>) thing.getActions(), hasEntry("decrement", new ThingAction.Builder().build()));
+        assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
+        assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("decrement", new ThingAction.Builder().build()));
         assertEquals(new ThingAction.Builder().build(), thing.getAction("increment"));
 
-        assertThat((Map<String, ThingEvent>) thing.getEvents(), hasEntry("change", new ThingEvent.Builder().build()));
-        assertThat((Map<String, ThingEvent>) thing.getEvents(), hasEntry("ping", new ThingEvent.Builder().build()));
+        assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("change", new ThingEvent.Builder().build()));
+        assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("ping", new ThingEvent.Builder().build()));
         assertEquals(new ThingEvent.Builder().build(), thing.getEvent("ping"));
 
         assertThat((Collection<Form>) thing.getForms(), contains(new Form.Builder().setHref("http://eins").build(), new Form.Builder().setHref("http://zwei").build()));

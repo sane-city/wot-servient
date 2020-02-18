@@ -16,20 +16,20 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingAction}.
  */
-public class ExposedThingAction extends ThingAction {
+public class ExposedThingAction<I, O> extends ThingAction<I, O> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingAction.class);
     private final String name;
     private final ExposedThing thing;
     @JsonIgnore
-    private final ActionState<Object, Object> state;
+    private final ActionState<I, O> state;
 
-    public ExposedThingAction(String name, ThingAction action, ExposedThing thing) {
+    public ExposedThingAction(String name, ThingAction<I, O> action, ExposedThing thing) {
         this(name, thing, new ActionState<>(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
     }
 
     ExposedThingAction(String name,
                        ExposedThing thing,
-                       ActionState<Object, Object> state,
+                       ActionState<I, O> state,
                        String description,
                        Map<String, String> descriptions,
                        Map<String, Map> uriVariables,
@@ -74,7 +74,7 @@ public class ExposedThingAction extends ThingAction {
      *
      * @return
      */
-    public CompletableFuture<Object> invoke() {
+    public CompletableFuture<O> invoke() {
         return invoke(null);
     }
 
@@ -85,7 +85,7 @@ public class ExposedThingAction extends ThingAction {
      * @param input
      * @return
      */
-    public CompletableFuture<Object> invoke(Object input) {
+    public CompletableFuture<O> invoke(I input) {
         return invoke(input, Collections.emptyMap());
     }
 
@@ -98,13 +98,13 @@ public class ExposedThingAction extends ThingAction {
      * @param options
      * @return
      */
-    public CompletableFuture<Object> invoke(Object input, Map<String, Object> options) {
+    public CompletableFuture<O> invoke(I input, Map<String, Object> options) {
         log.debug("'{}' has Action state of '{}': {}", thing.getId(), name, getState());
 
         if (getState().getHandler() != null) {
             log.debug("'{}' calls registered handler for Action '{}' with input '{}' and options '{}'", thing.getId(), name, input, options);
             try {
-                CompletableFuture<Object> output = getState().getHandler().apply(input, options);
+                CompletableFuture<O> output = getState().getHandler().apply(input, options);
                 if (output == null) {
                     log.warn("'{}': Called registered handler for Action '{}' returned null. This can cause problems. Give Future with null result back.", thing.getId(), name);
                     output = completedFuture(null);
@@ -121,7 +121,7 @@ public class ExposedThingAction extends ThingAction {
         }
     }
 
-    public ActionState<Object, Object> getState() {
+    public ActionState<I, O> getState() {
         return state;
     }
 }

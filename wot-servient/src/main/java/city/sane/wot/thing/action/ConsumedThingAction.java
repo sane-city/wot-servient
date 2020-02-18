@@ -20,12 +20,14 @@ import java.util.concurrent.CompletionException;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingAction}.
  */
-public class ConsumedThingAction extends ThingAction {
+public class ConsumedThingAction<I, O> extends ThingAction<I, O> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingAction.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingAction(String name, ThingAction action, ConsumedThing thing) {
+    public ConsumedThingAction(String name,
+                               ThingAction<I, O> action,
+                               ConsumedThing thing) {
         this.name = name;
         forms = action.getForms();
         input = action.getInput();
@@ -56,11 +58,25 @@ public class ConsumedThingAction extends ThingAction {
                 '}';
     }
 
-    public CompletableFuture invoke() {
+    /**
+     * Invokes this action without parameters. Returns a future with the return result of the
+     * action.
+     *
+     * @return
+     */
+    public CompletableFuture<O> invoke() {
         return invoke(Collections.emptyMap());
     }
 
-    public CompletableFuture invoke(Map<String, Object> parameters) {
+    /**
+     * Invokes this action and passes <code>parameters</codes> to it. Returns a future with the
+     * return result of the action.
+     *
+     * @param parameters contains a map with the names of the uri variables as keys and
+     *                   corresponding values (ex. <code>Map.of("step", 3)</code>).
+     * @return
+     */
+    public CompletableFuture<O> invoke(Map<String, Object> parameters) {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.INVOKE_ACTION);
             ProtocolClient client = clientAndForm.first();

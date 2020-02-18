@@ -221,7 +221,7 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     private void exposeActions(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
             Form.Builder form = new Form.Builder();
@@ -236,7 +236,7 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     private void exposeEvents(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String href = getHrefWithVariablePattern(address, thing, "events", name, event);
             Form.Builder form = new Form.Builder();
