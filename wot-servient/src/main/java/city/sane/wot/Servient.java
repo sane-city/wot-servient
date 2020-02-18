@@ -98,7 +98,7 @@ public class Servient {
      */
     public CompletableFuture<Void> start() {
         log.info("Start Servient");
-        CompletableFuture<Void>[] serverFutures = servers.stream().map(ProtocolServer::start).toArray(CompletableFuture[]::new);
+        CompletableFuture<Void>[] serverFutures = servers.stream().map(protocolServer -> protocolServer.start(this)).toArray(CompletableFuture[]::new);
         CompletableFuture<Void>[] clientFutures = clientFactories.values().stream().map(ProtocolClientFactory::init).toArray(CompletableFuture[]::new);
 
         CompletableFuture<Void>[] futures = Stream.concat(Arrays.stream(clientFutures), Arrays.stream(serverFutures)).toArray(CompletableFuture[]::new);

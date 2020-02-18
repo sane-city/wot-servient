@@ -24,6 +24,10 @@ public class BearerSecurityScheme extends SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String authorization;
 
+    public BearerSecurityScheme() {
+        this(null, null, null, null, null);
+    }
+
     public BearerSecurityScheme(String in,
                                 String alg,
                                 String format,

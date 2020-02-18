@@ -40,7 +40,7 @@ public class ObservePropertyRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id/properties/:name/observable", new ObservePropertyRoute(Map.of("counter", thing)));
+        service.get(":id/properties/:name/observable", new ObservePropertyRoute(null, null, Map.of("counter", thing)));
     }
 
     private ExposedThing getCounterThing() {

@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.Servient;
 import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -47,7 +48,7 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         if (client != null) {
             return CompletableFuture.completedFuture(null);
         }

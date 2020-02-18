@@ -1,5 +1,6 @@
 package city.sane.wot.binding;
 
+import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
 
 import java.net.URI;
@@ -14,8 +15,9 @@ public interface ProtocolServer {
      * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
      *
      * @return
+     * @param servient
      */
-    CompletableFuture<Void> start();
+    CompletableFuture<Void> start(Servient servient);
 
     /**
      * Stops the server (e.g. HTTP server) and ends the exposure of the Things

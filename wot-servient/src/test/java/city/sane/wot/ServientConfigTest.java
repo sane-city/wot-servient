@@ -80,7 +80,7 @@ public class ServientConfigTest {
 
     public static class MyProtocolServer implements ProtocolServer {
         @Override
-        public CompletableFuture<Void> start() {
+        public CompletableFuture<Void> start(Servient servient) {
             return completedFuture(null);
         }
 
@@ -149,9 +149,10 @@ public class ServientConfigTest {
          * things.
          *
          * @return
+         * @param servient
          */
         @Override
-        public CompletableFuture<Void> start() {
+        public CompletableFuture<Void> start(Servient servient) {
             return null;
         }
 

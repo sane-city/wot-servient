@@ -32,7 +32,7 @@ public class WritePropertyRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.put(":id/properties/:name", new WritePropertyRoute(Map.of("counter", getCounterThing())));
+        service.put(":id/properties/:name", new WritePropertyRoute(null, null, Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {

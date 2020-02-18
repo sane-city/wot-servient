@@ -1,5 +1,6 @@
 package city.sane.wot.binding;
 
+import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,9 +31,10 @@ public class ProtocolServerTest {
          * things.
          *
          * @return
+         * @param servient
          */
         @Override
-        public CompletableFuture<Void> start() {
+        public CompletableFuture<Void> start(Servient servient) {
             return null;
         }
 

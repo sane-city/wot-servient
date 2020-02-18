@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http;
 
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -24,9 +25,9 @@ public class HttpProtocolServerIT {
     private HttpProtocolServer server;
 
     @Before
-    public void setUp() {
+    public void setUp() throws ProtocolServerException {
         server = new HttpProtocolServer(ConfigFactory.load());
-        server.start().join();
+        server.start(null).join();
     }
 
     @After

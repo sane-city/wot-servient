@@ -40,7 +40,7 @@ public class SubscribeEventRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id/events/:name", new SubscribeEventRoute(Map.of("counter", thing)));
+        service.get(":id/events/:name", new SubscribeEventRoute(null, null, Map.of("counter", thing)));
     }
 
     private ExposedThing getCounterThing() {

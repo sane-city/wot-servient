@@ -43,6 +43,23 @@ This table shows which operations are supported by which protocol.
 
 *¹ technically possible, but not implemented yet
 
+### Overview of Supported [Security Schemes](../security/README.md) by each Protocol
+
+|                                   | apikey | basic | bearer | cert | digest | nosec | oauth2 | psk | pop | public |
+|---------------                    |:------:|:-----:|:------:|:----:|:------:|:-----:|:------:|:---:|:---:|:------:|
+| [Akka](akka.md)                   |        |       |        |      |        |       |        |     |     |        |
+| [CoAP](coap.md)                   |        |       |        |      |        |       |        |     |     |        |
+| [File](file.md)                   |        |       |        |      |        |       |        |     |     |        |
+| [HTTP](http.md)                   |        |  ✅  |  ✅  |      |        |       |        |     |     |        |
+| [Jadex](jadex.md)                 |        |       |        |      |        |       |        |     |     |        |
+| [JSONPath+HTTP](jsonpath+http.md) |        |       |        |      |        |       |        |     |     |        |
+| [MQTT](mqtt.md)                   |        |       |        |      |        |       |        |     |     |        |
+| [Value](value.md)                 |        |       |        |      |        |       |        |     |     |        |
+| [Websocket](websocket.md)         |        |       |        |      |        |       |        |     |     |        |
+
+C: Supported by the client only<br>
+S: Supported by the server only
+
 ## Add new [Protocol Binding](https://www.w3.org/TR/wot-architecture/#dfn-wot-protocol-binding)
 
 Implement [ProtocolServer](wot-servient/src/main/java/city/sane/wot/binding/ProtocolServer.java) to create a additional server. This
