@@ -1,6 +1,7 @@
 package city.sane.wot.binding.akka;
 
 import city.sane.wot.content.Content;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 
@@ -12,6 +13,8 @@ public class Messages {
 
     }
 
+    // https://stackoverflow.com/a/53845446/1074188
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
     public static class Read implements Serializable {
         @Override
         public String toString() {
