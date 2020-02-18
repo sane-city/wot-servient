@@ -5,7 +5,8 @@ import java.util.function.Consumer;
 public interface Subscribable<T> {
     /**
      * Creates a new subscription for this subscribable object.<br>
-     * <code>next</code> is called with every new result of the subscription and gets the new result
+     * <code>next</code> is called with every new result of the subscription and gets the new
+     * result
      * passed to it.<br>
      * <code>error</code> is called if the subscription has to be terminated due to an error. The
      * error is passed to the {@link Consumer}.<br>
@@ -22,7 +23,8 @@ public interface Subscribable<T> {
 
     /**
      * Creates a new subscription for this subscribable object.<br>
-     * <code>next</code> is called with every new result of the subscription and gets the new result
+     * <code>next</code> is called with every new result of the subscription and gets the new
+     * result
      * passed to it.
      *
      * @return

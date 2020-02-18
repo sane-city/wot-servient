@@ -70,7 +70,8 @@ public interface ProtocolClient {
     /**
      * Subscribes to the resource defined in <code>form</code>. This can be, for example, an {@link
      * city.sane.wot.thing.event.ThingEvent} or an observable {@link city.sane.wot.thing.property.ThingProperty}.
-     * <code>next</code> is called with every new result of the subscription and gets the new result
+     * <code>next</code> is called with every new result of the subscription and gets the new
+     * result
      * passed to it.
      * <code>error</code> is called if the subscription has to be terminated due to an error. The
      * error is passed to the {@link Consumer}.

@@ -167,22 +167,27 @@ class Cli {
 
         for (File script : scripts) {
             log.info("Servient is running script '{}'", script);
-            Future completionFuture = servient.runScript(script, wot);
+            Future completionFuture = servient.runPrivilegedScript(script, wot);
             completionFutures.add(completionFuture);
         }
 
         // wait for all scripts to complete
-        completionFutures.forEach(future -> {
-            try {
-                future.get();
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            catch (ExecutionException | CancellationException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        try {
+            completionFutures.forEach(future -> {
+                try {
+                    future.get();
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                catch (ExecutionException | CancellationException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        catch (RuntimeException e) {
+            throw new CliException(e);
+        }
 
         // Shutdown servient if we are in client-only mode and all scripts have been executed, otherwise wait for termination by user
         if (cmd.hasOption(OPT_CLIENTONLY)) {

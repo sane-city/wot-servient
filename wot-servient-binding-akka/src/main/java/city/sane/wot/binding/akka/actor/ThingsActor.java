@@ -160,6 +160,10 @@ public class ThingsActor extends AbstractActor {
             this.filter = filter;
         }
 
+        Discover() {
+            filter = null;
+        }
+
         @Override
         public String toString() {
             return "Discover{" +
@@ -173,6 +177,10 @@ public class ThingsActor extends AbstractActor {
 
         public Things(Map<String, Thing> entities) {
             this.entities = entities;
+        }
+
+        Things() {
+            entities = null;
         }
 
         @Override
@@ -190,6 +198,10 @@ public class ThingsActor extends AbstractActor {
             this.entity = entity;
         }
 
+        Expose() {
+            entity = null;
+        }
+
         @Override
         public String toString() {
             return "Expose{" +
@@ -203,6 +215,10 @@ public class ThingsActor extends AbstractActor {
 
         public Created(E entity) {
             this.entity = entity;
+        }
+
+        Created() {
+            entity = null;
         }
 
         @Override
@@ -220,6 +236,10 @@ public class ThingsActor extends AbstractActor {
             this.id = id;
         }
 
+        Destroy() {
+            id = null;
+        }
+
         @Override
         public String toString() {
             return "Destroy{" +
@@ -230,6 +250,10 @@ public class ThingsActor extends AbstractActor {
 
     public static class Deleted<K extends Serializable> implements Serializable {
         public final K id;
+
+        Deleted() {
+            id = null;
+        }
 
         public Deleted(K id) {
             this.id = id;

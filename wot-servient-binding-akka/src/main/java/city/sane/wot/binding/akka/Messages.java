@@ -1,6 +1,7 @@
 package city.sane.wot.binding.akka;
 
 import city.sane.wot.content.Content;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 
@@ -12,7 +13,12 @@ public class Messages {
 
     }
 
+    // https://stackoverflow.com/a/53845446/1074188
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
     public static class Read implements Serializable {
+        public Read() {
+        }
+
         @Override
         public String toString() {
             return "Read{}";
@@ -24,6 +30,10 @@ public class Messages {
 
         public RespondRead(Content content) {
             this.content = content;
+        }
+
+        RespondRead() {
+            content = null;
         }
 
         @Override
@@ -41,6 +51,10 @@ public class Messages {
             this.content = content;
         }
 
+        Write() {
+            content = null;
+        }
+
         @Override
         public String toString() {
             return "Write{" +
@@ -54,6 +68,10 @@ public class Messages {
 
         public Written(Content content) {
             this.content = content;
+        }
+
+        Written() {
+            content = null;
         }
 
         @Override
@@ -71,6 +89,10 @@ public class Messages {
             this.content = content;
         }
 
+        Invoke() {
+            content = null;
+        }
+
         @Override
         public String toString() {
             return "Invoke{" +
@@ -86,6 +108,10 @@ public class Messages {
             this.content = content;
         }
 
+        Invoked() {
+            content = null;
+        }
+
         @Override
         public String toString() {
             return "Invoked{" +
@@ -94,7 +120,12 @@ public class Messages {
         }
     }
 
+    // https://stackoverflow.com/a/53845446/1074188
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
     public static class Subscribe implements Serializable {
+        public Subscribe() {
+        }
+
         @Override
         public String toString() {
             return "Subscribe{}";
@@ -103,6 +134,10 @@ public class Messages {
 
     public static class SubscriptionNext implements Serializable {
         public final Content next;
+
+        SubscriptionNext() {
+            next = null;
+        }
 
         public SubscriptionNext(Content next) {
             this.next = next;
@@ -123,6 +158,10 @@ public class Messages {
             this.e = e;
         }
 
+        SubscriptionError() {
+            e = null;
+        }
+
         @Override
         public String toString() {
             return "SubscriptionError{" +
@@ -132,6 +171,9 @@ public class Messages {
     }
 
     public static class SubscriptionComplete implements Serializable {
+        public SubscriptionComplete() {
+        }
+
         @Override
         public String toString() {
             return "SubscriptionComplete{}";

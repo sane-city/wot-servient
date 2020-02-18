@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.assertTrue;
 
 public class ScriptingManagerTest {
@@ -23,7 +22,7 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScript() throws ScriptingException, IOException {
+    public void runScript() throws IOException {
         TemporaryFolder folder = new TemporaryFolder();
         folder.create();
         File file = folder.newFile("counter.test");
@@ -53,6 +52,37 @@ public class ScriptingManagerTest {
         }
     }
 
+    @Test
+    public void runPrivilegedScript() throws IOException {
+        TemporaryFolder folder = new TemporaryFolder();
+        folder.create();
+        File file = folder.newFile("counter.test");
+        Files.write("1+1", file, Charset.defaultCharset());
+
+        ScriptingManager.runPrivilegedScript(file, null);
+
+        // should not fail
+        assertTrue(true);
+    }
+
+    @Test
+    public void runPrivilegedScriptString() throws ExecutionException, InterruptedException {
+        ScriptingManager.runPrivilegedScript("1+1", "application/test", null).get();
+
+        // should not fail
+        assertTrue(true);
+    }
+
+    @Test(expected = ScriptingException.class)
+    public void runPrivilegedScriptUnsupportedMediaType() throws Throwable {
+        try {
+            ScriptingManager.runPrivilegedScript("1+1", "application/lolcode", null).get();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
     static class MyScriptingEngine implements ScriptingEngine {
         @Override
         public String getMediaType() {
@@ -68,7 +98,14 @@ public class ScriptingManagerTest {
         public CompletableFuture<Void> runScript(String script,
                                                  Wot wot,
                                                  ExecutorService executorService) {
-            return completedFuture(null);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> runPrivilegedScript(String script,
+                                                           Wot wot,
+                                                           ExecutorService executorService) {
+            return CompletableFuture.completedFuture(null);
         }
     }
 }
