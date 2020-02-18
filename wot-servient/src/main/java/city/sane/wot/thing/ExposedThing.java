@@ -139,11 +139,10 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     /**
      * Adds the given <code>property</code> with the given <code>name</code> to the Thing.<br>
      * <code>readHandler</code> is invoked when the property is read. It returns a future with the
-     * value of the property. Set to <code>null</code> if not
-     * needed.<br>
+     * value of the property. Set to <code>null</code> if not needed.<br>
      * <code>writeHandler</code> is invoked when the property is written to. It consumes the new
-     * property value and returns the output of the write operation.
-     * Set to <code>null</code> if not needed.<br>
+     * property value and returns the output of the write operation. Set to <code>null</code> if not
+     * needed.<br>
      *
      * @param name
      * @param property
@@ -368,11 +367,10 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     /**
      * Adds a property with the given <code>name</code> to the Thing.<br>
      * <code>readHandler</code> is invoked when the property is read. It returns a future with the
-     * value of the property. Set to <code>null</code> if not
-     * needed.<br>
+     * value of the property. Set to <code>null</code> if not needed.<br>
      * <code>writeHandler</code> is invoked when the property is written to. It consumes the new
-     * property value and returns the output of the write operation.
-     * Set to <code>null</code> if not needed.<br>
+     * property value and returns the output of the write operation. Set to <code>null</code> if not
+     * needed.<br>
      *
      * @param name
      * @param readHandler
@@ -402,11 +400,10 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * Adds the given <code>property</code> with the given <code>name</code> to the Thing.
      * <code>init</code> is used as the initial value of the property.
      * <code>readHandler</code> is invoked when the property is read. It returns a future with the
-     * value of the property. Set to <code>null</code> if not
-     * needed.<br>
+     * value of the property. Set to <code>null</code> if not needed.<br>
      * <code>writeHandler</code> is invoked when the property is written to. It consumes the new
-     * property value and returns the output of the write operation.
-     * Set to <code>null</code> if not needed.<br>
+     * property value and returns the output of the write operation. Set to <code>null</code> if not
+     * needed.<br>
      *
      * @param name
      * @param property
