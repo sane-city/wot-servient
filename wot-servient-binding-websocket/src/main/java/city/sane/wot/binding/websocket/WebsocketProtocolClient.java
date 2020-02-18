@@ -78,7 +78,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     Subscription response = observe(client, clientMessage, observer);
                     return CompletableFuture.completedFuture(response);
                 }
-                catch (InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                catch (ExecutionException e) {
                     return CompletableFuture.failedFuture(e);
                 }
             }
@@ -128,7 +132,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     AbstractServerMessage response = ask(client, clientMessage).get();
                     return CompletableFuture.completedFuture(response.toContent());
                 }
-                catch (InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                catch (ExecutionException e) {
                     return CompletableFuture.failedFuture(e);
                 }
             }
@@ -155,7 +163,11 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     AbstractServerMessage response = ask(client, clientMessage).get();
                     return CompletableFuture.completedFuture(response.toContent());
                 }
-                catch (InterruptedException | ExecutionException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                catch (ExecutionException e) {
                     return CompletableFuture.failedFuture(e);
                 }
             }
@@ -185,7 +197,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     result.complete(client);
                 }
                 catch (InterruptedException e) {
-                    result.completeExceptionally(e);
+                    Thread.currentThread().interrupt();
                 }
 
                 return result;

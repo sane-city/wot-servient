@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -76,8 +75,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 serverChannel = serverBootstrap.bind(bindPort).sync().channel();
             }
             catch (InterruptedException e) {
-                log.warn("Start failed", e);
-                throw new CompletionException(e);
+                Thread.currentThread().interrupt();
             }
         });
     }
