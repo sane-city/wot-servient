@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>city.sane.wot-servient</groupId>
@@ -214,6 +216,11 @@
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-slf4j_2.13</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-serialization-jackson_2.13</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
