@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some properties.
+ * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some
+ * properties.
  */
 class KlimabotschafterClient {
     public static void main(String[] args) throws URISyntaxException, IOException, WotException {
@@ -39,12 +40,11 @@ class KlimabotschafterClient {
                 List<String> monitoredPropertyNames = Arrays.asList("Upload_time", "Temp_2m");
                 for (String name : monitoredPropertyNames) {
                     System.out.println("Monitor changes of Property \"" + name + "\"");
-                    ConsumedThingProperty property = consumedThing.getProperty(name);
+                    ConsumedThingProperty<Object> property = consumedThing.getProperty(name);
                     Object value = property.read().get();
                     System.out.println("Current value of \"" + name + "\" is " + value);
                     property.subscribe(newValue -> System.out.println("Value of \"" + name + "\" has changed to " + newValue));
                 }
-
             }
             catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

@@ -15,7 +15,8 @@ import city.sane.wot.thing.form.Operation;
 import static city.sane.wot.binding.akka.Messages.RespondRead;
 
 /**
- * This Actor is responsible for reading all {@link city.sane.wot.thing.property.ExposedThingProperty} at the same time.
+ * This Actor is responsible for reading all {@link city.sane.wot.thing.property.ExposedThingProperty}
+ * at the same time.
  */
 class AllPropertiesActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);

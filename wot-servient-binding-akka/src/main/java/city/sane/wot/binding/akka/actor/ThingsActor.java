@@ -25,12 +25,12 @@ import static city.sane.wot.binding.akka.Messages.Read;
 import static city.sane.wot.binding.akka.Messages.RespondRead;
 
 /**
- * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolServer} and is responsible for exposing things. For each exposed Thing
- * a {@link ThingActor} is created, which is responsible for the interaction with the Thing.
+ * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolServer} and is
+ * responsible for exposing things. For each exposed Thing a {@link ThingActor} is created, which is
+ * responsible for the interaction with the Thing.
  */
 public class ThingsActor extends AbstractActor {
     public static final String TOPIC = "thing-discovery";
-
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
     private final Map<String, ActorRef> children = new HashMap<>();
@@ -38,11 +38,11 @@ public class ThingsActor extends AbstractActor {
 
     private ThingsActor(Map<String, ExposedThing> things) {
         this.things = things;
-        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
         else {
-            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            log.warning("DistributedPubSub extension missing. ANY Discovery via DistributedPubSub will not be supported.");
             mediator = null;
         }
     }
@@ -82,21 +82,9 @@ public class ThingsActor extends AbstractActor {
         log.debug("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
-    private void expose(Expose m) {
-        String id = m.entity;
-        ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
-        children.put(id, thingActor);
-    }
-
-    private void exposed(Created m) {
-        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
-        ActorRef requester = pair.first();
-        String id = pair.second();
-        log.debug("Thing '{}' has been exposed", id);
-        requester.tell(new Created(getSender()), getSelf());
-    }
-
     private void getThings() throws ContentCodecException {
+        log.debug("Read message received. Respond with my things.");
+
         // TODO: We have to make Thing objects out of the ExposedThing objects, otherwise the Akka serializer will choke
         // on the Servient object. We take the detour via JSON strings. Maybe we just get the serializer to ignore the
         // service attribute?
@@ -128,6 +116,20 @@ public class ThingsActor extends AbstractActor {
         );
     }
 
+    private void expose(Expose m) {
+        String id = m.entity;
+        ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
+        children.put(id, thingActor);
+    }
+
+    private void exposed(Created m) {
+        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
+        ActorRef requester = pair.first();
+        String id = pair.second();
+        log.debug("Thing '{}' has been exposed", id);
+        requester.tell(new Created(getSender()), getSelf());
+    }
+
     private void destroy(Destroy m) {
         String id = m.id;
         ActorRef actorRef = children.remove(id);
@@ -152,10 +154,17 @@ public class ThingsActor extends AbstractActor {
 
     // CrudMessages
     public static class Discover implements Serializable {
-        final ThingFilter filter;
+        public final ThingFilter filter;
 
         public Discover(ThingFilter filter) {
             this.filter = filter;
+        }
+
+        @Override
+        public String toString() {
+            return "Discover{" +
+                    "filter=" + filter +
+                    '}';
         }
     }
 
@@ -165,6 +174,13 @@ public class ThingsActor extends AbstractActor {
         public Things(Map<String, Thing> entities) {
             this.entities = entities;
         }
+
+        @Override
+        public String toString() {
+            return "Things{" +
+                    "entities=" + entities +
+                    '}';
+        }
     }
 
     public static class Expose implements Serializable {
@@ -172,6 +188,13 @@ public class ThingsActor extends AbstractActor {
 
         public Expose(String entity) {
             this.entity = entity;
+        }
+
+        @Override
+        public String toString() {
+            return "Expose{" +
+                    "entity='" + entity + '\'' +
+                    '}';
         }
     }
 
@@ -181,6 +204,13 @@ public class ThingsActor extends AbstractActor {
         public Created(E entity) {
             this.entity = entity;
         }
+
+        @Override
+        public String toString() {
+            return "Created{" +
+                    "entity=" + entity +
+                    '}';
+        }
     }
 
     public static class Destroy implements Serializable {
@@ -189,6 +219,13 @@ public class ThingsActor extends AbstractActor {
         public Destroy(String id) {
             this.id = id;
         }
+
+        @Override
+        public String toString() {
+            return "Destroy{" +
+                    "id='" + id + '\'' +
+                    '}';
+        }
     }
 
     public static class Deleted<K extends Serializable> implements Serializable {
@@ -196,6 +233,13 @@ public class ThingsActor extends AbstractActor {
 
         public Deleted(K id) {
             this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return "Deleted{" +
+                    "id=" + id +
+                    '}';
         }
     }
 }

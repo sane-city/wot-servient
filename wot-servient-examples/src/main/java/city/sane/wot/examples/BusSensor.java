@@ -120,7 +120,6 @@ class BusSensor {
                 Number trackedSats = values.get(13);
                 System.out.println("Tracked Sats = " + trackedSats);
             }
-
         }
         catch (ContentCodecException e) {
             System.err.println("Unable to extract received content: " + e.getMessage());

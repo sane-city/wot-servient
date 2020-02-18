@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -30,7 +31,7 @@ public class ExposedThingTest {
     private String title;
     private String description;
     private String base;
-    private ExposedThingProperty property;
+    private ExposedThingProperty<Object> property;
     private ExposedThingAction action;
     private ExposedThingEvent event;
     private Supplier<CompletableFuture<Object>> readHandler;
@@ -61,7 +62,7 @@ public class ExposedThingTest {
 
     @Test
     public void getProperty() {
-        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        Map<String, ExposedThingProperty<Object>> properties = Map.of("count", property);
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
         assertEquals(property, exposedThing.getProperty("count"));
@@ -85,8 +86,8 @@ public class ExposedThingTest {
 
     @Test
     public void readProperties() throws ExecutionException, InterruptedException {
-        when(property.read()).thenReturn(CompletableFuture.completedFuture(null));
-        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        when(property.read()).thenReturn(completedFuture(null));
+        Map<String, ExposedThingProperty<Object>> properties = Map.of("count", property);
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
         exposedThing.readProperties().get();
@@ -96,8 +97,8 @@ public class ExposedThingTest {
 
     @Test
     public void writeProperties() throws ExecutionException, InterruptedException {
-        when(property.write(any())).thenReturn(CompletableFuture.completedFuture(null));
-        Map<String, ExposedThingProperty> properties = Map.of("count", property);
+        when(property.write(any())).thenReturn(completedFuture(null));
+        Map<String, ExposedThingProperty<Object>> properties = Map.of("count", property);
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
         exposedThing.writeProperties(Map.of("count", 0)).get();
@@ -107,7 +108,7 @@ public class ExposedThingTest {
 
     @Test
     public void expose() {
-        when(servient.expose(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(servient.expose(any())).thenReturn(completedFuture(null));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), Map.of());
 
         exposedThing.expose();
@@ -117,7 +118,7 @@ public class ExposedThingTest {
 
     @Test
     public void destroy() throws ExecutionException, InterruptedException, ServientException {
-        when(servient.destroy(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(servient.destroy(any())).thenReturn(completedFuture(null));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), Map.of());
 
         exposedThing.destroy();
@@ -139,7 +140,7 @@ public class ExposedThingTest {
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
         exposedThing.addProperty("count", property, readHandler, writeHandler);
-        ExposedThingProperty property = exposedThing.getProperty("count");
+        ExposedThingProperty<Object> property = exposedThing.getProperty("count");
 
         assertNotNull(property);
         assertEquals(readHandler, property.getState().getReadHandler());
@@ -148,7 +149,7 @@ public class ExposedThingTest {
 
     @Test
     public void addPropertyWithInitValue() {
-        when(property.write(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(property.write(any())).thenReturn(completedFuture(null));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
         exposedThing.addProperty("count", property, 1337);
@@ -158,7 +159,7 @@ public class ExposedThingTest {
 
     @Test
     public void removeProperty() {
-        Map<String, ExposedThingProperty> properties = new HashMap(Map.of("count", property));
+        Map<String, ExposedThingProperty<Object>> properties = new HashMap(Map.of("count", property));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, properties, Map.of(), Map.of());
 
         exposedThing.removeProperty("count");

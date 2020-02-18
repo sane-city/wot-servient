@@ -44,81 +44,81 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'Upload_time',
                     [
-                            description         : 'Letzter Upload der Daten in UTC',
-                            type                : 'string',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Letzter Upload der Daten in UTC',
+                            type       : 'string',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Press_sea',
                     [
-                            '@type'             : 'saref:Pressure',
-                            description         : 'Luftdruck in hPa auf Meeresnivea',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            '@type'    : 'saref:Pressure',
+                            description: 'Luftdruck in hPa auf Meeresnivea',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Wind_gust',
                     [
-                            description         : 'Stärkste Windböe in m/s der letzten 10 Min',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Stärkste Windböe in m/s der letzten 10 Min',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Wind_dir',
                     [
-                            description         : 'Windrichtung in Grad (0-360)',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Windrichtung in Grad (0-360)',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Rain_year',
                     [
-                            description         : 'Jahresniederschlag',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Jahresniederschlag',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Rain_month',
                     [
-                            description         : 'Monatlicher Niederschlag in mm',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Monatlicher Niederschlag in mm',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Rain_day',
                     [
-                            description         : 'Tagesniederschlagsmenge (00-00 Uhr) in mm',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Tagesniederschlagsmenge (00-00 Uhr) in mm',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Rain_rate',
                     [
-                            description         : 'Aktuelle Regenrate in mm/hr',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Aktuelle Regenrate in mm/hr',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
@@ -135,41 +135,41 @@ new Timer().schedule({
             exposedThing.addProperty(
                     'Wind_avg',
                     [
-                            description         : 'Windgeschwindigkeit (10 Min Mittel) in m/s',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Windgeschwindigkeit (10 Min Mittel) in m/s',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'UV_rad',
                     [
-                            description         : 'UV-Index (Einheit siehe Wikipedia)',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'UV-Index (Einheit siehe Wikipedia)',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Hum_2m',
                     [
-                            '@type'             : 'saref:Humidity',
-                            description         : 'Relative Luftfeuchtigkeit 2 m in %',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            '@type'    : 'saref:Humidity',
+                            description: 'Relative Luftfeuchtigkeit 2 m in %',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 
             exposedThing.addProperty(
                     'Solar_rad',
                     [
-                            description         : 'Globalstrahlung in W/m^2',
-                            type                : 'number',
-                            readOnly            : true,
-                            observable          : true
+                            description: 'Globalstrahlung in W/m^2',
+                            type       : 'number',
+                            readOnly   : true,
+                            observable : true
                     ]
             )
 

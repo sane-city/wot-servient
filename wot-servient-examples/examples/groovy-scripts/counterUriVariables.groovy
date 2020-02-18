@@ -66,4 +66,11 @@ thing.addAction(
             thing.properties['count'].write(0)
         })
 
-thing.expose().thenRun { println(thing.title + ' ready') }
+thing.expose().whenComplete { r, e ->
+    if (e == null) {
+        println(thing.title + ' ready')
+    }
+    else {
+        println('Error: ' + e)
+    }
+}

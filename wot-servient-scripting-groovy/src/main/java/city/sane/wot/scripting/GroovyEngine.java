@@ -31,7 +31,9 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
+    public CompletableFuture<Void> runScript(String script,
+                                             Wot wot,
+                                             ExecutorService executorService) {
         CompilerConfiguration config = getCompilerConfiguration();
 
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
@@ -55,7 +57,9 @@ public class GroovyEngine implements ScriptingEngine {
     }
 
     @Override
-    public CompletableFuture<Void> runPrivilegedScript(String script, Wot wot, ExecutorService executorService) {
+    public CompletableFuture<Void> runPrivilegedScript(String script,
+                                                       Wot wot,
+                                                       ExecutorService executorService) {
         Binding binding = new Binding();
         binding.setVariable("wot", wot);
 
@@ -78,11 +82,25 @@ public class GroovyEngine implements ScriptingEngine {
         return completionFuture;
     }
 
+    private CompilerConfiguration getPrivilegedCompilerConfiguration() {
+        CompilerConfiguration config = new CompilerConfiguration();
+        config.addCompilationCustomizers(getImportCustomizer());
+        return config;
+    }
+
     private CompilerConfiguration getCompilerConfiguration() {
         CompilerConfiguration config = new CompilerConfiguration();
         config.addCompilationCustomizers(getImportCustomizer());
         config.addCompilationCustomizers(getSecureASTCustomizer());
         return config;
+    }
+
+    private ImportCustomizer getImportCustomizer() {
+        ImportCustomizer customizer = new ImportCustomizer();
+        customizer.addImports(
+                "city.sane.wot.thing.Thing"
+        );
+        return customizer;
     }
 
     private SecureASTCustomizer getSecureASTCustomizer() {
@@ -139,20 +157,6 @@ public class GroovyEngine implements ScriptingEngine {
 //        customizer.setTokensWhitelist(List.of());
 //        customizer.setConstantTypesClassesWhiteList(List.of());
         customizer.setReceiversClassesBlackList(List.of());
-        return customizer;
-    }
-
-    private CompilerConfiguration getPrivilegedCompilerConfiguration() {
-        CompilerConfiguration config = new CompilerConfiguration();
-        config.addCompilationCustomizers(getImportCustomizer());
-        return config;
-    }
-
-    private ImportCustomizer getImportCustomizer() {
-        ImportCustomizer customizer = new ImportCustomizer();
-        customizer.addImports(
-                "city.sane.wot.thing.Thing"
-        );
         return customizer;
     }
 }

@@ -12,27 +12,22 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class represents a read-only model of a thing property.
- * The class {@link Builder} can be used to build new thing property models.
- * Used in combination with {@link city.sane.wot.thing.Thing}
+ * This class represents a read-only model of a thing property. The class {@link Builder} can be
+ * used to build new thing property models. Used in combination with {@link
+ * city.sane.wot.thing.Thing}
  */
-public class ThingProperty extends ThingInteraction<ThingProperty> implements DataSchema {
+public class ThingProperty<T> extends ThingInteraction<ThingProperty<T>> implements DataSchema<T> {
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String objectType;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String type;
-
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean observable;
-
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean readOnly;
-
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean writeOnly;
-
     Map<String, Object> optionalProperties = new HashMap<>();
 
     public String getObjectType() {
@@ -71,6 +66,11 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), objectType, type, observable, readOnly, writeOnly, optionalProperties);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -81,7 +81,7 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         if (!super.equals(o)) {
             return false;
         }
-        ThingProperty that = (ThingProperty) o;
+        ThingProperty<Object> that = (ThingProperty<Object>) o;
         return observable == that.observable &&
                 readOnly == that.readOnly &&
                 writeOnly == that.writeOnly &&
@@ -91,8 +91,19 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), objectType, type, observable, readOnly, writeOnly, optionalProperties);
+    public String toString() {
+        return "ThingProperty{" +
+                "objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 
     /**
@@ -143,8 +154,8 @@ public class ThingProperty extends ThingInteraction<ThingProperty> implements Da
         }
 
         @Override
-        public ThingProperty build() {
-            ThingProperty property = new ThingProperty();
+        public ThingProperty<Object> build() {
+            ThingProperty<Object> property = new ThingProperty<>();
             property.objectType = objectType;
             property.type = type;
             property.observable = observable;

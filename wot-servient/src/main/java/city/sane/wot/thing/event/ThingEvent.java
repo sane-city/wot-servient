@@ -11,16 +11,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Objects;
 
 /**
- * This class represents a read-only model of a thing event.
- * The class {@link Builder} can be used to build new thing event models.
- * Used in combination with {@link city.sane.wot.thing.Thing}
+ * This class represents a read-only model of a thing event. The class {@link Builder} can be used
+ * to build new thing event models. Used in combination with {@link city.sane.wot.thing.Thing}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ThingEvent extends ThingInteraction<ThingEvent> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
     DataSchema data = new StringSchema();
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String type;
 
@@ -30,6 +28,11 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
 
     public DataSchema getData() {
         return data;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), data, type);
     }
 
     @Override
@@ -48,8 +51,15 @@ public class ThingEvent extends ThingInteraction<ThingEvent> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), data, type);
+    public String toString() {
+        return "ThingEvent{" +
+                "data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 
     /**

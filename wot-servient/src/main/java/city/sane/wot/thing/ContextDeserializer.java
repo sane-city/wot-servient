@@ -16,8 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Deserializes the individual context or the list of contexts of a {@link Thing} from JSON.
- * Is used by Jackson
+ * Deserializes the individual context or the list of contexts of a {@link Thing} from JSON. Is used
+ * by Jackson
  */
 class ContextDeserializer extends JsonDeserializer {
     private static final Logger log = LoggerFactory.getLogger(ContextDeserializer.class);

@@ -61,39 +61,6 @@ public class PropertyActorIT {
         assertEquals(42, count);
     }
 
-    @Test
-    public void writeProperty() throws ContentCodecException {
-        TestKit testKit = new TestKit(system);
-
-        ExposedThing thing = getExposedCounterThing();
-        Props props = PropertyActor.props("count", thing.getProperty("count"));
-        ActorRef actorRef = system.actorOf(props);
-
-        actorRef.tell(new Write(ContentManager.valueToContent(1337)), testKit.getRef());
-
-        testKit.expectMsgClass(Messages.Written.class);
-    }
-
-    @Test
-    public void subscribeProperty() throws ExecutionException, InterruptedException {
-        TestKit testKit = new TestKit(system);
-
-        ExposedThing thing = getExposedCounterThing();
-        ExposedThingProperty property = thing.getProperty("count");
-        Props props = PropertyActor.props("count", property);
-        ActorRef actorRef = system.actorOf(props);
-
-        actorRef.tell(new Subscribe(), testKit.getRef());
-
-        // wait until client establish subcription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
-
-        property.write(23).get();
-
-        testKit.expectMsgClass(SubscriptionNext.class);
-    }
-
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
@@ -169,5 +136,38 @@ public class PropertyActorIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void writeProperty() throws ContentCodecException {
+        TestKit testKit = new TestKit(system);
+
+        ExposedThing thing = getExposedCounterThing();
+        Props props = PropertyActor.props("count", thing.getProperty("count"));
+        ActorRef actorRef = system.actorOf(props);
+
+        actorRef.tell(new Write(ContentManager.valueToContent(1337)), testKit.getRef());
+
+        testKit.expectMsgClass(Messages.Written.class);
+    }
+
+    @Test
+    public void subscribeProperty() throws ExecutionException, InterruptedException {
+        TestKit testKit = new TestKit(system);
+
+        ExposedThing thing = getExposedCounterThing();
+        ExposedThingProperty<Object> property = thing.getProperty("count");
+        Props props = PropertyActor.props("count", property);
+        ActorRef actorRef = system.actorOf(props);
+
+        actorRef.tell(new Subscribe(), testKit.getRef());
+
+        // wait until client establish subcription
+        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
+        Thread.sleep(5 * 1000L);
+
+        property.write(23).get();
+
+        testKit.expectMsgClass(SubscriptionNext.class);
     }
 }

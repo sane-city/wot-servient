@@ -28,7 +28,6 @@ import java.util.concurrent.CompletionException;
 @ServientDiscoveryIgnore
 public class MqttProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
-
     private final MqttProtocolSettings settings;
     private final Map<String, ExposedThing> things = new HashMap<>();
     private MqttClient client;
@@ -109,51 +108,8 @@ public class MqttProtocolServer implements ProtocolServer {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void listenOnMqttMessages() {
-        // connect incoming messages to Thing
-        client.setCallback(new MqttCallback() {
-            @Override
-            public void connectionLost(Throwable cause) {
-                log.info("MqttServer at '{}' lost connection to broker: {}", settings.getBroker(), cause.getMessage());
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) {
-                log.info("MqttServer at '{}' received message for '{}'", settings.getBroker(), topic);
-
-                String[] segments = topic.split("/", 3);
-
-                if (segments.length == 3) {
-                    String thingId = segments[0];
-
-                    ExposedThing thing = things.get(thingId);
-                    if (thing != null) {
-                        if (segments[1].equals("actions")) {
-                            String actionName = segments[2];
-                            ExposedThingAction action = thing.getAction(actionName);
-                            actionMessageArrived(message, action);
-                        }
-
-                    }
-                    else {
-                        // Thing not found
-                    }
-                }
-                else {
-                    // topic not found
-                    log.info("MqttServer at '{}' received message for invalid topic '{}'", settings.getBroker(), topic);
-                }
-            }
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-                // do nothing
-            }
-        });
-    }
-
     private void exposeProperties(ExposedThing thing) {
-        Map<String, ExposedThingProperty> properties = thing.getProperties();
+        Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
@@ -215,6 +171,48 @@ public class MqttProtocolServer implements ProtocolServer {
         });
     }
 
+    private void listenOnMqttMessages() {
+        // connect incoming messages to Thing
+        client.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+                log.info("MqttServer at '{}' lost connection to broker: {}", settings.getBroker(), cause.getMessage());
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+                log.info("MqttServer at '{}' received message for '{}'", settings.getBroker(), topic);
+
+                String[] segments = topic.split("/", 3);
+
+                if (segments.length == 3) {
+                    String thingId = segments[0];
+
+                    ExposedThing thing = things.get(thingId);
+                    if (thing != null) {
+                        if (segments[1].equals("actions")) {
+                            String actionName = segments[2];
+                            ExposedThingAction action = thing.getAction(actionName);
+                            actionMessageArrived(message, action);
+                        }
+                    }
+                    else {
+                        // Thing not found
+                    }
+                }
+                else {
+                    // topic not found
+                    log.info("MqttServer at '{}' received message for invalid topic '{}'", settings.getBroker(), topic);
+                }
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+                // do nothing
+            }
+        });
+    }
+
     private void handleSubscriptionData(String topic, Object data) {
         try {
             Content content = ContentManager.valueToContent(data);
@@ -227,6 +225,14 @@ public class MqttProtocolServer implements ProtocolServer {
         catch (MqttException e) {
             log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage());
         }
+    }
+
+    private String createUrl() {
+        String base = "mqtt" + settings.getBroker().substring(settings.getBroker().indexOf("://"));
+        if (!base.endsWith("/")) {
+            base = base + "/";
+        }
+        return base;
     }
 
     private void actionMessageArrived(MqttMessage message, ExposedThingAction action) {
@@ -244,13 +250,5 @@ public class MqttProtocolServer implements ProtocolServer {
         else {
             // Action not found
         }
-    }
-
-    private String createUrl() {
-        String base = "mqtt" + settings.getBroker().substring(settings.getBroker().indexOf("://"));
-        if (!base.endsWith("/")) {
-            base = base + "/";
-        }
-        return base;
     }
 }

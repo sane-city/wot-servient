@@ -31,7 +31,7 @@ public class SubscribeEventRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+                                       ExposedThing thing) {
         ExposedThingEvent event = thing.getEvent(name);
         if (event != null) {
             CompletableFuture<Object> result = new CompletableFuture();
@@ -47,7 +47,6 @@ public class SubscribeEventRoute extends AbstractInteractionRoute {
                             response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                             result.complete("Invalid Event Data");
                         }
-
                     },
                     e -> {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
@@ -62,7 +61,13 @@ public class SubscribeEventRoute extends AbstractInteractionRoute {
                 subscription.unsubscribe();
             });
 
-            return result.get();
+            try {
+                return result.get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                return e;
+            }
         }
         else {
             response.status(HttpStatus.NOT_FOUND_404);

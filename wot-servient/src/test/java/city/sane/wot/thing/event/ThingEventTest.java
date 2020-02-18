@@ -1,7 +1,6 @@
 package city.sane.wot.thing.event;
 
 import city.sane.wot.thing.schema.DataSchema;
-import city.sane.wot.thing.schema.NumberSchema;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RootResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(RootResource.class);
-
     private final WotCoapServer server;
 
     public RootResource(WotCoapServer server) {

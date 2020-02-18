@@ -21,11 +21,16 @@ thing
                         type: 'integer'
                 ])
 
-thing.expose().thenRun {
-    println(thing.title + ' ready')
-    new Timer().schedule({
-        ++counter
-        thing.events.counterEvent.emit(counter)
-        println('New count ' + counter)
-    }, 0, 1000)
+thing.expose().whenComplete { r, e ->
+    if (e == null) {
+        println(thing.title + ' ready')
+        new Timer().schedule({
+            ++counter
+            thing.events.counterEvent.emit(counter)
+            println('New count ' + counter)
+        }, 0, 1000)
+    }
+    else {
+        println('Error: ' + e)
+    }
 }

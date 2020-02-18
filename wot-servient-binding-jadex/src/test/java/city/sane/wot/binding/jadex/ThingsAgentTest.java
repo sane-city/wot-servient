@@ -42,42 +42,6 @@ public class ThingsAgentTest {
         agent = new ThingsAgent(ia, things, children);
     }
 
-    @Test
-    public void created() {
-        agent.created().get();
-
-        // shot not fail
-        assertTrue(true);
-    }
-
-    @Test
-    public void expose() {
-        agent.expose("counter").get();
-
-        // CreateionInfo ist not comparable
-//        CreationInfo info = new CreationInfo()
-//                .setFilenameClass(ThingAgent.class)
-//                .addArgument("thing", thing);
-        verify(ia).createComponent(anyObject());
-    }
-
-    @Test
-    public void destroy() {
-        IExternalAccess ea = mock(IExternalAccess.class);
-        IFuture killFuture = mock(IFuture.class);
-        doAnswer(invocation -> {
-            IFunctionalResultListener listener = invocation.getArgumentAt(0, IFunctionalResultListener.class);
-            listener.resultAvailable(null);
-            return null;
-        }).when(killFuture).addResultListener(anyObject(), anyObject());
-        when(ea.killComponent()).thenReturn(killFuture);
-        children.put("counter", ea);
-
-        agent.destroy("counter").get();
-
-        verify(ea).killComponent();
-    }
-
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
@@ -153,5 +117,41 @@ public class ThingsAgentTest {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void created() {
+        agent.created().get();
+
+        // shot not fail
+        assertTrue(true);
+    }
+
+    @Test
+    public void expose() {
+        agent.expose("counter").get();
+
+        // CreateionInfo ist not comparable
+//        CreationInfo info = new CreationInfo()
+//                .setFilenameClass(ThingAgent.class)
+//                .addArgument("thing", thing);
+        verify(ia).createComponent(anyObject());
+    }
+
+    @Test
+    public void destroy() {
+        IExternalAccess ea = mock(IExternalAccess.class);
+        IFuture killFuture = mock(IFuture.class);
+        doAnswer(invocation -> {
+            IFunctionalResultListener listener = invocation.getArgumentAt(0, IFunctionalResultListener.class);
+            listener.resultAvailable(null);
+            return null;
+        }).when(killFuture).addResultListener(anyObject(), anyObject());
+        when(ea.killComponent()).thenReturn(killFuture);
+        children.put("counter", ea);
+
+        agent.destroy("counter").get();
+
+        verify(ea).killComponent();
     }
 }

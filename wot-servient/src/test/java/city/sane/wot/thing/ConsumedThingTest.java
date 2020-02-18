@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertEquals;
@@ -92,7 +92,7 @@ public class ConsumedThingTest {
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
         when(thing.getForms()).thenReturn(List.of(form1));
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.readResource(any())).thenReturn(completedFuture(null));
 
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
         consumedThing.readProperties().get();
@@ -105,7 +105,7 @@ public class ConsumedThingTest {
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
         when(thing.getForms()).thenReturn(List.of(form1));
-        when(client.readResource(any())).thenReturn(CompletableFuture.completedFuture(ContentManager.valueToContent(Map.of("foo", 1, "bar", 2, "baz", 3))));
+        when(client.readResource(any())).thenReturn(completedFuture(ContentManager.valueToContent(Map.of("foo", 1, "bar", 2, "baz", 3))));
 
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
 

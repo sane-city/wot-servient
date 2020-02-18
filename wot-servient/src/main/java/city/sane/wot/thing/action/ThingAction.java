@@ -11,16 +11,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Objects;
 
 /**
- * This class represents a read-only model of a thing action.
- * The class {@link Builder} can be used to build new thing action models.
- * Used in combination with {@link city.sane.wot.thing.Thing}
+ * This class represents a read-only model of a thing action. The class {@link Builder} can be used
+ * to build new thing action models. Used in combination with {@link city.sane.wot.thing.Thing}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ThingAction extends ThingInteraction<ThingAction> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
     DataSchema input = new StringSchema();
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(as = VariableDataSchema.class)
     DataSchema output = new StringSchema();
@@ -42,6 +40,11 @@ public class ThingAction extends ThingInteraction<ThingAction> {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), input, output);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -57,8 +60,15 @@ public class ThingAction extends ThingInteraction<ThingAction> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), input, output);
+    public String toString() {
+        return "ThingAction{" +
+                "input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 
     /**

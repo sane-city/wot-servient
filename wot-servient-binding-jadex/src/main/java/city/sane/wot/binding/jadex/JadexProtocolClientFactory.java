@@ -11,15 +11,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Creates new {@link JadexProtocolClient} instances.
- * A Jadex Platform is created for this purpose.<br>
- * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.client".
+ * Creates new {@link JadexProtocolClient} instances. A Jadex Platform is created for this
+ * purpose.<br> The Jadex Platform can be configured via the configuration parameter
+ * "wot.servient.jadex.client".
  */
 public class JadexProtocolClientFactory implements ProtocolClientFactory {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolClientFactory.class);
-
     private final JadexProtocolClientConfig config;
-
     private IExternalAccess platform;
 
     public JadexProtocolClientFactory(Config wotConfig) {

@@ -17,14 +17,11 @@ public enum Operation {
     UNOBSERVE_PROPERTY("unobserveproperty"),
     READ_ALL_PROPERTIES("readallproperty"),
     READ_MULTIPLE_PROPERTIES("readmultipleproperty"),
-
     // events
     SUBSCRIBE_EVENT("subscribeevent"),
     UNSUBSCRIBE_EVENT("unsubscribeevent"),
-
     // actions
     INVOKE_ACTION("invokeaction");
-
     private static final Map<String, Operation> LOOKUP = new HashMap<>();
 
     static {

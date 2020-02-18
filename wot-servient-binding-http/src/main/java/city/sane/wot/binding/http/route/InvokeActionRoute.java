@@ -30,7 +30,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
+                                       ExposedThing thing) {
         ExposedThingAction action = thing.getAction(name);
         if (action != null) {
             try {
@@ -45,7 +45,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
 
                 return respondWithValue(response, requestContentType, content, value);
             }
-            catch (ContentCodecException e) {
+            catch (ContentCodecException | InterruptedException | ExecutionException e) {
                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                 return e;
             }
@@ -56,25 +56,8 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
         }
     }
 
-    private Object respondWithValue(Response response, String requestContentType, Content content, Object value) {
-        try {
-            Content outputContent = ContentManager.valueToContent(value, requestContentType);
-
-            if (value != null) {
-                response.type(content.getType());
-                return outputContent;
-            }
-            else {
-                return "";
-            }
-        }
-        catch (ContentCodecException e) {
-            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-            return e;
-        }
-    }
-
-    private Map<String, Object> parseUrlParameters(Map<String, String[]> urlParams, Map<String, Map> uriVariables) {
+    private Map<String, Object> parseUrlParameters(Map<String, String[]> urlParams,
+                                                   Map<String, Map> uriVariables) {
         log.debug("parse url parameters '{}' with uri variables '{}'", urlParams.keySet(), uriVariables);
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry<String, String[]> entry : urlParams.entrySet()) {
@@ -101,5 +84,26 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
             }
         }
         return params;
+    }
+
+    private Object respondWithValue(Response response,
+                                    String requestContentType,
+                                    Content content,
+                                    Object value) {
+        try {
+            Content outputContent = ContentManager.valueToContent(value, requestContentType);
+
+            if (value != null) {
+                response.type(content.getType());
+                return outputContent;
+            }
+            else {
+                return "";
+            }
+        }
+        catch (ContentCodecException e) {
+            response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+            return e;
+        }
     }
 }

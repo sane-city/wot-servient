@@ -17,11 +17,16 @@ thing
                         data: [type: 'integer']
                 ])
 // make available via bindings
-thing.expose().thenRun {
-    println(thing.title + ' ready')
-    new Timer().schedule({
-        ++counter
-        thing.events['onchange'].emit(counter)
-        println('Emitted change ' + counter)
-    }, 0, 5000)
+thing.expose().whenComplete { r, e ->
+    if (e == null) {
+        println(thing.title + ' ready')
+        new Timer().schedule({
+            ++counter
+            thing.events['onchange'].emit(counter)
+            println('Emitted change ' + counter)
+        }, 0, 5000)
+    }
+    else {
+        println('Error: ' + e)
+    }
 }

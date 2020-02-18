@@ -34,22 +34,6 @@ public class AllPropertiesResourceIT {
         server.start();
     }
 
-    @After
-    public void teardown() throws TimeoutException {
-        server.stop();
-        CoapProtocolServer.waitForPort(5683);
-    }
-
-    @Test
-    public void readAllProperties() {
-        CoapClient client = new CoapClient("coap://localhost:5683/properties");
-        Request request = new Request(CoAP.Code.GET);
-        CoapResponse response = client.advanced(request);
-
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-    }
-
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
                 .setId("counter")
@@ -120,5 +104,21 @@ public class AllPropertiesResourceIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() throws TimeoutException {
+        server.stop();
+        CoapProtocolServer.waitForPort(5683);
+    }
+
+    @Test
+    public void readAllProperties() {
+        CoapClient client = new CoapClient("coap://localhost:5683/properties");
+        Request request = new Request(CoAP.Code.GET);
+        CoapResponse response = client.advanced(request);
+
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
     }
 }

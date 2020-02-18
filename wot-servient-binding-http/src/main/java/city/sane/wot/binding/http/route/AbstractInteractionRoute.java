@@ -15,7 +15,7 @@ abstract class AbstractInteractionRoute extends AbstractRoute {
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
+    public Object handle(Request request, Response response) {
         logRequest(request);
 
         String requestContentType = getOrDefaultRequestContentType(request);
@@ -39,8 +39,8 @@ abstract class AbstractInteractionRoute extends AbstractRoute {
     }
 
     protected abstract Object handleInteraction(Request request,
-                                     Response response,
-                                     String requestContentType,
-                                     String name,
-                                     ExposedThing thing) throws InterruptedException, java.util.concurrent.ExecutionException;
+                                                Response response,
+                                                String requestContentType,
+                                                String name,
+                                                ExposedThing thing);
 }

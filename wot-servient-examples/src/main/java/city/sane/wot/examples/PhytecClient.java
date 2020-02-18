@@ -64,7 +64,6 @@ class PhytecClient {
 
                     Thread.sleep(10 * 1000L);
                 }
-
             }
             catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

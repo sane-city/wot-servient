@@ -1,56 +1,102 @@
 package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.observer.Subject;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.mockito.Mockito.*;
 
 public class ExposedThingPropertyTest {
     private ExposedThing thing;
-    private ExposedThingProperty property;
+    private String name;
+    private ThingProperty<Object> property;
+    private PropertyState<Object> state;
+    private String objectType;
+    private String description;
+    private Map<String, String> descriptions;
+    private String type;
+    private boolean observable;
+    private boolean readOnly;
+    private boolean writeOnly;
+    private Map<String, Map> uriVariables;
+    private Map<String, Object> optionalProperties;
+    private ExposedThingProperty<Object> exposedProperty;
+    private Supplier<CompletableFuture<Object>> readHandler;
+    private Subject subject;
+    private Function<Object, CompletableFuture<Object>> writeHandler;
 
     @Before
     public void setUp() {
-        thing = new ExposedThing(null, new Thing.Builder().setId("ThingA").build());
-        thing.addProperty("foo", new ThingProperty());
-        property = thing.getProperty("foo");
+        thing = mock(ExposedThing.class);
+        name = "foo";
+        property = mock(ThingProperty.class);
+        state = mock(PropertyState.class);
+        readHandler = mock(Supplier.class);
+        writeHandler = mock(Function.class);
+        subject = mock(Subject.class);
     }
 
     @Test
-    public void read() throws ExecutionException, InterruptedException {
-        property.write(1337).join();
+    public void readWithoutHandlerShouldReturnStateValue() {
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
-        assertEquals(1337, property.read().get());
+        exposedProperty.read();
+
+        verify(state, times(1)).getValue();
     }
 
     @Test
-    public void readWithHandler() throws InterruptedException, ExecutionException {
-        property.write(2).join();
-        property.getState().setReadHandler(() -> {
-            int value = (int) thing.getProperty("foo").getState().getValue();
-            return CompletableFuture.completedFuture((int) Math.pow(value, 2));
-        });
+    public void readWithHandlerShouldCallHandler() {
+        when(state.getReadHandler()).thenReturn(readHandler);
 
-        assertEquals(4, property.read().get());
-        assertEquals(16, property.read().get());
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+
+        exposedProperty.read();
+
+        verify(readHandler, times(1)).get();
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void readWithBrokenHandlerShouldReturnFailedFuture() throws ExecutionException, InterruptedException {
+        when(readHandler.get()).thenThrow(new RuntimeException());
+        when(state.getReadHandler()).thenReturn(readHandler);
+
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+
+        exposedProperty.read().get();
     }
 
     @Test
-    public void write() throws ExecutionException, InterruptedException {
-        assertNull(property.write(1337).get());
+    public void writeWithoutHandlerShouldSetStateValueAndInformSubject() {
+        when(state.getSubject()).thenReturn(subject);
+
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+
+        exposedProperty.write(1337);
+
+        verify(state, times(1)).setValue(1337);
+        verify(subject, times(1)).next(1337);
     }
 
     @Test
-    public void writeWithHandler() throws InterruptedException, ExecutionException {
-        property.getState().setWriteHandler((value) -> CompletableFuture.completedFuture(((int) value) / 2));
+    public void writeWithHandlerShouldCallHandlerAndInformSubject() {
+        when(writeHandler.apply(any())).thenReturn(completedFuture(1337));
+        when(state.getWriteHandler()).thenReturn(writeHandler);
+        when(state.getSubject()).thenReturn(subject);
 
-        assertEquals(50, property.write(100).get());
-        assertEquals(25, property.write(50).get());
+        exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
+
+        exposedProperty.write(1337);
+
+        verify(writeHandler, times(1)).apply(1337);
+        verify(subject, times(1)).next(1337);
     }
 }

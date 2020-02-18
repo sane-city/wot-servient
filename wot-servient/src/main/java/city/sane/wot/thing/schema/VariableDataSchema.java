@@ -28,6 +28,13 @@ public class VariableDataSchema extends AbstractDataSchema<Object> {
         return Object.class;
     }
 
+    @Override
+    public String toString() {
+        return "VariableDataSchema{" +
+                "type='" + type + '\'' +
+                '}';
+    }
+
     /**
      * Allows building new {@link VariableDataSchema} objects.
      */

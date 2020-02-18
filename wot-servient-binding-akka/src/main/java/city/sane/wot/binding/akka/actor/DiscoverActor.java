@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This actor is temporarily created for a discovery process. The actor searches for the desired things, returns them, and then terminates itself.
+ * This actor is temporarily created for a discovery process. The actor searches for the desired
+ * things, returns them, and then terminates itself.
  */
 public class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -30,11 +31,11 @@ public class DiscoverActor extends AbstractActor {
     private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
         this.requester = requester;
         this.filter = filter;
-        if (getContext().system().settings().config().getStringList("wot.servient.akka.server.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
         else {
-            log.warning("DistributedPubSub extension missing. ANY Discovery will not be supported.");
+            log.warning("DistributedPubSub extension missing. ANY Discovery via DistributedPubSub will not be supported.");
             mediator = null;
         }
 
@@ -90,7 +91,6 @@ public class DiscoverActor extends AbstractActor {
 
     // CrudMessages
     public static class DiscoverTimeout {
-
     }
 
     public static class Done {

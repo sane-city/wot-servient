@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
  */
 public class PropertyResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(PropertyResource.class);
+    private final ExposedThingProperty<Object> property;
 
-    private final ExposedThingProperty property;
-
-    public PropertyResource(String name, ExposedThingProperty property) {
+    public PropertyResource(String name, ExposedThingProperty<Object> property) {
         super(name);
         this.property = property;
     }

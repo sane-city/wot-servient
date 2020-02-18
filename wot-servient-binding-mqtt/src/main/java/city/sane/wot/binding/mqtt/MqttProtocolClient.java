@@ -21,11 +21,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows consuming Things via MQTT.
+ * Allows consuming Things via MQTT. TODO: Currently a MqttProtocolClient and therefore also a
+ * MqttClient is created for each Thing. Even if each thing is reachable via the same broker. It
+ * would be better if there was only one MqttClient per broker and that is shared by all
+ * MqttProtocolClient instances. TODO: MqttClient.close() is never called!
  */
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
-
     private final MqttProtocolSettings settings;
     private final Map<String, Subject<Content>> topicSubjects = new HashMap<>();
     private MqttClient client;
@@ -47,6 +49,11 @@ public class MqttProtocolClient implements ProtocolClient {
     }
 
     @Override
+    public CompletableFuture<Content> invokeResource(Form form) {
+        return invokeResource(form, null);
+    }
+
+    @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
         CompletableFuture<Content> future = new CompletableFuture<>();
 
@@ -63,35 +70,9 @@ public class MqttProtocolClient implements ProtocolClient {
         return future;
     }
 
-    private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
-        try {
-            log.debug("MqttClient at '{}' publishing to topic '{}'", settings.getBroker(), topic);
-            byte[] payload;
-            if (content != null) {
-                payload = content.getBody();
-            }
-            else {
-                payload = new byte[0];
-            }
-            client.publish(topic, new MqttMessage(payload));
-
-            // MQTT does not support the request-response pattern. return empty message
-            future.complete(Content.EMPTY_CONTENT);
-        }
-        catch (MqttException e) {
-            future.completeExceptionally(new ProtocolClientException(
-                    "MqttClient at '" + settings.getBroker() + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
-            ));
-        }
-    }
-
     @Override
-    public CompletableFuture<Content> invokeResource(Form form) {
-        return invokeResource(form, null);
-    }
-
-    @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         String topic;
         try {
             topic = new URI(form.getHref()).getPath().substring(1);
@@ -151,5 +132,27 @@ public class MqttProtocolClient implements ProtocolClient {
         });
 
         return result;
+    }
+
+    private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
+        try {
+            log.debug("MqttClient at '{}' publishing to topic '{}'", settings.getBroker(), topic);
+            byte[] payload;
+            if (content != null) {
+                payload = content.getBody();
+            }
+            else {
+                payload = new byte[0];
+            }
+            client.publish(topic, new MqttMessage(payload));
+
+            // MQTT does not support the request-response pattern. return empty message
+            future.complete(Content.EMPTY_CONTENT);
+        }
+        catch (MqttException e) {
+            future.completeExceptionally(new ProtocolClientException(
+                    "MqttClient at '" + settings.getBroker() + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
+            ));
+        }
     }
 }

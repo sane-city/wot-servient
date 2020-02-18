@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Counter Client Example</title>
+    <script>
+        function base64ToByteArray(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return new Uint8Array(bytes.buffer);
+        }
+
+        function byteArrayToString(bytes) {
+            return String.fromCharCode.apply(String, bytes);
+        }
+
+        function contentToValue(content, schema) {
+            var bytes = base64ToByteArray(content.body);
+
+            if (content.type == 'application/json') {
+                var string = byteArrayToString(bytes);
+
+                if (schema == 'number') {
+                    return parseInt(string);
+                }
+                else {
+                    throw new Error('Unknown schema: ' + schema)
+                }
+            }
+            else {
+                throw new Error('Unknown content type: ' + content.type)
+            }
+        }
+
+        var connection = new WebSocket('ws://localhost:8081');
+        connection.onopen = function () {
+            console.log('Connection established. Request property content.');
+            var message = {
+                type: 'ReadProperty',
+                id: '123213',
+                thingId: 'counter',
+                name: 'count'
+            };
+            connection.send(JSON.stringify(message));
+        };
+
+        connection.onerror = function (error) {
+            alert('Web socket connection failed. The counter example must be started first!');
+        };
+
+        connection.onmessage = function (e) {
+            console.log('Received: ' + e.data);
+            var message = JSON.parse(e.data);
+
+            switch (message.type) {
+                case 'ClientErrorResponse':
+                    console.log('ClientError: ' + message.reason);
+                    break;
+                case 'ReadPropertyResponse':
+                    var value = contentToValue(message.content, 'number');
+                    console.log('Deserialized content to: ' + value);
+                    document.getElementById('count').innerText = value;
+                    break;
+                default:
+                    console.log('Unexpected message: ' + JSON.stringify(message));
+            }
+        };
+    </script>
+</head>
+<body>
+Counter value is: <span id="count"></span>
+</body>
+</html>

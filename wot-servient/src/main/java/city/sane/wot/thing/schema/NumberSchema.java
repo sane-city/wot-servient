@@ -13,4 +13,9 @@ public class NumberSchema extends AbstractDataSchema<Number> {
     public Class<Number> getClassType() {
         return Number.class;
     }
+
+    @Override
+    public String toString() {
+        return "NumberSchema{}";
+    }
 }

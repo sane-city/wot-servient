@@ -185,7 +185,7 @@ class Luftdaten {
                         String name = entry.getKey();
                         Double value = entry.getValue();
 
-                        ExposedThingProperty property = exposedThing.getProperty(name);
+                        ExposedThingProperty<Object> property = exposedThing.getProperty(name);
                         if (property != null) {
                             property.write(value);
                         }

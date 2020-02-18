@@ -16,7 +16,6 @@ import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +23,7 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 
 public class ThingsActorIT {
@@ -51,63 +51,8 @@ public class ThingsActorIT {
         Messages.RespondRead msg = testKit.expectMsgClass(Messages.RespondRead.class);
         Map things = ContentManager.contentToValue(msg.content, new ObjectSchema());
 
-        assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
+        assertThat((Map<String, Thing>) things, hasKey("counter"));
     }
-
-    @Test
-    public void discover() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-
-        ThingFilter filter = new ThingFilter();
-        actorRef.tell(new ThingsActor.Discover(filter), testKit.getRef());
-
-        ThingsActor.Things msg = testKit.expectMsgClass(ThingsActor.Things.class);
-
-        assertThat(msg.entities, Matchers.hasKey("counter"));
-    }
-
-    @Test
-    public void expose() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-
-        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
-
-        testKit.expectMsgClass(ThingsActor.Created.class);
-    }
-
-//    @Test
-//    public void created() {
-//        TestKit testKit = new TestKit(system);
-//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-//
-//        actorRef.tell(new ThingsActor.Created<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
-//
-//        testKit.expectMsgClass(ThingsActor.Created.class);
-//    }
-
-    @Test
-    public void destroy() {
-        TestKit testKit = new TestKit(system);
-        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
-        testKit.expectMsgClass(ThingsActor.Created.class);
-
-        actorRef.tell(new ThingsActor.Destroy("counter"), testKit.getRef());
-
-        testKit.expectMsgClass(ThingsActor.Deleted.class);
-    }
-
-//    @Test
-//    public void deleted() {
-//        TestKit testKit = new TestKit(system);
-//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
-//
-//        actorRef.tell(new ThingsActor.Deleted<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
-//
-//        testKit.expectMsgClass(ThingsActor.Deleted.class);
-//    }
 
     private ExposedThing getExposedCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
@@ -184,5 +129,60 @@ public class ThingsActorIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @Test
+    public void discover() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+
+        ThingFilter filter = new ThingFilter();
+        actorRef.tell(new ThingsActor.Discover(filter), testKit.getRef());
+
+        ThingsActor.Things msg = testKit.expectMsgClass(ThingsActor.Things.class);
+
+        assertThat(msg.entities, hasKey("counter"));
+    }
+
+//    @Test
+//    public void created() {
+//        TestKit testKit = new TestKit(system);
+//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+//
+//        actorRef.tell(new ThingsActor.Created<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
+//
+//        testKit.expectMsgClass(ThingsActor.Created.class);
+//    }
+
+    @Test
+    public void expose() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+
+        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
+
+        testKit.expectMsgClass(ThingsActor.Created.class);
+    }
+
+//    @Test
+//    public void deleted() {
+//        TestKit testKit = new TestKit(system);
+//        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+//
+//        actorRef.tell(new ThingsActor.Deleted<>(new Pair(testKit.getRef(), "counter")), ActorRef.noSender());
+//
+//        testKit.expectMsgClass(ThingsActor.Deleted.class);
+//    }
+
+    @Test
+    public void destroy() {
+        TestKit testKit = new TestKit(system);
+        ActorRef actorRef = system.actorOf(ThingsActor.props(Map.of("counter", getExposedCounterThing())));
+        actorRef.tell(new ThingsActor.Expose("counter"), testKit.getRef());
+        testKit.expectMsgClass(ThingsActor.Created.class);
+
+        actorRef.tell(new ThingsActor.Destroy("counter"), testKit.getRef());
+
+        testKit.expectMsgClass(ThingsActor.Deleted.class);
     }
 }

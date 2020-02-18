@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 class MqttProtocolSettings {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolSettings.class);
-
     private final String broker;
     private final String clientId;
     private final String username;
@@ -54,26 +53,14 @@ class MqttProtocolSettings {
         this.password = password;
     }
 
-    public String getBroker() {
-        return broker;
-    }
-
-    private String getClientId() {
-        return clientId;
-    }
-
-    private String getUsername() {
-        return username;
-    }
-
-    private String getPassword() {
-        return password;
-    }
-
     public void validate() throws MqttProtocolException {
         if (getBroker() == null || getBroker().isEmpty()) {
             throw new MqttProtocolException("No broker defined for MQTT server binding - skipping");
         }
+    }
+
+    public String getBroker() {
+        return broker;
     }
 
     public MqttClient createConnectedMqttClient() throws MqttProtocolException {
@@ -98,5 +85,17 @@ class MqttProtocolSettings {
         catch (MqttException e) {
             throw new MqttProtocolException(e);
         }
+    }
+
+    private String getClientId() {
+        return clientId;
+    }
+
+    private String getUsername() {
+        return username;
+    }
+
+    private String getPassword() {
+        return password;
     }
 }

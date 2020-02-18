@@ -15,10 +15,9 @@ import java.util.concurrent.CompletableFuture;
  */
 public class ExposedThingEvent extends ThingEvent implements Subscribable<Object> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
-
     private final String name;
     @JsonIgnore
-    private final EventState state = new EventState();
+    private final EventState<Object> state = new EventState<Object>();
 
     public ExposedThingEvent(String name, ThingEvent event) {
         this.name = name;
@@ -39,17 +38,31 @@ public class ExposedThingEvent extends ThingEvent implements Subscribable<Object
         return super.equals(obj);
     }
 
-    public EventState getState() {
+    @Override
+    public String toString() {
+        return "ExposedThingEvent{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public EventState<Object> getState() {
         return state;
+    }
+
+    public CompletableFuture<Void> emit() {
+        return emit(null);
     }
 
     public CompletableFuture<Void> emit(Object data) {
         log.debug("Event '{}' has been emitted", name);
         return state.getSubject().next(data);
-    }
-
-    public CompletableFuture<Void> emit() {
-        return emit(null);
     }
 
     @Override

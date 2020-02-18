@@ -31,32 +31,6 @@ public class ThingResourceIT {
         server.add(new ThingResource(getCounterThing()));
         server.start();
     }
-    
-    @After
-    public void teardown() throws TimeoutException {
-        server.stop();
-        CoapProtocolServer.waitForPort(5683);
-    }
-
-    @Test
-    public void getThing() {
-        CoapClient client = new CoapClient("coap://localhost:5683/counter");
-        CoapResponse response = client.get();
-
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
-    }
-
-    @Test
-    public void getThingWithCustomContentType() {
-        CoapClient client = new CoapClient("coap://localhost:5683/counter");
-        Request request = new Request(CoAP.Code.GET);
-        request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
-        CoapResponse response = client.advanced(request);
-
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
-    }
 
     private ExposedThing getCounterThing() {
         ExposedThing thing = new ExposedThing(null)
@@ -128,5 +102,31 @@ public class ThingResourceIT {
         thing.addEvent("change", new ThingEvent());
 
         return thing;
+    }
+
+    @After
+    public void teardown() throws TimeoutException {
+        server.stop();
+        CoapProtocolServer.waitForPort(5683);
+    }
+
+    @Test
+    public void getThing() {
+        CoapClient client = new CoapClient("coap://localhost:5683/counter");
+        CoapResponse response = client.get();
+
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+    }
+
+    @Test
+    public void getThingWithCustomContentType() {
+        CoapClient client = new CoapClient("coap://localhost:5683/counter");
+        Request request = new Request(CoAP.Code.GET);
+        request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
+        CoapResponse response = client.advanced(request);
+
+        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
     }
 }

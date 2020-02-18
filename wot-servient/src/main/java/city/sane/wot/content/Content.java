@@ -9,18 +9,17 @@ import java.util.Objects;
  */
 public class Content implements Serializable {
     public static final Content EMPTY_CONTENT = new Content(ContentManager.DEFAULT, new byte[0]);
-
     private final String type;
     private final byte[] body;
+
+    private Content() {
+        type = null;
+        body = null;
+    }
 
     public Content(String type, byte[] body) {
         this.type = type;
         this.body = body;
-    }
-
-    @Override
-    public String toString() {
-        return "Content [type=" + getType() + ", body=" + getBody() + "]";
     }
 
     @Override
@@ -40,6 +39,14 @@ public class Content implements Serializable {
             return false;
         }
         return Objects.equals(getType(), ((Content) obj).getType()) && Arrays.equals(getBody(), ((Content) obj).getBody());
+    }
+
+    @Override
+    public String toString() {
+        return "Content{" +
+                "type='" + type + '\'' +
+                ", body=" + Arrays.toString(body) +
+                '}';
     }
 
     public String getType() {

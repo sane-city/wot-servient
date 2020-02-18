@@ -13,4 +13,9 @@ public class StringSchema extends AbstractDataSchema<String> {
     public Class<String> getClassType() {
         return String.class;
     }
+
+    @Override
+    public String toString() {
+        return "StringSchema{}";
+    }
 }

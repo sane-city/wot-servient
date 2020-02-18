@@ -13,6 +13,10 @@ public class Messages {
     }
 
     public static class Read implements Serializable {
+        @Override
+        public String toString() {
+            return "Read{}";
+        }
     }
 
     public static class RespondRead implements Serializable {
@@ -20,6 +24,13 @@ public class Messages {
 
         public RespondRead(Content content) {
             this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "RespondRead{" +
+                    "content=" + content +
+                    '}';
         }
     }
 
@@ -29,6 +40,13 @@ public class Messages {
         public Write(Content content) {
             this.content = content;
         }
+
+        @Override
+        public String toString() {
+            return "Write{" +
+                    "content=" + content +
+                    '}';
+        }
     }
 
     public static class Written implements Serializable {
@@ -36,6 +54,13 @@ public class Messages {
 
         public Written(Content content) {
             this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "Written{" +
+                    "content=" + content +
+                    '}';
         }
     }
 
@@ -45,6 +70,13 @@ public class Messages {
         public Invoke(Content content) {
             this.content = content;
         }
+
+        @Override
+        public String toString() {
+            return "Invoke{" +
+                    "content=" + content +
+                    '}';
+        }
     }
 
     public static class Invoked implements Serializable {
@@ -53,9 +85,20 @@ public class Messages {
         public Invoked(Content content) {
             this.content = content;
         }
+
+        @Override
+        public String toString() {
+            return "Invoked{" +
+                    "content=" + content +
+                    '}';
+        }
     }
 
     public static class Subscribe implements Serializable {
+        @Override
+        public String toString() {
+            return "Subscribe{}";
+        }
     }
 
     public static class SubscriptionNext implements Serializable {
@@ -63,6 +106,13 @@ public class Messages {
 
         public SubscriptionNext(Content next) {
             this.next = next;
+        }
+
+        @Override
+        public String toString() {
+            return "SubscriptionNext{" +
+                    "next=" + next +
+                    '}';
         }
     }
 
@@ -72,8 +122,19 @@ public class Messages {
         public SubscriptionError(Throwable e) {
             this.e = e;
         }
+
+        @Override
+        public String toString() {
+            return "SubscriptionError{" +
+                    "e=" + e +
+                    '}';
+        }
     }
 
     public static class SubscriptionComplete implements Serializable {
+        @Override
+        public String toString() {
+            return "SubscriptionComplete{}";
+        }
     }
 }

@@ -46,7 +46,6 @@ class CounterUriVariablesClient {
                 consumedThing.getAction("decrement").invoke().join();
                 Object dec1 = consumedThing.getProperty("count").read().get();
                 System.out.println("CounterUriVariablesClient: count value after decrement is " + dec1);
-
             }
             catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

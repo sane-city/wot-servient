@@ -20,7 +20,6 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  */
 public class ScriptingManager {
     private final static ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
-
     private static final Map<String, ScriptingEngine> ENGINES = new HashMap();
 
     private ScriptingManager() {
@@ -45,12 +44,13 @@ public class ScriptingManager {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> in sandboxed context and passes <code>wot</code> to the script as WoT object.
+     * Executes the WoT script in <code>file</code> in sandboxed context and passes <code>wot</code>
+     * to the script as WoT object.
      *
      * @param file
      * @param wot
-     * @throws ScriptingManagerException
      * @return
+     * @throws ScriptingManagerException
      */
     public static CompletableFuture<Void> runScript(File file, Wot wot) {
         Path path = file.toPath();
@@ -70,15 +70,30 @@ public class ScriptingManager {
         }
     }
 
+    private static String pathToExtension(Path path) {
+        String pathStr = path.toString();
+        if (pathStr.contains(".")) {
+            return pathStr.substring(pathStr.lastIndexOf('.'));
+        }
+        else {
+            return null;
+        }
+    }
+
+    private static String extensionToMediaType(String extension) {
+        Optional<ScriptingEngine> engine = ENGINES.values().stream().filter(e -> e.getFileExtension().equals(extension)).findFirst();
+        return engine.map(ScriptingEngine::getMediaType).orElse(null);
+    }
+
     /**
-     * Executes the WoT script in <code>script</code> in sandboxed context using engine that matches <code>mediaType</code> and passes <code>wot</code> to
-     * the script as WoT object.
+     * Executes the WoT script in <code>script</code> in sandboxed context using engine that matches
+     * <code>mediaType</code> and passes <code>wot</code> to the script as WoT object.
      *
      * @param script
      * @param mediaType
      * @param wot
-     * @throws ScriptingManagerException
      * @return
+     * @throws ScriptingManagerException
      */
     public static CompletableFuture<Void> runScript(String script, String mediaType, Wot wot) {
         ScriptingEngine engine = ENGINES.get(mediaType);
@@ -91,12 +106,13 @@ public class ScriptingManager {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> in privileged context and passes <code>wot</code> to the script as WoT object.
+     * Executes the WoT script in <code>file</code> in privileged context and passes
+     * <code>wot</code> to the script as WoT object.
      *
      * @param file
      * @param wot
-     * @throws ScriptingManagerException
      * @return
+     * @throws ScriptingManagerException
      */
     public static CompletableFuture<Void> runPrivilegedScript(File file, Wot wot) {
         Path path = file.toPath();
@@ -117,16 +133,18 @@ public class ScriptingManager {
     }
 
     /**
-     * Executes the WoT script in <code>script</code> in privileged context using engine that matches <code>mediaType</code> and passes <code>wot</code> to
-     * the script as WoT object.
+     * Executes the WoT script in <code>script</code> in privileged context using engine that
+     * matches <code>mediaType</code> and passes <code>wot</code> to the script as WoT object.
      *
      * @param script
      * @param mediaType
      * @param wot
-     * @throws ScriptingManagerException
      * @return
+     * @throws ScriptingManagerException
      */
-    public static CompletableFuture<Void> runPrivilegedScript(String script, String mediaType, Wot wot) {
+    public static CompletableFuture<Void> runPrivilegedScript(String script,
+                                                              String mediaType,
+                                                              Wot wot) {
         ScriptingEngine engine = ENGINES.get(mediaType);
 
         if (engine == null) {
@@ -134,20 +152,5 @@ public class ScriptingManager {
         }
 
         return engine.runPrivilegedScript(script, wot, EXECUTOR_SERVICE);
-    }
-
-    private static String pathToExtension(Path path) {
-        String pathStr = path.toString();
-        if (pathStr.contains(".")) {
-            return pathStr.substring(pathStr.lastIndexOf('.'));
-        }
-        else {
-            return null;
-        }
-    }
-
-    private static String extensionToMediaType(String extension) {
-        Optional<ScriptingEngine> engine = ENGINES.values().stream().filter(e -> e.getFileExtension().equals(extension)).findFirst();
-        return engine.map(ScriptingEngine::getMediaType).orElse(null);
     }
 }

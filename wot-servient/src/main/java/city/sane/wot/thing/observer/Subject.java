@@ -1,6 +1,5 @@
 package city.sane.wot.thing.observer;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,9 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
- * Defines a subject that can be observed by any number of {@link Observer} instances.
- * This class is part of the Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
+ * Defines a subject that can be observed by any number of {@link Observer} instances. This class is
+ * part of the Observer pattern (https://en.wikipedia.org/wiki/Observer_pattern)
  *
  * @param <T>
  */
@@ -25,19 +26,18 @@ public class Subject<T> implements Subscribable<T> {
     }
 
     /**
-     * Adds the <code>next</code> value to the subject. Informs all {@link #observers}. Returns a future which will be completed when all observers have been
-     * informed.
+     * Adds the <code>next</code> value to the subject. Informs all {@link #observers}. Returns a
+     * future which will be completed when all observers have been informed.
      *
      * @param value
-     *
      * @return
      */
     public CompletableFuture<Void> next(T value) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectClosedException());
+            return failedFuture(new SubjectClosedException());
         }
 
-        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
         log.debug("Inform {} observer(s) about next value '{}'", observersSnapshot.size(), value);
 
         // call all observers in parallel
@@ -48,20 +48,20 @@ public class Subject<T> implements Subscribable<T> {
     }
 
     /**
-     * Closes the subject with an error. Informs all {@link #observers}. Returns a future which will be completed when all observers have been informed.
-     * After that, no more values can be submitted to the subject.
+     * Closes the subject with an error. Informs all {@link #observers}. Returns a future which will
+     * be completed when all observers have been informed. After that, no more values can be
+     * submitted to the subject.
      *
      * @param e
-     *
      * @return
      */
     public CompletableFuture<Void> error(Throwable e) {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectClosedException());
+            return failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
         log.debug("Inform {} observer(s) about error '{}'", observersSnapshot.size(), e);
 
         // call all observers in parallel
@@ -72,18 +72,19 @@ public class Subject<T> implements Subscribable<T> {
     }
 
     /**
-     * Complete the subject. Informs all {@link #observers}. Returns a future which will be completed when all observers have been informed.
-     * After that, no more values can be submitted to the subject.
+     * Complete the subject. Informs all {@link #observers}. Returns a future which will be
+     * completed when all observers have been informed. After that, no more values can be submitted
+     * to the subject.
      *
      * @return
      */
     public CompletableFuture<Void> complete() {
         if (closed) {
-            return CompletableFuture.failedFuture(new SubjectClosedException());
+            return failedFuture(new SubjectClosedException());
         }
         closed = true;
 
-        ArrayList<Observer> observersSnapshot = new ArrayList<>(this.observers.values());
+        ArrayList<Observer> observersSnapshot = new ArrayList<>(observers.values());
         log.debug("Inform {} observer(s) about completion", observersSnapshot.size());
 
         // call all observers in parallel
@@ -97,7 +98,6 @@ public class Subject<T> implements Subscribable<T> {
      * Lets <code>observer</code> subscribe the subject.
      *
      * @param observer
-     *
      * @return
      */
     @Override
@@ -115,5 +115,13 @@ public class Subject<T> implements Subscribable<T> {
     private synchronized void unsubscribe(Subscription subscription) {
         log.debug("unsubscribe from Subject: {}", subscription);
         observers.remove(subscription);
+    }
+
+    @Override
+    public String toString() {
+        return "Subject{" +
+                "observers=" + observers +
+                ", closed=" + closed +
+                '}';
     }
 }

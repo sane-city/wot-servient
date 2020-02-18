@@ -5,6 +5,7 @@ import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -72,15 +73,6 @@ public class ProtocolServerIT {
         assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
     }
 
-    @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
-        server.destroy(thing).join();
-
-        assertNull(server.destroy(thing).get());
-    }
-
     private ExposedThing getCounterThing() {
         ThingProperty counterProperty = new ThingProperty.Builder()
                 .setType("integer")
@@ -137,6 +129,15 @@ public class ProtocolServerIT {
         return thing;
     }
 
+    @Test
+    public void destroy() throws ExecutionException, InterruptedException {
+        ExposedThing thing = getCounterThing();
+        server.expose(thing).join();
+        server.destroy(thing).join();
+
+        assertNull(server.destroy(thing).get());
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static List<Class<? extends ProtocolServer>> data() {
         return Arrays.asList(
@@ -144,7 +145,8 @@ public class ProtocolServerIT {
                 CoapProtocolServer.class,
                 HttpProtocolServer.class,
                 JadexProtocolServer.class,
-                MqttProtocolServer.class
+                MqttProtocolServer.class,
+                WebsocketProtocolServer.class
         );
     }
 }

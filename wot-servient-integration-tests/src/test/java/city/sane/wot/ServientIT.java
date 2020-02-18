@@ -11,10 +11,10 @@ import city.sane.wot.binding.coap.CoapProtocolClientFactory;
 import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.binding.http.HttpProtocolClientFactory;
 import city.sane.wot.binding.http.HttpProtocolServer;
-import city.sane.wot.binding.jadex.JadexProtocolClientFactory;
-import city.sane.wot.binding.jadex.JadexProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
+import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
+import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
@@ -26,7 +26,6 @@ import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +39,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
@@ -74,88 +74,6 @@ public class ServientIT {
         assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
         assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
         assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
-    }
-
-
-    @Test
-    public void fetch() throws ProtocolServerException {
-        try {
-            ExposedThing exposedThing = getExposedCounterThing();
-            servient.addThing(exposedThing);
-            exposedThing.expose().join();
-
-            URI url = servient.getServer(servientClasses.first()).getThingUrl(exposedThing.getId());
-
-            Thing thing = servient.fetch(url).join();
-
-            assertEquals("counter", thing.getId());
-        }
-        catch (ProtocolServerNotImplementedException e) {
-
-        }
-    }
-
-    @Test
-    public void fetchDirectory() throws ProtocolServerException {
-        try {
-            ExposedThing exposedThing = getExposedCounterThing();
-            servient.addThing(exposedThing);
-            exposedThing.expose().join();
-
-            URI url = servient.getServer(servientClasses.first()).getDirectoryUrl();
-
-            Map things = servient.fetchDirectory(url).join();
-
-            assertThat((Map<String, Thing>) things, Matchers.hasKey("counter"));
-        }
-        catch (ProtocolServerNotImplementedException e) {
-
-        }
-    }
-
-    @Test
-    public void discoverLocal() throws ExecutionException, InterruptedException {
-        // expose things so that something can be discovered
-        ExposedThing thingX = new ExposedThing(servient).setId("ThingX");
-        servient.addThing(thingX);
-        thingX.expose().join();
-        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
-        servient.addThing(thingY);
-        thingY.expose().join();
-        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
-        servient.addThing(thingZ);
-        thingZ.expose().join();
-
-        // discover
-        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
-
-        Collection<Thing> things = servient.discover(filter).get();
-        assertEquals(3, things.size());
-    }
-
-    @Test
-    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException, ThingQueryException {
-        // expose things so that something can be discovered
-        ExposedThing thingX = new ExposedThing(servient)
-                .setId("ThingX")
-                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
-                .setObjectType("Thing");
-        servient.addThing(thingX);
-        thingX.expose().join();
-        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
-        servient.addThing(thingY);
-        thingY.expose().join();
-        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
-        servient.addThing(thingZ);
-        thingZ.expose().join();
-
-        // discover
-        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
-        ThingQuery sparqlQuery = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .");
-        filter.setQuery(sparqlQuery);
-
-        Collection<Thing> things = servient.discover(filter).get();
-        assertEquals(1, things.size());
     }
 
     private ExposedThing getExposedCounterThing() {
@@ -235,14 +153,97 @@ public class ServientIT {
         return thing;
     }
 
+    @Test
+    public void fetch() throws ProtocolServerException {
+        try {
+            ExposedThing exposedThing = getExposedCounterThing();
+            servient.addThing(exposedThing);
+            exposedThing.expose().join();
+
+            URI url = servient.getServer(servientClasses.first()).getThingUrl(exposedThing.getId());
+
+            Thing thing = servient.fetch(url).join();
+
+            assertEquals("counter", thing.getId());
+        }
+        catch (ProtocolServerNotImplementedException e) {
+
+        }
+    }
+
+    @Test
+    public void fetchDirectory() throws ProtocolServerException {
+        try {
+            ExposedThing exposedThing = getExposedCounterThing();
+            servient.addThing(exposedThing);
+            exposedThing.expose().join();
+
+            URI url = servient.getServer(servientClasses.first()).getDirectoryUrl();
+
+            Map things = servient.fetchDirectory(url).join();
+
+            assertThat((Map<String, Thing>) things, hasKey("counter"));
+        }
+        catch (ProtocolServerNotImplementedException e) {
+
+        }
+    }
+
+    @Test
+    public void discoverLocal() throws ExecutionException, InterruptedException {
+        // expose things so that something can be discovered
+        ExposedThing thingX = new ExposedThing(servient).setId("ThingX");
+        servient.addThing(thingX);
+        thingX.expose().join();
+        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
+        servient.addThing(thingY);
+        thingY.expose().join();
+        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
+        servient.addThing(thingZ);
+        thingZ.expose().join();
+
+        // discover
+        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
+
+        Collection<Thing> things = servient.discover(filter).get();
+        assertEquals(3, things.size());
+    }
+
+    @Test
+    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException, ThingQueryException {
+        // expose things so that something can be discovered
+        ExposedThing thingX = new ExposedThing(servient)
+                .setId("ThingX")
+                .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
+                .setObjectType("Thing");
+        servient.addThing(thingX);
+        thingX.expose().join();
+        ExposedThing thingY = new ExposedThing(servient).setId("ThingY");
+        servient.addThing(thingY);
+        thingY.expose().join();
+        ExposedThing thingZ = new ExposedThing(servient).setId("ThingZ");
+        servient.addThing(thingZ);
+        thingZ.expose().join();
+
+        // discover
+        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
+        ThingQuery sparqlQuery = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .");
+        filter.setQuery(sparqlQuery);
+
+        Collection<Thing> things = servient.discover(filter).get();
+        assertEquals(1, things.size());
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
         return Arrays.asList(
                 new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
                 new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
                 new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
-                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
-                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class)
+                // Jadex platform discovery is unstable
+//                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
+                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class),
+                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
         );
     }
 }

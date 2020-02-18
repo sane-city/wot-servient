@@ -25,8 +25,8 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
-        ExposedThingProperty property = thing.getProperty(name);
+                                       ExposedThing thing) {
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         if (property != null) {
             if (!property.isReadOnly()) {
                 return writeProperty(request, response, requestContentType, property);
@@ -45,7 +45,7 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
     private Object writeProperty(Request request,
                                  Response response,
                                  String requestContentType,
-                                 ExposedThingProperty property) throws InterruptedException, java.util.concurrent.ExecutionException {
+                                 ExposedThingProperty<Object> property) {
         try {
             Content content = new Content(requestContentType, request.bodyAsBytes());
             Object input = ContentManager.contentToValue(content, property);
@@ -60,7 +60,7 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
                 return "";
             }
         }
-        catch (ContentCodecException e) {
+        catch (ContentCodecException | InterruptedException | ExecutionException e) {
             response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
             return e;
         }

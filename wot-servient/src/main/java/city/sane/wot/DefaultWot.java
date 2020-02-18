@@ -29,6 +29,13 @@ public class DefaultWot implements Wot {
     }
 
     /**
+     * Creates and starts a {@link Servient}.
+     */
+    public DefaultWot() throws WotException {
+        this(ConfigFactory.load());
+    }
+
+    /**
      * Creates and starts a {@link Servient} with the given <code>config</code>.
      *
      * @param config
@@ -38,11 +45,51 @@ public class DefaultWot implements Wot {
         servient.start().join();
     }
 
+    @Override
+    public String toString() {
+        return "DefaultWot{" +
+                "servient=" + servient +
+                '}';
+    }
+
     /**
-     * Creates and starts a {@link Servient}.
+     * Creates and starts a {@link Servient}. The servient will not start any servers and can
+     * therefore only consume things and not expose any things.
      */
-    public DefaultWot() throws WotException {
-        this(ConfigFactory.load());
+    public static Wot clientOnly() throws WotException {
+        return clientOnly(ConfigFactory.load());
+    }
+
+    /**
+     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will
+     * not start any servers and can therefore only consume things and not expose any things.
+     *
+     * @param config
+     */
+    public static Wot clientOnly(Config config) throws WotException {
+        Servient servient = Servient.clientOnly(config);
+        servient.start().join();
+        return new DefaultWot(servient);
+    }
+
+    /**
+     * Creates and starts a {@link Servient}. The servient will not start any clients and can
+     * therefore only produce and expose things.
+     */
+    public static Wot serverOnly() throws WotException {
+        return serverOnly(ConfigFactory.load());
+    }
+
+    /**
+     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will
+     * not start any clients and can therefore only produce and expose things.
+     *
+     * @param config
+     */
+    public static Wot serverOnly(Config config) throws WotException {
+        Servient servient = Servient.serverOnly(config);
+        servient.start().join();
+        return new DefaultWot(servient);
     }
 
     @Override
@@ -85,44 +132,5 @@ public class DefaultWot implements Wot {
     @Override
     public CompletableFuture<Void> destroy() {
         return servient.shutdown();
-    }
-
-    /**
-     * Creates and starts a {@link Servient}. The servient will not start any servers and can therefore only consume things
-     * and not expose any things.
-     */
-    public static Wot clientOnly() throws WotException {
-        return clientOnly(ConfigFactory.load());
-    }
-
-    /**
-     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will not start any servers and can therefore only consume things
-     * and not expose any things.
-     *
-     * @param config
-     */
-    public static Wot clientOnly(Config config) throws WotException {
-        Servient servient = Servient.clientOnly(config);
-        servient.start().join();
-        return new DefaultWot(servient);
-    }
-
-    /**
-     * Creates and starts a {@link Servient}. The servient will not start any clients and can therefore only produce and expose things.
-     */
-    public static Wot serverOnly() throws WotException {
-        return serverOnly(ConfigFactory.load());
-    }
-
-    /**
-     * Creates and starts a {@link Servient} with the given <code>config</code>. The servient will not start any clients and can therefore only produce and
-     * expose things.
-     *
-     * @param config
-     */
-    public static Wot serverOnly(Config config) throws WotException {
-        Servient servient = Servient.serverOnly(config);
-        servient.start().join();
-        return new DefaultWot(servient);
     }
 }

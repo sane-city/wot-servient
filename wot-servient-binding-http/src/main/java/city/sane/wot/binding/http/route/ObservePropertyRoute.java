@@ -31,13 +31,19 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
                                        Response response,
                                        String requestContentType,
                                        String name,
-                                       ExposedThing thing) throws InterruptedException, ExecutionException {
-        ExposedThingProperty property = thing.getProperty(name);
+                                       ExposedThing thing) {
+        ExposedThingProperty<Object> property = thing.getProperty(name);
         if (property != null) {
             if (!property.isWriteOnly() && property.isObservable()) {
                 CompletableFuture<Object> result = subscribeForNextData(response, requestContentType, name, property);
 
-                return result.get();
+                try {
+                    return result.get();
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
+                    return e;
+                }
             }
             else {
                 response.status(HttpStatus.BAD_REQUEST_400);
@@ -50,7 +56,10 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
         }
     }
 
-    private CompletableFuture<Object> subscribeForNextData(Response response, String requestContentType, String name, ExposedThingProperty property) {
+    private CompletableFuture<Object> subscribeForNextData(Response response,
+                                                           String requestContentType,
+                                                           String name,
+                                                           ExposedThingProperty<Object> property) {
         CompletableFuture<Object> result = new CompletableFuture();
         Subscription subscription = property.subscribe(
                 data -> {
@@ -65,7 +74,6 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
                         response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                         result.complete("Invalid Property Data");
                     }
-
                 },
                 e -> {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);

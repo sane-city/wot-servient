@@ -53,5 +53,4 @@ public class ObserveActor extends AbstractActor {
     public static Props props(Observer<Content> observer, ActorSelection selection) {
         return Props.create(ObserveActor.class, () -> new ObserveActor(observer, selection));
     }
-
 }

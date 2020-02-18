@@ -42,7 +42,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.GET);
-        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
 
         client.advanced(new FutureCoapHandler(future), request);
 
@@ -59,7 +59,7 @@ public class CoapProtocolClient implements ProtocolClient {
                 .setTimeout(10 * 1000L);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
-        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), request.getURI());
+        log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
         if (content != null) {
             request.setPayload(content.getBody());
         }
@@ -90,7 +90,8 @@ public class CoapProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form, Observer<Content> observer) {
+    public CompletableFuture<Subscription> subscribeResource(Form form,
+                                                             Observer<Content> observer) {
         String url = form.getHref();
         CoapClient client = new CoapClient(url)
                 .setExecutor(executor);
@@ -137,6 +138,10 @@ public class CoapProtocolClient implements ProtocolClient {
         return CompletableFuture.completedFuture(subscription);
     }
 
+    private Request generateRequest(Form form, CoAP.Code code) {
+        return generateRequest(form, code, false);
+    }
+
     private Request generateRequest(Form form, CoAP.Code code, boolean observable) {
         Request request = new Request(code);
 
@@ -152,10 +157,6 @@ public class CoapProtocolClient implements ProtocolClient {
         }
 
         return request;
-    }
-
-    private Request generateRequest(Form form, CoAP.Code code) {
-        return generateRequest(form, code, false);
     }
 
     class FutureCoapHandler implements CoapHandler {

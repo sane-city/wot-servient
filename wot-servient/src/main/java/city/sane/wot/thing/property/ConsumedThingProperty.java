@@ -24,13 +24,12 @@ import java.util.stream.Collectors;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingProperty}.
  */
-public class ConsumedThingProperty extends ThingProperty {
+public class ConsumedThingProperty<T> extends ThingProperty<T> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingProperty.class);
-
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingProperty(String name, ThingProperty property, ConsumedThing thing) {
+    public ConsumedThingProperty(String name, ThingProperty<T> property, ConsumedThing thing) {
         this.name = name;
 
         objectType = property.getObjectType();
@@ -44,16 +43,6 @@ public class ConsumedThingProperty extends ThingProperty {
         optionalProperties = property.getOptionalProperties();
 
         this.thing = thing;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     private List<Form> normalizeHrefs(List<Form> forms, ConsumedThing thing) {
@@ -71,7 +60,34 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Object> read() {
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingProperty{" +
+                "name='" + name + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
+    }
+
+    public CompletableFuture<T> read() {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.READ_PROPERTY);
             ProtocolClient client = clientAndForm.first();
@@ -94,13 +110,13 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Object> write(Object value) {
+    public CompletableFuture<T> write(T value) {
         try {
             Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.WRITE_PROPERTY);
             ProtocolClient client = clientAndForm.first();
             Form form = clientAndForm.second();
 
-            log.debug("ConsumedThing {} reading {}", thing.getId(), form.getHref());
+            log.debug("ConsumedThing {} writing {}", thing.getId(), form.getHref());
 
             Content input = ContentManager.valueToContent(value, form.getContentType());
 
@@ -122,7 +138,13 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next,
+                                                     Consumer<Throwable> error,
+                                                     Runnable complete) throws ConsumedThingException {
+        return subscribe(new Observer<>(next, error, complete));
+    }
+
+    public CompletableFuture<Subscription> subscribe(Observer<T> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.OBSERVE_PROPERTY);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
@@ -132,7 +154,7 @@ public class ConsumedThingProperty extends ThingProperty {
             return client.subscribeResource(form,
                     content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, this);
+                            T value = ContentManager.contentToValue(content, this);
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {
@@ -146,11 +168,7 @@ public class ConsumedThingProperty extends ThingProperty {
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next, Consumer<Throwable> error, Runnable complete) throws ConsumedThingException {
-        return subscribe(new Observer<>(next, error, complete));
-    }
-
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
 }

@@ -14,14 +14,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows exposing Things via Jadex Micro Agents.<br>
- * Starts a Jadex Platform and a {@link ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically finds all other platforms
- * and thus enables interaction with their Things.
- * The Jadex Platform can be configured via the configuration parameter "wot.servient.jadex.server".
+ * Allows exposing Things via Jadex Micro Agents.<br> Starts a Jadex Platform and a {@link
+ * ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically
+ * finds all other platforms and thus enables interaction with their Things. The Jadex Platform can
+ * be configured via the configuration parameter "wot.servient.jadex.server".
  */
 public class JadexProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
-
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final JadexProtocolServerConfig config;
     private IExternalAccess platform;

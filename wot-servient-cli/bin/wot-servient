@@ -52,6 +52,8 @@ cd "`dirname \"$PRG\"`/.."
 SERVIENT_HOME="`pwd -P`"
 cd "$SAVED"
 
+CLASSPATH=${CLASSPATH}:${SERVIENT_HOME}/lib/*
+
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
@@ -74,4 +76,6 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
-exec "$JAVACMD" -jar "${SERVIENT_HOME}/wot-servient-cli.jar" "$@"
+exec "$JAVACMD" \
+    -classpath "$CLASSPATH" \
+    city.sane.wot.cli.Cli "$@"

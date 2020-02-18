@@ -8,8 +8,9 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Abstract representation of a Thing Interaction (inherited from {@link city.sane.wot.thing.action.ThingAction}, {@link city.sane.wot.thing.event.ThingEvent}
- * and {@link city.sane.wot.thing.property.ThingProperty})
+ * Abstract representation of a Thing Interaction (inherited from {@link
+ * city.sane.wot.thing.action.ThingAction}, {@link city.sane.wot.thing.event.ThingEvent} and {@link
+ * city.sane.wot.thing.property.ThingProperty})
  *
  * @param <T>
  */
@@ -50,6 +51,11 @@ public abstract class ThingInteraction<T> implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(description, descriptions, forms, uriVariables);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -62,11 +68,6 @@ public abstract class ThingInteraction<T> implements Serializable {
                 Objects.equals(descriptions, that.descriptions) &&
                 Objects.equals(forms, that.forms) &&
                 Objects.equals(uriVariables, that.uriVariables);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(description, descriptions, forms, uriVariables);
     }
 
     public abstract static class AbstractBuilder<T extends ObjectBuilder> implements ObjectBuilder {

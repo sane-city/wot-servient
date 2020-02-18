@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ActionResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(ActionResource.class);
-
     private final ExposedThingAction action;
 
     public ActionResource(String name, ExposedThingAction action) {

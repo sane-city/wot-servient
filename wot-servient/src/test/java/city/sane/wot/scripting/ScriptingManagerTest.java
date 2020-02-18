@@ -95,12 +95,16 @@ public class ScriptingManagerTest {
         }
 
         @Override
-        public CompletableFuture<Void> runScript(String script, Wot wot, ExecutorService executorService) {
+        public CompletableFuture<Void> runScript(String script,
+                                                 Wot wot,
+                                                 ExecutorService executorService) {
             return CompletableFuture.completedFuture(null);
         }
 
         @Override
-        public CompletableFuture<Void> runPrivilegedScript(String script, Wot wot, ExecutorService executorService) {
+        public CompletableFuture<Void> runPrivilegedScript(String script,
+                                                           Wot wot,
+                                                           ExecutorService executorService) {
             return CompletableFuture.completedFuture(null);
         }
     }
