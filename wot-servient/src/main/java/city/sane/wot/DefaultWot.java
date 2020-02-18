@@ -51,15 +51,13 @@ public class DefaultWot implements Wot {
                 "servient=" + servient +
                 '}';
     }
-/**
+
+    /**
      * Creates and starts a {@link Servient}. The servient will not start any servers and can
      * therefore only consume things and not expose any things.
      */
     public static Wot clientOnly() throws WotException {
         return clientOnly(ConfigFactory.load());
-    }@Override
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        return servient.discover(filter);
     }
 
     /**
@@ -73,15 +71,13 @@ public class DefaultWot implements Wot {
         servient.start().join();
         return new DefaultWot(servient);
     }
-/**
+
+    /**
      * Creates and starts a {@link Servient}. The servient will not start any clients and can
      * therefore only produce and expose things.
      */
     public static Wot serverOnly() throws WotException {
         return serverOnly(ConfigFactory.load());
-    }@Override
-    public CompletableFuture<Collection<Thing>> discover() {
-        return discover(new ThingFilter(DiscoveryMethod.ANY));
     }
 
     /**
@@ -94,19 +90,31 @@ public class DefaultWot implements Wot {
         Servient servient = Servient.serverOnly(config);
         servient.start().join();
         return new DefaultWot(servient);
-    }    @Override
+    }
+
+    @Override
+    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
+        return servient.discover(filter);
+    }
+
+    @Override
+    public CompletableFuture<Collection<Thing>> discover() {
+        return discover(new ThingFilter(DiscoveryMethod.ANY));
+    }
+
+    @Override
     public ExposedThing produce(Thing thing) {
         ExposedThing exposedThing = new ExposedThing(servient, thing);
         servient.addThing(exposedThing);
         return exposedThing;
     }
 
-        @Override
+    @Override
     public ConsumedThing consume(Thing thing) {
         return new ConsumedThing(servient, thing);
     }
 
-        @Override
+    @Override
     public ConsumedThing consume(String thing) {
         return consume(Thing.fromJson(thing));
     }
@@ -125,14 +133,4 @@ public class DefaultWot implements Wot {
     public CompletableFuture<Void> destroy() {
         return servient.shutdown();
     }
-
-
-
-
-
-
-
-
-
-
 }

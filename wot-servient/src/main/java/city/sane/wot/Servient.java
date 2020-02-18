@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.concurrent.CompletableFuture.failedFuture;
-
 /**
  * The Servient hosts, exposes and consumes things based on provided protocol bindings.
  * https://w3c.github.io/wot-architecture/#sec-servient-implementation<br> It reads the servers
@@ -82,12 +80,16 @@ public class Servient {
 
     @Override
     public String toString() {
-        return "Servient{" +
-                "servers=" + servers +
-                ", clientFactories=" + clientFactories +
-                ", credentialStore=" + credentialStore +
-                ", things=" + things +
-                '}';
+        return "Servient [servers=" + getServers() + " clientFactories=" + clientFactories.values() + "]";
+    }
+
+    /**
+     * Returns a list of all servers supported by the servient.
+     *
+     * @return
+     */
+    public List<ProtocolServer> getServers() {
+        return servers;
     }
 
     /**
@@ -134,11 +136,11 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return failedFuture(new ServientException("Servient was started without any servers and is therefore not able to expose things."));
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to expose Things"));
         }
 
         if (thing == null) {
-            return failedFuture(new ServientException("Thing must first be added to the Servient before it can be exposed."));
+            return CompletableFuture.failedFuture(new ServientException("Thing must be added to the servient first"));
         }
 
         log.info("Servient exposing '{}'", id);
@@ -157,15 +159,6 @@ public class Servient {
     }
 
     /**
-     * Returns a list of all servers supported by the servient.
-     *
-     * @return
-     */
-    public List<ProtocolServer> getServers() {
-        return servers;
-    }
-
-    /**
      * All servers supported by Servient are instructed not to expose the Thing with the given
      * <code>id</code> any longer. After that it is not possible to interact with the Thing via the
      * different protocols (e.g. HTTP, CoAP, ...).
@@ -177,7 +170,7 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
+            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
         }
 
         log.info("Servient stop exposing '{}'", thing);
@@ -249,11 +242,11 @@ public class Servient {
                 });
             }
             else {
-                return failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return CompletableFuture.failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
@@ -328,11 +321,11 @@ public class Servient {
                 });
             }
             else {
-                return failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return CompletableFuture.failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
@@ -358,7 +351,7 @@ public class Servient {
      */
     private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return failedFuture(new ServientException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -383,7 +376,7 @@ public class Servient {
      */
     private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return failedFuture(new ServientException("not implemented"));
+        return CompletableFuture.failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -429,7 +422,7 @@ public class Servient {
                 return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
             }
             catch (ProtocolClientException e) {
-                return failedFuture(e);
+                return CompletableFuture.failedFuture(e);
             }
         }
     }
@@ -515,8 +508,9 @@ public class Servient {
     }
 
     /**
-     * Executes the WoT script in <code>file</code> and passes <code>wot</code> to the script as WoT
-     * object.<br> Only the script languages known to the {@link ScriptingManager} are supported.
+     * Executes the WoT script in <code>file</code> in sandboxed context and passes <code>wot</code>
+     * to the script as WoT object.<br> Only the script languages known to the {@link
+     * ScriptingManager} are supported.
      *
      * @param file
      * @param wot
@@ -525,6 +519,20 @@ public class Servient {
      */
     public CompletableFuture<Void> runScript(File file, Wot wot) {
         return ScriptingManager.runScript(file, wot);
+    }
+
+    /**
+     * Executes the WoT script in <code>file</code> in privileged context and passes
+     * <code>wot</code> to the script as WoT object.<br> Only the script languages known to the
+     * {@link ScriptingManager} are supported.
+     *
+     * @param file
+     * @param wot
+     * @return
+     * @throws ServientException
+     */
+    public CompletableFuture<Void> runPrivilegedScript(File file, Wot wot) {
+        return ScriptingManager.runPrivilegedScript(file, wot);
     }
 
     public List<String> getClientSchemes() {

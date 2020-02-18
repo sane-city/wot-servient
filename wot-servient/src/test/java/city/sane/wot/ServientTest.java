@@ -270,6 +270,18 @@ public class ServientTest {
         }
     }
 
+    @Test(expected = ServientException.class)
+    public void runPrivilegedScriptWithNoEngine() throws Throwable {
+        Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
+
+        try {
+            servient.runPrivilegedScript(new File("foo.bar"), null).get();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
     @Test
     public void getAddresses() {
         Servient.getAddresses();
