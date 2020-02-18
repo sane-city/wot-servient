@@ -2,3 +2,21 @@
 
 Uses [Akka](https://akka.io/) for the interaction with Things.
 Akka is a toolkit for building highly concurrent, distributed, and resilient message-driven applications for Java and Scala.
+The protocol client and server share an ActorSystem.
+
+## Configuration
+
+To add Akka support to the Servient, `"city.sane.wot.binding.akka.AkkaProtocolServer"` must be added to Config parameter `wot.servient.server` and
+`"city.sane.wot.binding.akka.AkkaProtocolClientFactory"` must be added to parameter
+`wot.servient.client-factories`.
+
+All configurations associated with Akka Binding are located in the `wot.servient.akka` namespace:
+
+| Parameter         | Explanation  | Default Value |
+|-------------------|---------------|---------------|
+| `system-name`       | Name of the ActorSystem. | `"wot"`
+
+All other parameters in this namespace are passed directly to Akka and allow the configuration of the ActorSystem (e.g. the parameter
+`wot.servient.akka.actor.provider is passed as `akka.actor.provider` to the ActorSystem).
+
+See also: https://doc.akka.io/docs/akka/current/general/configuration.html#custom-application-conf
