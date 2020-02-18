@@ -26,23 +26,27 @@
         <!-- akka -->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.12</artifactId>
+            <artifactId>akka-actor_2.13</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-remote_2.12</artifactId>
+            <artifactId>akka-remote_2.13</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-cluster_2.12</artifactId>
+            <artifactId>akka-cluster_2.13</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-cluster-tools_2.12</artifactId>
+            <artifactId>akka-cluster-tools_2.13</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-slf4j_2.12</artifactId>
+            <artifactId>akka-slf4j_2.13</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-serialization-jackson_2.13</artifactId>
         </dependency>
     </dependencies>
 </project>

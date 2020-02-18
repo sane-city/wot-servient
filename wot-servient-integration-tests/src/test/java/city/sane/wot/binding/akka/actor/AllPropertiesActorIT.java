@@ -29,7 +29,7 @@ public class AllPropertiesActorIT {
 
     @Before
     public void setUp() {
-        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides());
+        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server");
         system = ActorSystem.create("my-server", config);
     }
 

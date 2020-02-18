@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 public class AkkaProtocolClientFactoryTest {
     @Test
     public void getScheme() {
-        assertEquals("akka.tcp", new AkkaProtocolClientFactory(ConfigFactory.load()).getScheme());
+        assertEquals("akka", new AkkaProtocolClientFactory(ConfigFactory.load()).getScheme());
     }
 
     @Test
