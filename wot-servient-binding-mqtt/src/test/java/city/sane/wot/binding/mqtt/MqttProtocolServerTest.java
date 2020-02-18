@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
@@ -19,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class MqttProtocolServerTest {
+    private Servient servient;
     private MqttProtocolServer server;
 
     @Before
@@ -36,8 +38,11 @@ public class MqttProtocolServerTest {
         MqttProtocolSettings settings = mock(MqttProtocolSettings.class);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
         when(settings.createConnectedMqttClient()).thenReturn(mqttClient);
+
+        servient = mock(Servient.class);
+
         server = new MqttProtocolServer(settings);
-        server.start().join();
+        server.start(servient).join();
     }
 
     @After
@@ -78,7 +83,7 @@ public class MqttProtocolServerTest {
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) + 1;
                 thing.getProperty("count").write(newValue);
@@ -88,7 +93,7 @@ public class MqttProtocolServerTest {
             });
         });
 
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -98,7 +103,7 @@ public class MqttProtocolServerTest {
             });
         });
 
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -106,7 +111,7 @@ public class MqttProtocolServerTest {
             });
         });
 
-        thing.addEvent("change", new ThingEvent());
+        thing.addEvent("change", new ThingEvent<Object>());
 
         return thing;
     }

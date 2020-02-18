@@ -29,7 +29,7 @@ import java.util.*;
  * @param <E>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Thing<P extends ThingProperty<Object>, A extends ThingAction, E extends ThingEvent> implements Serializable {
+public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object, Object>, E extends ThingEvent<Object>> implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Thing.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     @JsonProperty("@type")
@@ -319,8 +319,8 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction, E ext
         private String description;
         private Map<String, String> descriptions;
         private Map<String, ThingProperty<Object>> properties = new HashMap<>();
-        private Map<String, ThingAction> actions = new HashMap<>();
-        private Map<String, ThingEvent> events = new HashMap<>();
+        private Map<String, ThingAction<Object, Object>> actions = new HashMap<>();
+        private Map<String, ThingEvent<Object>> events = new HashMap<>();
         private List<Form> forms = new ArrayList<>();
         private List<String> security = new ArrayList<>();
         private Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
@@ -366,12 +366,12 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction, E ext
             return this;
         }
 
-        public Builder addAction(String name, ThingAction action) {
+        public Builder addAction(String name, ThingAction<Object, Object> action) {
             actions.put(name, action);
             return this;
         }
 
-        public Builder addEvent(String name, ThingEvent event) {
+        public Builder addEvent(String name, ThingEvent<Object> event) {
             events.put(name, event);
             return this;
         }
@@ -391,12 +391,12 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction, E ext
             return this;
         }
 
-        public Builder setActions(Map<String, ThingAction> actions) {
+        public Builder setActions(Map<String, ThingAction<Object, Object>> actions) {
             this.actions = actions;
             return this;
         }
 
-        public Builder setEvents(Map<String, ThingEvent> events) {
+        public Builder setEvents(Map<String, ThingEvent<Object>> events) {
             this.events = events;
             return this;
         }

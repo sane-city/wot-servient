@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -22,8 +23,9 @@ import java.util.concurrent.ExecutionException;
 public class SubscribeEventRoute extends AbstractInteractionRoute {
     private static final Logger log = LoggerFactory.getLogger(SubscribeEventRoute.class);
 
-    public SubscribeEventRoute(Map<String, ExposedThing> things) {
-        super(things);
+    public SubscribeEventRoute(Servient servient, String securityScheme,
+                               Map<String, ExposedThing> things) {
+        super(servient, securityScheme, things);
     }
 
     @Override
@@ -32,7 +34,7 @@ public class SubscribeEventRoute extends AbstractInteractionRoute {
                                        String requestContentType,
                                        String name,
                                        ExposedThing thing) {
-        ExposedThingEvent event = thing.getEvent(name);
+        ExposedThingEvent<Object> event = thing.getEvent(name);
         if (event != null) {
             CompletableFuture<Object> result = new CompletableFuture();
             Subscription subscription = event.subscribe(

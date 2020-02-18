@@ -11,6 +11,8 @@ import java.util.Map;
  * Describes data of type <a href="https://www.w3.org/TR/wot-thing-description/#objectschema">object</a>.
  */
 public class ObjectSchema extends AbstractDataSchema<Map> {
+    public static final String TYPE = "object";
+    public static final Class<Map> CLASS_TYPE = Map.class;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final Map<String, DataSchema> properties;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -28,12 +30,12 @@ public class ObjectSchema extends AbstractDataSchema<Map> {
 
     @Override
     public String getType() {
-        return "object";
+        return TYPE;
     }
 
     @Override
     public Class<Map> getClassType() {
-        return Map.class;
+        return CLASS_TYPE;
     }
 
     @Override

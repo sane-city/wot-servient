@@ -2,6 +2,7 @@ package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ThingInteraction;
 import city.sane.wot.thing.schema.DataSchema;
+import city.sane.wot.thing.schema.VariableDataSchema;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -40,8 +41,8 @@ public class ThingProperty<T> extends ThingInteraction<ThingProperty<T>> impleme
     }
 
     @Override
-    public Class getClassType() {
-        return Object.class;
+    public Class<T> getClassType() {
+        return new VariableDataSchema.Builder().setType(type).build().getClassType();
     }
 
     public boolean isObservable() {
@@ -111,7 +112,7 @@ public class ThingProperty<T> extends ThingInteraction<ThingProperty<T>> impleme
      */
     public static class Builder extends AbstractBuilder<Builder> {
         private String objectType;
-        private String type;
+        private String type = "string";
         private boolean observable;
         private boolean readOnly;
         private boolean writeOnly;

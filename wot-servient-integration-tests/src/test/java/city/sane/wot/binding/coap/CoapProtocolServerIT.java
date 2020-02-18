@@ -21,7 +21,7 @@ public class CoapProtocolServerIT {
     @Before
     public void setUp() {
         server = new CoapProtocolServer(ConfigFactory.load());
-        server.start().join();
+        server.start(null).join();
     }
 
     @After
@@ -67,7 +67,7 @@ public class CoapProtocolServerIT {
         thing.addProperty("count", counterProperty, 42);
         thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
 
-        thing.addAction("increment", new ThingAction(), (input, options) -> {
+        thing.addAction("increment", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) + 1;
                 thing.getProperty("count").write(newValue);
@@ -77,7 +77,7 @@ public class CoapProtocolServerIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -87,7 +87,7 @@ public class CoapProtocolServerIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -95,7 +95,7 @@ public class CoapProtocolServerIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent());
+        thing.addEvent("change", new ThingEvent<Object>());
 
         return thing;
     }

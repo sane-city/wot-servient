@@ -17,7 +17,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsumedThingEventTest {
-    private ThingEvent event;
+    private ThingEvent<Object> event;
     private ConsumedThing thing;
     private ProtocolClient client;
     private Form form;
@@ -33,12 +33,12 @@ public class ConsumedThingEventTest {
     }
 
     @Test
-    public void subscribe() throws ConsumedThingException, ProtocolClientNotImplementedException {
+    public void subscribeShouldCallUnderlyingClient() throws ConsumedThingException, ProtocolClientNotImplementedException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(form.getHref()).thenReturn("test:/myAction");
         when(client.subscribeResource(any(), any())).thenReturn(completedFuture(null));
 
-        ConsumedThingEvent consumedThingEvent = new ConsumedThingEvent("myEvent", event, thing);
+        ConsumedThingEvent<Object> consumedThingEvent = new ConsumedThingEvent<Object>("myEvent", event, thing);
         consumedThingEvent.subscribe(observer);
 
         verify(client, times(1)).subscribeResource(any(), any());

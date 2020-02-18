@@ -40,7 +40,7 @@ public class SubscribeEventRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id/events/:name", new SubscribeEventRoute(Map.of("counter", thing)));
+        service.get(":id/events/:name", new SubscribeEventRoute(null, null, Map.of("counter", thing)));
     }
 
     private ExposedThing getCounterThing() {
@@ -96,7 +96,7 @@ public class SubscribeEventRouteIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -106,7 +106,7 @@ public class SubscribeEventRouteIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -114,7 +114,7 @@ public class SubscribeEventRouteIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent());
+        thing.addEvent("change", new ThingEvent<Object>());
 
         return thing;
     }
@@ -146,7 +146,7 @@ public class SubscribeEventRouteIT {
         Thread.sleep(5 * 1000L);
 
         // emit event
-        ExposedThingEvent event = thing.getEvent("change");
+        ExposedThingEvent<Object> event = thing.getEvent("change");
         event.emit().get();
 
         // future should complete within a few seconds
@@ -172,7 +172,7 @@ public class SubscribeEventRouteIT {
         Thread.sleep(5 * 1000L);
 
         // emit event
-        ExposedThingEvent event = thing.getEvent("change");
+        ExposedThingEvent<Object> event = thing.getEvent("change");
         event.emit().get();
 
         // wait until client received answer

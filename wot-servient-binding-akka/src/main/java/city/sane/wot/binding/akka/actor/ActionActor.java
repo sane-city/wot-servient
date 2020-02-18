@@ -22,9 +22,9 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 public class ActionActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
-    private final ExposedThingAction action;
+    private final ExposedThingAction<Object, Object> action;
 
-    private ActionActor(String name, ExposedThingAction action) {
+    private ActionActor(String name, ExposedThingAction<Object, Object> action) {
         this.name = name;
         this.action = action;
     }
@@ -85,7 +85,7 @@ public class ActionActor extends AbstractActor {
         }
     }
 
-    public static Props props(String name, ExposedThingAction action) {
+    public static Props props(String name, ExposedThingAction<Object, Object> action) {
         return Props.create(ActionActor.class, () -> new ActionActor(name, action));
     }
 }

@@ -1,6 +1,7 @@
 package city.sane.wot.thing.action;
 
 import city.sane.wot.thing.schema.DataSchema;
+import city.sane.wot.thing.schema.StringSchema;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,12 +20,26 @@ public class ThingActionTest {
 
     @Test
     public void builder() {
-        ThingAction action = new ThingAction.Builder()
+        ThingAction<Object, Object> action = new ThingAction.Builder()
                 .setInput(input)
                 .setOutput(output)
                 .build();
 
         assertEquals(input, action.getInput());
         assertEquals(output, action.getOutput());
+    }
+
+    @Test
+    public void builderShouldUseStringAsDefaultInputSchema() {
+        ThingAction<Object, Object> action = new ThingAction.Builder().build();
+
+        assertEquals(new StringSchema(), action.getInput());
+    }
+
+    @Test
+    public void builderShouldUseStringAsDefaultOutputSchema() {
+        ThingAction<Object, Object> action = new ThingAction.Builder().build();
+
+        assertEquals(new StringSchema(), action.getOutput());
     }
 }

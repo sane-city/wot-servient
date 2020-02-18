@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.Servient;
 import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -47,7 +48,7 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         if (client != null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -127,10 +128,10 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     private void exposeActions(ExposedThing thing) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
-        for (Map.Entry<String, ExposedThingAction> entry : actions.entrySet()) {
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
+        for (Map.Entry<String, ExposedThingAction<Object, Object>> entry : actions.entrySet()) {
             String name = entry.getKey();
-            ExposedThingAction action = entry.getValue();
+            ExposedThingAction<Object, Object> action = entry.getValue();
 
             String topic = thing.getId() + "/actions/" + name;
             try {
@@ -152,7 +153,7 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     private void exposeEvents(ExposedThing thing) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
 
@@ -192,7 +193,7 @@ public class MqttProtocolServer implements ProtocolServer {
                     if (thing != null) {
                         if (segments[1].equals("actions")) {
                             String actionName = segments[2];
-                            ExposedThingAction action = thing.getAction(actionName);
+                            ExposedThingAction<Object, Object> action = thing.getAction(actionName);
                             actionMessageArrived(message, action);
                         }
                     }
@@ -235,12 +236,12 @@ public class MqttProtocolServer implements ProtocolServer {
         return base;
     }
 
-    private void actionMessageArrived(MqttMessage message, ExposedThingAction action) {
+    private void actionMessageArrived(MqttMessage message,
+                                      ExposedThingAction<Object, Object> action) {
         if (action != null) {
             Content inputContent = new Content(ContentManager.DEFAULT, message.getPayload());
             try {
                 Object input = ContentManager.contentToValue(inputContent, action.getInput());
-
                 action.invoke(input);
             }
             catch (ContentCodecException e) {

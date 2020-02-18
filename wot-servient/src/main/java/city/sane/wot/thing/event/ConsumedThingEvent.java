@@ -20,12 +20,12 @@ import java.util.function.Consumer;
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingEvent}.
  */
-public class ConsumedThingEvent extends ThingEvent {
+public class ConsumedThingEvent<T> extends ThingEvent<T> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
     private final String name;
     private final ConsumedThing thing;
 
-    public ConsumedThingEvent(String name, ThingEvent event, ConsumedThing thing) {
+    public ConsumedThingEvent(String name, ThingEvent<T> event, ConsumedThing thing) {
         this.name = name;
         forms = event.getForms();
         type = event.getType();
@@ -56,13 +56,13 @@ public class ConsumedThingEvent extends ThingEvent {
                 '}';
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next,
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next,
                                                      Consumer<Throwable> error,
                                                      Runnable complete) throws ConsumedThingException {
         return subscribe(new Observer<>(next, error, complete));
     }
 
-    public CompletableFuture<Subscription> subscribe(Observer<Object> observer) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Observer<T> observer) throws ConsumedThingException {
         Pair<ProtocolClient, Form> clientAndForm = thing.getClientFor(getForms(), Operation.SUBSCRIBE_EVENT);
         ProtocolClient client = clientAndForm.first();
         Form form = clientAndForm.second();
@@ -72,20 +72,20 @@ public class ConsumedThingEvent extends ThingEvent {
             return client.subscribeResource(form,
                     new Observer<>(content -> {
                         try {
-                            Object value = ContentManager.contentToValue(content, getData());
+                            T value = ContentManager.contentToValue(content, getData());
                             observer.next(value);
                         }
                         catch (ContentCodecException e) {
                             observer.error(e);
                         }
-                    }, observer::next, observer::complete));
+                    }, observer::error, observer::complete));
         }
         catch (ProtocolClientException e) {
             throw new ConsumedThingException(e);
         }
     }
 
-    public CompletableFuture<Subscription> subscribe(Consumer<Object> next) throws ConsumedThingException {
+    public CompletableFuture<Subscription> subscribe(Consumer<T> next) throws ConsumedThingException {
         return subscribe(new Observer<>(next));
     }
 }
