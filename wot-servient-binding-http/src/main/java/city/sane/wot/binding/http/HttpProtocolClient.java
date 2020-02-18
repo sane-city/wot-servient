@@ -7,6 +7,7 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.observer.Observer;
 import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.security.BasicSecurityScheme;
+import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.NoSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import org.apache.commons.codec.binary.Base64;
@@ -159,6 +160,12 @@ public class HttpProtocolClient implements ProtocolClient {
             String username = credentialsMap.get("username");
             String password = credentialsMap.get("password");
             authorization = "Basic " + new String(Base64.encodeBase64((username + ":" + password).getBytes()));
+            return true;
+        }
+        else if (security instanceof BearerSecurityScheme) {
+            Map<String, String> credentialsMap = (Map) credentials;
+            String token = credentialsMap.get("token");
+            authorization = "Bearer " + token;
             return true;
         }
         else if (security instanceof NoSecurityScheme) {

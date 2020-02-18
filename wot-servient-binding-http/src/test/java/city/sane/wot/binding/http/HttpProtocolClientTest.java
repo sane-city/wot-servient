@@ -2,6 +2,7 @@ package city.sane.wot.binding.http;
 
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.security.BasicSecurityScheme;
+import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.*;
@@ -76,6 +77,26 @@ public class HttpProtocolClientTest {
         HttpUriRequest request = RequestBuilder.create("GET")
                 .setUri("http://localhost/foo")
                 .addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(("foo:bar").getBytes())))
+                .build();
+        verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
+    }
+
+    @Test
+    public void readResourceShouldCreateProperRequestWithBearerToken() throws IOException {
+        when(form.getHref()).thenReturn("http://localhost/foo");
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        when(requestClient.execute(any())).thenReturn(httpResponse);
+
+        Map credentials = Map.of(
+                "token", "achu6Ahx"
+        );
+        client.setSecurity(List.of(new BearerSecurityScheme()), credentials);
+        client.readResource(form).join();
+
+        HttpUriRequest request = RequestBuilder.create("GET")
+                .setUri("http://localhost/foo")
+                .addHeader(HttpHeaders.AUTHORIZATION, "Bearer achu6Ahx")
                 .build();
         verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
     }

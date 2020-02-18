@@ -50,7 +50,7 @@ This table shows which operations are supported by which protocol.
 | [Akka](akka.md)                   |        |       |        |      |        |       |        |     |     |        |
 | [CoAP](coap.md)                   |        |       |        |      |        |       |        |     |     |        |
 | [File](file.md)                   |        |       |        |      |        |       |        |     |     |        |
-| [HTTP](http.md)                   |        |   ✅  |        |      |        |       |        |     |     |        |
+| [HTTP](http.md)                   |        |  ✅  |  ✅  |      |        |       |        |     |     |        |
 | [Jadex](jadex.md)                 |        |       |        |      |        |       |        |     |     |        |
 | [JSONPath+HTTP](jsonpath+http.md) |        |       |        |      |        |       |        |     |     |        |
 | [MQTT](mqtt.md)                   |        |       |        |      |        |       |        |     |     |        |
