@@ -2,6 +2,7 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.akka.actor.ThingsActor;
@@ -57,7 +58,7 @@ public class AkkaProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("Start AkkaServer");
 
         if (system == null) {

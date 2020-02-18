@@ -38,7 +38,7 @@ public class ExposedThingActionTest {
 
     @Test
     public void invokeWithoutHandlerShouldReturnNullFuture() throws ExecutionException, InterruptedException {
-        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
+        ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
         exposedThingAction.invoke(invokeInput, invokeOptions);
 
         assertNull(exposedThingAction.invoke(invokeInput, invokeOptions).get());
@@ -48,7 +48,7 @@ public class ExposedThingActionTest {
     public void invokeWithHandlerShouldCallHandler() {
         when(state.getHandler()).thenReturn(handler);
 
-        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
+        ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
         exposedThingAction.invoke(invokeInput, invokeOptions);
 
         verify(handler, times(1)).apply(invokeInput, invokeOptions);
@@ -59,7 +59,7 @@ public class ExposedThingActionTest {
         when(handler.apply(any(), any())).thenThrow(new RuntimeException());
         when(state.getHandler()).thenReturn(handler);
 
-        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
+        ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
         exposedThingAction.invoke(invokeInput, invokeOptions).get();
 
         verify(handler, times(1)).apply(invokeInput, invokeOptions);
@@ -70,7 +70,7 @@ public class ExposedThingActionTest {
         when(state.getHandler()).thenReturn(handler);
         when(handler.apply(any(), any())).thenReturn(null);
 
-        ExposedThingAction exposedThingAction = new ExposedThingAction("myAction", thing, state, description, Map.of(), Map.of(), input, output);
+        ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
 
         assertNotNull(exposedThingAction.invoke());
     }

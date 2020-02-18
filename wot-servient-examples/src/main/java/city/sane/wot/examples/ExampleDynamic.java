@@ -24,7 +24,7 @@ class ExampleDynamic {
 
         System.out.println("Produced " + exposedThing.getId());
 
-        exposedThing.addAction("addProperty", new ThingAction(),
+        exposedThing.addAction("addProperty", new ThingAction<Object, Object>(),
                 () -> {
                     System.out.println("Adding Property");
                     exposedThing.addProperty("dynProperty",
@@ -35,7 +35,7 @@ class ExampleDynamic {
                 }
         );
 
-        exposedThing.addAction("remProperty", new ThingAction(),
+        exposedThing.addAction("remProperty", new ThingAction<Object, Object>(),
                 () -> {
                     System.out.println("Removing Property");
                     exposedThing.removeProperty("dynProperty");

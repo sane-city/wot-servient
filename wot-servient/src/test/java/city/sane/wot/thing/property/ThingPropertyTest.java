@@ -36,4 +36,12 @@ public class ThingPropertyTest {
         assertEquals(Map.of("foo", "bar"), property.getOptionalProperties());
         assertEquals("bar", property.getOptional("foo"));
     }
+
+    @Test
+    public void builderShouldUseStringAsDefaultType() {
+        ThingProperty<Object> property = new ThingProperty.Builder().build();
+
+        assertEquals("string", property.getType());
+        assertEquals(String.class, property.getClassType());
+    }
 }

@@ -26,7 +26,7 @@ public class InvokeAction extends ThingInteractionWithContent {
 
         if (thing != null) {
             String name = getName();
-            ExposedThingAction action = thing.getAction(name);
+            ExposedThingAction<Object, Object> action = thing.getAction(name);
 
             if (action != null) {
                 Content payload = getValue();

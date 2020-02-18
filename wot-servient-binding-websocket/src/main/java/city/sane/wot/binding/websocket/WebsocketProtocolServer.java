@@ -14,7 +14,6 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -32,12 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class WebsocketProtocolServer implements ProtocolServer {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
@@ -68,7 +65,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         if (serverChannel != null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -78,8 +75,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 serverChannel = serverBootstrap.bind(bindPort).sync().channel();
             }
             catch (InterruptedException e) {
-                log.warn("Start failed", e);
-                throw new CompletionException(e);
+                Thread.currentThread().interrupt();
             }
         });
     }
@@ -98,8 +94,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 serverChannel = null;
             }
             catch (InterruptedException e) {
-                log.warn("Stop failed", e);
-                throw new CompletionException(e);
+                Thread.currentThread().interrupt();
             }
         });
     }
@@ -168,7 +163,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeActions(ExposedThing thing, String address) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             action.addForm(new Form.Builder()
                     .setHref(address)
@@ -184,7 +179,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     private void exposeEvents(ExposedThing thing, String address) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             event.addForm(new Form.Builder()
                     .setHref(address)

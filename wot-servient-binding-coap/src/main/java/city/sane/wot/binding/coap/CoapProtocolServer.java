@@ -64,7 +64,7 @@ public class CoapProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("Starting on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server != null) {
@@ -247,7 +247,7 @@ public class CoapProtocolServer implements ProtocolServer {
                                CoapResource thingResource,
                                String address,
                                String contentType) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         if (!actions.isEmpty()) {
             CoapResource actionsResource = new CoapResource("actions");
             thingResource.add(actionsResource);
@@ -272,7 +272,7 @@ public class CoapProtocolServer implements ProtocolServer {
                               CoapResource thingResource,
                               String address,
                               String contentType) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         if (!events.isEmpty()) {
             CoapResource eventsResource = new CoapResource("events");
             thingResource.add(eventsResource);

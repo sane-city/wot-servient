@@ -102,7 +102,10 @@ public class FileProtocolClient implements ProtocolClient {
 
                     observer.complete();
                 }
-                catch (IOException | InterruptedException e) {
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                catch (IOException e) {
                     observer.error(new ProtocolClientException(e));
                 }
             });
@@ -132,10 +135,6 @@ public class FileProtocolClient implements ProtocolClient {
 
         log.debug("Found extension '{}'", extension);
         String contentType = extensionToContentType(extension);
-        if (contentType == null) {
-            log.warn("Cannot determine media type of '{}'", path);
-            contentType = "application/octet-stream";
-        }
         if (Files.exists(path)) {
             byte[] body = Files.readAllBytes(path);
             return new Content(contentType, body);

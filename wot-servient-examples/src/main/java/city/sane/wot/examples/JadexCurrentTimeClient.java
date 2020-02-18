@@ -7,7 +7,6 @@ import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.JsonThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
-import city.sane.wot.thing.filter.ThingQueryException;
 
 import java.util.Collection;
 import java.util.Timer;
@@ -19,7 +18,7 @@ import java.util.concurrent.ExecutionException;
  * Discover thing description exposes by {@link JadexCurrentTime} and then interact with it.
  */
 class JadexCurrentTimeClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, ThingQueryException, WotException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         // create wot
         Wot wot = DefaultWot.clientOnly();
 

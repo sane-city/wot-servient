@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -21,8 +22,9 @@ import java.util.concurrent.ExecutionException;
 public class InvokeActionRoute extends AbstractInteractionRoute {
     static final Logger log = LoggerFactory.getLogger(InvokeActionRoute.class);
 
-    public InvokeActionRoute(Map<String, ExposedThing> things) {
-        super(things);
+    public InvokeActionRoute(Servient servient, String securityScheme,
+                             Map<String, ExposedThing> things) {
+        super(servient, securityScheme, things);
     }
 
     @Override
@@ -31,7 +33,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
                                        String requestContentType,
                                        String name,
                                        ExposedThing thing) {
-        ExposedThingAction action = thing.getAction(name);
+        ExposedThingAction<Object, Object> action = thing.getAction(name);
         if (action != null) {
             try {
                 Content content = new Content(requestContentType, request.bodyAsBytes());
@@ -45,7 +47,11 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
 
                 return respondWithValue(response, requestContentType, content, value);
             }
-            catch (ContentCodecException | InterruptedException | ExecutionException e) {
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+            catch (ContentCodecException | ExecutionException e) {
                 response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
                 return e;
             }

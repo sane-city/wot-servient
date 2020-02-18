@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 /**
  * Allows exposing Things via HTTP.
  */
@@ -37,9 +39,11 @@ public class HttpProtocolServer implements ProtocolServer {
     private final List<String> addresses;
     private final Service server;
     private final Map<String, ExposedThing> things = new HashMap<>();
+    private final Map<String, Object> security;
+    private final String securityScheme;
     private boolean started = false;
 
-    public HttpProtocolServer(Config config) {
+    public HttpProtocolServer(Config config) throws ProtocolServerException {
         bindHost = config.getString("wot.servient.http.bind-host");
         bindPort = config.getInt("wot.servient.http.bind-port");
         if (!config.getStringList("wot.servient.http.addresses").isEmpty()) {
@@ -47,6 +51,25 @@ public class HttpProtocolServer implements ProtocolServer {
         }
         else {
             addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort).collect(Collectors.toList());
+        }
+        security = config.getObject("wot.servient.http.security").unwrapped();
+
+        // Auth
+        if (security != null && security.get("scheme") != null) {
+            // storing HTTP header compatible string
+            switch ((String) security.get("scheme")) {
+                case "basic":
+                    this.securityScheme = "Basic";
+                    break;
+                case "bearer":
+                    this.securityScheme = "Bearer";
+                    break;
+                default:
+                    throw new ProtocolServerException("HttpServer does not support security scheme '" + security.get("scheme") + "'");
+            }
+        }
+        else {
+            this.securityScheme = null;
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
@@ -58,10 +81,10 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public CompletableFuture<Void> start(Servient servient) {
         log.info("Starting on '{}' port '{}'", bindHost, bindPort);
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             server.defaultResponseTransformer(new ContentResponseTransformer());
             server.init();
             server.awaitInitialization();
@@ -69,14 +92,14 @@ public class HttpProtocolServer implements ProtocolServer {
             server.get("/", new ThingsRoute(things));
             server.path("/:id", () -> {
                 server.path("/properties/:name", () -> {
-                    server.get("/observable", new ObservePropertyRoute(things));
-                    server.get("", new ReadPropertyRoute(things));
-                    server.put("", new WritePropertyRoute(things));
+                    server.get("/observable", new ObservePropertyRoute(servient, securityScheme, things));
+                    server.get("", new ReadPropertyRoute(servient, securityScheme, things));
+                    server.put("", new WritePropertyRoute(servient, securityScheme, things));
                 });
-                server.post("/actions/:name", new InvokeActionRoute(things));
-                server.get("/events/:name", new SubscribeEventRoute(things));
-                server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(things)));
-                server.get("", new ThingRoute(things));
+                server.post("/actions/:name", new InvokeActionRoute(servient, securityScheme, things));
+                server.get("/events/:name", new SubscribeEventRoute(servient, securityScheme, things));
+                server.path("/all", () -> server.get("/properties", new ReadAllPropertiesRoute(servient, securityScheme, things)));
+                server.get("", new ThingRoute(servient, securityScheme, things));
             });
 
             started = true;
@@ -87,7 +110,7 @@ public class HttpProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> stop() {
         log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             started = false;
             server.stop();
             server.awaitStop();
@@ -198,7 +221,7 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     private void exposeActions(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             String href = getHrefWithVariablePattern(address, thing, "actions", name, action);
             Form.Builder form = new Form.Builder();
@@ -213,7 +236,7 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     private void exposeEvents(ExposedThing thing, String address, String contentType) {
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String href = getHrefWithVariablePattern(address, thing, "events", name, event);
             Form.Builder form = new Form.Builder();

@@ -35,7 +35,7 @@ public class ReadPropertyRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get(":id/properties/:name", new ReadPropertyRoute(Map.of("counter", getCounterThing())));
+        service.get(":id/properties/:name", new ReadPropertyRoute(null, null, Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {
@@ -91,7 +91,7 @@ public class ReadPropertyRouteIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -101,7 +101,7 @@ public class ReadPropertyRouteIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -109,7 +109,7 @@ public class ReadPropertyRouteIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent());
+        thing.addEvent("change", new ThingEvent<Object>());
 
         return thing;
     }

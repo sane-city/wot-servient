@@ -1,5 +1,6 @@
 package city.sane.wot.binding.http.route;
 
+import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -16,8 +17,9 @@ import java.util.concurrent.ExecutionException;
  * Endpoint for writing values to a {@link city.sane.wot.thing.property.ThingProperty}.
  */
 public class WritePropertyRoute extends AbstractInteractionRoute {
-    public WritePropertyRoute(Map<String, ExposedThing> things) {
-        super(things);
+    public WritePropertyRoute(Servient servient, String securityScheme,
+                              Map<String, ExposedThing> things) {
+        super(servient, securityScheme, things);
     }
 
     @Override
@@ -60,7 +62,11 @@ public class WritePropertyRoute extends AbstractInteractionRoute {
                 return "";
             }
         }
-        catch (ContentCodecException | InterruptedException | ExecutionException e) {
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+        catch (ContentCodecException | ExecutionException e) {
             response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
             return e;
         }

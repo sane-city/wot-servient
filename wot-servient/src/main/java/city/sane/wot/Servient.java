@@ -100,7 +100,7 @@ public class Servient {
      */
     public CompletableFuture<Void> start() {
         log.info("Start Servient");
-        CompletableFuture<Void>[] serverFutures = servers.stream().map(ProtocolServer::start).toArray(CompletableFuture[]::new);
+        CompletableFuture<Void>[] serverFutures = servers.stream().map(protocolServer -> protocolServer.start(this)).toArray(CompletableFuture[]::new);
         CompletableFuture<Void>[] clientFutures = clientFactories.values().stream().map(ProtocolClientFactory::init).toArray(CompletableFuture[]::new);
 
         CompletableFuture<Void>[] futures = Stream.concat(Arrays.stream(clientFutures), Arrays.stream(serverFutures)).toArray(CompletableFuture[]::new);
@@ -149,9 +149,9 @@ public class Servient {
         thing.setBase("");
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.expose(thing)).toArray(CompletableFuture[]::new);
@@ -178,9 +178,9 @@ public class Servient {
         // reset forms
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((n, a) -> a.setForms(new ArrayList<>()));
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((n, e) -> e.setForms(new ArrayList<>()));
 
         CompletableFuture<Void>[] serverFutures = getServers().stream().map(s -> s.destroy(thing)).toArray(CompletableFuture[]::new);

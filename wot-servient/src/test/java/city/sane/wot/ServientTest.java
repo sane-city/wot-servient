@@ -54,7 +54,7 @@ public class ServientTest {
 
     @Test(expected = ProtocolServerException.class)
     public void startFails() throws Throwable {
-        when(server.start()).thenReturn(failedFuture(new ProtocolServerException()));
+        when(server.start(any())).thenReturn(failedFuture(new ProtocolServerException()));
         when(config.getServers()).thenReturn(List.of(server));
 
         Servient servient = new Servient(config);

@@ -47,7 +47,7 @@ class Counter {
                         .build(),
                 new Date().toString());
 
-        exposedThing.addAction("increment", new ThingAction(),
+        exposedThing.addAction("increment", new ThingAction<Object, Object>(),
                 () -> exposedThing.getProperty("count").read().thenApply(value -> {
                     int newValue = ((Integer) value) + 1;
                     exposedThing.getProperty("count").write(newValue);
@@ -57,7 +57,7 @@ class Counter {
                 })
         );
 
-        exposedThing.addAction("decrement", new ThingAction(),
+        exposedThing.addAction("decrement", new ThingAction<Object, Object>(),
                 () -> exposedThing.getProperty("count").read().thenApply(value -> {
                     int newValue = ((Integer) value) - 1;
                     exposedThing.getProperty("count").write(newValue);
@@ -67,14 +67,14 @@ class Counter {
                 })
         );
 
-        exposedThing.addAction("reset", new ThingAction(),
+        exposedThing.addAction("reset", new ThingAction<Object, Object>(),
                 () -> exposedThing.getProperty("count").write(0).whenComplete((value, e) -> {
                     exposedThing.getProperty("lastChange").write(new Date().toString());
                     exposedThing.getEvent("change").emit();
                 })
         );
 
-        exposedThing.addEvent("change", new ThingEvent());
+        exposedThing.addEvent("change", new ThingEvent<Object>());
 
         exposedThing.expose().whenComplete((r, e) -> {
             if (e == null) {

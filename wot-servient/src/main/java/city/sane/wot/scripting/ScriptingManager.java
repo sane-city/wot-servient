@@ -19,7 +19,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  * The ScriptingManager executes WoT scripts in certain scripting languages.
  */
 public class ScriptingManager {
-    private final static ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
     private static final Map<String, ScriptingEngine> ENGINES = new HashMap();
 
     private ScriptingManager() {

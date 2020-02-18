@@ -93,7 +93,7 @@ public class ThingAgent implements ThingService {
         // actions
         //
 
-        Map<String, ExposedThingAction> actions = thing.getActions();
+        Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         actions.forEach((name, action) -> {
             String href = buildInteractionURI(thingServiceId, "actions", name).toString();
             Form form = new Form.Builder()
@@ -110,7 +110,7 @@ public class ThingAgent implements ThingService {
         // events
         //
 
-        Map<String, ExposedThingEvent> events = thing.getEvents();
+        Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String href = buildInteractionURI(thingServiceId, "events", name).toString();
             Form form = new Form.Builder()

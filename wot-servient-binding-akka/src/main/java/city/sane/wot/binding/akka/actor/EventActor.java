@@ -24,9 +24,9 @@ import static city.sane.wot.binding.akka.actor.ThingsActor.Created;
 class EventActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final String name;
-    private final ExposedThingEvent event;
+    private final ExposedThingEvent<Object> event;
 
-    private EventActor(String name, ExposedThingEvent event) {
+    private EventActor(String name, ExposedThingEvent<Object> event) {
         this.name = name;
         this.event = event;
     }
@@ -72,7 +72,7 @@ class EventActor extends AbstractActor {
                         sender.tell(new SubscriptionNext(content), getSelf());
                     }
                     catch (ContentCodecException e) {
-                        // TODO: handle exception
+                        sender.tell(new SubscriptionError(e), getSelf());
                     }
                 },
                 e -> sender.tell(new SubscriptionError(e), getSelf()),
@@ -80,7 +80,7 @@ class EventActor extends AbstractActor {
         );
     }
 
-    public static Props props(String name, ExposedThingEvent event) {
+    public static Props props(String name, ExposedThingEvent<Object> event) {
         return Props.create(EventActor.class, () -> new EventActor(name, event));
     }
 }
