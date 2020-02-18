@@ -8,10 +8,8 @@ import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.compat.java8.FutureConverters;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,30 +23,26 @@ import java.util.concurrent.CompletableFuture;
  * actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use
  * in an <a href="https://doc.akka.io/docs/akka/current/index-cluster.html">Akka Cluster</a> to
  * discover and interact with other Actuator Systems.<br> The Actor System can be configured via the
- * configuration parameter "wot.servient.akka.server" (see https://doc.akka.io/docs/akka/current/general/configuration.html).
+ * configuration parameter "wot.servient.akka" (see https://doc.akka.io/docs/akka/current/general/configuration.html).
  */
 public class AkkaProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final String actorSystemName;
-    private final Config actorSystemConfig;
+    private final SharedActorSystemProvider actorSystemProvider;
     private final AkkaProtocolPattern pattern;
     private ActorSystem system;
     private ActorRef thingsActor;
 
     public AkkaProtocolServer(Config config) {
         this(
-                config.getString("wot.servient.akka.server.system-name"),
-                config.getConfig("wot.servient.akka.server").withFallback(ConfigFactory.defaultOverrides()),
+                SharedActorSystemProvider.singleton(() -> ActorSystem.create(config.getString("wot.servient.akka.system-name"), config.getConfig("wot.servient"))),
                 new AkkaProtocolPattern()
         );
     }
 
-    protected AkkaProtocolServer(String actorSystemName,
-                                 Config actorSystemConfig,
+    protected AkkaProtocolServer(SharedActorSystemProvider actorSystemProvider,
                                  AkkaProtocolPattern pattern) {
-        this.actorSystemName = actorSystemName;
-        this.actorSystemConfig = actorSystemConfig;
+        this.actorSystemProvider = actorSystemProvider;
         this.pattern = pattern;
     }
 
@@ -62,7 +56,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("Start AkkaServer");
 
         if (system == null) {
-            system = ActorSystem.create(actorSystemName, actorSystemConfig);
+            system = actorSystemProvider.create();
 
             thingsActor = system.actorOf(ThingsActor.props(things), "things");
         }
@@ -75,7 +69,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("Stop AkkaServer");
 
         if (system != null) {
-            return FutureConverters.toJava(system.terminate()).toCompletableFuture().thenApply(r -> null);
+            return actorSystemProvider.terminate();
         }
         else {
             return CompletableFuture.completedFuture(null);

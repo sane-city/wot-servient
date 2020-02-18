@@ -35,7 +35,7 @@ public class PropertyActorIT {
 
     @Before
     public void setUp() {
-        Config config = ConfigFactory.load().getConfig("wot.servient.akka.server");
+        Config config = ConfigFactory.load().getConfig("wot.servient.akka");
         system = ActorSystem.create("my-system", config);
     }
 
