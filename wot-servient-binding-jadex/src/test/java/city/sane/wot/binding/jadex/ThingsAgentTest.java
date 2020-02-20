@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.*;
 
 public class ThingsAgentTest {
@@ -143,7 +142,7 @@ public class ThingsAgentTest {
         IExternalAccess ea = mock(IExternalAccess.class);
         IFuture killFuture = mock(IFuture.class);
         doAnswer(invocation -> {
-            IFunctionalResultListener listener = invocation.getArgumentAt(0, IFunctionalResultListener.class);
+            IFunctionalResultListener listener = invocation.getArgument(0, IFunctionalResultListener.class);
             listener.resultAvailable(null);
             return null;
         }).when(killFuture).addResultListener(anyObject(), anyObject());

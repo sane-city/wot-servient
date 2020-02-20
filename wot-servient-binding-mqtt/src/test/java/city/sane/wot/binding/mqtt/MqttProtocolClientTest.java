@@ -21,10 +21,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 
 public class MqttProtocolClientTest {
     private String broker;
@@ -38,8 +35,8 @@ public class MqttProtocolClientTest {
 
         doNothing().when(mqttClient).publish(anyString(), anyObject());
         doAnswer(invocation -> {
-            String topic = invocation.getArgumentAt(0, String.class);
-            IMqttMessageListener listener = invocation.getArgumentAt(1, IMqttMessageListener.class);
+            String topic = invocation.getArgument(0, String.class);
+            IMqttMessageListener listener = invocation.getArgument(1, IMqttMessageListener.class);
             listener.messageArrived(topic, new MqttMessage());
             return null;
         }).when(mqttClient).subscribe(anyString(), anyObject());
