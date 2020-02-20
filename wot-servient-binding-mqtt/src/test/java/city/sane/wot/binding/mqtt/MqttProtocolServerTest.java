@@ -30,7 +30,7 @@ public class MqttProtocolServerTest {
         MqttClient mqttClient = mock(MqttClient.class);
 
         doAnswer(invocation -> {
-            MqttCallback callback = invocation.getArgumentAt(0, MqttCallback.class);
+            MqttCallback callback = invocation.getArgument(0, MqttCallback.class);
             callback.messageArrived("counter/actions/increment", new MqttMessage());
             return null;
         }).when(mqttClient).setCallback(anyObject());

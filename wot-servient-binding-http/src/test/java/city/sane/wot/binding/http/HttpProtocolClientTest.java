@@ -101,7 +101,7 @@ public class HttpProtocolClientTest {
         verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
     }
 
-    private class HttpUriRequestMatcher extends ArgumentMatcher<HttpUriRequest> {
+    private class HttpUriRequestMatcher implements ArgumentMatcher<HttpUriRequest> {
         private final HttpUriRequest left;
 
         public HttpUriRequestMatcher(HttpUriRequest left) {
@@ -109,15 +109,6 @@ public class HttpProtocolClientTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            if (o instanceof HttpUriRequest) {
-                return matches((HttpUriRequest) o);
-            }
-            else {
-                return false;
-            }
-        }
-
         public boolean matches(HttpUriRequest right) {
             if (left == right) {
                 return true;
@@ -133,7 +124,7 @@ public class HttpProtocolClientTest {
         }
     }
 
-    private class HttpHeaderMatcher extends ArgumentMatcher<Header> {
+    private class HttpHeaderMatcher implements ArgumentMatcher<Header> {
         private final Header left;
 
         public HttpHeaderMatcher(Header left) {
@@ -141,15 +132,6 @@ public class HttpProtocolClientTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            if (o instanceof Header) {
-                return matches((Header) o);
-            }
-            else {
-                return false;
-            }
-        }
-
         public boolean matches(Header right) {
             if (left == right) {
                 return true;
