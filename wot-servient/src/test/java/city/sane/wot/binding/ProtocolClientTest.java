@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 public class ProtocolClientTest {
     private Form form;
@@ -20,6 +21,7 @@ public class ProtocolClientTest {
     private List metadata;
     private Object credentials;
     private ThingFilter filter;
+    private ProtocolClient client;
 
     @Before
     public void setUp() {
@@ -29,12 +31,13 @@ public class ProtocolClientTest {
         metadata = mock(List.class);
         credentials = mock(Object.class);
         filter = mock(ThingFilter.class);
+        client = spy(ProtocolClient.class);
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void readResource() throws Throwable {
+    public void readResourceShouldThrowProtocolClientNotImplementedException() throws Throwable {
         try {
-            new MyProtocolClient().readResource(form).get();
+            client.readResource(form).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -42,9 +45,9 @@ public class ProtocolClientTest {
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void writeResource() throws Throwable {
+    public void writeResourceShouldThrowProtocolClientNotImplementedException() throws Throwable {
         try {
-            new MyProtocolClient().writeResource(form, content).get();
+            client.writeResource(form, content).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -52,9 +55,9 @@ public class ProtocolClientTest {
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void invokeResource() throws Throwable {
+    public void invokeResourceShouldThrowProtocolClientNotImplementedException() throws Throwable {
         try {
-            new MyProtocolClient().invokeResource(form).get();
+            client.invokeResource(form).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -62,9 +65,9 @@ public class ProtocolClientTest {
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void subscribeResource() throws Throwable {
+    public void subscribeResourceShouldThrowProtocolClientNotImplementedException() throws Throwable {
         try {
-            new MyProtocolClient().subscribeResource(form, observer).get();
+            client.subscribeResource(form, observer).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
@@ -72,20 +75,17 @@ public class ProtocolClientTest {
     }
 
     @Test
-    public void setSecurity() {
-        assertFalse(new MyProtocolClient().setSecurity(metadata, credentials));
+    public void setSecurityShouldReturnFalse() {
+        assertFalse(client.setSecurity(metadata, credentials));
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void discover() throws Throwable {
+    public void discoverShouldThrowProtocolClientNotImplementedException() throws Throwable {
         try {
-            new MyProtocolClient().discover(filter).get();
+            client.discover(filter).get();
         }
         catch (ExecutionException e) {
             throw e.getCause();
         }
-    }
-
-    class MyProtocolClient implements ProtocolClient {
     }
 }
