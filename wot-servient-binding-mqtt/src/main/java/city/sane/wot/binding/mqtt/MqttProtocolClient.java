@@ -29,23 +29,28 @@ import java.util.concurrent.CompletableFuture;
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
     private final MqttProtocolSettings settings;
-    private final Map<String, Subject<Content>> topicSubjects = new HashMap<>();
+    private final Map<String, Subject<Content>> topicSubjects;
     private MqttClient client;
 
     public MqttProtocolClient(Config config) throws ProtocolClientException {
-        settings = new MqttProtocolSettings(config);
         try {
+            settings = new MqttProtocolSettings(config);
             settings.validate();
             client = settings.createConnectedMqttClient();
+            topicSubjects = new HashMap<>();
         }
         catch (MqttProtocolException e) {
             throw new ProtocolClientException(e);
         }
     }
 
-    MqttProtocolClient(MqttProtocolSettings settings, MqttClient client) {
+    MqttProtocolClient(MqttProtocolSettings settings,
+                       MqttClient mqttClient,
+                       Map<String, Subject<Content>> topicSubjects) {
+
         this.settings = settings;
-        this.client = client;
+        client = mqttClient;
+        this.topicSubjects = topicSubjects;
     }
 
     @Override
