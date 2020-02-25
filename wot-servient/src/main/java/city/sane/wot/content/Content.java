@@ -1,13 +1,12 @@
 package city.sane.wot.content;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * Represents any serialized content. Enables the transfer of arbitrary data structures.
  */
-public class Content implements Serializable {
+public class Content {
     public static final Content EMPTY_CONTENT = new Content(ContentManager.DEFAULT, new byte[0]);
     private final String type;
     private final byte[] body;

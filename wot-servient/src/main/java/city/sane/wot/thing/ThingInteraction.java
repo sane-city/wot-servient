@@ -4,7 +4,6 @@ import city.sane.ObjectBuilder;
 import city.sane.wot.thing.form.Form;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -14,7 +13,7 @@ import java.util.*;
  *
  * @param <T>
  */
-public abstract class ThingInteraction<T> implements Serializable {
+public abstract class ThingInteraction<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String description;
     @JsonInclude(JsonInclude.Include.NON_NULL)

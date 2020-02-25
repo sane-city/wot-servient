@@ -15,7 +15,6 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -153,7 +152,7 @@ public class ThingsActor extends AbstractActor {
     }
 
     // CrudMessages
-    public static class Discover implements Serializable {
+    public static class Discover {
         public final ThingFilter filter;
 
         public Discover(ThingFilter filter) {
@@ -172,7 +171,7 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Things implements Serializable {
+    public static class Things {
         public final Map<String, Thing> entities;
 
         public Things(Map<String, Thing> entities) {
@@ -191,7 +190,7 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Expose implements Serializable {
+    public static class Expose {
         final String entity;
 
         public Expose(String entity) {
@@ -210,7 +209,7 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Created<E extends Serializable> {
+    public static class Created<E> {
         public final E entity;
 
         public Created(E entity) {
@@ -229,7 +228,7 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Destroy implements Serializable {
+    public static class Destroy {
         final String id;
 
         public Destroy(String id) {
@@ -248,7 +247,7 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Deleted<K extends Serializable> implements Serializable {
+    public static class Deleted<K> {
         public final K id;
 
         Deleted() {

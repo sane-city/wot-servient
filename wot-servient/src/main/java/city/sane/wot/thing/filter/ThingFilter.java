@@ -1,13 +1,12 @@
 package city.sane.wot.thing.filter;
 
-import java.io.Serializable;
 import java.net.URI;
 
 /**
  * ThingFilter is used for the discovery process and specifies what things to look for and where to
  * look for them.
  */
-public class ThingFilter implements Serializable {
+public class ThingFilter {
     private DiscoveryMethod method;
     private URI url;
     private ThingQuery query;

@@ -3,7 +3,6 @@ package city.sane.wot.thing;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
  */
 @JsonDeserialize(using = ContextDeserializer.class)
 @JsonSerialize(using = ContextSerializer.class)
-public class Context implements Serializable {
+public class Context {
     private final Map<String, String> urls = new HashMap<>();
 
     public Context() {
