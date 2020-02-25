@@ -14,8 +14,8 @@ public interface ProtocolServer {
     /**
      * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed things.
      *
-     * @return
      * @param servient
+     * @return
      */
     CompletableFuture<Void> start(Servient servient);
 

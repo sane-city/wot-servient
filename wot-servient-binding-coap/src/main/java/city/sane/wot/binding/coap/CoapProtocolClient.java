@@ -94,7 +94,7 @@ public class CoapProtocolClient implements ProtocolClient {
 
         return Observable.using(
                 () -> new CoapClient(url).setExecutor(executor),
-                client -> Observable.<Content>create(source -> {
+                client -> Observable.create(source -> {
                     // Californium does not offer any method to wait until the observation is established...
                     // This causes new values not being recognized directly after observation creation.
                     // The client must wait "some" time before it can be sure that the observation is active.

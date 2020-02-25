@@ -8,7 +8,6 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQuery;
-import city.sane.wot.thing.filter.ThingQueryException;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.concurrent.ExecutionException;
  * AkkaDiscovery}.
  */
 class AkkaDiscoveryClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException, ThingQueryException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         Wot wot = DefaultWot.clientOnly();
 
         // Search for things providing a Temperature

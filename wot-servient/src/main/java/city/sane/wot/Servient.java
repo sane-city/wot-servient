@@ -128,7 +128,8 @@ public class Servient {
 
     /**
      * All servers supported by Servient are instructed to expose the Thing with the given
-     * <code>id</code>. Then it is possible to interact with the Thing via different protocols (e.g.
+     * <code>id</code>. Then it is possible to interact with the Thing via different protocols
+     * (e.g.
      * HTTP, CoAP, ...). Before a thing can be exposed, it must be added via {@link #addThing}.
      *
      * @param id

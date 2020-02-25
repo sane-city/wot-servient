@@ -86,7 +86,8 @@ public class ScriptingManager {
     }
 
     /**
-     * Executes the WoT script in <code>script</code> in sandboxed context using engine that matches
+     * Executes the WoT script in <code>script</code> in sandboxed context using engine that
+     * matches
      * <code>mediaType</code> and passes <code>wot</code> to the script as WoT object.
      *
      * @param script

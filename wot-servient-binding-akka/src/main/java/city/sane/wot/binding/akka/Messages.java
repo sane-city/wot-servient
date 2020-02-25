@@ -14,7 +14,7 @@ public class Messages {
     }
 
     // https://stackoverflow.com/a/53845446/1074188
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     public static class Read implements Serializable {
         public Read() {
         }
@@ -121,7 +121,7 @@ public class Messages {
     }
 
     // https://stackoverflow.com/a/53845446/1074188
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     public static class Subscribe implements Serializable {
         public Subscribe() {
         }

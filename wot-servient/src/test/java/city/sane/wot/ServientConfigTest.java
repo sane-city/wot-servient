@@ -148,8 +148,8 @@ public class ServientConfigTest {
          * Starts the server (e.g. HTTP server) and makes it ready for requests to the exposed
          * things.
          *
-         * @return
          * @param servient
+         * @return
          */
         @Override
         public CompletableFuture<Void> start(Servient servient) {
