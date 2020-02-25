@@ -28,7 +28,7 @@ println('==========')
 
 def source = wot.consume(td)
 
-source.events.temperature.subscribe(
+source.events.temperature.observer().subscribe(
         { x -> println('onNext: ' + x) },
         { e -> println('onError: ' + e) },
         { -> println('onCompleted') }

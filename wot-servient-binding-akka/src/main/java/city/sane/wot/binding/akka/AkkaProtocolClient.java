@@ -3,6 +3,7 @@ package city.sane.wot.binding.akka;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
+import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
@@ -13,8 +14,8 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
+import static java.util.concurrent.CompletableFuture.failedFuture;
 
 /**
  * Allows consuming Things via Akka Actors.<br> The Actor System created by {@link
@@ -50,7 +52,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         Read message = new Read();
         String href = form.getHref();
         if (href == null) {
-            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+            return failedFuture(new ProtocolClientException("no href given"));
         }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
@@ -66,7 +68,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         Write message = new Write(content);
         String href = form.getHref();
         if (href == null) {
-            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+            return failedFuture(new ProtocolClientException("no href given"));
         }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
@@ -82,7 +84,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         Invoke message = new Invoke(content);
         String href = form.getHref();
         if (href == null) {
-            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+            return failedFuture(new ProtocolClientException("no href given"));
         }
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
@@ -94,17 +96,26 @@ public class AkkaProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) throws ProtocolClientNotImplementedException {
+    public Observable<Content> observeResource(Form form) throws ProtocolClientException {
         String href = form.getHref();
         if (href == null) {
-            return CompletableFuture.failedFuture(new ProtocolClientException("no href given"));
+            throw new ProtocolClientException("no href given");
         }
         ActorSelection selection = system.actorSelection(href);
 
-        ActorRef actorRef = system.actorOf(ObserveActor.props(observer, selection));
-        Subscription subscription = new Subscription(() -> system.stop(actorRef));
-        return CompletableFuture.completedFuture(subscription);
+        return Observable.using(
+                () -> {
+                    log.debug("Create temporary actor to observe resource: {}", href);
+                    PublishSubject<Content> subject = PublishSubject.create();
+                    ActorRef actorRef = system.actorOf(ObserveActor.props(subject, selection));
+                    return new Pair<>(subject, actorRef);
+                },
+                Pair::first,
+                pair -> {
+                    log.debug("No more observers. Stop temporary actor form resource observation: {}", href);
+                    system.stop(pair.second());
+                }
+        );
     }
 
     @Override
@@ -120,7 +131,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         }
         else {
             log.warn("DistributedPubSub extension missing. ANY Discovery is not be supported.");
-            return CompletableFuture.failedFuture(new ProtocolClientNotImplementedException(getClass(), "discover"));
+            return failedFuture(new ProtocolClientNotImplementedException(getClass(), "discover"));
         }
     }
 }

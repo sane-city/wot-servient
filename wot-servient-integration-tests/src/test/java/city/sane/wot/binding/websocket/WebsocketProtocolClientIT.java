@@ -1,14 +1,13 @@
 package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
-import city.sane.wot.thing.observer.Observer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -31,7 +30,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -117,7 +115,7 @@ public class WebsocketProtocolClientIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void subscribeProperty() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientNotImplementedException {
+    public void subscribeProperty() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
@@ -128,15 +126,14 @@ public class WebsocketProtocolClientIT {
                 ))
                 .build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-        client.subscribeResource(form, observer).get();
-
-        assertEquals(ContentManager.valueToContent(9001), future.get());
+        assertEquals(
+                ContentManager.valueToContent(9001),
+                client.observeResource(form).firstElement().blockingGet()
+        );
     }
 
     @Test(timeout = 20 * 1000L)
-    public void subscribeEvent() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientNotImplementedException {
+    public void subscribeEvent() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
@@ -147,11 +144,10 @@ public class WebsocketProtocolClientIT {
                 ))
                 .build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-        client.subscribeResource(form, observer).get();
-
-        assertEquals(Content.EMPTY_CONTENT, future.get());
+        assertEquals(
+                Content.EMPTY_CONTENT,
+                client.observeResource(form).firstElement().blockingGet()
+        );
     }
 
     private class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {

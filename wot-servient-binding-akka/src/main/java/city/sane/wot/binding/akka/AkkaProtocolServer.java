@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * Allows exposing Things via Akka Actors.<br> Starts an Actor System with an {@link ThingsActor}
  * actuator. This Actuator is responsible for exposing Things. The Actor System is intended for use
@@ -61,7 +64,7 @@ public class AkkaProtocolServer implements ProtocolServer {
             thingsActor = system.actorOf(ThingsActor.props(things), "things");
         }
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override
@@ -72,7 +75,7 @@ public class AkkaProtocolServer implements ProtocolServer {
             return actorSystemProvider.terminate();
         }
         else {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 
@@ -81,7 +84,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("AkkaServer exposes '{}'", thing.getId());
 
         if (system == null) {
-            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
+            return failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
         }
 
         things.put(thing.getId(), thing);
@@ -101,11 +104,11 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("AkkaServer stop exposing '{}'", thing.getId());
 
         if (system == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         if (things.remove(thing.getId()) == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         Duration timeout = Duration.ofSeconds(10);

@@ -4,9 +4,9 @@ import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
 import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
-import city.sane.wot.thing.observer.Subject;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.github.jsonldjava.shaded.com.google.common.base.Supplier;
+import io.reactivex.rxjava3.subjects.Subject;
 import org.junit.Before;
 import org.junit.Test;
 

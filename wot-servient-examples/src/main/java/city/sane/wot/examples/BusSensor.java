@@ -49,7 +49,7 @@ class BusSensor {
 
         ConsumedThing consumedThing = wot.consume(thing);
 
-        consumedThing.getEvent("up").subscribe(BusSensor::nextMessage);
+        consumedThing.getEvent("up").observer().subscribe(BusSensor::nextMessage);
     }
 
     private static void nextMessage(Object next) {

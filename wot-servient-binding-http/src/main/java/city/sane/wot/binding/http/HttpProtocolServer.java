@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.CompletableFuture.*;
 
 /**
  * Allows exposing Things via HTTP.
@@ -123,7 +123,7 @@ public class HttpProtocolServer implements ProtocolServer {
                 bindHost, bindPort, thing.getId());
 
         if (!started) {
-            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before HttpServer has been started"));
+            return failedFuture(new ProtocolServerException("Unable to expose thing before HttpServer has been started"));
         }
 
         things.put(thing.getId(), thing);
@@ -149,7 +149,7 @@ public class HttpProtocolServer implements ProtocolServer {
             }
         }
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class HttpProtocolServer implements ProtocolServer {
                 bindHost, bindPort, thing.getId());
         things.remove(thing.getId());
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override

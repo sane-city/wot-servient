@@ -5,7 +5,7 @@ wot.fetch('http://localhost:8080/EventSource').thenAccept { td ->
 
     def source = wot.consume(td)
 
-    source.events.onchange.subscribe(
+    source.events.onchange.observer().subscribe(
             { x -> println('onNext: ' + x) },
             { e -> println('onError: ' + e) },
             { -> println('onCompleted') }

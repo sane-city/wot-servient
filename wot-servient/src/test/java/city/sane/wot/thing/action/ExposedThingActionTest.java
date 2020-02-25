@@ -11,7 +11,6 @@ import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ExposedThingActionTest {

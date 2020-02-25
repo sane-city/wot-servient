@@ -1,11 +1,12 @@
 package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.observer.Subject;
+import io.reactivex.rxjava3.subjects.Subject;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -83,7 +84,7 @@ public class ExposedThingPropertyTest {
         exposedProperty.write(1337);
 
         verify(state, times(1)).setValue(1337);
-        verify(subject, times(1)).next(1337);
+        verify(subject, times(1)).onNext(Optional.of(1337));
     }
 
     @Test
@@ -97,6 +98,6 @@ public class ExposedThingPropertyTest {
         exposedProperty.write(1337);
 
         verify(writeHandler, times(1)).apply(1337);
-        verify(subject, times(1)).next(1337);
+        verify(subject, times(1)).onNext(Optional.of(1337));
     }
 }

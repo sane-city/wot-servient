@@ -6,7 +6,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.akka.Messages.*;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
@@ -16,7 +16,6 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
 import com.typesafe.config.ConfigFactory;
 import org.junit.After;
 import org.junit.Assert;
@@ -80,17 +79,15 @@ public class AkkaProtocolClientIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void subscribeResource() throws ExecutionException, InterruptedException, ProtocolClientNotImplementedException, ContentCodecException {
+    public void subscribeResource() throws ProtocolClientException, ContentCodecException {
         ActorRef actorRef = system.actorOf(Props.create(MySubscribeActor.class, MySubscribeActor::new));
         String href = actorRef.path().toStringWithAddress(system.provider().getDefaultAddress());
         Form form = new Form.Builder().setHref(href).build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-
-        Observer<Content> observer = new Observer<>(next -> future.complete(next));
-        client.subscribeResource(form, observer).get();
-
-        assertEquals(ContentManager.valueToContent(9001), future.get());
+        assertEquals(
+                ContentManager.valueToContent(9001),
+                client.observeResource(form).firstElement().blockingGet()
+        );
     }
 
     @Test

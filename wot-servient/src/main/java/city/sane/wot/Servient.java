@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * The Servient hosts, exposes and consumes things based on provided protocol bindings.
  * https://w3c.github.io/wot-architecture/#sec-servient-implementation<br> It reads the servers
@@ -136,11 +138,11 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to expose Things"));
+            return failedFuture(new ServientException("Servient has no servers to expose Things"));
         }
 
         if (thing == null) {
-            return CompletableFuture.failedFuture(new ServientException("Thing must be added to the servient first"));
+            return failedFuture(new ServientException("Thing must be added to the servient first"));
         }
 
         log.info("Servient exposing '{}'", id);
@@ -170,7 +172,7 @@ public class Servient {
         ExposedThing thing = things.get(id);
 
         if (servers.isEmpty()) {
-            return CompletableFuture.failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
+            return failedFuture(new ServientException("Servient has no servers to stop exposure Things"));
         }
 
         log.info("Servient stop exposing '{}'", thing);
@@ -242,11 +244,11 @@ public class Servient {
                 });
             }
             else {
-                return CompletableFuture.failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return failedFuture(new ServientException("Unable to fetch '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
@@ -321,11 +323,11 @@ public class Servient {
                 });
             }
             else {
-                return CompletableFuture.failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
+                return failedFuture(new ServientException("Unable to fetch directory '" + url + "'. Missing ClientFactory for scheme '" + scheme + "'"));
             }
         }
         catch (ProtocolClientException e) {
-            return CompletableFuture.failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
+            return failedFuture(new ServientException("Unable to create client: " + e.getMessage()));
         }
     }
 
@@ -351,7 +353,7 @@ public class Servient {
      */
     private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new ServientException("not implemented"));
+        return failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -376,7 +378,7 @@ public class Servient {
      */
     private CompletableFuture<Void> unregister(URI directory, ExposedThing thing) {
         // FIXME: implement
-        return CompletableFuture.failedFuture(new ServientException("not implemented"));
+        return failedFuture(new ServientException("not implemented"));
     }
 
     /**
@@ -422,7 +424,7 @@ public class Servient {
                 return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
             }
             catch (ProtocolClientException e) {
-                return CompletableFuture.failedFuture(e);
+                return failedFuture(e);
             }
         }
     }

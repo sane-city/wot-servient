@@ -28,6 +28,8 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static jadex.commons.future.IFuture.DONE;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
 
 /**
  * Allows consuming Things via Jadex Micro Agents. The Jadex Platform created by {@link
@@ -225,11 +227,11 @@ public class JadexProtocolClient implements ProtocolClient {
                 .setScope(ServiceScope.GLOBAL)
                 .setId(serviceId);
         try {
-            return CompletableFuture.completedFuture(SFuture.getFirstResultAndTerminate(agent.addQuery(query)));
+            return completedFuture(SFuture.getFirstResultAndTerminate(agent.addQuery(query)));
         }
         catch (TimeoutException e) {
             log.warn("Search ThingService with id '{}' failed: {}", serviceId, e.getMessage());
-            return CompletableFuture.failedFuture(e);
+            return failedFuture(e);
         }
     }
 }

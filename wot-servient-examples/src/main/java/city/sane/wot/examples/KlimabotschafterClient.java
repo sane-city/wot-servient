@@ -43,7 +43,7 @@ class KlimabotschafterClient {
                     ConsumedThingProperty<Object> property = consumedThing.getProperty(name);
                     Object value = property.read().get();
                     System.out.println("Current value of \"" + name + "\" is " + value);
-                    property.subscribe(newValue -> System.out.println("Value of \"" + name + "\" has changed to " + newValue));
+                    property.observer().subscribe(newValue -> System.out.println("Value of \"" + name + "\" has changed to " + newValue));
                 }
             }
             catch (InterruptedException ex) {

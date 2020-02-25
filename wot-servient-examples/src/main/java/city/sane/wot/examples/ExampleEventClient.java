@@ -20,19 +20,19 @@ class ExampleEventClient {
 
         URI url = new URI("coap://localhost:5683/EventSource");
         wot.fetch(url).whenComplete((thing, e) -> {
+            if (e != null) {
+                throw new RuntimeException(e);
+            }
+
+            System.out.println("=== TD ===");
+            String json = thing.toJson(true);
+            System.out.println(json);
+            System.out.println("==========");
+
+            ConsumedThing consumedThing = wot.consume(thing);
+
             try {
-                if (e != null) {
-                    throw new RuntimeException(e);
-                }
-
-                System.out.println("=== TD ===");
-                String json = thing.toJson(true);
-                System.out.println(json);
-                System.out.println("==========");
-
-                ConsumedThing consumedThing = wot.consume(thing);
-
-                consumedThing.getEvent("onchange").subscribe(
+                consumedThing.getEvent("onchange").observer().subscribe(
                         next -> System.out.println("ExampleDynamicClient: next = " + next),
                         ex -> System.out.println("ExampleDynamicClient: error = " + ex.toString()),
                         () -> System.out.println("ExampleDynamicClient: completed!")
@@ -40,7 +40,7 @@ class ExampleEventClient {
                 System.out.println("ExampleDynamicClient: Subscribed");
             }
             catch (ConsumedThingException ex) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException(e);
             }
         }).join();
 

@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.List;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsumedThingActionTest {

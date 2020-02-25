@@ -6,9 +6,8 @@ import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.schema.StringSchema;
+import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
@@ -90,52 +89,48 @@ public class CoapProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) {
+    public Observable<Content> observeResource(Form form) {
         String url = form.getHref();
-        CoapClient client = new CoapClient(url)
-                .setExecutor(executor);
 
-        Subscription subscription = new Subscription();
-
-        // Californium does not offer any method to wait until the observation is established...
-        // This causes new values not being recognized directly after observation creation.
-        // The client must wait "some" time before it can be sure that the observation is active.
-        log.debug("CoapClient subscribe to '{}'", url);
-        client.observe(new CoapHandler() {
-            @Override
-            public void onLoad(CoapResponse response) {
-                if (!subscription.isClosed()) {
-                    String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
-                    byte[] body = response.getPayload();
-                    Content output = new Content(type, body);
-                    if (response.isSuccess()) {
-                        log.debug("Next data received for subscription '{}'", url);
-                        observer.next(output);
-                    }
-                    else {
-                        subscription.unsubscribe();
-                        try {
-                            String error = ContentManager.contentToValue(output, new StringSchema());
-                            log.debug("Error received for subscription '{}': {}", url, error);
+        return Observable.using(
+                () -> new CoapClient(url).setExecutor(executor),
+                client -> Observable.<Content>create(source -> {
+                    // Californium does not offer any method to wait until the observation is established...
+                    // This causes new values not being recognized directly after observation creation.
+                    // The client must wait "some" time before it can be sure that the observation is active.
+                    log.debug("CoapClient subscribe to '{}'", url);
+                    client.observe(new CoapHandler() {
+                        @Override
+                        public void onLoad(CoapResponse response) {
+                            String type = MediaTypeRegistry.toString(response.getOptions().getContentFormat());
+                            byte[] body = response.getPayload();
+                            Content output = new Content(type, body);
+                            if (response.isSuccess()) {
+                                log.debug("Next data received for subscription '{}'", url);
+                                source.onNext(output);
+                            }
+                            else {
+                                try {
+                                    String error = ContentManager.contentToValue(output, new StringSchema());
+                                    source.onError(new ProtocolClientException(error));
+                                    log.debug("Error received for subscription '{}': {}", url, error);
+                                }
+                                catch (ContentCodecException e) {
+                                    source.onError(new ProtocolClientException(e));
+                                    log.debug("Error received for subscription '{}': {}", url, e.getMessage());
+                                }
+                            }
                         }
-                        catch (ContentCodecException e) {
-                            log.debug("Error received for subscription '{}': {}", url, e.getMessage());
+
+                        @Override
+                        public void onError() {
+                            source.onError(new ProtocolClientException("Error received for subscription '" + url + "'"));
+                            log.debug("Error received for subscription '{}'", url);
                         }
-                    }
-                }
-            }
-
-            @Override
-            public void onError() {
-                if (!subscription.isClosed()) {
-                    subscription.unsubscribe();
-                    log.debug("Error received for subscription '{}'", url);
-                }
-            }
-        });
-
-        return CompletableFuture.completedFuture(subscription);
+                    });
+                }),
+                CoapClient::shutdown
+        );
     }
 
     private Request generateRequest(Form form, CoAP.Code code) {

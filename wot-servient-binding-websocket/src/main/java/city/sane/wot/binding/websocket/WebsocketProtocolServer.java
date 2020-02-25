@@ -34,6 +34,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 public class WebsocketProtocolServer implements ProtocolServer {
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
@@ -67,10 +70,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> start(Servient servient) {
         if (serverChannel != null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             try {
                 serverChannel = serverBootstrap.bind(bindPort).sync().channel();
             }
@@ -83,10 +86,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> stop() {
         if (serverChannel == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             try {
                 serverChannel.close().sync();
                 serverBossGroup.shutdownGracefully().sync();
@@ -110,7 +113,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
             exposeEvents(thing, address);
         }
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override
@@ -118,7 +121,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
         log.info("WebsocketServer stop exposing '{}'", thing.getTitle());
         things.remove(thing.getId());
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     private void exposeProperties(ExposedThing thing, String address) {
@@ -150,15 +153,18 @@ public class WebsocketProtocolServer implements ProtocolServer {
             }
 
             // if property is observable add an additional form with a observable href
-//            if (property.isObservable()) {
-//                Form.Builder observableForm = new Form.Builder();
-//                observableForm.setHref(address);
-//                observableForm.setContentType(contentType);
-//                observableForm.setOp(Operation.OBSERVE_PROPERTY);
-//
-//                property.addForm(observableForm.build());
-//                log.info("Assign '{}' to observable Property '{}'", address, name);
-//            }
+            if (property.isObservable()) {
+                property.addForm(new Form.Builder()
+                        .setHref(address)
+                        .setOp(Operation.OBSERVE_PROPERTY)
+                        .setOptional("websocket:message", Map.of(
+                                "type", "SubscribeProperty",
+                                "thingId", thing.getId(),
+                                "name", name
+                        ))
+                        .build());
+                log.info("Assign '{}' to observable Property '{}'", address, name);
+            }
         });
     }
 

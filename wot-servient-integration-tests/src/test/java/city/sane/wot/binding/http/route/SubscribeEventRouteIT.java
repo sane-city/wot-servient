@@ -24,9 +24,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class SubscribeEventRouteIT {
     private Service service;
@@ -126,9 +127,9 @@ public class SubscribeEventRouteIT {
     }
 
     @Test
-    public void subscribeEvent() throws InterruptedException, ExecutionException {
+    public void shouldReturnValueOnEventEmit() throws InterruptedException, ExecutionException {
         CompletableFuture<Content> result = new CompletableFuture<>();
-        CompletableFuture.runAsync(() -> {
+        runAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
@@ -147,7 +148,7 @@ public class SubscribeEventRouteIT {
 
         // emit event
         ExposedThingEvent<Object> event = thing.getEvent("change");
-        event.emit().get();
+        event.emit();
 
         // future should complete within a few seconds
         result.get();
@@ -157,7 +158,7 @@ public class SubscribeEventRouteIT {
 
     @Test
     public void subscribeEventObserverPopulation() throws InterruptedException, ExecutionException {
-        CompletableFuture.runAsync(() -> {
+        runAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
                 HttpClientBuilder.create().build().execute(request);
@@ -173,12 +174,12 @@ public class SubscribeEventRouteIT {
 
         // emit event
         ExposedThingEvent<Object> event = thing.getEvent("change");
-        event.emit().get();
+        event.emit();
 
         // wait until client received answer
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
         Thread.sleep(5 * 1000L);
 
-        assertTrue("populated observer should have been removed", thing.getEvent("change").getState().getSubject().getObservers().isEmpty());
+        assertFalse("populated observer should have been removed", thing.getEvent("change").getState().getSubject().hasObservers());
     }
 }

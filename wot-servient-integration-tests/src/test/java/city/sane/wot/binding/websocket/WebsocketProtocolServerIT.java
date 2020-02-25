@@ -1,5 +1,6 @@
 package city.sane.wot.binding.websocket;
 
+import city.sane.Pair;
 import city.sane.wot.binding.websocket.message.*;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
@@ -7,14 +8,15 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.After;
@@ -26,8 +28,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,7 +40,6 @@ import static org.junit.Assert.assertEquals;
 public class WebsocketProtocolServerIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private WebsocketProtocolServer server;
-    private WebSocketClient cc;
     private ExposedThing thing;
 
     @Before
@@ -155,54 +158,56 @@ public class WebsocketProtocolServerIT {
      *
      * @param request
      * @return
-     * @throws ExecutionException
-     * @throws InterruptedException
-     * @throws URISyntaxException
      */
-    private AbstractServerMessage ask(AbstractClientMessage request) throws ExecutionException, InterruptedException, URISyntaxException {
-        CompletableFuture<AbstractServerMessage> future = new CompletableFuture<>();
+    private AbstractServerMessage ask(AbstractClientMessage request) {
+        return Observable.using(
+                () -> {
+                    PublishSubject<AbstractServerMessage> subject = PublishSubject.create();
+                    WebSocketClient client = new WebSocketClient(new URI("ws://localhost:8081")) {
+                        @Override
+                        public void onOpen(ServerHandshake handshake) {
+                            try {
+                                String json = WebsocketProtocolServerIT.JSON_MAPPER.writeValueAsString(request);
+                                send(json);
+                            }
+                            catch (JsonProcessingException e) {
+                                subject.onError(e);
+                            }
+                        }
 
-        try {
-            cc = new WebSocketClient(new URI("ws://localhost:8081")) {
-                @Override
-                public void onOpen(ServerHandshake handshake) {
-                    try {
-                        String json = WebsocketProtocolServerIT.JSON_MAPPER.writeValueAsString(request);
-                        cc.send(json);
-                    }
-                    catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                        @Override
+                        public void onMessage(String json) {
+                            try {
+                                AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
+                                subject.onNext(message);
+                            }
+                            catch (IOException e) {
+                                subject.onError(e);
+                            }
+                        }
 
-                @Override
-                public void onMessage(String json) {
-                    try {
-                        AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
-                        future.complete(message);
-                    }
-                    catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                        @Override
+                        public void onClose(int code, String reason, boolean remote) {
+                            subject.onComplete();
+                        }
 
-                @Override
-                public void onClose(int code, String reason, boolean remote) {
+                        @Override
+                        public void onError(Exception ex) {
+                            subject.onError(ex);
+                        }
+                    };
+                    client.connect();
 
-                }
+                    return new Pair<>(subject, client);
+                },
+                Pair::first,
+                pair -> pair.second().close()
+        ).doOnNext(new Consumer<AbstractServerMessage>() {
+            @Override
+            public void accept(AbstractServerMessage abstractServerMessage) throws Throwable {
 
-                @Override
-                public void onError(Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            };
-            cc.connect();
-        }
-        finally {
-            cc.close();
-        }
-
-        return future.get();
+            }
+        }).firstElement().blockingGet();
     }
 
     @Test(timeout = 20 * 1000L)
@@ -238,15 +243,12 @@ public class WebsocketProtocolServerIT {
         assertEquals(ContentManager.valueToContent(45), ((InvokeActionResponse) response).getValue());
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void testSubscribeProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+    @Test
+    public void testSubscribeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
         // send SubscribeProperty message to server and wait for SubscribeNextResponse message from server
         SubscribeProperty request = new SubscribeProperty("counter", "count");
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        observe(request, observer);
+        Future<Content> future = observe(request).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
@@ -254,78 +256,78 @@ public class WebsocketProtocolServerIT {
 
         thing.getProperty("count").write(1337).get();
 
-        assertEquals(ContentManager.valueToContent(1337), future.get());
+        assertEquals(ContentManager.valueToContent(1337), future.get(10, TimeUnit.SECONDS));
     }
 
-    private Subscription observe(AbstractClientMessage request,
-                                 Observer<Content> observer) throws URISyntaxException {
-        try {
-            cc = new WebSocketClient(new URI("ws://localhost:8081")) {
-                @Override
-                public void onOpen(ServerHandshake handshake) {
-                    try {
-                        String json = WebsocketProtocolServerIT.JSON_MAPPER.writeValueAsString(request);
-                        cc.send(json);
-                    }
-                    catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                @Override
-                public void onMessage(String json) {
-                    try {
-                        AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
-                        if (message instanceof SubscribeNextResponse) {
-                            observer.next(message.toContent());
+    private Observable<Content> observe(AbstractClientMessage request) {
+        return Observable.using(
+                () -> {
+                    PublishSubject<Content> subject = PublishSubject.create();
+                    WebSocketClient client = new WebSocketClient(new URI("ws://localhost:8081")) {
+                        @Override
+                        public void onOpen(ServerHandshake handshake) {
+                            try {
+                                String json = WebsocketProtocolServerIT.JSON_MAPPER.writeValueAsString(request);
+                                send(json);
+                            }
+                            catch (JsonProcessingException e) {
+                                subject.onError(e);
+                            }
                         }
-                        else if (message instanceof SubscribeCompleteResponse) {
-                            observer.complete();
+
+                        @Override
+                        public void onMessage(String json) {
+                            try {
+                                AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
+                                if (message instanceof SubscribeNextResponse) {
+                                    subject.onNext(message.toContent());
+                                }
+                                else if (message instanceof SubscribeCompleteResponse) {
+                                    subject.onComplete();
+                                }
+                                else if (message instanceof SubscribeErrorResponse) {
+                                    subject.onError(((SubscribeErrorResponse) message).getError());
+                                }
+                            }
+                            catch (IOException e) {
+                                subject.onError(e);
+                            }
                         }
-                        else if (message instanceof SubscribeErrorResponse) {
-                            observer.error(((SubscribeErrorResponse) message).getError());
+
+                        @Override
+                        public void onClose(int code, String reason, boolean remote) {
+                            subject.onComplete();
                         }
-                    }
-                    catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
 
-                @Override
-                public void onClose(int code, String reason, boolean remote) {
+                        @Override
+                        public void onError(Exception ex) {
+                            subject.onError(ex);
+                        }
+                    };
+                    client.connect();
 
-                }
-
-                @Override
-                public void onError(Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            };
-            cc.connect();
-
-            return new Subscription(() -> cc.close());
-        }
-        finally {
-            cc.close();
-        }
+                    return new Pair<>(subject, client);
+                },
+                Pair::first,
+                pair -> pair.second().close()
+        );
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void testSubscribeEvent() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+    @Test
+    public void testSubscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
         // send SubscribeEvent message to server and wait for SubscribeNextResponse message from server
         SubscribeEvent request = new SubscribeEvent("counter", "change");
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        observe(request, observer);
+        Future<Content> future = observe(request).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
         Thread.sleep(10 * 1000L);
 
-        thing.getEvent("change").emit().get();
+        thing.getEvent("change").emit();
 
-        assertEquals(new Content(ContentManager.DEFAULT, "null".getBytes()), future.get());
+        Thread.sleep(10 * 1000L);
+
+        assertEquals(new Content(ContentManager.DEFAULT, "null".getBytes()), future.get(10, TimeUnit.SECONDS));
     }
 }

@@ -1,14 +1,19 @@
 package city.sane.wot.binding.http;
 
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.junit.After;
 import org.junit.Before;
@@ -19,8 +24,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class HttpProtocolClientTest {
@@ -31,6 +36,8 @@ public class HttpProtocolClientTest {
     private HttpEntity httpEntity;
     private HttpProtocolClient client;
     private SecurityScheme securityScheme;
+    private Function<RequestConfig, CloseableHttpClient> clientCreator;
+    private CloseableHttpClient httpClient;
 
     @Before
     public void setUp() {
@@ -40,7 +47,8 @@ public class HttpProtocolClientTest {
         statusLine = mock(StatusLine.class);
         httpEntity = mock(HttpEntity.class);
         securityScheme = mock(SecurityScheme.class);
-        client = new HttpProtocolClient(requestClient);
+        clientCreator = mock(Function.class);
+        httpClient = mock(CloseableHttpClient.class);
     }
 
     @After
@@ -54,6 +62,7 @@ public class HttpProtocolClientTest {
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
         when(requestClient.execute(any())).thenReturn(httpResponse);
 
+        client = new HttpProtocolClient(requestClient, clientCreator);
         client.readResource(form).join();
 
         HttpUriRequest request = RequestBuilder.create("GET").setUri("http://localhost/foo").build();
@@ -71,6 +80,7 @@ public class HttpProtocolClientTest {
                 "username", "foo",
                 "password", "bar"
         );
+        client = new HttpProtocolClient(requestClient, clientCreator);
         client.setSecurity(List.of(new BasicSecurityScheme()), credentials);
         client.readResource(form).join();
 
@@ -91,6 +101,7 @@ public class HttpProtocolClientTest {
         Map credentials = Map.of(
                 "token", "achu6Ahx"
         );
+        client = new HttpProtocolClient(requestClient, clientCreator);
         client.setSecurity(List.of(new BearerSecurityScheme()), credentials);
         client.readResource(form).join();
 
@@ -99,6 +110,36 @@ public class HttpProtocolClientTest {
                 .addHeader(HttpHeaders.AUTHORIZATION, "Bearer achu6Ahx")
                 .build();
         verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
+    }
+
+    @Test
+    public void subscribeResourceShouldCreateHttpRequest() throws IOException {
+        when(clientCreator.apply(any())).thenReturn(httpClient);
+        LambdaObserver<Content> observer = new LambdaObserver<>(n -> {
+        }, e -> {
+        }, () -> {
+        }, s -> {
+        });
+
+        client = new HttpProtocolClient(requestClient, clientCreator);
+        client.observeResource(form).subscribe(observer);
+
+        verify(httpClient, timeout(1 * 1000L).times(1)).execute(any());
+    }
+
+    @Test
+    public void subscribeResourceShouldCloseHttpRequestWhenObserverIsDone() throws IOException, InterruptedException {
+        when(clientCreator.apply(any())).thenReturn(httpClient);
+        when(requestClient.execute(any())).thenReturn(httpResponse);
+
+        client = new HttpProtocolClient(requestClient, clientCreator);
+        Disposable disposable = client.observeResource(form).subscribe();
+
+        Thread.sleep(1 * 1000L);
+
+        disposable.dispose();
+
+        verify(httpClient, timeout(1 * 1000L).times(1)).close();
     }
 
     private class HttpUriRequestMatcher implements ArgumentMatcher<HttpUriRequest> {

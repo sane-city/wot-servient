@@ -4,10 +4,8 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subject;
-import city.sane.wot.thing.observer.Subscription;
 import com.typesafe.config.Config;
+import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -29,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
     private final MqttProtocolSettings settings;
-    private final Map<String, Subject<Content>> topicSubjects;
+    private final Map<String, Observable<Content>> topicSubjects;
     private MqttClient client;
 
     public MqttProtocolClient(Config config) throws ProtocolClientException {
@@ -46,7 +44,7 @@ public class MqttProtocolClient implements ProtocolClient {
 
     MqttProtocolClient(MqttProtocolSettings settings,
                        MqttClient mqttClient,
-                       Map<String, Subject<Content>> topicSubjects) {
+                       Map<String, Observable<Content>> topicSubjects) {
 
         this.settings = settings;
         client = mqttClient;
@@ -76,67 +74,42 @@ public class MqttProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) {
-        String topic;
+    public Observable<Content> observeResource(Form form) throws ProtocolClientException {
         try {
-            topic = new URI(form.getHref()).getPath().substring(1);
+            String topic = new URI(form.getHref()).getPath().substring(1);
+
+            return topicSubjects.computeIfAbsent(topic, key -> Observable.using(
+                    () -> client,
+                    client -> Observable.<Content>create(source -> {
+                        log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
+
+                        try {
+                            client.subscribe(topic, (receivedTopic, message) -> {
+                                log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
+                                Content content = new Content(form.getContentType(), message.getPayload());
+                                source.onNext(content);
+                            });
+                        }
+                        catch (MqttException e) {
+                            log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                            source.onError(e);
+                        }
+                    }),
+                    client -> {
+                        log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
+
+                        try {
+                            client.unsubscribe(topic);
+                        }
+                        catch (MqttException e) {
+                            log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                        }
+                    }
+            ).share());
         }
         catch (URISyntaxException e) {
-            return CompletableFuture.failedFuture(new ProtocolClientException("Unable to subscribe resource: " + e.getMessage()));
+            throw new ProtocolClientException("Unable to subscribe resource: " + e.getMessage());
         }
-
-        Subject<Content> newSubject = new Subject<>();
-        Subject<Content> existingSubject = topicSubjects.putIfAbsent(topic, newSubject);
-        CompletableFuture<Subscription> result = new CompletableFuture<>();
-        if (existingSubject == null) {
-            // first subscription for this mqtt topic. create new subject and create subscription
-            Subscription subscription = newSubject.subscribe(observer);
-
-            CompletableFuture.runAsync(() -> {
-                log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
-
-                try {
-                    client.subscribe(topic, (receivedTopic, message) -> {
-                        log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
-                        Content content = new Content(form.getContentType(), message.getPayload());
-                        newSubject.next(content);
-                    });
-                }
-                catch (MqttException e) {
-                    log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-                    newSubject.error(e);
-                }
-            }).thenApply(done -> result.complete(subscription));
-
-            existingSubject = newSubject;
-        }
-        else {
-            log.debug("MqttClient connected to broker at '{}' reuse existing subscription to topic '{}'", settings.getBroker(), topic);
-            Subscription subscription = existingSubject.subscribe(observer);
-            result.complete(subscription);
-        }
-
-        // attach to created subscriptions because we want to be notified on unsubscription, because we want to remove the mqtt subscription
-        final Subject<Content> subject = existingSubject;
-        result.thenApply(subscription -> {
-            subscription.add(() -> {
-                if (subject.getObservers().isEmpty()) {
-                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
-                    topicSubjects.remove(topic);
-                    subject.complete();
-                    try {
-                        client.unsubscribe(topic);
-                    }
-                    catch (MqttException e) {
-                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-                    }
-                }
-            });
-            return subscription;
-        });
-
-        return result;
     }
 
     private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
