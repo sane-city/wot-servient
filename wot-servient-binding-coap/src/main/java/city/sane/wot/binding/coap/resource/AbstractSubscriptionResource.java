@@ -1,10 +1,10 @@
 package city.sane.wot.binding.coap.resource;
 
+import city.sane.Pair;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
-import city.sane.wot.thing.observer.Subscribable;
-import city.sane.wot.thing.observer.Subscription;
+import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.observe.ObserveRelation;
@@ -12,98 +12,81 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 abstract class AbstractSubscriptionResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(AbstractSubscriptionResource.class);
     private final String name;
-    private final Subscribable<Object> subscribable;
-    private Subscription subscription = null;
-    private Object data;
-    private Throwable e;
+    private final Observable<Optional<Object>> observable;
+    private Pair<Optional, Throwable> last;
 
     AbstractSubscriptionResource(String resourceName,
                                  String name,
-                                 Subscribable<Object> subscribable) {
+                                 Observable<Optional<Object>> observable) {
         super(resourceName);
 
         this.name = name;
-        this.subscribable = subscribable;
+        this.observable = observable;
 
         setObservable(true); // enable observing
         setObserveType(CoAP.Type.CON); // configure the notification type to CONs
         getAttributes().setObservable(); // mark observable in the Link-Format
+
+        observable.subscribe(
+                optional -> {
+                    last = new Pair<>(optional, null);
+                    changed();
+                },
+                e -> {
+                    last = new Pair<>(null, e);
+                    changed();
+                }
+        );
     }
 
     @Override
     public void handleGET(CoapExchange exchange) {
         log.debug("Handle GET to '{}'", getURI());
 
-        String requestContentFormat = getOrDefaultRequestContentType(exchange);
+        if (!exchange.advanced().getRequest().isAcknowledged()) {
+            // The requestor should only be informed about new values.
+            // send acknowledgement
+            exchange.accept();
 
-        if (ensureSupportedContentFormat(exchange, requestContentFormat)) {
-            if (exchange.getRequestOptions().getObserve() != null) {
-                ensureSubscription();
+            ObserveRelation relation = exchange.advanced().getRelation();
+            relation.setEstablished(true);
+            addObserveRelation(relation);
+        }
+        else {
+            Optional optional = last.first();
+            Throwable e = last.second();
 
-                if (!exchange.advanced().getRequest().isAcknowledged()) {
-                    // The requestor should only be informed about new values.
-                    // send acknowledgement
-                    exchange.accept();
+            String requestContentFormat = getOrDefaultRequestContentType(exchange);
+            String subscribableType = observable.getClass().getSimpleName();
+            if (e == null) {
+                try {
+                    Object data = optional.orElse(null);
+                    log.debug("New data received for {} '{}': {}", subscribableType, name, data);
+                    Content content = ContentManager.valueToContent(data, requestContentFormat);
 
-                    ObserveRelation relation = exchange.advanced().getRelation();
-                    relation.setEstablished(true);
-                    addObserveRelation(relation);
+                    int contentFormat = MediaTypeRegistry.parse(content.getType());
+                    byte[] body = content.getBody();
+                    if (body.length > 0) {
+                        exchange.respond(CoAP.ResponseCode.CONTENT, body, contentFormat);
+                    }
+                    else {
+                        exchange.respond(CoAP.ResponseCode.CONTENT);
+                    }
                 }
-                else {
-                    respondSubscriptionData(exchange, requestContentFormat);
+                catch (ContentCodecException ex) {
+                    log.warn("Cannot process data for {} '{}': {}", subscribableType, name, ex.getMessage());
+                    exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
                 }
             }
             else {
-                log.warn("Reject request: Observe Option is missing");
-                exchange.respond(CoAP.ResponseCode.BAD_REQUEST, "No Observe Option");
-            }
-        }
-    }
-
-    private synchronized void ensureSubscription() {
-        if (subscription == null) {
-            subscription = subscribable.subscribe(
-                    next -> changeResource(next, null),
-                    ex -> changeResource(null, ex),
-                    () -> {
-                    }
-            );
-        }
-    }
-
-    private void respondSubscriptionData(CoapExchange exchange, String requestContentFormat) {
-        String subscribableType = subscribable.getClass().getSimpleName();
-        if (e == null) {
-            try {
-                log.debug("New data received for {} '{}': {}", subscribableType, name, data);
-                Content content = ContentManager.valueToContent(data, requestContentFormat);
-
-                int contentFormat = MediaTypeRegistry.parse(content.getType());
-                byte[] body = content.getBody();
-                if (body.length > 0) {
-                    exchange.respond(CoAP.ResponseCode.CONTENT, body, contentFormat);
-                }
-                else {
-                    exchange.respond(CoAP.ResponseCode.CONTENT);
-                }
-            }
-            catch (ContentCodecException ex) {
-                log.warn("Cannot process data for {} '{}': {}", subscribableType, name, ex.getMessage());
+                log.warn("Cannot process data for {} '{}': {}", subscribableType, name, e.getMessage());
                 exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
             }
         }
-        else {
-            log.warn("Cannot process data for {} '{}': {}", subscribableType, name, e.getMessage());
-            exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, "Invalid " + subscribableType + " Data");
-        }
-    }
-
-    private synchronized void changeResource(Object data, Throwable e) {
-        this.data = data;
-        this.e = e;
-        changed();
     }
 }

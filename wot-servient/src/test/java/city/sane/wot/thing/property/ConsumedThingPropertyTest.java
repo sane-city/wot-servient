@@ -2,11 +2,13 @@ package city.sane.wot.thing.property;
 
 import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.content.Content;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,7 +16,6 @@ import java.util.List;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsumedThingPropertyTest {
@@ -23,6 +24,7 @@ public class ConsumedThingPropertyTest {
     private Form form;
     private ProtocolClient client;
     private Observer observer;
+    private Observable<Content> observable;
 
     @Before
     public void setUp() {
@@ -31,6 +33,7 @@ public class ConsumedThingPropertyTest {
         form = mock(Form.class);
         client = mock(ProtocolClient.class);
         observer = mock(Observer.class);
+        observable = mock(Observable.class);
     }
 
     @Test
@@ -66,7 +69,7 @@ public class ConsumedThingPropertyTest {
     }
 
     @Test
-    public void read() throws ConsumedThingException {
+    public void readShouldCallUnderlyingClient() throws ConsumedThingException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.readResource(any())).thenReturn(completedFuture(null));
 
@@ -77,7 +80,7 @@ public class ConsumedThingPropertyTest {
     }
 
     @Test
-    public void write() throws ConsumedThingException {
+    public void writeShouldCallUnderlyingClient() throws ConsumedThingException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.writeResource(any(), any())).thenReturn(completedFuture(null));
 
@@ -88,13 +91,14 @@ public class ConsumedThingPropertyTest {
     }
 
     @Test
-    public void subscribe() throws ConsumedThingException, ProtocolClientNotImplementedException {
+    public void subscribeShoulCallUnderlyingClient() throws ConsumedThingException, ProtocolClientException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
         when(client.writeResource(any(), any())).thenReturn(completedFuture(null));
+        when(client.observeResource(any())).thenReturn(observable);
 
         ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
-        consumedThingProperty.subscribe(observer);
+        consumedThingProperty.observer().subscribe(observer);
 
-        verify(client, times(1)).subscribeResource(any(), any(), any(), any());
+        verify(client, times(1)).observeResource(any());
     }
 }

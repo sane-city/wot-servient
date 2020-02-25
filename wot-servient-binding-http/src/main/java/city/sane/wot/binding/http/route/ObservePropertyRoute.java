@@ -2,10 +2,8 @@ package city.sane.wot.binding.http.route;
 
 import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
@@ -14,8 +12,6 @@ import spark.Request;
 import spark.Response;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Endpoint for subscribing to value changes for a {@link city.sane.wot.thing.property.ThingProperty}.
@@ -37,18 +33,18 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
         ExposedThingProperty<Object> property = thing.getProperty(name);
         if (property != null) {
             if (!property.isWriteOnly() && property.isObservable()) {
-                CompletableFuture<Object> result = subscribeForNextData(response, requestContentType, name, property);
+                Content content = property.observer()
+                        .map(optional -> ContentManager.valueToContent(optional.orElse(null), requestContentType))
+                        .firstElement().blockingGet();
 
-                try {
-                    return result.get();
+                if (content != null) {
+                    log.warn("Next data received for Event '{}': {}", name, content);
+                    response.type(content.getType());
+                    return content;
                 }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
-                catch (ExecutionException e) {
+                else {
                     response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                    return e;
+                    return "";
                 }
             }
             else {
@@ -60,39 +56,5 @@ public class ObservePropertyRoute extends AbstractInteractionRoute {
             response.status(HttpStatus.NOT_FOUND_404);
             return "Property not found";
         }
-    }
-
-    private CompletableFuture<Object> subscribeForNextData(Response response,
-                                                           String requestContentType,
-                                                           String name,
-                                                           ExposedThingProperty<Object> property) {
-        CompletableFuture<Object> result = new CompletableFuture();
-        Subscription subscription = property.subscribe(
-                data -> {
-                    log.debug("Next data received for Property connection");
-                    try {
-                        Content content = ContentManager.valueToContent(data, requestContentType);
-                        response.type(content.getType());
-                        result.complete(content);
-                    }
-                    catch (ContentCodecException e) {
-                        log.warn("Cannot process data for Property '{}': {}", name, e);
-                        response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                        result.complete("Invalid Property Data");
-                    }
-                },
-                e -> {
-                    response.status(HttpStatus.SERVICE_UNAVAILABLE_503);
-                    result.complete(e);
-                },
-                () -> result.complete("")
-        );
-
-        result.whenComplete((r, e) -> {
-            log.debug("Closes Property connection");
-            subscription.unsubscribe();
-        });
-
-        return result;
     }
 }

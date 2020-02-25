@@ -1,31 +1,34 @@
 package city.sane.wot.thing.event;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscribable;
-import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingEvent}.
  */
-public class ExposedThingEvent<T> extends ThingEvent<T> implements Subscribable<T> {
+public class ExposedThingEvent<T> extends ThingEvent<T> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingEvent.class);
     private final String name;
     @JsonIgnore
-    private final EventState<T> state = new EventState<>();
+    private final EventState<T> state;
 
     public ExposedThingEvent(String name, ThingEvent<T> event) {
-        this.name = name;
+        this(name, new EventState<>());
         description = event.getDescription();
         descriptions = event.getDescriptions();
         uriVariables = event.getUriVariables();
         type = event.getType();
         data = event.getData();
+    }
+
+    ExposedThingEvent(String name, EventState<T> state) {
+        this.name = name;
+        this.state = state;
     }
 
     @Override
@@ -56,17 +59,16 @@ public class ExposedThingEvent<T> extends ThingEvent<T> implements Subscribable<
         return state;
     }
 
-    public CompletableFuture<Void> emit() {
-        return emit(null);
+    public void emit() {
+        emit(null);
     }
 
-    public CompletableFuture<Void> emit(Object data) {
+    public void emit(T data) {
         log.debug("Event '{}' has been emitted", name);
-        return state.getSubject().next(data);
+        state.getSubject().onNext(Optional.ofNullable(data));
     }
 
-    @Override
-    public Subscription subscribe(Observer<T> observer) {
-        return state.getSubject().subscribe(observer);
+    public Observable<Optional<T>> observer() {
+        return state.getSubject();
     }
 }

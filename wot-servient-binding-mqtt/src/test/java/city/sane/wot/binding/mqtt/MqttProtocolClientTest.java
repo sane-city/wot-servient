@@ -1,22 +1,30 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subject;
-import city.sane.wot.thing.observer.Subscription;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.observers.LambdaObserver;
+import io.reactivex.rxjava3.observers.DisposableObserver;
+import io.reactivex.rxjava3.subjects.Subject;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MqttProtocolClientTest {
@@ -26,9 +34,9 @@ public class MqttProtocolClientTest {
     private MqttProtocolClient client;
     private Form form;
     private Content content;
-    private Observer<Content> observer;
+    private DisposableObserver<Content> observer;
     private Subject subject;
-    private Subscription subscription;
+    private Disposable disposable;
 
     @Before
     public void setUp() {
@@ -37,9 +45,9 @@ public class MqttProtocolClientTest {
         topicSubjects = mock(Map.class);
         form = mock(Form.class);
         content = mock(Content.class);
-        observer = mock(Observer.class);
+        observer = mock(DisposableObserver.class);
         subject = mock(Subject.class);
-        subscription = mock(Subscription.class);
+        disposable = mock(Disposable.class);
     }
 
     @Test
@@ -64,35 +72,69 @@ public class MqttProtocolClientTest {
     }
 
     @Test
-    public void subscribeResourceShouldSubscribeToBroker() throws MqttException {
+    public void subscribeResourceShouldSubscribeToBroker() throws MqttException, ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
-        client = new MqttProtocolClient(settings, mqttClient, topicSubjects);
-        client.subscribeResource(form, observer);
+        client = new MqttProtocolClient(settings, mqttClient, new HashMap<>());
+        client.observeResource(form).subscribe();
 
         verify(mqttClient, times(1)).subscribe(eq("counter/events/change"), any());
     }
 
+    @Test(timeout = 5 * 1000L)
+    public void subscribeResourceShouldInformObserverAboutNextValue() throws ProtocolClientException, MqttException, ContentCodecException, ExecutionException, InterruptedException, TimeoutException {
+        when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
+        when(form.getContentType()).thenReturn("application/json");
+        when(content.getBody()).thenReturn("Hallo Welt".getBytes());
+        doAnswer(new AnswersWithDelay(1 * 1000L, invocation -> {
+            String topic = invocation.getArgument(0, String.class);
+            IMqttMessageListener listener = invocation.getArgument(1, IMqttMessageListener.class);
+
+            listener.messageArrived(topic, new MqttMessage("\"Hallo Welt\"".getBytes()));
+
+            return null;
+        })).when(mqttClient).subscribe(any(String.class), any(IMqttMessageListener.class));
+
+        client = new MqttProtocolClient(settings, mqttClient, new HashMap<>());
+
+        assertEquals(
+                ContentManager.valueToContent("Hallo Welt"),
+                client.observeResource(form).firstElement().blockingGet()
+        );
+    }
+
     @Test
-    public void subscribeResourceShouldReuseExistingBrokerSubscriptions() {
+    public void subscribeResourceShouldReuseExistingBrokerSubscriptions() throws ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
+        LambdaObserver<Content> observer = new LambdaObserver<>(n -> {
+        }, e -> {
+        }, () -> {
+        }, d -> {
+        });
+
         client = new MqttProtocolClient(settings, mqttClient, new HashMap(Map.of("counter/events/change", subject)));
-        client.subscribeResource(form, observer);
+        client.observeResource(form).subscribe(observer);
 
         verify(subject, times(1)).subscribe(observer);
     }
 
     @Test
-    public void subscribeResourceShouldUnsubscribeFromBrokerWhenSubscriptionIsNotLongUsed() throws ExecutionException, InterruptedException, MqttException {
+    public void subscribeResourceShouldUnsubscribeFromBrokerWhenSubscriptionIsNotLongUsed() throws MqttException, ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
-        client = new MqttProtocolClient(settings, mqttClient, new HashMap(Map.of("counter/events/change", new Subject())));
-        Subscription subscription = client.subscribeResource(form, observer).get();
-        subscription.unsubscribe();
+        LambdaObserver<Content> observer = new LambdaObserver<>(n -> {
+        }, e -> {
+        }, () -> {
+        }, d -> {
+        });
+
+        client = new MqttProtocolClient(settings, mqttClient, new HashMap());
+        client.observeResource(form).subscribe(observer);
+        observer.dispose();
 
         verify(mqttClient, times(1)).unsubscribe(eq("counter/events/change"));
     }

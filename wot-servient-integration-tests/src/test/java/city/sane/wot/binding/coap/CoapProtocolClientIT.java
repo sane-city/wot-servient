@@ -1,12 +1,10 @@
 package city.sane.wot.binding.coap;
 
 import city.sane.wot.binding.ProtocolClient;
-import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
@@ -16,14 +14,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class CoapProtocolClientIT {
     private CoapProtocolClientFactory clientFactory;
@@ -77,14 +71,14 @@ public class CoapProtocolClientIT {
     }
 
     @Test(timeout = 5 * 1000)
-    public void subscribeResource() throws ProtocolClientNotImplementedException, ExecutionException, InterruptedException {
+    public void subscribeResource() throws ProtocolClientException, ContentCodecException {
         String href = "coap://localhost/subscribe";
         Form form = new Form.Builder().setHref(href).build();
 
-        CompletableFuture<Void> nextCalledFuture = new CompletableFuture<>();
-        assertThat(client.subscribeResource(form, new Observer<>(next -> nextCalledFuture.complete(null))).get(), instanceOf(Subscription.class));
-
-        assertNull(nextCalledFuture.get());
+        assertEquals(
+                ContentManager.valueToContent(42),
+                client.observeResource(form).firstElement().blockingGet()
+        );
     }
 
     class MyReadResource extends CoapResource {

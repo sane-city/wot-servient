@@ -1,7 +1,5 @@
 package city.sane.wot.binding.websocket.message;
 
-import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.property.ExposedThingProperty;
@@ -33,19 +31,18 @@ public class SubscribeProperty extends ThingInteraction {
             ExposedThingProperty<Object> property = thing.getProperty(name);
 
             if (property != null) {
-                property.subscribe(next -> {
-                            log.debug("Next data received for Property '{}'", name);
-                            try {
-                                Content content = ContentManager.valueToContent(next);
-                                replyConsumer.accept(new SubscribeNextResponse(getId(), content));
-                            }
-                            catch (ContentCodecException e) {
-                                log.warn("Cannot process data for Property '{}': {}", name, e);
-                                replyConsumer.accept(new ServerErrorResponse(this, "Cannot process data for Property: " + e.getMessage()));
-                            }
-                        },
-                        e -> replyConsumer.accept(new ServerErrorResponse(this, "Subscription produced error: " + e.getMessage())),
-                        () -> replyConsumer.accept(new SubscribeCompleteResponse(getId())));
+                property.observer()
+                        .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                        .subscribe(
+                                content -> {
+                                    log.debug("Next data received for Property '{}'", name);
+                                    replyConsumer.accept(new SubscribeNextResponse(getId(), content));
+                                },
+                                e -> {
+                                    log.warn("Cannot process data for Property '{}': {}", name, e);
+                                    replyConsumer.accept(new ServerErrorResponse(this, "Subscription produced error: " + e.getMessage()));
+                                },
+                                () -> replyConsumer.accept(new SubscribeCompleteResponse(getId())));
             }
             else {
                 // Property not found

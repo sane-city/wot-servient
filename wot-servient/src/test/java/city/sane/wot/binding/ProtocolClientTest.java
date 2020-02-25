@@ -3,7 +3,7 @@ package city.sane.wot.binding;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
+import io.reactivex.rxjava3.core.Observer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,12 +66,7 @@ public class ProtocolClientTest {
 
     @Test(expected = ProtocolClientNotImplementedException.class)
     public void subscribeResourceShouldThrowProtocolClientNotImplementedException() throws Throwable {
-        try {
-            client.subscribeResource(form, observer).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        client.observeResource(form).subscribe(observer);
     }
 
     @Test

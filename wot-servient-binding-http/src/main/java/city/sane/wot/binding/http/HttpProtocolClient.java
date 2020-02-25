@@ -4,12 +4,12 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.NoSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
@@ -23,6 +23,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -30,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Function;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * Allows consuming Things via HTTP.
@@ -39,19 +43,25 @@ public class HttpProtocolClient implements ProtocolClient {
     private static final String HTTP_METHOD_NAME = "htv:methodName";
     private static final Duration LONG_POLLING_TIMEOUT = Duration.ofMinutes(60);
     private final HttpClient requestClient;
+    private final Function<RequestConfig, CloseableHttpClient> clientCreator;
     private String authorization = null;
 
     public HttpProtocolClient() {
-        this(HttpClientBuilder.create().build());
+        this(
+                HttpClientBuilder.create().build(),
+                config -> HttpClientBuilder.create().setDefaultRequestConfig(config).build()
+        );
     }
 
-    HttpProtocolClient(HttpClient requestClient) {
+    HttpProtocolClient(HttpClient requestClient,
+                       Function<RequestConfig, CloseableHttpClient> clientCreator) {
         this.requestClient = requestClient;
+        this.clientCreator = clientCreator;
     }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             HttpUriRequest request = generateRequest(form);
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
             try {
@@ -66,7 +76,7 @@ public class HttpProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             HttpUriRequest request = generateRequest(form, "PUT", content);
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
@@ -82,7 +92,7 @@ public class HttpProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             HttpUriRequest request = generateRequest(form, "POST", content);
 
             log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
@@ -97,52 +107,34 @@ public class HttpProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) {
-        HttpUriRequest request = generateRequest(form);
-
+    public Observable<Content> observeResource(Form form) {
         // long timeout for long polling
         RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout((int) LONG_POLLING_TIMEOUT.toMillis())
                 .setConnectionRequestTimeout((int) LONG_POLLING_TIMEOUT.toMillis())
                 .setSocketTimeout((int) LONG_POLLING_TIMEOUT.toMillis()).build();
 
-        CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+        HttpUriRequest request = generateRequest(form);
 
-        Subscription subscription = new Subscription(() -> {
-            log.debug("Cancel subscription for '{}' to '{}'", request.getMethod(), request.getURI());
-            try {
-                client.close();
-            }
-            catch (IOException e) {
-                // ignore
-            }
-        });
-
-        CompletableFuture.runAsync(() -> {
-            while (!subscription.isClosed()) {
-                log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
-                try {
-                    HttpResponse response = client.execute(request);
-
-                    if (!subscription.isClosed()) {
-                        Content content = checkResponse(response);
-                        log.debug("Next data received for Event connection");
-                        observer.next(content);
+        return Observable.using(
+                () -> clientCreator.apply(config),
+                client -> Observable.<Content>create(source -> {
+                    while (!source.isDisposed()) {
+                        log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
+                        try {
+                            HttpResponse response = client.execute(request);
+                            Content content = checkResponse(response);
+                            log.debug("Next data received for Event connection");
+                            source.onNext(content);
+                        }
+                        catch (IOException | ProtocolClientException e) {
+                            log.warn("Error received for Event connection", e);
+                            source.onError(e);
+                        }
                     }
-                }
-                catch (IOException | ProtocolClientException e) {
-                    if (!subscription.isClosed()) {
-                        log.warn("Error received for Event connection", e);
-
-                        observer.error(e);
-                        subscription.unsubscribe();
-                    }
-                }
-            }
-        });
-
-        return CompletableFuture.completedFuture(subscription);
+                }),
+                Closeable::close
+        ).subscribeOn(Schedulers.io());
     }
 
     @Override

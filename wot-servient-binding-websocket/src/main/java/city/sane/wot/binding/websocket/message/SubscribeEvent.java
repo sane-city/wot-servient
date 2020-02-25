@@ -1,7 +1,5 @@
 package city.sane.wot.binding.websocket.message;
 
-import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.event.ExposedThingEvent;
@@ -33,19 +31,18 @@ public class SubscribeEvent extends ThingInteraction {
             ExposedThingEvent<Object> event = thing.getEvent(name);
 
             if (event != null) {
-                event.subscribe(next -> {
-                            log.debug("Next data received for Event '{}'", name);
-                            try {
-                                Content content = ContentManager.valueToContent(next);
-                                replyConsumer.accept(new SubscribeNextResponse(getId(), content));
-                            }
-                            catch (ContentCodecException e) {
-                                log.warn("Cannot process data for Event '{}': {}", name, e);
-                                replyConsumer.accept(new ServerErrorResponse(this, "Cannot process data for Event: " + e.getMessage()));
-                            }
-                        },
-                        e -> replyConsumer.accept(new ServerErrorResponse(this, "Subscription produced error: " + e.getMessage())),
-                        () -> replyConsumer.accept(new SubscribeCompleteResponse(getId())));
+                event.observer()
+                        .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                        .subscribe(
+                                content -> {
+                                    log.debug("Next data received for Event '{}'", name);
+                                    replyConsumer.accept(new SubscribeNextResponse(getId(), content));
+                                },
+                                e -> {
+                                    log.warn("Cannot process data for Event '{}': {}", name, e);
+                                    replyConsumer.accept(new ServerErrorResponse(this, "Subscription produced error: " + e.getMessage()));
+                                },
+                                () -> replyConsumer.accept(new SubscribeCompleteResponse(getId())));
             }
             else {
                 // Event not found

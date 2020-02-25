@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.junit.Assert.assertEquals;
 
 public class ObservePropertyRouteIT {
@@ -128,7 +129,7 @@ public class ObservePropertyRouteIT {
     @Test
     public void observeProperty() throws InterruptedException, ExecutionException, ContentCodecException {
         CompletableFuture<Content> result = new CompletableFuture<>();
-        CompletableFuture.runAsync(() -> {
+        runAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);

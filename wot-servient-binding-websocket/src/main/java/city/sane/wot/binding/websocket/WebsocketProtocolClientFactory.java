@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 /**
  * Creates new {@link WebsocketProtocolClient} instances.
  */
@@ -28,6 +30,6 @@ public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> destroy() {
         clients.forEach(WebsocketProtocolClient::destroy);
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 }

@@ -4,8 +4,8 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +16,10 @@ import java.nio.file.*;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Function;
 
 import static java.nio.file.StandardWatchEventKinds.*;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * Allows consuming Things via local files.
@@ -28,12 +30,25 @@ public class FileProtocolClient implements ProtocolClient {
             ".json", "application/json",
             ".jsonld", "application/ld+json"
     );
+    private final Function<String, Path> hrefToPath;
+
+    public FileProtocolClient() {
+        this(FileProtocolClient::hrefToPath);
+    }
+
+    FileProtocolClient(Function<String, Path> hrefToPath) {
+        this.hrefToPath = hrefToPath;
+    }
+
+    private static Path hrefToPath(String href) {
+        return Paths.get(URI.create(href));
+    }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             try {
-                Path path = hrefToPath(form.getHref());
+                Path path = hrefToPath.apply(form.getHref());
                 return getContentFromPath(path);
             }
             catch (IOException e) {
@@ -44,9 +59,9 @@ public class FileProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             try {
-                Path path = hrefToPath(form.getHref());
+                Path path = hrefToPath.apply(form.getHref());
 
                 Files.write(path, content.getBody(), StandardOpenOption.CREATE);
 
@@ -59,75 +74,57 @@ public class FileProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Subscription> subscribeResource(Form form,
-                                                             Observer<Content> observer) {
-        Path path = hrefToPath(form.getHref());
+    public Observable<Content> observeResource(Form form) {
+        Path path = hrefToPath.apply(form.getHref());
         Path directory = path.getParent();
 
-        try (final WatchService watchService = directory.getFileSystem().newWatchService()) {
-            directory.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
-            CompletableFuture.runAsync(() -> {
-                // We obtain the file system of the Path
-                FileSystem fileSystem = directory.getFileSystem();
+        // We obtain the file system of the Path
+        FileSystem fileSystem = directory.getFileSystem();
 
-                // We create the new WatchService using the try-with-resources block
-                try (WatchService service = fileSystem.newWatchService()) {
+        return Observable.using(
+                fileSystem::newWatchService,
+                service -> Observable.<Content>create(source -> {
                     // We watch for modification events
                     directory.register(service, ENTRY_MODIFY, ENTRY_DELETE, ENTRY_CREATE);
 
-                    // Start the infinite polling loop
-                    while (true) {
-                        // Wait for the next event
-                        WatchKey watchKey = service.take();
+                    try {
+                        // Start the infinite polling loop
+                        while (true) {
+                            // Wait for the next event
+                            WatchKey watchKey = service.take();
 
-                        for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-                            // Get the type of the event
-                            WatchEvent.Kind<?> kind = watchEvent.kind();
+                            for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+                                // Get the type of the event
+                                WatchEvent.Kind<?> kind = watchEvent.kind();
 
-                            if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
-                                Path watchEventPath = (Path) watchEvent.context();
+                                if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
+                                    Path watchEventPath = (Path) watchEvent.context();
 
-                                // Call this if the right file is involved
-                                if (path.getFileName().equals(watchEventPath)) {
-                                    Content content = getContentFromPath(path);
-                                    observer.next(content);
+                                    // Call this if the right file is involved
+                                    if (path.getFileName().equals(watchEventPath)) {
+                                        Content content = getContentFromPath(path);
+                                        source.onNext(content);
+                                    }
                                 }
                             }
-                        }
 
-                        if (!watchKey.reset()) {
-                            break;
+                            if (!watchKey.reset()) {
+                                break;
+                            }
+                        }
+                    }
+                    catch (InterruptedException e) {
+                        if (!source.isDisposed()) {
+                            throw e;
                         }
                     }
 
-                    observer.complete();
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                catch (IOException e) {
-                    observer.error(new ProtocolClientException(e));
-                }
-            });
-
-            Subscription subscription = new Subscription(() -> {
-                try {
+                    source.onComplete();
+                }),
+                watchService -> {
                     watchService.close();
                 }
-                catch (IOException e) {
-                    // ignore
-                }
-            });
-
-            return CompletableFuture.completedFuture(subscription);
-        }
-        catch (IOException e) {
-            return CompletableFuture.failedFuture(new ProtocolClientException(e));
-        }
-    }
-
-    private Path hrefToPath(String href) {
-        return Paths.get(URI.create(href));
+        ).subscribeOn(Schedulers.io());
     }
 
     private Content getContentFromPath(Path path) throws IOException {

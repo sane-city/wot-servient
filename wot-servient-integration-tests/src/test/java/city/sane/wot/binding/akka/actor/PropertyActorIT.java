@@ -152,7 +152,7 @@ public class PropertyActorIT {
     }
 
     @Test
-    public void subscribeProperty() throws ExecutionException, InterruptedException {
+    public void subscribeShouldReplyWithSubscriptionNextOnNewValues() throws ExecutionException, InterruptedException {
         TestKit testKit = new TestKit(system);
 
         ExposedThing thing = getExposedCounterThing();

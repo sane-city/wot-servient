@@ -1,15 +1,14 @@
 package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscribable;
-import city.sane.wot.thing.observer.Subscription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -18,7 +17,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 /**
  * Used in combination with {@link ExposedThing} and allows exposing of a {@link ThingProperty}.
  */
-public class ExposedThingProperty<T> extends ThingProperty<T> implements Subscribable<T> {
+public class ExposedThingProperty<T> extends ThingProperty<T> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThingProperty.class);
     private final String name;
     private final ExposedThing thing;
@@ -133,7 +132,7 @@ public class ExposedThingProperty<T> extends ThingProperty<T> implements Subscri
                         state.setValue(customValue);
 
                         // inform property observers
-                        state.getSubject().next(customValue);
+                        state.getSubject().onNext(Optional.ofNullable(customValue));
                     }
                 });
             }
@@ -147,17 +146,15 @@ public class ExposedThingProperty<T> extends ThingProperty<T> implements Subscri
                 state.setValue(value);
 
                 // inform property observers
-                state.getSubject().next(value);
+                state.getSubject().onNext(Optional.ofNullable(value));
             }
 
             return completedFuture(null);
         }
     }
 
-    @Override
-    public Subscription subscribe(Observer<T> observer) {
-        log.debug("'{}' subscribe to Property '{}'", thing.getId(), name);
-        return state.getSubject().subscribe(observer);
+    public Observable<Optional<T>> observer() {
+        return state.getSubject();
     }
 
     public PropertyState<T> getState() {

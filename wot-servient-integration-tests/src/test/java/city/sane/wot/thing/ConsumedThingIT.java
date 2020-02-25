@@ -19,13 +19,13 @@ import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.property.ConsumedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,14 +34,13 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -67,7 +66,7 @@ public class ConsumedThingIT {
         servient.shutdown().join();
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void readProperty() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
@@ -164,7 +163,7 @@ public class ConsumedThingIT {
         return thing;
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void writeProperty() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
@@ -185,8 +184,8 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000)
-    public void observeProperty() throws ConsumedThingException, ExecutionException, InterruptedException {
+    @Test(timeout = 20 * 1000L)
+    public void observePropertyShouldHandleMultipleSubscription() throws ConsumedThingException, InterruptedException, ExecutionException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -194,15 +193,13 @@ public class ConsumedThingIT {
 
             ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
 
-            AtomicInteger counter1 = new AtomicInteger();
-            Subscription subscription1 = consumedThing.getProperty("count").subscribe(
-                    next -> counter1.getAndIncrement()
-            ).get();
+            List<Object> results1 = new ArrayList<>();
+            Disposable disposable1 = consumedThing.getProperty("count").observer()
+                    .subscribe(next -> results1.add(next.orElse(null)));
 
-            AtomicInteger counter2 = new AtomicInteger();
-            Subscription subscription2 = consumedThing.getProperty("count").subscribe(
-                    next -> counter2.getAndIncrement()
-            ).get();
+            List<Object> results2 = new ArrayList<>();
+            Disposable disposable2 = consumedThing.getProperty("count").observer()
+                    .subscribe(next -> results2.add(next.orElse(null)));
 
             // wait until client establish subscription
             // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
@@ -220,22 +217,20 @@ public class ConsumedThingIT {
             // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
             Thread.sleep(5 * 1000L);
 
-            subscription1.unsubscribe();
-            subscription2.unsubscribe();
+            disposable1.dispose();
+            disposable2.dispose();
 
-            assertEquals(2, counter1.get());
-            assertEquals(2, counter2.get());
+            assertThat(results1, contains(1337, 1338));
+            assertThat(results2, contains(1337, 1338));
         }
         catch (ExecutionException e) {
             if (!(e.getCause() instanceof ProtocolClientNotImplementedException)) {
                 throw e;
             }
         }
-        catch (NoFormForInteractionConsumedThingException e) {
-        }
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void readProperties() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
@@ -255,7 +250,7 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void readMultipleProperties() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
@@ -275,7 +270,7 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void invokeAction() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
@@ -302,7 +297,7 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test
+    @Test(timeout = 20 * 1000L)
     public void invokeActionWithParameters() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
@@ -329,52 +324,43 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000)
-    public void emitEvent() throws ConsumedThingException, InterruptedException, ExecutionException {
-        try {
-            ExposedThing exposedThing = getExposedCounterThing();
-            servient.addThing(exposedThing);
-            exposedThing.expose().join();
+    @Test
+    public void observeEventShouldHandleMultipleSubscription() throws InterruptedException, ConsumedThingException {
+        ExposedThing exposedThing = getExposedCounterThing();
+        servient.addThing(exposedThing);
+        exposedThing.expose().join();
 
-            ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
+        ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
 
-            AtomicInteger counter1 = new AtomicInteger();
-            Subscription subscription1 = consumedThing.getEvent("change").subscribe(
-                    next -> counter1.getAndIncrement()
-            ).get();
+        List<Object> results1 = new ArrayList<>();
+        Disposable disposable1 = consumedThing.getEvent("change").observer()
+                .subscribe(next -> results1.add(next.orElse(null)));
 
-            AtomicInteger counter2 = new AtomicInteger();
-            Subscription subscription2 = consumedThing.getEvent("change").subscribe(
-                    next -> counter2.getAndIncrement()
-            ).get();
+        List<Object> results2 = new ArrayList<>();
+        Disposable disposable2 = consumedThing.getEvent("change").observer()
+                .subscribe(next -> results2.add(next.orElse(null)));
 
-            // wait until client establish subscription
-            // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-            Thread.sleep(5 * 1000L);
+        // wait until client establish subscription
+        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
+        Thread.sleep(5 * 1000L);
 
-            exposedThing.getEvent("change").emit().get();
+        exposedThing.getEvent("change").emit();
 
-            // wait until client fires next subscribe-request to server
-            // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-            Thread.sleep(5 * 1000L);
+        // wait until client fires next subscribe-request to server
+        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
+        Thread.sleep(5 * 1000L);
 
-            exposedThing.getEvent("change").emit().get();
+        exposedThing.getEvent("change").emit();
 
-            // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-            // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-            Thread.sleep(5 * 1000L);
+        // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
+        // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
+        Thread.sleep(5 * 1000L);
 
-            subscription1.unsubscribe();
-            subscription2.unsubscribe();
+        disposable1.dispose();
+        disposable2.dispose();
 
-            assertEquals(2, counter1.get());
-            assertEquals(2, counter2.get());
-        }
-        catch (ConsumedThingException e) {
-            if (!(e.getCause() instanceof ProtocolClientNotImplementedException)) {
-                throw e;
-            }
-        }
+        assertThat(results1, contains(nullValue(), nullValue()));
+        assertThat(results2, contains(nullValue(), nullValue()));
     }
 
     @Parameters(name = "{0}")

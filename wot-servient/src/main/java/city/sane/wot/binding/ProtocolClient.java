@@ -4,14 +4,12 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.security.SecurityScheme;
+import io.reactivex.rxjava3.core.Observable;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static java.util.concurrent.CompletableFuture.failedFuture;
 
@@ -68,43 +66,15 @@ public interface ProtocolClient {
     }
 
     /**
-     * Subscribes to the resource defined in <code>form</code>. This can be, for example, an {@link
-     * city.sane.wot.thing.event.ThingEvent} or an observable {@link city.sane.wot.thing.property.ThingProperty}.
-     * <code>next</code> is called with every new result of the subscription and gets the new
-     * result
-     * passed to it.
-     * <code>error</code> is called if the subscription has to be terminated due to an error. The
-     * error is passed to the {@link Consumer}.
-     * <code>complete</code> is called when the subscription is complete and there will be no more
-     * new results.
-     *
-     * @param form
-     * @param next
-     * @param error
-     * @param complete
-     * @return
-     * @throws ProtocolClientNotImplementedException
-     */
-    default CompletableFuture<Subscription> subscribeResource(Form form,
-                                                              Consumer<Content> next,
-                                                              Consumer<Throwable> error,
-                                                              Runnable complete) throws ProtocolClientNotImplementedException {
-        return subscribeResource(form, new Observer<>(next, error, complete));
-    }
-
-    /**
-     * Subscribes <code>observer</code> to the resource defined in <code>form</code>. This can be,
-     * for example, an {@link city.sane.wot.thing.event.ThingEvent} or an observable {@link
+     * Create an observable for the resource defined in <code>form</code>. This resource can be, for
+     * example, an {@link city.sane.wot.thing.event.ThingEvent} or an observable {@link
      * city.sane.wot.thing.property.ThingProperty}.
      *
      * @param form
-     * @param observer
      * @return
-     * @throws ProtocolClientNotImplementedException
      */
-    default CompletableFuture<Subscription> subscribeResource(Form form,
-                                                              Observer<Content> observer) throws ProtocolClientNotImplementedException {
-        throw new ProtocolClientNotImplementedException(getClass(), "subscribe");
+    default Observable<Content> observeResource(Form form) throws ProtocolClientException {
+        throw new ProtocolClientNotImplementedException(getClass(), "observe");
     }
 
     /**

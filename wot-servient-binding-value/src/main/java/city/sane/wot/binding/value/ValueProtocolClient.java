@@ -6,6 +6,8 @@ import city.sane.wot.thing.form.Form;
 
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 /**
  * Allows consuming Things via values stored in Thing Descriptions.
  */
@@ -16,6 +18,6 @@ public class ValueProtocolClient implements ProtocolClient {
         String value = href.replace("value:/", "");
 
         Content content = new Content("text/plain", value.getBytes());
-        return CompletableFuture.completedFuture(content);
+        return completedFuture(content);
     }
 }

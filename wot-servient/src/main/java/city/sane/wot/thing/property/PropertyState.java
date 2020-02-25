@@ -1,7 +1,9 @@
 package city.sane.wot.thing.property;
 
-import city.sane.wot.thing.observer.Subject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -13,16 +15,16 @@ import static java.util.Objects.requireNonNull;
  * The handlers are executed when the property is read or written.
  */
 public class PropertyState<T> {
-    private final Subject<T> subject;
+    private final Subject<Optional<T>> subject;
     private T value;
     private Supplier<CompletableFuture<T>> readHandler;
     private Function<T, CompletableFuture<T>> writeHandler;
 
     public PropertyState() {
-        this(new Subject<>(), null, null, null);
+        this(PublishSubject.create(), null, null, null);
     }
 
-    PropertyState(Subject<T> subject,
+    PropertyState(Subject<Optional<T>> subject,
                   T value,
                   Supplier<CompletableFuture<T>> readHandler,
                   Function<T, CompletableFuture<T>> writeHandler) {
@@ -32,7 +34,7 @@ public class PropertyState<T> {
         this.writeHandler = writeHandler;
     }
 
-    public Subject<T> getSubject() {
+    public Subject<Optional<T>> getSubject() {
         return subject;
     }
 

@@ -1,8 +1,8 @@
 package city.sane.wot.binding.file;
 
+import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,8 +12,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,17 +59,14 @@ public class FileProtocolClientIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void subscribeResourceFileChanged() throws ExecutionException, InterruptedException, IOException {
+    public void subscribeResourceFileChanged() throws ExecutionException, InterruptedException, IOException, ProtocolClientException {
         FileProtocolClient client = new FileProtocolClient();
         String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        client.subscribeResource(form, observer).get();
+        Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
@@ -78,20 +77,17 @@ public class FileProtocolClientIT {
         assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", new String(future.get().getBody()));
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void subscribeResourceFileCreated() throws ExecutionException, InterruptedException, IOException {
+    @Test
+    public void subscribeResourceFileCreated() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         FileProtocolClient client = new FileProtocolClient();
         String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
         thing.delete();
 
-        client.subscribeResource(form, observer).get();
+        Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
@@ -99,21 +95,18 @@ public class FileProtocolClientIT {
 
         Files.writeString(thing.toPath(), "{\"id\":\"counter\",\"name\":\"Zähler\"}", StandardOpenOption.CREATE);
 
-        assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", new String(future.get().getBody()));
+        assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", new String(future.get(20, TimeUnit.SECONDS).getBody()));
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void subscribeResourceFileDeleted() throws ExecutionException, InterruptedException, IOException {
+    @Test
+    public void subscribeResourceFileDeleted() throws ExecutionException, InterruptedException, TimeoutException {
         FileProtocolClient client = new FileProtocolClient();
         String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
                 .setHref(href)
                 .build();
 
-        CompletableFuture<Content> future = new CompletableFuture<>();
-        Observer<Content> observer = new Observer<>(future::complete);
-
-        client.subscribeResource(form, observer).get();
+        Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
@@ -121,6 +114,6 @@ public class FileProtocolClientIT {
 
         thing.delete();
 
-        assertEquals(Content.EMPTY_CONTENT, future.get());
+        assertEquals(Content.EMPTY_CONTENT, future.get(20, TimeUnit.SECONDS));
     }
 }

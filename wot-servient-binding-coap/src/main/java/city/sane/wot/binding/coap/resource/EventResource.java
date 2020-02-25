@@ -7,6 +7,6 @@ import city.sane.wot.thing.event.ExposedThingEvent;
  */
 public class EventResource extends AbstractSubscriptionResource {
     public EventResource(String name, ExposedThingEvent<Object> event) {
-        super(name, name, event);
+        super(name, name, event.observer());
     }
 }

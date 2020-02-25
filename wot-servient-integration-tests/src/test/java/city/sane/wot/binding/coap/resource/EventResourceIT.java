@@ -137,7 +137,7 @@ public class EventResourceIT {
 
         // emit event
         ExposedThingEvent<Object> event = thing.getEvent("change");
-        event.emit().get();
+        event.emit();
 
         // future should complete within a few seconds
         assertNull(result.get());

@@ -113,19 +113,13 @@ class PropertyActor extends AbstractActor {
         ActorRef sender = getSender();
         log.debug("Received subscribe message from {}", sender);
 
-        property.subscribe(
-                next -> {
-                    try {
-                        Content content = ContentManager.valueToContent(next);
-                        sender.tell(new SubscriptionNext(content), getSelf());
-                    }
-                    catch (ContentCodecException e) {
-                        // TODO: handle exception
-                    }
-                },
-                e -> sender.tell(new SubscriptionError(e), getSelf()),
-                () -> sender.tell(new SubscriptionComplete(), getSelf())
-        );
+        property.observer()
+                .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                .subscribe(
+                        content -> sender.tell(new SubscriptionNext(content), getSelf()),
+                        e -> sender.tell(new SubscriptionError(e), getSelf()),
+                        () -> sender.tell(new SubscriptionComplete(), getSelf())
+                );
     }
 
     public static Props props(String name, ExposedThingProperty<Object> property) {

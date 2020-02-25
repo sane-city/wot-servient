@@ -33,7 +33,7 @@ public class ThingsAgentTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        when(ia.createComponent(anyObject())).thenReturn(mock(IFuture.class));
+        when(ia.createComponent(any())).thenReturn(mock(IFuture.class));
 
         thing = getExposedCounterThing();
         Map<String, ExposedThing> things = Map.of("counter", thing);
@@ -134,7 +134,7 @@ public class ThingsAgentTest {
 //        CreationInfo info = new CreationInfo()
 //                .setFilenameClass(ThingAgent.class)
 //                .addArgument("thing", thing);
-        verify(ia).createComponent(anyObject());
+        verify(ia).createComponent(any());
     }
 
     @Test
@@ -145,7 +145,7 @@ public class ThingsAgentTest {
             IFunctionalResultListener listener = invocation.getArgument(0, IFunctionalResultListener.class);
             listener.resultAvailable(null);
             return null;
-        }).when(killFuture).addResultListener(anyObject(), anyObject());
+        }).when(killFuture).addResultListener(any(), any());
         when(ea.killComponent()).thenReturn(killFuture);
         children.put("counter", ea);
 

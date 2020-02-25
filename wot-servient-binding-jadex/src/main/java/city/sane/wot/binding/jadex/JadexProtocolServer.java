@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+
 /**
  * Allows exposing Things via Jadex Micro Agents.<br> Starts a Jadex Platform and a {@link
  * ThingsAgent}. This Agent is responsible for exposing Things. The Jadex Platform automatically
@@ -41,7 +44,7 @@ public class JadexProtocolServer implements ProtocolServer {
         log.info("JadexServer is starting Jadex Platform");
 
         if (platform != null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         return config.createPlatform(things).thenAccept(result -> {
@@ -62,7 +65,7 @@ public class JadexProtocolServer implements ProtocolServer {
             });
         }
         else {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 
@@ -71,7 +74,7 @@ public class JadexProtocolServer implements ProtocolServer {
         log.info("JadexServer exposes '{}'", thing.getId());
 
         if (platform == null) {
-            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before JadexServer has been started"));
+            return failedFuture(new ProtocolServerException("Unable to expose thing before JadexServer has been started"));
         }
 
         things.put(thing.getId(), thing);
@@ -84,14 +87,14 @@ public class JadexProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         if (things.remove(thing.getId()) == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         if (thingsService != null) {
             return FutureConverters.fromJadex(thingsService.destroy(thing.getId()));
         }
         else {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 }

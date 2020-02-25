@@ -6,14 +6,12 @@ import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.form.Form;
-import city.sane.wot.thing.observer.Observer;
-import city.sane.wot.thing.observer.Subject;
-import city.sane.wot.thing.observer.Subscribable;
-import city.sane.wot.thing.observer.Subscription;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  * Thing. An ExposedThing is created by the {@link city.sane.wot.Wot#produce(Thing)} method.
  * https://w3c.github.io/wot-scripting-api/#the-exposedthing-interface
  */
-public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThingAction<Object, Object>, ExposedThingEvent<Object>> implements Subscribable<Object> {
+public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThingAction<Object, Object>, ExposedThingEvent<Object>> {
     private static final Logger log = LoggerFactory.getLogger(ExposedThing.class);
     private final Servient servient;
     @JsonIgnore
@@ -96,7 +94,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
 
     public ExposedThing(Servient servient) {
         this.servient = servient;
-        subject = new Subject();
+        subject = PublishSubject.create();
     }
 
     /**
@@ -351,20 +349,6 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     }
 
     /**
-     * Returns the subject of this thing. Can be used to subscribe to Thing changes.
-     *
-     * @return
-     */
-    public Subject getSubject() {
-        return subject;
-    }
-
-    @Override
-    public Subscription subscribe(Observer<Object> observer) {
-        return subject.subscribe(observer);
-    }
-
-    /**
      * Adds a property with the given <code>name</code> to the Thing.<br>
      * <code>readHandler</code> is invoked when the property is read. It returns a future with the
      * value of the property. Set to <code>null</code> if not needed.<br>
@@ -583,7 +567,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
             if (thing != null) {
                 // inform TD observers
                 log.debug("TD has changed. Inform observers.");
-                subject.next(thing);
+                subject.onNext(thing);
             }
         });
     }
@@ -602,7 +586,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
             if (thing != null) {
                 // inform TD observers
                 log.debug("TD has changed. Inform observers.");
-                subject.next(thing);
+                subject.onNext(thing);
             }
         });
     }

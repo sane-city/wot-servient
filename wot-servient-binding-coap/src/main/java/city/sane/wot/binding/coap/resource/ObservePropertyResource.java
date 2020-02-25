@@ -7,6 +7,6 @@ import city.sane.wot.thing.property.ExposedThingProperty;
  */
 public class ObservePropertyResource extends AbstractSubscriptionResource {
     public ObservePropertyResource(String name, ExposedThingProperty<Object> property) {
-        super("observable", name, property);
+        super("observable", name, property.observer());
     }
 }

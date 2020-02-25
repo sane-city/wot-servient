@@ -10,7 +10,9 @@ import city.sane.wot.binding.akka.Messages.SubscriptionComplete;
 import city.sane.wot.binding.akka.Messages.SubscriptionError;
 import city.sane.wot.binding.akka.Messages.SubscriptionNext;
 import city.sane.wot.content.Content;
-import city.sane.wot.thing.observer.Observer;
+import io.reactivex.rxjava3.core.Observer;
+
+import static java.util.Objects.requireNonNull;
 
 public class ObserveActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -38,19 +40,19 @@ public class ObserveActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(SubscriptionNext.class, m -> observer.next(m.next))
+                .match(SubscriptionNext.class, m -> observer.onNext(m.next))
                 .match(SubscriptionError.class, m -> {
-                    observer.error(m.e);
+                    observer.onError(m.e);
                     getContext().stop(getSelf());
                 })
                 .match(SubscriptionComplete.class, m -> {
-                    observer.complete();
+                    observer.onComplete();
                     getContext().stop(getSelf());
                 })
                 .build();
     }
 
     public static Props props(Observer<Content> observer, ActorSelection selection) {
-        return Props.create(ObserveActor.class, () -> new ObserveActor(observer, selection));
+        return Props.create(ObserveActor.class, () -> new ObserveActor(requireNonNull(observer), requireNonNull(selection)));
     }
 }

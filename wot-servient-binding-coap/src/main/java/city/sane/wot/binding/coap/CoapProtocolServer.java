@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.CompletableFuture.*;
+
 /**
  * Allows exposing Things via CoAP.
  */
@@ -68,10 +70,10 @@ public class CoapProtocolServer implements ProtocolServer {
         log.info("Starting on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server != null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             server = new WotCoapServer(this);
             server.start();
         });
@@ -82,10 +84,10 @@ public class CoapProtocolServer implements ProtocolServer {
         log.info("Stopping on '{}' port '{}'", "0.0.0.0", bindPort);
 
         if (server == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             server.stop();
             server.destroy();
 
@@ -110,7 +112,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
-            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
+            return failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
         }
 
         things.put(thing.getId(), thing);
@@ -120,7 +122,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
         Resource root = server.getRoot();
         if (root == null) {
-            return CompletableFuture.failedFuture(new Exception("Unable to expose thing before CoapServer has been started"));
+            return failedFuture(new Exception("Unable to expose thing before CoapServer has been started"));
         }
         root.add(thingResource);
 
@@ -132,7 +134,7 @@ public class CoapProtocolServer implements ProtocolServer {
             }
         }
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class CoapProtocolServer implements ProtocolServer {
                 thing.getId(), bindPort, thing.getId());
 
         if (server == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         things.remove(thing.getId());
@@ -151,7 +153,7 @@ public class CoapProtocolServer implements ProtocolServer {
             server.getRoot().delete(resource);
         }
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override

@@ -46,6 +46,7 @@ public class Content implements Serializable {
         return "Content{" +
                 "type='" + type + '\'' +
                 ", body=" + Arrays.toString(body) +
+                ", new String(body)=" + new String(body) +
                 '}';
     }
 

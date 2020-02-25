@@ -33,7 +33,7 @@ public class MqttProtocolServerTest {
             MqttCallback callback = invocation.getArgument(0, MqttCallback.class);
             callback.messageArrived("counter/actions/increment", new MqttMessage());
             return null;
-        }).when(mqttClient).setCallback(anyObject());
+        }).when(mqttClient).setCallback(any());
 
         MqttProtocolSettings settings = mock(MqttProtocolSettings.class);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");

@@ -9,8 +9,6 @@ import city.sane.wot.binding.akka.Messages.Subscribe;
 import city.sane.wot.binding.akka.Messages.SubscriptionComplete;
 import city.sane.wot.binding.akka.Messages.SubscriptionError;
 import city.sane.wot.binding.akka.Messages.SubscriptionNext;
-import city.sane.wot.content.Content;
-import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
@@ -65,19 +63,13 @@ class EventActor extends AbstractActor {
         ActorRef sender = getSender();
         log.debug("Received subscribe message from {}", sender);
 
-        event.subscribe(
-                next -> {
-                    try {
-                        Content content = ContentManager.valueToContent(next);
-                        sender.tell(new SubscriptionNext(content), getSelf());
-                    }
-                    catch (ContentCodecException e) {
-                        sender.tell(new SubscriptionError(e), getSelf());
-                    }
-                },
-                e -> sender.tell(new SubscriptionError(e), getSelf()),
-                () -> sender.tell(new SubscriptionComplete(), getSelf())
-        );
+        event.observer()
+                .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                .subscribe(
+                        content -> sender.tell(new SubscriptionNext(content), getSelf()),
+                        e -> sender.tell(new SubscriptionError(e), getSelf()),
+                        () -> sender.tell(new SubscriptionComplete(), getSelf())
+                );
     }
 
     public static Props props(String name, ExposedThingEvent<Object> event) {

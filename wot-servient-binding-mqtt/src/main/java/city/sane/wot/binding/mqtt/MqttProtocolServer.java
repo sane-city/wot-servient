@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static java.util.concurrent.CompletableFuture.*;
+
 /**
  * Allows exposing Things via MQTT.
  */
@@ -50,10 +52,10 @@ public class MqttProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> start(Servient servient) {
         if (client != null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
-        return CompletableFuture.runAsync(() -> {
+        return runAsync(() -> {
             try {
                 client = settings.createConnectedMqttClient();
             }
@@ -66,7 +68,7 @@ public class MqttProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> stop() {
         if (client != null) {
-            return CompletableFuture.runAsync(() -> {
+            return runAsync(() -> {
                 try {
                     log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
                     client.disconnect();
@@ -79,7 +81,7 @@ public class MqttProtocolServer implements ProtocolServer {
             });
         }
         else {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
     }
 
@@ -88,7 +90,7 @@ public class MqttProtocolServer implements ProtocolServer {
         log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
 
         if (client == null) {
-            return CompletableFuture.failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
+            return failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
         }
 
         things.put(thing.getId(), thing);
@@ -98,7 +100,7 @@ public class MqttProtocolServer implements ProtocolServer {
         exposeEvents(thing);
         listenOnMqttMessages();
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     @Override
@@ -106,7 +108,7 @@ public class MqttProtocolServer implements ProtocolServer {
         log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
         things.remove(thing.getId());
 
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
     }
 
     private void exposeProperties(ExposedThing thing) {
@@ -114,7 +116,15 @@ public class MqttProtocolServer implements ProtocolServer {
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
-            property.subscribe(data -> handleSubscriptionData(topic, data));
+            property.observer()
+                    .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                    .map(content -> new MqttMessage(content.getBody()))
+                    .subscribe(
+                            mqttMessage -> client.publish(topic, mqttMessage),
+                            e -> log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage()),
+                            () -> {
+                            }
+                    );
 
             String href = createUrl() + topic;
             Form form = new Form.Builder()
@@ -157,7 +167,15 @@ public class MqttProtocolServer implements ProtocolServer {
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
 
-            event.subscribe(data -> handleSubscriptionData(topic, data));
+            event.observer()
+                    .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
+                    .map(content -> new MqttMessage(content.getBody()))
+                    .subscribe(
+                            mqttMessage -> client.publish(topic, mqttMessage),
+                            e -> log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage()),
+                            () -> {
+                            }
+                    );
 
             String href = createUrl() + topic;
             Form form = new Form.Builder()
@@ -212,20 +230,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 // do nothing
             }
         });
-    }
-
-    private void handleSubscriptionData(String topic, Object data) {
-        try {
-            Content content = ContentManager.valueToContent(data);
-            log.debug("MqttServer at '{}' publishing new data to topic '{}'", settings.getBroker(), topic);
-            client.publish(topic, new MqttMessage(content.getBody()));
-        }
-        catch (ContentCodecException e) {
-            log.warn("MqttServer at '{}' cannot process data for topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-        }
-        catch (MqttException e) {
-            log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-        }
     }
 
     private String createUrl() {

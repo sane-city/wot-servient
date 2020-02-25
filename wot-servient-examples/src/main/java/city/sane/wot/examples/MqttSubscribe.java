@@ -46,7 +46,7 @@ class MqttSubscribe {
         System.out.println(consumedThing.toJson(true));
         System.out.println("==========");
 
-        consumedThing.getEvent("temperature").subscribe(
+        consumedThing.getEvent("temperature").observer().subscribe(
                 next -> System.out.println("MqttSubscribe: next = " + next),
                 ex -> System.out.println("MqttSubscribe: error = " + ex.toString()),
                 () -> System.out.println("MqttSubscribe: completed!")
