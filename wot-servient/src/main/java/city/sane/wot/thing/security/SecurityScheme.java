@@ -20,5 +20,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = PSKSecurityScheme.class, name = "psk"),
         @JsonSubTypes.Type(value = PublicSecurityScheme.class, name = "public")
 })
-public abstract class SecurityScheme {
+public interface SecurityScheme {
 }

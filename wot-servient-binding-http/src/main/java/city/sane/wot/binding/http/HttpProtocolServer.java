@@ -34,6 +34,7 @@ import static java.util.concurrent.CompletableFuture.*;
 public class HttpProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(HttpProtocolServer.class);
     private static final String HTTP_METHOD_NAME = "htv:methodName";
+    private static final String SECURITY_SCHEME = "scheme";
     private final String bindHost;
     private final int bindPort;
     private final List<String> addresses;
@@ -55,9 +56,9 @@ public class HttpProtocolServer implements ProtocolServer {
         security = config.getObject("wot.servient.http.security").unwrapped();
 
         // Auth
-        if (security != null && security.get("scheme") != null) {
+        if (security != null && security.get(SECURITY_SCHEME) != null) {
             // storing HTTP header compatible string
-            switch ((String) security.get("scheme")) {
+            switch ((String) security.get(SECURITY_SCHEME)) {
                 case "basic":
                     this.securityScheme = "Basic";
                     break;
@@ -65,7 +66,7 @@ public class HttpProtocolServer implements ProtocolServer {
                     this.securityScheme = "Bearer";
                     break;
                 default:
-                    throw new ProtocolServerException("HttpServer does not support security scheme '" + security.get("scheme") + "'");
+                    throw new ProtocolServerException("HttpServer does not support security scheme '" + security.get(SECURITY_SCHEME) + "'");
             }
         }
         else {

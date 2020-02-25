@@ -11,7 +11,7 @@ import java.util.List;
  * both authorization and token MUST be included. If no scopes are defined in the SecurityScheme
  * then they are considered to be empty.<br> See also: https://www.w3.org/2019/wot/security#oauth2securityscheme
  */
-public class OAuth2SecurityScheme extends SecurityScheme {
+public class OAuth2SecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String authorization;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

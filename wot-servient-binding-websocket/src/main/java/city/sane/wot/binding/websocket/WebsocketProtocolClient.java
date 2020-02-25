@@ -44,8 +44,9 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  * TODO: WebsocketClient.close() is never called!
  */
 public class WebsocketProtocolClient implements ProtocolClient {
-    private final static Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
-    private static ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final String WEBSOCKET_MESSAGE = "websocket:message";
     private final Map<URI, WebsocketClient> clients = new HashMap<>();
     private final Map<String, Consumer<AbstractServerMessage>> openRequests = new HashMap<>();
 
@@ -69,7 +70,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
 
     @Override
     public Observable<Content> observeResource(Form form) throws ProtocolClientException {
-        Object message = form.getOptional("websocket:message");
+        Object message = form.getOptional(WEBSOCKET_MESSAGE);
         if (message != null) {
             try {
                 AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
@@ -105,43 +106,22 @@ public class WebsocketProtocolClient implements ProtocolClient {
         });
     }
 
-    private CompletableFuture<Content> sendMessageWithContent(Form form, Content content) {
-        Object message = form.getOptional("websocket:message");
-        if (message != null) {
-            try {
-                ThingInteractionWithContent clientMessage = JSON_MAPPER.convertValue(message, ThingInteractionWithContent.class);
-                clientMessage.setValue(content);
-
-                try {
-                    WebsocketClient client = getClientFor(form);
-                    AbstractServerMessage response = ask(client, clientMessage).get();
-                    return completedFuture(response.toContent());
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
-                catch (ExecutionException e) {
-                    return failedFuture(e);
-                }
-            }
-            catch (IllegalArgumentException e) {
-                return failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
-            }
-            catch (ProtocolClientException e) {
-                return failedFuture(e);
-            }
-        }
-        else {
-            return failedFuture(new ProtocolClientException("Client does not know what message should be written to the socket."));
-        }
+    private CompletableFuture<Content> sendMessage(Form form) {
+        return sendMessageWithContent(form, null);
     }
 
-    private CompletableFuture<Content> sendMessage(Form form) {
-        Object message = form.getOptional("websocket:message");
+    private CompletableFuture<Content> sendMessageWithContent(Form form, Content content) {
+        Object message = form.getOptional(WEBSOCKET_MESSAGE);
         if (message != null) {
             try {
-                AbstractClientMessage clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+                AbstractClientMessage clientMessage;
+                if (content != null) {
+                    clientMessage = JSON_MAPPER.convertValue(message, ThingInteractionWithContent.class);
+                    ((ThingInteractionWithContent) clientMessage).setValue(content);
+                }
+                else {
+                    clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
+                }
 
                 try {
                     WebsocketClient client = getClientFor(form);

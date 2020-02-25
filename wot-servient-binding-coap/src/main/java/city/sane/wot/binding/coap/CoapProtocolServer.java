@@ -44,6 +44,7 @@ public class CoapProtocolServer implements ProtocolServer {
         SLF4JBridgeHandler.install();
     }
 
+    private final String bindHost;
     private final int bindPort;
     private final List<String> addresses;
     private final Map<String, ExposedThing> things = new HashMap<>();
@@ -51,6 +52,7 @@ public class CoapProtocolServer implements ProtocolServer {
     private WotCoapServer server;
 
     public CoapProtocolServer(Config config) {
+        bindHost = "0.0.0.0";
         bindPort = config.getInt("wot.servient.coap.bind-port");
         if (!config.getStringList("wot.servient.coap.addresses").isEmpty()) {
             addresses = config.getStringList("wot.servient.coap.addresses");
@@ -67,7 +69,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start(Servient servient) {
-        log.info("Starting on '{}' port '{}'", "0.0.0.0", bindPort);
+        log.info("Starting on '{}' port '{}'", bindHost, bindPort);
 
         if (server != null) {
             return completedFuture(null);
@@ -81,7 +83,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on '{}' port '{}'", "0.0.0.0", bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
 
         if (server == null) {
             return completedFuture(null);
@@ -108,8 +110,8 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
-                thing.getId(), bindPort, thing.getId());
+        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://{}:{}/{}", bindHost, bindPort,
+                thing.getId(), bindHost, bindPort, thing.getId());
 
         if (server == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
@@ -139,8 +141,8 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://0.0.0.0:{}/{}", "0.0.0.0", bindPort,
-                thing.getId(), bindPort, thing.getId());
+        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://{}:{}/{}", bindHost, bindPort,
+                thing.getId(), bindHost, bindPort, thing.getId());
 
         if (server == null) {
             return completedFuture(null);

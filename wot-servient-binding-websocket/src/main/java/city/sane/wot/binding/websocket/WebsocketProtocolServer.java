@@ -38,6 +38,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class WebsocketProtocolServer implements ProtocolServer {
+    private static final String WEBSOCKET_MESSAGE = "websocket:message";
+    private static final String WEBSOCKET_MESSAGE_THING_ID = "thingId";
+    private static final String WEBSOCKET_MESSAGE_TYPE = "type";
+    private static final String WEBSOCKET_MESSAGE_NAME = "name";
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
@@ -131,10 +135,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 property.addForm(new Form.Builder()
                         .setHref(address)
                         .setOp(Operation.READ_PROPERTY)
-                        .setOptional("websocket:message", Map.of(
-                                "type", "ReadProperty",
-                                "thingId", thing.getId(),
-                                "name", name
+                        .setOptional(WEBSOCKET_MESSAGE, Map.of(
+                                WEBSOCKET_MESSAGE_TYPE, "ReadProperty",
+                                WEBSOCKET_MESSAGE_THING_ID, thing.getId(),
+                                WEBSOCKET_MESSAGE_NAME, name
                         ))
                         .build());
                 log.info("Assign '{}' to Property '{}'", address, name);
@@ -143,10 +147,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 property.addForm(new Form.Builder()
                         .setHref(address)
                         .setOp(Operation.WRITE_PROPERTY)
-                        .setOptional("websocket:message", Map.of(
-                                "type", "WriteProperty",
-                                "thingId", thing.getId(),
-                                "name", name
+                        .setOptional(WEBSOCKET_MESSAGE, Map.of(
+                                WEBSOCKET_MESSAGE_TYPE, "WriteProperty",
+                                WEBSOCKET_MESSAGE_THING_ID, thing.getId(),
+                                WEBSOCKET_MESSAGE_NAME, name
                         ))
                         .build());
                 log.info("Assign '{}' to Property '{}'", address, name);
@@ -157,10 +161,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
                 property.addForm(new Form.Builder()
                         .setHref(address)
                         .setOp(Operation.OBSERVE_PROPERTY)
-                        .setOptional("websocket:message", Map.of(
-                                "type", "SubscribeProperty",
-                                "thingId", thing.getId(),
-                                "name", name
+                        .setOptional(WEBSOCKET_MESSAGE, Map.of(
+                                WEBSOCKET_MESSAGE_TYPE, "SubscribeProperty",
+                                WEBSOCKET_MESSAGE_THING_ID, thing.getId(),
+                                WEBSOCKET_MESSAGE_NAME, name
                         ))
                         .build());
                 log.info("Assign '{}' to observable Property '{}'", address, name);
@@ -174,10 +178,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
             action.addForm(new Form.Builder()
                     .setHref(address)
                     .setOp(Operation.INVOKE_ACTION)
-                    .setOptional("websocket:message", Map.of(
-                            "type", "InvokeAction",
-                            "thingId", thing.getId(),
-                            "name", name
+                    .setOptional(WEBSOCKET_MESSAGE, Map.of(
+                            WEBSOCKET_MESSAGE_TYPE, "InvokeAction",
+                            WEBSOCKET_MESSAGE_THING_ID, thing.getId(),
+                            WEBSOCKET_MESSAGE_NAME, name
                     ))
                     .build());
             log.info("Assign '{}' to Action '{}'", address, name);
@@ -190,10 +194,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
             event.addForm(new Form.Builder()
                     .setHref(address)
                     .setOp(Operation.SUBSCRIBE_EVENT)
-                    .setOptional("websocket:message", Map.of(
-                            "type", "SubscribeEvent",
-                            "thingId", thing.getId(),
-                            "name", name
+                    .setOptional(WEBSOCKET_MESSAGE, Map.of(
+                            WEBSOCKET_MESSAGE_TYPE, "SubscribeEvent",
+                            WEBSOCKET_MESSAGE_THING_ID, thing.getId(),
+                            WEBSOCKET_MESSAGE_NAME, name
                     ))
                     .build());
             log.info("Assign '{}' to Event '{}'", address, name);

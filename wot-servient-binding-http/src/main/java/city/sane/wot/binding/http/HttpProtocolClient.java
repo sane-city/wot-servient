@@ -61,49 +61,20 @@ public class HttpProtocolClient implements ProtocolClient {
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        return supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form);
-            log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
-            try {
-                HttpResponse response = requestClient.execute(request);
-                return checkResponse(response);
-            }
-            catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
-            }
-        });
+        HttpUriRequest request = generateRequest(form);
+        return resolveRequestToContent(request);
     }
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
-        return supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form, "PUT", content);
-
-            log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
-            try {
-                HttpResponse response = requestClient.execute(request);
-                return checkResponse(response);
-            }
-            catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
-            }
-        });
+        HttpUriRequest request = generateRequest(form, "PUT", content);
+        return resolveRequestToContent(request);
     }
 
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        return supplyAsync(() -> {
-            HttpUriRequest request = generateRequest(form, "POST", content);
-
-            log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
-            try {
-                HttpResponse response = requestClient.execute(request);
-                return checkResponse(response);
-            }
-            catch (IOException | ProtocolClientException e) {
-                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
-            }
-        });
+        HttpUriRequest request = generateRequest(form, "POST", content);
+        return resolveRequestToContent(request);
     }
 
     @Override
@@ -174,6 +145,23 @@ public class HttpProtocolClient implements ProtocolClient {
         return generateRequest(form, null);
     }
 
+    private CompletableFuture<Content> resolveRequestToContent(HttpUriRequest request) {
+        return supplyAsync(() -> {
+            log.debug("Sending '{}' to '{}'", request.getMethod(), request.getURI());
+            try {
+                HttpResponse response = requestClient.execute(request);
+                return checkResponse(response);
+            }
+            catch (IOException | ProtocolClientException e) {
+                throw new CompletionException(new ProtocolClientException("Error during http request: " + e.getMessage()));
+            }
+        });
+    }
+
+    private HttpUriRequest generateRequest(Form form, Content content) {
+        return generateRequest(form, "GET", content);
+    }
+
     private Content checkResponse(HttpResponse response) throws ProtocolClientException {
         StatusLine statusLine = response.getStatusLine();
         int statusCode = statusLine.getStatusCode();
@@ -215,10 +203,6 @@ public class HttpProtocolClient implements ProtocolClient {
 //            String body = EntityUtils.toString(response.getEntity());
             throw new ProtocolClientException("Server error: " + statusLine.toString());
         }
-    }
-
-    private HttpUriRequest generateRequest(Form form, Content content) {
-        return generateRequest(form, "GET", content);
     }
 
     private HttpUriRequest generateRequest(Form form, String defaultMethod, Content content) {

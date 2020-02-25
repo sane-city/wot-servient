@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * "apikey"). This is for the case where the access token is opaque and is not using a standard
  * token format.<br> See also: https://www.w3.org/2019/wot/security#apikeysecurityscheme
  */
-public class APIKeySecurityScheme extends SecurityScheme {
+public class APIKeySecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String in;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

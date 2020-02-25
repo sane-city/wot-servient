@@ -5,5 +5,5 @@ package city.sane.wot.thing.security;
  * indicating there is no authentication or other mechanism required to access the resource.<br> See
  * also: https://www.w3.org/2019/wot/security#nosecurityscheme
  */
-public class NoSecurityScheme extends SecurityScheme {
+public class NoSecurityScheme implements SecurityScheme {
 }

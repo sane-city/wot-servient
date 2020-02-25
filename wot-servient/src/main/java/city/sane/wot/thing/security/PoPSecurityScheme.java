@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * algorithms for PoP tokens MAY be specified in vocabulary extensions.<br> See also:
  * https://www.w3.org/2019/wot/security#popsecurityscheme
  */
-public class PoPSecurityScheme extends SecurityScheme {
+public class PoPSecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String in;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

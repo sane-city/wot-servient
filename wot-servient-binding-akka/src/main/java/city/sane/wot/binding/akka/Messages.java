@@ -6,15 +6,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * This class contains the message types sent between the actors during Thing Interaction.
  */
+@SuppressWarnings("squid:S1192")
 public class Messages {
     private Messages() {
-
+        // factory class
     }
 
     // https://stackoverflow.com/a/53845446/1074188
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     public static class Read {
         public Read() {
+            // required by jackson
         }
 
         @Override
@@ -31,6 +33,7 @@ public class Messages {
         }
 
         RespondRead() {
+            // required by jackson
             content = null;
         }
 
@@ -38,6 +41,26 @@ public class Messages {
         public String toString() {
             return "RespondRead{" +
                     "content=" + content +
+                    '}';
+        }
+    }
+
+    public static class RespondReadFailed {
+        public final Throwable e;
+
+        public RespondReadFailed(Throwable e) {
+            this.e = e;
+        }
+
+        RespondReadFailed() {
+            // required by jackson
+            e = null;
+        }
+
+        @Override
+        public String toString() {
+            return "RespondReadFailed{" +
+                    "e=" + e +
                     '}';
         }
     }
@@ -50,6 +73,7 @@ public class Messages {
         }
 
         Write() {
+            // required by jackson
             content = null;
         }
 
@@ -69,6 +93,7 @@ public class Messages {
         }
 
         Written() {
+            // required by jackson
             content = null;
         }
 
@@ -88,6 +113,7 @@ public class Messages {
         }
 
         Invoke() {
+            // required by jackson
             content = null;
         }
 
@@ -107,6 +133,7 @@ public class Messages {
         }
 
         Invoked() {
+            // required by jackson
             content = null;
         }
 
@@ -122,6 +149,7 @@ public class Messages {
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     public static class Subscribe {
         public Subscribe() {
+            // required by jackson
         }
 
         @Override
@@ -134,6 +162,7 @@ public class Messages {
         public final Content next;
 
         SubscriptionNext() {
+            // required by jackson
             next = null;
         }
 
@@ -157,6 +186,7 @@ public class Messages {
         }
 
         SubscriptionError() {
+            // required by jackson
             e = null;
         }
 
@@ -170,6 +200,7 @@ public class Messages {
 
     public static class SubscriptionComplete {
         public SubscriptionComplete() {
+            // required by jackson
         }
 
         @Override

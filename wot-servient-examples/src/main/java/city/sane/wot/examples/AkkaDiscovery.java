@@ -11,6 +11,7 @@ import city.sane.wot.thing.property.ThingProperty;
 /**
  * This example exposes a Thing that can be discovered by other Actor Systems.
  */
+@SuppressWarnings("squid:S106")
 class AkkaDiscovery {
     public static void main(String[] args) throws WotException {
         // create wot

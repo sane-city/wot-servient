@@ -55,9 +55,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         log.debug("Init Actor System");
         system = actorSystemProvider.create();
 
-        return runAsync(() -> {
-            discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher");
-        });
+        return runAsync(() -> discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher"));
     }
 
     @Override

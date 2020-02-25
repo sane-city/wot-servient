@@ -8,6 +8,7 @@ import akka.event.LoggingAdapter;
 import city.sane.Pair;
 import city.sane.wot.binding.akka.Messages.Read;
 import city.sane.wot.binding.akka.Messages.RespondRead;
+import city.sane.wot.binding.akka.Messages.RespondReadFailed;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -79,7 +80,7 @@ class ThingActor extends AbstractActor {
             getSender().tell(new RespondRead(content), getSelf());
         }
         catch (ContentCodecException e) {
-            // TODO: handle exception
+            getSender().tell(new RespondReadFailed(e), getSelf());
         }
     }
 

@@ -21,7 +21,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
  */
 public class SharedActorSystemProvider {
     private static final Logger log = LoggerFactory.getLogger(SharedActorSystemProvider.class);
-    private static SharedActorSystemProvider SINGLETON = null;
+    private static SharedActorSystemProvider singleton = null;
     private final AtomicInteger referenceCount;
     private final Supplier<ActorSystem> supplier;
     private ActorSystem system;
@@ -89,10 +89,10 @@ public class SharedActorSystemProvider {
         }
     }
 
-    public synchronized static SharedActorSystemProvider singleton(Supplier<ActorSystem> supplier) {
-        if (SINGLETON == null) {
-            SINGLETON = new SharedActorSystemProvider(supplier);
+    public static synchronized SharedActorSystemProvider singleton(Supplier<ActorSystem> supplier) {
+        if (singleton == null) {
+            singleton = new SharedActorSystemProvider(supplier);
         }
-        return SINGLETON;
+        return singleton;
     }
 }

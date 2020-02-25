@@ -4,7 +4,9 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,30 +90,7 @@ public class FileProtocolClient implements ProtocolClient {
                     directory.register(service, ENTRY_MODIFY, ENTRY_DELETE, ENTRY_CREATE);
 
                     try {
-                        // Start the infinite polling loop
-                        while (true) {
-                            // Wait for the next event
-                            WatchKey watchKey = service.take();
-
-                            for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-                                // Get the type of the event
-                                WatchEvent.Kind<?> kind = watchEvent.kind();
-
-                                if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
-                                    Path watchEventPath = (Path) watchEvent.context();
-
-                                    // Call this if the right file is involved
-                                    if (path.getFileName().equals(watchEventPath)) {
-                                        Content content = getContentFromPath(path);
-                                        source.onNext(content);
-                                    }
-                                }
-                            }
-
-                            if (!watchKey.reset()) {
-                                break;
-                            }
-                        }
+                        pollFileChange(path, service, source);
                     }
                     catch (InterruptedException e) {
                         if (!source.isDisposed()) {
@@ -121,10 +100,37 @@ public class FileProtocolClient implements ProtocolClient {
 
                     source.onComplete();
                 }),
-                watchService -> {
-                    watchService.close();
-                }
+                WatchService::close
         ).subscribeOn(Schedulers.io());
+    }
+
+    private void pollFileChange(Path path,
+                                WatchService service,
+                                @NonNull ObservableEmitter<Content> source) throws InterruptedException, IOException {
+        // Start the infinite polling loop
+        while (true) {
+            // Wait for the next event
+            WatchKey watchKey = service.take();
+
+            for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+                // Get the type of the event
+                WatchEvent.Kind<?> kind = watchEvent.kind();
+
+                if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
+                    Path watchEventPath = (Path) watchEvent.context();
+
+                    // Call this if the right file is involved
+                    if (path.getFileName().equals(watchEventPath)) {
+                        Content content = getContentFromPath(path);
+                        source.onNext(content);
+                    }
+                }
+            }
+
+            if (!watchKey.reset()) {
+                break;
+            }
+        }
     }
 
     private Content getContentFromPath(Path path) throws IOException {

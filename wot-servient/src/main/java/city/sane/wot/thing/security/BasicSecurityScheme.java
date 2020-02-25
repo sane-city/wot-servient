@@ -10,7 +10,7 @@ import java.util.Objects;
  * security mechanism providing confidentiality, for example, TLS.<br> See also:
  * https://www.w3.org/2019/wot/security#basicsecurityscheme
  */
-public class BasicSecurityScheme extends SecurityScheme {
+public class BasicSecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final String in;
 

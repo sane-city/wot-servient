@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * Allows consuming Things via CoAP.
  */
+@SuppressWarnings("squid:S1192")
 public class CoapProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;

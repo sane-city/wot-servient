@@ -29,6 +29,7 @@ public class JadexProtocolServer implements ProtocolServer {
     private final JadexProtocolServerConfig config;
     private IExternalAccess platform;
     private ThingsService thingsService;
+    @SuppressWarnings("squid:S1068")
     private String thingsServiceId;
 
     public JadexProtocolServer(Config wotConfig) {

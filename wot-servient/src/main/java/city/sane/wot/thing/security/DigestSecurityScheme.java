@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * "digest"). This scheme is similar to basic authentication but with added features to avoid
  * man-in-the-middle attacks.<br> See also: https://www.w3.org/2019/wot/security#digestsecurityscheme
  */
-public class DigestSecurityScheme extends SecurityScheme {
+public class DigestSecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String in;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

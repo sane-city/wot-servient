@@ -99,8 +99,19 @@ class PropertyActor extends AbstractActor {
                     log.warning("Unable to write property: {}", e.getMessage());
                 }
                 else {
-                    // TODO: return output if available
-                    sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
+                    if (output != null) {
+                        try {
+                            Content content = ContentManager.valueToContent(output);
+                            sender.tell(new Written(content), getSelf());
+                        }
+                        catch (ContentCodecException ex) {
+                            log.warning("Unable to parse response content of write property operation. Return empty content: {}", ex.getMessage());
+                            sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
+                        }
+                    }
+                    else {
+                        sender.tell(new Written(Content.EMPTY_CONTENT), getSelf());
+                    }
                 }
             });
         }

@@ -29,7 +29,6 @@ public class WebsocketClientHandshakerHandler extends SimpleChannelInboundHandle
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-//                System.out.println("WebSocket Client disconnected!");
     }
 
     @Override
@@ -46,11 +45,9 @@ public class WebsocketClientHandshakerHandler extends SimpleChannelInboundHandle
         if (!handshaker.isHandshakeComplete()) {
             try {
                 handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-//                        System.out.println("WebSocket Client connected!");
                 handshakeFuture.setSuccess();
             }
             catch (WebSocketHandshakeException e) {
-//                        System.out.println("WebSocket Client failed to connect");
                 handshakeFuture.setFailure(e);
             }
             return;
@@ -68,10 +65,9 @@ public class WebsocketClientHandshakerHandler extends SimpleChannelInboundHandle
             ctx.fireChannelRead(frame.retain());
         }
         else if (frame instanceof PongWebSocketFrame) {
-//                    System.out.println("WebSocket Client received pong");
+            // do nothing
         }
         else if (frame instanceof CloseWebSocketFrame) {
-//                    System.out.println("WebSocket Client received closing");
             ch.close();
         }
     }

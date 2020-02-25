@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * Other formats and algorithms for bearer tokens MAY be specified in vocabulary extensions.<br> See
  * also: https://www.w3.org/2019/wot/security#bearersecurityscheme
  */
-public class BearerSecurityScheme extends SecurityScheme {
+public class BearerSecurityScheme implements SecurityScheme {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String in;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

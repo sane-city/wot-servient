@@ -80,11 +80,11 @@ public class MqttProtocolClient implements ProtocolClient {
 
             return topicSubjects.computeIfAbsent(topic, key -> Observable.using(
                     () -> client,
-                    client -> Observable.<Content>create(source -> {
+                    myClient -> Observable.<Content>create(source -> {
                         log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
 
                         try {
-                            client.subscribe(topic, (receivedTopic, message) -> {
+                            myClient.subscribe(topic, (receivedTopic, message) -> {
                                 log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
                                 Content content = new Content(form.getContentType(), message.getPayload());
                                 source.onNext(content);
@@ -95,11 +95,11 @@ public class MqttProtocolClient implements ProtocolClient {
                             source.onError(e);
                         }
                     }),
-                    client -> {
+                    myClient -> {
                         log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
 
                         try {
-                            client.unsubscribe(topic);
+                            myClient.unsubscribe(topic);
                         }
                         catch (MqttException e) {
                             log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());

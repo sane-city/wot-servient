@@ -139,6 +139,7 @@ class Cli {
         System.out.println(version);
     }
 
+    @SuppressWarnings("squid:S112")
     private void runScripts(CommandLine cmd) throws ServientException {
         List<File> scripts = cmd.getArgList().stream().map(File::new).collect(Collectors.toList());
         if (!scripts.isEmpty()) {

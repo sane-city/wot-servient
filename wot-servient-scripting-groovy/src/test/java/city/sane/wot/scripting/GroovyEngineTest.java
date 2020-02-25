@@ -86,6 +86,9 @@ public class GroovyEngineTest {
 
         DefaultWot wot = new DefaultWot();
         engine.runPrivilegedScript(script, wot, executorService).get();
+
+        // should not fail
+        assertTrue(true);
     }
 
     @Test
@@ -94,6 +97,9 @@ public class GroovyEngineTest {
 
         DefaultWot wot = new DefaultWot();
         engine.runScript(script, wot, executorService).get();
+
+        // should not fail
+        assertTrue(true);
     }
 
     @Test

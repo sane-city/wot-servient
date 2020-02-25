@@ -103,7 +103,7 @@ public class ScriptingManager {
             return failedFuture(new ScriptingManagerException("No scripting engine available for media type '" + mediaType + "'"));
         }
 
-        return engine.runPrivilegedScript(script, wot, EXECUTOR_SERVICE);
+        return engine.runScript(script, wot, EXECUTOR_SERVICE);
     }
 
     /**

@@ -47,6 +47,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         this.pattern = pattern;
     }
 
+    @SuppressWarnings("squid:S1192")
     @Override
     public CompletableFuture<Content> readResource(Form form) {
         Read message = new Read();
