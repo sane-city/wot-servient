@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -43,30 +44,6 @@ public class ExposedThingAction<I, O> extends ThingAction<I, O> {
         this.uriVariables = uriVariables;
         this.input = input;
         this.output = output;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThingAction{" +
-                "name='" + name + '\'' +
-                ", state=" + state +
-                ", input=" + input +
-                ", output=" + output +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 
     /**
@@ -123,5 +100,41 @@ public class ExposedThingAction<I, O> extends ThingAction<I, O> {
 
     public ActionState<I, O> getState() {
         return state;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, thing, state);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExposedThingAction<?, ?> that = (ExposedThingAction<?, ?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(thing, that.thing) &&
+                Objects.equals(state, that.state);
+    }
+
+    @Override
+    public String toString() {
+        return "ExposedThingAction{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }

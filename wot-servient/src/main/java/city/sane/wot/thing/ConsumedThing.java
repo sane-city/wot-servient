@@ -73,36 +73,6 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
         }
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThing{" +
-                "objectType='" + objectType + '\'' +
-                ", objectContext=" + objectContext +
-                ", id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", titles=" + titles +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", properties=" + properties +
-                ", actions=" + actions +
-                ", events=" + events +
-                ", forms=" + forms +
-                ", security=" + security +
-                ", securityDefinitions=" + securityDefinitions +
-                ", base='" + base + '\'' +
-                '}';
-    }
-
     public Pair<ProtocolClient, Form> getClientFor(Form form,
                                                    Operation op) throws ConsumedThingException {
         return getClientFor(List.of(form), op);
@@ -169,7 +139,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
 
         if (form == null) {
             // if there no op was defined use default assignment
-            String finalScheme = scheme;
+            final String finalScheme = scheme;
             Optional<Form> nonOpForm = forms.stream().filter(f -> (f.getOp() == null || f.getOp().isEmpty()) && f.getHrefScheme().equals(finalScheme)).findFirst();
             if (nonOpForm.isPresent()) {
                 form = nonOpForm.get();
@@ -253,6 +223,46 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
         catch (ConsumedThingException e) {
             return failedFuture(e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), servient);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumedThing that = (ConsumedThing) o;
+        return Objects.equals(servient, that.servient);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
     }
 
     /**

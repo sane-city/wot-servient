@@ -68,34 +68,6 @@ public class ExposedThingProperty<T> extends ThingProperty<T> {
         }
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThingProperty{" +
-                "name='" + name + '\'' +
-                ", state=" + state +
-                ", objectType='" + objectType + '\'' +
-                ", type='" + type + '\'' +
-                ", observable=" + observable +
-                ", readOnly=" + readOnly +
-                ", writeOnly=" + writeOnly +
-                ", optionalProperties=" + optionalProperties +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
-    }
-
     public CompletableFuture<T> read() {
         // call read handler (if any)
         if (state.getReadHandler() != null) {
@@ -159,5 +131,45 @@ public class ExposedThingProperty<T> extends ThingProperty<T> {
 
     public PropertyState<T> getState() {
         return state;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, thing, state);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExposedThingProperty<?> that = (ExposedThingProperty<?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(thing, that.thing) &&
+                Objects.equals(state, that.state);
+    }
+
+    @Override
+    public String toString() {
+        return "ExposedThingProperty{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }

@@ -9,16 +9,14 @@ import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import io.reactivex.rxjava3.core.Observable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Used in combination with {@link ConsumedThing} and allows consuming of a {@link ThingEvent}.
  */
 public class ConsumedThingEvent<T> extends ThingEvent<T> {
-    private static final Logger log = LoggerFactory.getLogger(ConsumedThingEvent.class);
     private final String name;
     private final ConsumedThing thing;
 
@@ -28,29 +26,6 @@ public class ConsumedThingEvent<T> extends ThingEvent<T> {
         type = event.getType();
         data = event.getData();
         this.thing = thing;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingEvent{" +
-                "name='" + name + '\'' +
-                ", data=" + data +
-                ", type='" + type + '\'' +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 
     public Observable<Optional<T>> observer() throws ConsumedThingException {
@@ -66,5 +41,39 @@ public class ConsumedThingEvent<T> extends ThingEvent<T> {
         catch (ProtocolClientException e) {
             throw new ConsumedThingException(e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, thing);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumedThingEvent<?> that = (ConsumedThingEvent<?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(thing, that.thing);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingEvent{" +
+                "name='" + name + '\'' +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }

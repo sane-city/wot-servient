@@ -15,10 +15,7 @@ import io.reactivex.rxjava3.subjects.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
@@ -224,36 +221,6 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
         return this;
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThing{" +
-                "objectType='" + objectType + '\'' +
-                ", objectContext=" + objectContext +
-                ", id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", titles=" + titles +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", properties=" + properties +
-                ", actions=" + actions +
-                ", events=" + events +
-                ", forms=" + forms +
-                ", security=" + security +
-                ", securityDefinitions=" + securityDefinitions +
-                ", base='" + base + '\'' +
-                '}';
-    }
-
     /**
      * Defines the JSON-LD datatype.
      *
@@ -286,7 +253,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
         return this;
     }
 
-    private ExposedThing setTitles(Map<String, String> titles) {
+    public ExposedThing setTitles(Map<String, String> titles) {
         this.titles = titles;
         return this;
     }
@@ -296,7 +263,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
         return this;
     }
 
-    private ExposedThing setDescriptions(Map<String, String> descriptions) {
+    public ExposedThing setDescriptions(Map<String, String> descriptions) {
         this.descriptions = descriptions;
         return this;
     }
@@ -306,7 +273,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
         return this;
     }
 
-    private ExposedThing setForms(List<Form> forms) {
+    public ExposedThing setForms(List<Form> forms) {
         this.forms = forms;
         return this;
     }
@@ -318,7 +285,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param security
      * @return
      */
-    private ExposedThing setSecurity(List<String> security) {
+    public ExposedThing setSecurity(List<String> security) {
         this.security = security;
         return this;
     }
@@ -330,7 +297,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param securityDefinitions
      * @return
      */
-    private ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
+    public ExposedThing setSecurityDefinitions(Map<String, SecurityScheme> securityDefinitions) {
         this.securityDefinitions = securityDefinitions;
         return this;
     }
@@ -634,5 +601,45 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
 
         // wait until all properties have been written
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenApply(f -> returnValues);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), servient);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExposedThing that = (ExposedThing) o;
+        return Objects.equals(servient, that.servient);
+    }
+
+    @Override
+    public String toString() {
+        return "ExposedThing{" +
+                "objectType='" + objectType + '\'' +
+                ", objectContext=" + objectContext +
+                ", id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", titles=" + titles +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", properties=" + properties +
+                ", actions=" + actions +
+                ", events=" + events +
+                ", forms=" + forms +
+                ", security=" + security +
+                ", securityDefinitions=" + securityDefinitions +
+                ", base='" + base + '\'' +
+                '}';
     }
 }

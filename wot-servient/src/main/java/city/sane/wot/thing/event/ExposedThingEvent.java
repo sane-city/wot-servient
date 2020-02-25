@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -31,30 +32,6 @@ public class ExposedThingEvent<T> extends ThingEvent<T> {
         this.state = state;
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ExposedThingEvent{" +
-                "name='" + name + '\'' +
-                ", state=" + state +
-                ", data=" + data +
-                ", type='" + type + '\'' +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
-    }
-
     public EventState<T> getState() {
         return state;
     }
@@ -70,5 +47,40 @@ public class ExposedThingEvent<T> extends ThingEvent<T> {
 
     public Observable<Optional<T>> observer() {
         return state.getSubject();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, state);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExposedThingEvent<?> that = (ExposedThingEvent<?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(state, that.state);
+    }
+
+    @Override
+    public String toString() {
+        return "ExposedThingEvent{" +
+                "name='" + name + '\'' +
+                ", state=" + state +
+                ", data=" + data +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }

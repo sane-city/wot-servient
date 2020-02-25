@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -33,29 +34,6 @@ public class ConsumedThingAction<I, O> extends ThingAction<I, O> {
         input = action.getInput();
         output = action.getOutput();
         this.thing = thing;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingAction{" +
-                "name='" + name + '\'' +
-                ", input=" + input +
-                ", output=" + output +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 
     /**
@@ -107,5 +85,39 @@ public class ConsumedThingAction<I, O> extends ThingAction<I, O> {
         catch (ConsumedThingException e) {
             throw new CompletionException(e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, thing);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumedThingAction<?, ?> that = (ConsumedThingAction<?, ?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(thing, that.thing);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingAction{" +
+                "name='" + name + '\'' +
+                ", input=" + input +
+                ", output=" + output +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }

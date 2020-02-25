@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -57,33 +58,6 @@ public class ConsumedThingProperty<T> extends ThingProperty<T> {
         else {
             return form;
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return "ConsumedThingProperty{" +
-                "name='" + name + '\'' +
-                ", objectType='" + objectType + '\'' +
-                ", type='" + type + '\'' +
-                ", observable=" + observable +
-                ", readOnly=" + readOnly +
-                ", writeOnly=" + writeOnly +
-                ", optionalProperties=" + optionalProperties +
-                ", description='" + description + '\'' +
-                ", descriptions=" + descriptions +
-                ", forms=" + forms +
-                ", uriVariables=" + uriVariables +
-                '}';
     }
 
     public CompletableFuture<T> read() {
@@ -149,5 +123,43 @@ public class ConsumedThingProperty<T> extends ThingProperty<T> {
         catch (ProtocolClientException e) {
             throw new ConsumedThingException(e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, thing);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumedThingProperty<?> that = (ConsumedThingProperty<?>) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(thing, that.thing);
+    }
+
+    @Override
+    public String toString() {
+        return "ConsumedThingProperty{" +
+                "name='" + name + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", type='" + type + '\'' +
+                ", observable=" + observable +
+                ", readOnly=" + readOnly +
+                ", writeOnly=" + writeOnly +
+                ", optionalProperties=" + optionalProperties +
+                ", description='" + description + '\'' +
+                ", descriptions=" + descriptions +
+                ", forms=" + forms +
+                ", uriVariables=" + uriVariables +
+                '}';
     }
 }
