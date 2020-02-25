@@ -352,8 +352,6 @@ public class Servient {
      * @param thing
      * @return
      */
-    runPrivilegedScript
-
     private CompletableFuture<Void> register(URI directory, ExposedThing thing) {
         // FIXME: implement
         return failedFuture(new ServientException("not implemented"));

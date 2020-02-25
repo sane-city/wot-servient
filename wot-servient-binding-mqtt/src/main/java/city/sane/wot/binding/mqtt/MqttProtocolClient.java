@@ -5,6 +5,7 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -78,38 +79,43 @@ public class MqttProtocolClient implements ProtocolClient {
         try {
             String topic = new URI(form.getHref()).getPath().substring(1);
 
-            return topicSubjects.computeIfAbsent(topic, key -> Observable.using(
-                    () -> client,
-                    myClient -> Observable.<Content>create(source -> {
-                        log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
-
-                        try {
-                            myClient.subscribe(topic, (receivedTopic, message) -> {
-                                log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
-                                Content content = new Content(form.getContentType(), message.getPayload());
-                                source.onNext(content);
-                            });
-                        }
-                        catch (MqttException e) {
-                            log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-                            source.onError(e);
-                        }
-                    }),
-                    myClient -> {
-                        log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
-
-                        try {
-                            myClient.unsubscribe(topic);
-                        }
-                        catch (MqttException e) {
-                            log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
-                        }
-                    }
-            ).share());
+            return topicSubjects.computeIfAbsent(topic, key -> topicObserver(form, topic));
         }
         catch (URISyntaxException e) {
             throw new ProtocolClientException("Unable to subscribe resource: " + e.getMessage());
         }
+    }
+
+    @NonNull
+    private Observable<Content> topicObserver(Form form, String topic) {
+        return Observable.using(
+                () -> client,
+                myClient -> Observable.<Content>create(source -> {
+                    log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
+
+                    try {
+                        myClient.subscribe(topic, (receivedTopic, message) -> {
+                            log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
+                            Content content = new Content(form.getContentType(), message.getPayload());
+                            source.onNext(content);
+                        });
+                    }
+                    catch (MqttException e) {
+                        log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                        source.onError(e);
+                    }
+                }),
+                myClient -> {
+                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
+
+                    try {
+                        myClient.unsubscribe(topic);
+                    }
+                    catch (MqttException e) {
+                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                    }
+                }
+        ).share();
     }
 
     private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
