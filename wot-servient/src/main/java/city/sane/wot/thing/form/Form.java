@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -14,7 +13,7 @@ import java.util.*;
  * A form contains all the information from an endpoint for communication.<br> See also:
  * https://www.w3.org/TR/wot-thing-description/#form
  */
-public class Form implements Serializable {
+public class Form {
     private static final Logger log = LoggerFactory.getLogger(Form.class);
     private String href;
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)

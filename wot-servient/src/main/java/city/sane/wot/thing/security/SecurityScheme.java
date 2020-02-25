@@ -3,8 +3,6 @@ package city.sane.wot.thing.security;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.io.Serializable;
-
 /**
  * Describes properties of a security mechanism (e.g. password authentication).<br> See also:
  * https://www.w3.org/TR/wot-thing-description/#security-serialization-json
@@ -22,5 +20,5 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = PSKSecurityScheme.class, name = "psk"),
         @JsonSubTypes.Type(value = PublicSecurityScheme.class, name = "public")
 })
-public abstract class SecurityScheme implements Serializable {
+public abstract class SecurityScheme {
 }

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -29,7 +28,7 @@ import java.util.*;
  * @param <E>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object, Object>, E extends ThingEvent<Object>> implements Serializable {
+public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object, Object>, E extends ThingEvent<Object>> {
     private static final Logger log = LoggerFactory.getLogger(Thing.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     @JsonProperty("@type")

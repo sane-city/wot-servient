@@ -3,8 +3,6 @@ package city.sane.wot.binding.akka;
 import city.sane.wot.content.Content;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.io.Serializable;
-
 /**
  * This class contains the message types sent between the actors during Thing Interaction.
  */
@@ -15,7 +13,7 @@ public class Messages {
 
     // https://stackoverflow.com/a/53845446/1074188
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-    public static class Read implements Serializable {
+    public static class Read {
         public Read() {
         }
 
@@ -25,7 +23,7 @@ public class Messages {
         }
     }
 
-    public static class RespondRead implements Serializable {
+    public static class RespondRead {
         public final Content content;
 
         public RespondRead(Content content) {
@@ -44,7 +42,7 @@ public class Messages {
         }
     }
 
-    public static class Write implements Serializable {
+    public static class Write {
         public final Content content;
 
         public Write(Content content) {
@@ -63,7 +61,7 @@ public class Messages {
         }
     }
 
-    public static class Written implements Serializable {
+    public static class Written {
         public final Content content;
 
         public Written(Content content) {
@@ -82,7 +80,7 @@ public class Messages {
         }
     }
 
-    public static class Invoke implements Serializable {
+    public static class Invoke {
         public final Content content;
 
         public Invoke(Content content) {
@@ -101,7 +99,7 @@ public class Messages {
         }
     }
 
-    public static class Invoked implements Serializable {
+    public static class Invoked {
         public final Content content;
 
         public Invoked(Content content) {
@@ -122,7 +120,7 @@ public class Messages {
 
     // https://stackoverflow.com/a/53845446/1074188
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-    public static class Subscribe implements Serializable {
+    public static class Subscribe {
         public Subscribe() {
         }
 
@@ -132,7 +130,7 @@ public class Messages {
         }
     }
 
-    public static class SubscriptionNext implements Serializable {
+    public static class SubscriptionNext {
         public final Content next;
 
         SubscriptionNext() {
@@ -151,7 +149,7 @@ public class Messages {
         }
     }
 
-    public static class SubscriptionError implements Serializable {
+    public static class SubscriptionError {
         public final Throwable e;
 
         public SubscriptionError(Throwable e) {
@@ -170,7 +168,7 @@ public class Messages {
         }
     }
 
-    public static class SubscriptionComplete implements Serializable {
+    public static class SubscriptionComplete {
         public SubscriptionComplete() {
         }
 

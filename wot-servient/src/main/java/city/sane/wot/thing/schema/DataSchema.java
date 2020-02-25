@@ -3,8 +3,6 @@ package city.sane.wot.thing.schema;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.io.Serializable;
-
 /**
  * Defines the type of data. Used e.g. to define which input and output values a {@link
  * city.sane.wot.thing.action.ThingAction} has or of which type a {@link
@@ -13,7 +11,7 @@ import java.io.Serializable;
  * @param <T>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public interface DataSchema<T> extends Serializable {
+public interface DataSchema<T> {
     String getType();
 
     @JsonIgnore
