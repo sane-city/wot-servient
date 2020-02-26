@@ -51,6 +51,8 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> start(Servient servient) {
+        log.info("Starting MqttServer for broker '{}' with client ID '{}'", settings.getBroker(), settings.getClientId());
+
         if (client != null) {
             return completedFuture(null);
         }
@@ -67,6 +69,8 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
+        log.info("Stopping MqttServer for broker '{}' with client ID '{}'", settings.getBroker(), settings.getClientId());
+
         if (client != null) {
             return runAsync(() -> {
                 try {

@@ -28,7 +28,8 @@ class MqttProtocolSettings {
             clientId = config.getString("wot.servient.mqtt.client-id");
         }
         else {
-            clientId = MqttClient.generateClientId();
+            // generate random client id
+            clientId = "wot" + System.nanoTime();
         }
 
         if (config.hasPath("wot.servient.mqtt.username")) {
@@ -87,15 +88,15 @@ class MqttProtocolSettings {
         }
     }
 
-    private String getClientId() {
+    public String getClientId() {
         return clientId;
     }
 
-    private String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    private String getPassword() {
+    public String getPassword() {
         return password;
     }
 }

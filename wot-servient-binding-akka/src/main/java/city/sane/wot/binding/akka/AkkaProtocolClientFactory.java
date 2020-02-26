@@ -2,18 +2,19 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import city.sane.RefCountResource;
+import city.sane.RefCountResourceException;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.CompletableFuture.*;
 
 /**
  * Creates new {@link AkkaProtocolClient} instances. An Actor System is created for this purpose.
@@ -24,15 +25,12 @@ import static java.util.concurrent.CompletableFuture.runAsync;
  */
 public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
-    private final SharedActorSystemProvider actorSystemProvider;
+    private final RefCountResource<ActorSystem> actorSystemProvider;
     private ActorSystem system = null;
     private ActorRef discoveryActor = null;
 
     public AkkaProtocolClientFactory(Config config) {
-        String actorSystemName = config.getString("wot.servient.akka.system-name");
-        Config actorSystemConfig = config.getConfig("wot.servient")
-                .withFallback(ConfigFactory.load());
-        actorSystemProvider = SharedActorSystemProvider.singleton(() -> ActorSystem.create(actorSystemName, actorSystemConfig));
+        actorSystemProvider = SharedActorSystemProvider.singleton(config);
     }
 
     @Override
@@ -53,9 +51,13 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> init() {
         log.debug("Init Actor System");
-        system = actorSystemProvider.create();
-
-        return runAsync(() -> discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher"));
+        try {
+            system = actorSystemProvider.retain();
+            return runAsync(() -> discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher"));
+        }
+        catch (RefCountResourceException e) {
+            return failedFuture(e);
+        }
     }
 
     @Override
@@ -63,7 +65,14 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         log.debug("Terminate Actor System");
 
         if (system != null) {
-            return actorSystemProvider.terminate();
+            return runAsync(() -> {
+                try {
+                    actorSystemProvider.release();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
+            });
         }
         else {
             return completedFuture(null);

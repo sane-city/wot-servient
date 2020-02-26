@@ -2,6 +2,8 @@ package city.sane.wot.binding.akka;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import city.sane.RefCountResource;
+import city.sane.RefCountResourceException;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -17,9 +19,9 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.*;
 
 /**
  * Allows exposing Things via Akka Actors.<br> Starts an Actor System with an {@link ThingsActor}
@@ -31,19 +33,19 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 public class AkkaProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final SharedActorSystemProvider actorSystemProvider;
+    private final RefCountResource<ActorSystem> actorSystemProvider;
     private final AkkaProtocolPattern pattern;
     private ActorSystem system;
     private ActorRef thingsActor;
 
     public AkkaProtocolServer(Config config) {
         this(
-                SharedActorSystemProvider.singleton(() -> ActorSystem.create(config.getString("wot.servient.akka.system-name"), config.getConfig("wot.servient"))),
+                SharedActorSystemProvider.singleton(config),
                 new AkkaProtocolPattern()
         );
     }
 
-    protected AkkaProtocolServer(SharedActorSystemProvider actorSystemProvider,
+    protected AkkaProtocolServer(RefCountResource<ActorSystem> actorSystemProvider,
                                  AkkaProtocolPattern pattern) {
         this.actorSystemProvider = actorSystemProvider;
         this.pattern = pattern;
@@ -59,7 +61,12 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("Start AkkaServer");
 
         if (system == null) {
-            system = actorSystemProvider.create();
+            try {
+                system = actorSystemProvider.retain();
+            }
+            catch (RefCountResourceException e) {
+                return failedFuture(e);
+            }
 
             thingsActor = system.actorOf(ThingsActor.props(things), "things");
         }
@@ -72,7 +79,14 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("Stop AkkaServer");
 
         if (system != null) {
-            return actorSystemProvider.terminate();
+            return runAsync(() -> {
+                try {
+                    actorSystemProvider.release();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
+            });
         }
         else {
             return completedFuture(null);
