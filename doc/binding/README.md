@@ -31,15 +31,15 @@ This table shows which operations are supported by which protocol.
 
 |                                   | readResource | writeResource | invokeResource | subscribeResource | discover |
 |---------------                    |:-------------:|:-------------:|:--------------:|:-----------------:|:--------:|
-| [Akka](akka.md)                   |       ✅      |       ✅       |        ✅       |         ✅         |     ✅    |
-| [CoAP](coap.md)                   |       ✅      |       ✅       |        ✅       |         ✅         |          |
-| [File](file.md)                   |       ✅      |       ✅       |                 |         ✅         |          |
-| [HTTP](http.md)                   |       ✅      |       ✅       |        ✅       |         ✅         |          |
-| [Jadex](jadex.md)                 |       ✅      |       ✅       |        *¹        |        *¹          |     ✅    |
-| [JSONPath+HTTP](jsonpath+http.md) |       ✅      |       ✅       |        ✅       |         ✅         |          |
-| [MQTT](mqtt.md)                   |               |                |        ✅       |         ✅         |          |
+| [Akka](akka.md)                   |       ✅      |       ✅       |        ✅      |         ✅        |     ✅   |
+| [CoAP](coap.md)                   |       ✅      |       ✅       |        ✅      |         ✅        |          |
+| [File](file.md)                   |       ✅      |       ✅       |                |         ✅        |          |
+| [HTTP](http.md)                   |       ✅      |       ✅       |        ✅      |         ✅        |          |
+| [Jadex](jadex.md)                 |       ✅      |       ✅       |        *¹      |        *¹         |     ✅   |
+| [JSONPath+HTTP](jsonpath+http.md) |       ✅      |       ✅       |        ✅      |         ✅        |          |
+| [MQTT](mqtt.md)                   |               |                |        ✅      |         ✅        |    ✅    |
 | [Value](value.md)                 |       ✅      |                |                |                   |          |
-| [Websocket](websocket.md)         |       ✅      |       ✅       |        ✅      |          ✅        |          |
+| [Websocket](websocket.md)         |       ✅      |       ✅       |        ✅      |          ✅        |         |
 
 *¹ technically possible, but not implemented yet
 

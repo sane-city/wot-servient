@@ -4,7 +4,11 @@ import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
+import city.sane.wot.content.ContentManager;
+import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
+import city.sane.wot.thing.schema.StringSchema;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -15,9 +19,14 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * Allows consuming Things via MQTT. TODO: Currently the client always connects to the MQTT broker
@@ -72,6 +81,33 @@ public class MqttProtocolClient implements ProtocolClient {
         }
     }
 
+    @Override
+    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
+        @NonNull Observable<Thing> observable = Observable
+                .using(
+                        () -> null,
+                        ignore -> Observable.create(source -> {
+                            log.debug("Subscribe to topic '+' to receive all Thing Descriptions.");
+                            settingsClientPair.second().subscribe("+", (topic, message) -> {
+                                log.debug("Received Message for Discovery with topic '{}': ", topic, message);
+                                Content content = new Content(message.getPayload());
+                                String json = ContentManager.contentToValue(content, new StringSchema());
+                                Thing thing = Thing.fromJson(json);
+                                source.onNext(thing);
+                            });
+                        }),
+                        ignore -> {
+                            log.debug("Discovery is completed. Unsubscribe from topic '+'");
+                            settingsClientPair.second().unsubscribe("+");
+                        }
+                )
+                .takeUntil(Observable.timer(5, TimeUnit.SECONDS))
+                .map(n -> (Thing) n);
+
+        @NonNull List<Thing> things = observable.toList().blockingGet();
+        return completedFuture(things);
+    }
+
     @NonNull
     private Observable<Content> topicObserver(Form form, String topic) {
         return Observable.using(
@@ -91,7 +127,7 @@ public class MqttProtocolClient implements ProtocolClient {
                         source.onError(e);
                     }
                 }),
-                myClient -> {
+                ignore -> {
                     log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settingsClientPair.first().getBroker(), topic);
 
                     try {
