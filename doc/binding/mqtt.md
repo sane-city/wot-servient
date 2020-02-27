@@ -1,6 +1,8 @@
 # MQTT Binding
 
-This binding uses an Message Queuing Telemetry Transport broker to interact with Things.
+This binding uses a Message Queuing Telemetry Transport broker to interact with Things.
+
+The Thing Descriptions of all exposed Things are published as retainable messages on the Broker. The topic corresponds to the Thing Description.
 
 ## Configuration
 
