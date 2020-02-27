@@ -81,6 +81,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         if (system != null) {
             return runAsync(() -> {
                 try {
+                    system = null;
                     actorSystemProvider.release();
                 }
                 catch (RefCountResourceException e) {

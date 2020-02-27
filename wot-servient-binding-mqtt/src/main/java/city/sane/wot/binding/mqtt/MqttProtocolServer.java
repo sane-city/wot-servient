@@ -1,5 +1,8 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.Pair;
+import city.sane.RefCountResource;
+import city.sane.RefCountResourceException;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientDiscoveryIgnore;
 import city.sane.wot.binding.ProtocolServer;
@@ -31,37 +34,31 @@ import static java.util.concurrent.CompletableFuture.*;
 @ServientDiscoveryIgnore
 public class MqttProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
-    private final MqttProtocolSettings settings;
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private MqttClient client;
+    private final RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider;
+    private Pair<MqttProtocolSettings, MqttClient> settingsClientPair;
 
-    public MqttProtocolServer(Config config) throws ProtocolServerException {
-        settings = new MqttProtocolSettings(config);
-        try {
-            settings.validate();
-        }
-        catch (MqttProtocolException e) {
-            throw new ProtocolServerException(e);
-        }
+    public MqttProtocolServer(Config config) {
+        mqttClientProvider = SharedMqttClientProvider.singleton(config);
     }
 
-    MqttProtocolServer(MqttProtocolSettings settings) {
-        this.settings = settings;
+    MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider) {
+        this.mqttClientProvider = mqttClientProvider;
     }
 
     @Override
     public CompletableFuture<Void> start(Servient servient) {
-        log.info("Starting MqttServer for broker '{}' with client ID '{}'", settings.getBroker(), settings.getClientId());
+        log.info("Start MqttServer");
 
-        if (client != null) {
+        if (settingsClientPair != null) {
             return completedFuture(null);
         }
 
         return runAsync(() -> {
             try {
-                client = settings.createConnectedMqttClient();
+                settingsClientPair = mqttClientProvider.retain();
             }
-            catch (MqttProtocolException e) {
+            catch (RefCountResourceException e) {
                 throw new CompletionException(e);
             }
         });
@@ -69,17 +66,15 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping MqttServer for broker '{}' with client ID '{}'", settings.getBroker(), settings.getClientId());
+        log.info("Stop MqttServer");
 
-        if (client != null) {
+        if (settingsClientPair != null) {
             return runAsync(() -> {
                 try {
-                    log.info("MqttServer try to disconnect from broker at '{}'", settings.getBroker());
-                    client.disconnect();
-                    client = null;
-                    log.info("MqttServer disconnected from broker at '{}'", settings.getBroker());
+                    settingsClientPair = null;
+                    mqttClientProvider.release();
                 }
-                catch (MqttException e) {
+                catch (RefCountResourceException e) {
                     throw new CompletionException(e);
                 }
             });
@@ -91,9 +86,9 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("MqttServer at '{}' exposes '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
+        log.info("MqttServer exposes '{}' as unique '/{}/*'", thing.getId(), thing.getId());
 
-        if (client == null) {
+        if (settingsClientPair == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
         }
 
@@ -109,7 +104,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("MqttServer at '{}' stop exposing '{}' as unique '/{}/*'", settings.getBroker(), thing.getId(), thing.getId());
+        log.info("MqttServer stop exposing '{}' as unique '/{}/*'", thing.getId(), thing.getId());
         things.remove(thing.getId());
 
         return completedFuture(null);
@@ -124,8 +119,8 @@ public class MqttProtocolServer implements ProtocolServer {
                     .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
                     .map(content -> new MqttMessage(content.getBody()))
                     .subscribe(
-                            mqttMessage -> client.publish(topic, mqttMessage),
-                            e -> log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage()),
+                            mqttMessage -> settingsClientPair.second().publish(topic, mqttMessage),
+                            e -> log.warn("MqttServer cannot publish data for topic '{}': {}", topic, e.getMessage()),
                             () -> {
                             }
                     );
@@ -149,7 +144,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
             String topic = thing.getId() + "/actions/" + name;
             try {
-                client.subscribe(topic);
+                settingsClientPair.second().subscribe(topic);
 
                 String href = createUrl() + topic;
                 Form form = new Form.Builder()
@@ -175,8 +170,8 @@ public class MqttProtocolServer implements ProtocolServer {
                     .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
                     .map(content -> new MqttMessage(content.getBody()))
                     .subscribe(
-                            mqttMessage -> client.publish(topic, mqttMessage),
-                            e -> log.warn("MqttServer at '{}' cannot publish data for topic '{}': {}", settings.getBroker(), topic, e.getMessage()),
+                            mqttMessage -> settingsClientPair.second().publish(topic, mqttMessage),
+                            e -> log.warn("MqttServer cannot publish data for topic '{}': {}", topic, e.getMessage()),
                             () -> {
                             }
                     );
@@ -196,15 +191,15 @@ public class MqttProtocolServer implements ProtocolServer {
 
     private void listenOnMqttMessages() {
         // connect incoming messages to Thing
-        client.setCallback(new MqttCallback() {
+        settingsClientPair.second().setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
-                log.info("MqttServer at '{}' lost connection to broker: {}", settings.getBroker(), cause.getMessage());
+                log.info("MqttServer lost connection to broker: {}", cause.getMessage());
             }
 
             @Override
             public void messageArrived(String topic, MqttMessage message) {
-                log.info("MqttServer at '{}' received message for '{}'", settings.getBroker(), topic);
+                log.info("MqttServer received message for '{}'", topic);
 
                 String[] segments = topic.split("/", 3);
 
@@ -225,7 +220,7 @@ public class MqttProtocolServer implements ProtocolServer {
                 }
                 else {
                     // topic not found
-                    log.info("MqttServer at '{}' received message for invalid topic '{}'", settings.getBroker(), topic);
+                    log.info("MqttServer received message for unexpected topic '{}'", topic);
                 }
             }
 
@@ -237,7 +232,7 @@ public class MqttProtocolServer implements ProtocolServer {
     }
 
     private String createUrl() {
-        String base = "mqtt" + settings.getBroker().substring(settings.getBroker().indexOf("://"));
+        String base = "mqtt" + settingsClientPair.first().getBroker().substring(settingsClientPair.first().getBroker().indexOf("://"));
         if (!base.endsWith("/")) {
             base = base + "/";
         }
