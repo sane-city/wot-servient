@@ -19,14 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * Allows consuming Things via MQTT. TODO: Currently the client always connects to the MQTT broker
@@ -82,8 +78,8 @@ public class MqttProtocolClient implements ProtocolClient {
     }
 
     @Override
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        @NonNull Observable<Thing> observable = Observable
+    public Observable<Thing> discover(ThingFilter filter) {
+        return Observable
                 .using(
                         () -> null,
                         ignore -> Observable.create(source -> {
@@ -103,9 +99,6 @@ public class MqttProtocolClient implements ProtocolClient {
                 )
                 .takeUntil(Observable.timer(5, TimeUnit.SECONDS))
                 .map(n -> (Thing) n);
-
-        @NonNull List<Thing> things = observable.toList().blockingGet();
-        return completedFuture(things);
     }
 
     @NonNull

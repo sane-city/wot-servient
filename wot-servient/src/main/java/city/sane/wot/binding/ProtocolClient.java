@@ -7,7 +7,6 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.security.SecurityScheme;
 import io.reactivex.rxjava3.core.Observable;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -97,7 +96,7 @@ public interface ProtocolClient {
      * @param filter
      * @return
      */
-    default CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        return failedFuture(new ProtocolClientNotImplementedException(getClass(), "discover"));
+    default Observable<Thing> discover(ThingFilter filter) throws ProtocolClientNotImplementedException {
+        throw new ProtocolClientNotImplementedException(getClass(), "discover");
     }
 }

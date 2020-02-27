@@ -20,7 +20,10 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.filter.*;
+import city.sane.wot.thing.filter.DiscoveryMethod;
+import city.sane.wot.thing.filter.SparqlThingQuery;
+import city.sane.wot.thing.filter.ThingFilter;
+import city.sane.wot.thing.filter.ThingQuery;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -37,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.*;
@@ -190,7 +192,7 @@ public class ServientIT {
     }
 
     @Test
-    public void discoverLocal() throws ExecutionException, InterruptedException {
+    public void discoverLocal() throws ServientException {
         // expose things so that something can be discovered
         ExposedThing thingX = new ExposedThing(servient).setId("ThingX");
         servient.addThing(thingX);
@@ -205,12 +207,12 @@ public class ServientIT {
         // discover
         ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
 
-        Collection<Thing> things = servient.discover(filter).get();
+        Collection<Thing> things = servient.discover(filter).toList().blockingGet();
         assertEquals(3, things.size());
     }
 
     @Test
-    public void discoverLocalWithQuery() throws ExecutionException, InterruptedException, ThingQueryException {
+    public void discoverLocalWithQuery() throws ServientException {
         // expose things so that something can be discovered
         ExposedThing thingX = new ExposedThing(servient)
                 .setId("ThingX")
@@ -230,7 +232,7 @@ public class ServientIT {
         ThingQuery sparqlQuery = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .");
         filter.setQuery(sparqlQuery);
 
-        Collection<Thing> things = servient.discover(filter).get();
+        Collection<Thing> things = servient.discover(filter).toList().blockingGet();
         assertEquals(1, things.size());
     }
 

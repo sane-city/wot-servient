@@ -18,12 +18,12 @@ import java.util.concurrent.ExecutionException;
  * AkkaDiscovery}.
  */
 class AkkaDiscoveryClient {
-    public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
+    public static void main(String[] args) throws WotException {
         Wot wot = DefaultWot.clientOnly();
 
         // Search for things providing a Temperature
         ThingQuery query = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/saref#Temperature> .");
-        Collection<Thing> things = wot.discover(new ThingFilter().setQuery(query)).get();
+        Collection<Thing> things = wot.discover(new ThingFilter().setQuery(query)).toList().blockingGet();
 
         System.out.println("Found " + things.size() + " thing(s)");
 

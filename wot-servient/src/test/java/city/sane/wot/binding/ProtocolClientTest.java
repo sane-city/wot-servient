@@ -75,12 +75,7 @@ public class ProtocolClientTest {
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void discoverShouldThrowProtocolClientNotImplementedException() throws Throwable {
-        try {
-            client.discover(filter).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+    public void discoverShouldThrowProtocolClientNotImplementedException() throws ProtocolClientNotImplementedException {
+        client.discover(filter);
     }
 }

@@ -4,10 +4,10 @@ import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
+import io.reactivex.rxjava3.core.Observable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -22,14 +22,14 @@ public interface Wot {
      * @param filter
      * @return
      */
-    CompletableFuture<Collection<Thing>> discover(ThingFilter filter);
+    Observable<Thing> discover(ThingFilter filter) throws WotException;
 
     /**
      * Starts the discovery process that will provide all available Things.
      *
      * @return
      */
-    CompletableFuture<Collection<Thing>> discover();
+    Observable<Thing> discover() throws WotException;
 
     /**
      * Accepts a <code>thing</code> argument of type {@link Thing} and returns an {@link
