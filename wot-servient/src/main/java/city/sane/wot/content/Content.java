@@ -16,6 +16,10 @@ public class Content {
         body = null;
     }
 
+    public Content(byte[] body) {
+        this(ContentManager.DEFAULT, body);
+    }
+
     public Content(String type, byte[] body) {
         this.type = type;
         this.body = body;

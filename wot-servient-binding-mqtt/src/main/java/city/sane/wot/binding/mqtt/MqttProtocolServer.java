@@ -42,8 +42,10 @@ public class MqttProtocolServer implements ProtocolServer {
         mqttClientProvider = SharedMqttClientProvider.singleton(config);
     }
 
-    MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider) {
+    MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider,
+                       Pair<MqttProtocolSettings, MqttClient> settingsClientPair) {
         this.mqttClientProvider = mqttClientProvider;
+        this.settingsClientPair = settingsClientPair;
     }
 
     @Override
@@ -97,6 +99,7 @@ public class MqttProtocolServer implements ProtocolServer {
         exposeProperties(thing);
         exposeActions(thing);
         exposeEvents(thing);
+        exposeTD(thing);
         listenOnMqttMessages();
 
         return completedFuture(null);
@@ -195,6 +198,21 @@ public class MqttProtocolServer implements ProtocolServer {
             event.addForm(form);
             log.debug("Assign '{}' to Event '{}'", href, name);
         });
+    }
+
+    private void exposeTD(ExposedThing thing) {
+        String topic = thing.getId();
+        log.debug("Publish '{}' Thing Description to topic '{}'", thing.getId(), topic);
+
+        try {
+            Content content = ContentManager.valueToContent(thing.toJson(true));
+            MqttMessage mqttMessage = new MqttMessage(content.getBody());
+            mqttMessage.setRetained(true);
+            settingsClientPair.second().publish(topic, mqttMessage);
+        }
+        catch (ContentCodecException | MqttException e) {
+            log.warn("Unable to publish thing description to topic '" + topic + "': " + e.getMessage());
+        }
     }
 
     private void listenOnMqttMessages() {
