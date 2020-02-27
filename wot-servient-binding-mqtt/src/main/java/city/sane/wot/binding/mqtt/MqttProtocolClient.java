@@ -20,7 +20,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows consuming Things via MQTT.
+ * Allows consuming Things via MQTT. TODO: Currently the client always connects to the MQTT broker
+ * defined in the application.conf, no matter which MQTT broker is defined in the Thing Description
  */
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);

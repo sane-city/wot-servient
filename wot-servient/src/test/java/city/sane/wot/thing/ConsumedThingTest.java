@@ -42,6 +42,7 @@ public class ConsumedThingTest {
 
     @Test
     public void getClientFor() throws ConsumedThingException, ProtocolClientException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
 
@@ -55,6 +56,7 @@ public class ConsumedThingTest {
     // If the client support multiple protocols offered by the thing, it should select the protocol which is first in list
     @Test
     public void getClientForFirstInClient() throws ConsumedThingException, ProtocolClientException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(servient.getClientSchemes()).thenReturn(List.of("test", "bar"));
         when(form1.getHrefScheme()).thenReturn("bar");
@@ -69,6 +71,7 @@ public class ConsumedThingTest {
 
     @Test(expected = NoFormForInteractionConsumedThingException.class)
     public void getClientForWithUnsupportedOperation() throws ConsumedThingException, ProtocolClientException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
         when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
@@ -79,6 +82,7 @@ public class ConsumedThingTest {
 
     @Test(expected = NoClientFactoryForSchemesConsumedThingException.class)
     public void getClientForWithUnsupportedProtocol() throws ConsumedThingException, ProtocolClientException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("http");
         when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
@@ -89,6 +93,7 @@ public class ConsumedThingTest {
 
     @Test
     public void readAllProperties() throws ExecutionException, InterruptedException, ProtocolClientException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
         when(thing.getForms()).thenReturn(List.of(form1));
@@ -102,6 +107,7 @@ public class ConsumedThingTest {
 
     @Test
     public void readSomeProperties() throws ExecutionException, InterruptedException, ProtocolClientException, ContentCodecException {
+        when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
         when(form1.getHrefScheme()).thenReturn("test");
         when(thing.getForms()).thenReturn(List.of(form1));
