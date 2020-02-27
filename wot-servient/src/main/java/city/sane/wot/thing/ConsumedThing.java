@@ -155,8 +155,9 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
     private Pair<String, ProtocolClient> initNewClientFor(Set<String> schemes) throws ConsumedThingException {
         try {
             for (String scheme : schemes) {
-                ProtocolClient client = servient.getClientFor(scheme);
-                if (client != null) {
+                if (servient.hasClientFor(scheme)) {
+                    ProtocolClient client = servient.getClientFor(scheme);
+
                     // init client's security system
                     List<String> security = getSecurity();
                     if (!security.isEmpty()) {

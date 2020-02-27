@@ -273,6 +273,18 @@ public class Servient {
     }
 
     /**
+     * Searches for the matching {@link ProtocolClient} for <code>scheme</code> (e.g. http, coap,
+     * mqtt, etc.). If no client can be found, <code>false</code> is returned.
+     *
+     * @param scheme
+     * @return
+     * @throws ProtocolClientException
+     */
+    public boolean hasClientFor(String scheme) {
+        return clientFactories.containsKey(scheme);
+    }
+
+    /**
      * Calls <code>url</code> and expects a Thing Directory there. Returns a list with all found
      * {@link Thing}.
      *

@@ -86,7 +86,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("MqttServer exposes '{}' as unique '/{}/*'", thing.getId(), thing.getId());
+        log.info("MqttServer exposes '{}' at '{}{}/*'", thing.getId(), createUrl(), thing.getId());
 
         if (settingsClientPair == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
@@ -108,6 +108,14 @@ public class MqttProtocolServer implements ProtocolServer {
         things.remove(thing.getId());
 
         return completedFuture(null);
+    }
+
+    private String createUrl() {
+        String base = "mqtt" + settingsClientPair.first().getBroker().substring(settingsClientPair.first().getBroker().indexOf("://"));
+        if (!base.endsWith("/")) {
+            base = base + "/";
+        }
+        return base;
     }
 
     private void exposeProperties(ExposedThing thing) {
@@ -229,14 +237,6 @@ public class MqttProtocolServer implements ProtocolServer {
                 // do nothing
             }
         });
-    }
-
-    private String createUrl() {
-        String base = "mqtt" + settingsClientPair.first().getBroker().substring(settingsClientPair.first().getBroker().indexOf("://"));
-        if (!base.endsWith("/")) {
-            base = base + "/";
-        }
-        return base;
     }
 
     private void actionMessageArrived(MqttMessage message,

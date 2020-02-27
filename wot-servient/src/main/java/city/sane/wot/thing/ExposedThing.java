@@ -76,6 +76,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
         objectType = thing.getObjectType();
         objectContext = thing.getObjectContext();
         id = thing.getId();
+        log.debug("'{}' created", getId());
         title = thing.getTitle();
         titles = thing.getTitles();
         description = thing.getDescription();
