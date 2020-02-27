@@ -42,8 +42,10 @@ public class MqttProtocolServer implements ProtocolServer {
         mqttClientProvider = SharedMqttClientProvider.singleton(config);
     }
 
-    MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider) {
+    MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider,
+                       Pair<MqttProtocolSettings, MqttClient> settingsClientPair) {
         this.mqttClientProvider = mqttClientProvider;
+        this.settingsClientPair = settingsClientPair;
     }
 
     @Override

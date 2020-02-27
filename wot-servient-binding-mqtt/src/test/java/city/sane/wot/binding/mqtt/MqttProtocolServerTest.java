@@ -2,140 +2,96 @@ package city.sane.wot.binding.mqtt;
 
 import city.sane.Pair;
 import city.sane.RefCountResource;
-import city.sane.RefCountResourceException;
-import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
-import city.sane.wot.thing.action.ThingAction;
-import city.sane.wot.thing.event.ThingEvent;
-import city.sane.wot.thing.property.ThingProperty;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import city.sane.wot.thing.action.ExposedThingAction;
+import city.sane.wot.thing.event.ExposedThingEvent;
+import city.sane.wot.thing.property.ExposedThingProperty;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.junit.After;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockitoAnnotations;
 
-import java.util.Date;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class MqttProtocolServerTest {
-    private Servient servient;
     private MqttProtocolServer server;
     private RefCountResource refCountResource;
+    private MqttProtocolSettings settings;
+    private MqttClient mqttClient;
+    private Pair<MqttProtocolSettings, MqttClient> settingsClientPair;
+    private ExposedThing thing;
+    private ExposedThingProperty<Object> property;
+    private ExposedThingAction action;
+    private ExposedThingEvent event;
 
     @Before
-    public void setUp() throws MqttProtocolException, RefCountResourceException {
-        MockitoAnnotations.initMocks(this);
-
-        MqttClient mqttClient = mock(MqttClient.class);
-
-        doAnswer(invocation -> {
-            MqttCallback callback = invocation.getArgument(0, MqttCallback.class);
-            callback.messageArrived("counter/actions/increment", new MqttMessage());
-            return null;
-        }).when(mqttClient).setCallback(any());
-
-        MqttProtocolSettings settings = mock(MqttProtocolSettings.class);
-        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
-        when(settings.createConnectedMqttClient()).thenReturn(mqttClient);
-
+    public void setUp() {
+        settings = mock(MqttProtocolSettings.class);
+        mqttClient = mock(MqttClient.class);
         refCountResource = mock(RefCountResource.class);
-        when(refCountResource.retain()).thenReturn(new Pair(settings, mqttClient));
-
-        servient = mock(Servient.class);
-
-        server = new MqttProtocolServer(refCountResource);
-        server.start(servient).join();
-    }
-
-    @After
-    public void tearDown() {
-        server.stop().join();
+        settingsClientPair = mock(Pair.class);
+        thing = mock(ExposedThing.class);
+        property = mock(ExposedThingProperty.class);
+        action = mock(ExposedThingAction.class);
+        event = mock(ExposedThingEvent.class);
     }
 
     @Test
-    public void expose() {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
+    public void exposeShouldPublishThingDescription() throws MqttException {
+        when(thing.getId()).thenReturn("counter");
+        when(settingsClientPair.first()).thenReturn(settings);
+        when(settingsClientPair.second()).thenReturn(mqttClient);
+        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
+        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server.expose(thing);
 
-        assertTrue("There must be at least one form", !thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be at least one action", !thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be at least one event", !thing.getEvent("change").getForms().isEmpty());
-    }
-
-    private ExposedThing getCounterThing() {
-        ThingProperty counterProperty = new ThingProperty.Builder()
-                .setType("integer")
-                .setDescription("current counter value")
-                .setObservable(true)
-                .setReadOnly(true)
-                .build();
-
-        ThingProperty lastChangeProperty = new ThingProperty.Builder()
-                .setType("string")
-                .setDescription("last change of counter value")
-                .setObservable(true)
-                .setReadOnly(true)
-                .build();
-
-        ExposedThing thing = new ExposedThing(null)
-                .setId("counter")
-                .setTitle("counter")
-                .setDescription("counter example Thing");
-
-        thing.addProperty("count", counterProperty, 42);
-        thing.addProperty("lastChange", lastChangeProperty, new Date().toString());
-
-        thing.addAction("increment", new ThingAction<Object, Object>(), (input, options) -> {
-            return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) + 1;
-                thing.getProperty("count").write(newValue);
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return newValue;
-            });
-        });
-
-        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
-            return thing.getProperty("count").read().thenApply(value -> {
-                int newValue = ((Integer) value) - 1;
-                thing.getProperty("count").write(newValue);
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return newValue;
-            });
-        });
-
-        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
-            return thing.getProperty("count").write(0).thenApply(value -> {
-                thing.getProperty("lastChange").write(new Date().toString());
-                thing.getEvent("change").emit();
-                return 0;
-            });
-        });
-
-        thing.addEvent("change", new ThingEvent<Object>());
-
-        return thing;
+        verify(mqttClient, times(1)).publish(eq("counter"), any());
     }
 
     @Test
-    public void destroy() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
+    public void exposeShouldExposeProperties() {
+        when(thing.getId()).thenReturn("counter");
+        when(thing.getProperties()).thenReturn(Map.of("count", property));
+        when(property.observer()).thenReturn(PublishSubject.create());
+        when(settingsClientPair.first()).thenReturn(settings);
+        when(settingsClientPair.second()).thenReturn(mqttClient);
+        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
 
-        assertNull(server.destroy(thing).get());
+        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server.expose(thing);
+
+        verify(property, times(1)).addForm(any());
     }
 
     @Test
-    public void invokeAction() throws ExecutionException, InterruptedException {
-        ExposedThing thing = getCounterThing();
-        server.expose(thing).join();
+    public void exposeShouldExposeActions() {
+        when(thing.getId()).thenReturn("counter");
+        when(thing.getActions()).thenReturn(Map.of("increment", action));
+        when(settingsClientPair.first()).thenReturn(settings);
+        when(settingsClientPair.second()).thenReturn(mqttClient);
+        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
 
-        assertEquals(43, thing.getProperty("count").read().get());
+        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server.expose(thing);
+
+        verify(action, times(1)).addForm(any());
+    }
+
+    @Test
+    public void exposeShouldExposeEvents() {
+        when(thing.getId()).thenReturn("counter");
+        when(thing.getEvents()).thenReturn(Map.of("changed", event));
+        when(event.observer()).thenReturn(PublishSubject.create());
+        when(settingsClientPair.first()).thenReturn(settings);
+        when(settingsClientPair.second()).thenReturn(mqttClient);
+        when(settings.getBroker()).thenReturn("tcp://dummy-broker");
+
+        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server.expose(thing);
+
+        verify(event, times(1)).addForm(any());
     }
 }
