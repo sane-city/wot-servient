@@ -5,7 +5,6 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.*;
@@ -15,7 +14,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
@@ -49,10 +47,6 @@ public class HttpProtocolClientTest {
         securityScheme = mock(SecurityScheme.class);
         clientCreator = mock(Function.class);
         httpClient = mock(CloseableHttpClient.class);
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     @Test
@@ -128,16 +122,14 @@ public class HttpProtocolClientTest {
     }
 
     @Test
-    public void subscribeResourceShouldCloseHttpRequestWhenObserverIsDone() throws IOException, InterruptedException {
+    public void subscribeResourceShouldCloseHttpRequestWhenObserverIsDone() throws IOException {
         when(clientCreator.apply(any())).thenReturn(httpClient);
         when(requestClient.execute(any())).thenReturn(httpResponse);
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
 
         client = new HttpProtocolClient(requestClient, clientCreator);
-        Disposable disposable = client.observeResource(form).subscribe();
-
-        Thread.sleep(1 * 1000L);
-
-        disposable.dispose();
+        client.observeResource(form).subscribe().dispose();
 
         verify(httpClient, timeout(1 * 1000L).times(1)).close();
     }

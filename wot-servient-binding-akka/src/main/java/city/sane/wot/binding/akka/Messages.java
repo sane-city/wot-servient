@@ -208,4 +208,7 @@ public class Messages {
             return "SubscriptionComplete{}";
         }
     }
+
+    public static class SubscriptionConfirmed {
+    }
 }

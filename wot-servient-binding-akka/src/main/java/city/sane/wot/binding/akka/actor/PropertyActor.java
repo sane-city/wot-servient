@@ -131,6 +131,8 @@ class PropertyActor extends AbstractActor {
                         e -> sender.tell(new SubscriptionError(e), getSelf()),
                         () -> sender.tell(new SubscriptionComplete(), getSelf())
                 );
+
+        sender.tell(new SubscriptionConfirmed(), getSelf());
     }
 
     public static Props props(String name, ExposedThingProperty<Object> property) {

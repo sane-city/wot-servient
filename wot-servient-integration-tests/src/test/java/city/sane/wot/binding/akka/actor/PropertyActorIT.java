@@ -162,9 +162,7 @@ public class PropertyActorIT {
 
         actorRef.tell(new Subscribe(), testKit.getRef());
 
-        // wait until client establish subcription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
+        testKit.expectMsgClass(Messages.SubscriptionConfirmed.class);
 
         property.write(23).get();
 
