@@ -1,10 +1,10 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import com.typesafe.config.Config;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -20,35 +20,20 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Allows consuming Things via MQTT. TODO: Currently a MqttProtocolClient and therefore also a
- * MqttClient is created for each Thing. Even if each thing is reachable via the same broker. It
- * would be better if there was only one MqttClient per broker and that is shared by all
- * MqttProtocolClient instances. TODO: MqttClient.close() is never called!
+ * Allows consuming Things via MQTT.
  */
 public class MqttProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolClient.class);
-    private final MqttProtocolSettings settings;
     private final Map<String, Observable<Content>> topicSubjects;
-    private MqttClient client;
+    private final Pair<MqttProtocolSettings, MqttClient> settingsClientPair;
 
-    public MqttProtocolClient(Config config) throws ProtocolClientException {
-        try {
-            settings = new MqttProtocolSettings(config);
-            settings.validate();
-            client = settings.createConnectedMqttClient();
-            topicSubjects = new HashMap<>();
-        }
-        catch (MqttProtocolException e) {
-            throw new ProtocolClientException(e);
-        }
+    public MqttProtocolClient(Pair<MqttProtocolSettings, MqttClient> settingsClientPair) {
+        this(settingsClientPair, new HashMap<>());
     }
 
-    MqttProtocolClient(MqttProtocolSettings settings,
-                       MqttClient mqttClient,
+    MqttProtocolClient(Pair<MqttProtocolSettings, MqttClient> settingsClientPair,
                        Map<String, Observable<Content>> topicSubjects) {
-
-        this.settings = settings;
-        client = mqttClient;
+        this.settingsClientPair = settingsClientPair;
         this.topicSubjects = topicSubjects;
     }
 
@@ -89,30 +74,30 @@ public class MqttProtocolClient implements ProtocolClient {
     @NonNull
     private Observable<Content> topicObserver(Form form, String topic) {
         return Observable.using(
-                () -> client,
-                myClient -> Observable.<Content>create(source -> {
-                    log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settings.getBroker(), topic);
+                () -> null,
+                ignore -> Observable.<Content>create(source -> {
+                    log.debug("MqttClient connected to broker at '{}' subscribe to topic '{}'", settingsClientPair.first().getBroker(), topic);
 
                     try {
-                        myClient.subscribe(topic, (receivedTopic, message) -> {
-                            log.debug("MqttClient received message from broker '{}' for topic '{}'", settings.getBroker(), receivedTopic);
+                        settingsClientPair.second().subscribe(topic, (receivedTopic, message) -> {
+                            log.debug("MqttClient received message from broker '{}' for topic '{}'", settingsClientPair.first().getBroker(), receivedTopic);
                             Content content = new Content(form.getContentType(), message.getPayload());
                             source.onNext(content);
                         });
                     }
                     catch (MqttException e) {
-                        log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                        log.warn("Exception occured while trying to subscribe to broker '{}' and topic '{}': {}", settingsClientPair.first().getBroker(), topic, e.getMessage());
                         source.onError(e);
                     }
                 }),
                 myClient -> {
-                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settings.getBroker(), topic);
+                    log.debug("MqttClient subscriptions of broker '{}' and topic '{}' has no more observers. Remove subscription.", settingsClientPair.first().getBroker(), topic);
 
                     try {
-                        myClient.unsubscribe(topic);
+                        settingsClientPair.second().unsubscribe(topic);
                     }
                     catch (MqttException e) {
-                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settings.getBroker(), topic, e.getMessage());
+                        log.warn("Exception occured while trying to unsubscribe from broker '{}' and topic '{}': {}", settingsClientPair.first().getBroker(), topic, e.getMessage());
                     }
                 }
         ).share();
@@ -120,7 +105,7 @@ public class MqttProtocolClient implements ProtocolClient {
 
     private void publishToTopic(Content content, CompletableFuture<Content> future, String topic) {
         try {
-            log.debug("MqttClient at '{}' publishing to topic '{}'", settings.getBroker(), topic);
+            log.debug("MqttClient at '{}' publishing to topic '{}'", settingsClientPair.first().getBroker(), topic);
             byte[] payload;
             if (content != null) {
                 payload = content.getBody();
@@ -128,14 +113,14 @@ public class MqttProtocolClient implements ProtocolClient {
             else {
                 payload = new byte[0];
             }
-            client.publish(topic, new MqttMessage(payload));
+            settingsClientPair.second().publish(topic, new MqttMessage(payload));
 
             // MQTT does not support the request-response pattern. return empty message
             future.complete(Content.EMPTY_CONTENT);
         }
         catch (MqttException e) {
             future.completeExceptionally(new ProtocolClientException(
-                    "MqttClient at '" + settings.getBroker() + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
+                    "MqttClient at '" + settingsClientPair.first().getBroker() + "' cannot publish data for topic '" + topic + "': " + e.getMessage()
             ));
         }
     }

@@ -1,5 +1,6 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
@@ -54,7 +55,7 @@ public class MqttProtocolClientTest {
     public void invokeResourceShouldPublishNullToBroker() throws MqttException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/actions/increment");
 
-        client = new MqttProtocolClient(settings, mqttClient, topicSubjects);
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), topicSubjects);
         client.invokeResource(form);
 
         verify(mqttClient, times(1)).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage(new byte[0]))));
@@ -65,7 +66,7 @@ public class MqttProtocolClientTest {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/actions/increment");
         when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
-        client = new MqttProtocolClient(settings, mqttClient, topicSubjects);
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), topicSubjects);
         client.invokeResource(form, content);
 
         verify(mqttClient, times(1)).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage("Hallo Welt".getBytes()))));
@@ -76,7 +77,7 @@ public class MqttProtocolClientTest {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
-        client = new MqttProtocolClient(settings, mqttClient, new HashMap<>());
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap<>());
         client.observeResource(form).subscribe();
 
         verify(mqttClient, times(1)).subscribe(eq("counter/events/change"), any());
@@ -96,7 +97,7 @@ public class MqttProtocolClientTest {
             return null;
         })).when(mqttClient).subscribe(any(String.class), any(IMqttMessageListener.class));
 
-        client = new MqttProtocolClient(settings, mqttClient, new HashMap<>());
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap<>());
 
         assertEquals(
                 ContentManager.valueToContent("Hallo Welt"),
@@ -115,7 +116,7 @@ public class MqttProtocolClientTest {
         }, d -> {
         });
 
-        client = new MqttProtocolClient(settings, mqttClient, new HashMap(Map.of("counter/events/change", subject)));
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap(Map.of("counter/events/change", subject)));
         client.observeResource(form).subscribe(observer);
 
         verify(subject, times(1)).subscribe(observer);
@@ -132,7 +133,7 @@ public class MqttProtocolClientTest {
         }, d -> {
         });
 
-        client = new MqttProtocolClient(settings, mqttClient, new HashMap());
+        client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap());
         client.observeResource(form).subscribe(observer);
         observer.dispose();
 

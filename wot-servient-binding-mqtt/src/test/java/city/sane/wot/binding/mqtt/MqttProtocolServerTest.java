@@ -1,5 +1,8 @@
 package city.sane.wot.binding.mqtt;
 
+import city.sane.Pair;
+import city.sane.RefCountResource;
+import city.sane.RefCountResourceException;
 import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
@@ -22,9 +25,10 @@ import static org.mockito.Mockito.*;
 public class MqttProtocolServerTest {
     private Servient servient;
     private MqttProtocolServer server;
+    private RefCountResource refCountResource;
 
     @Before
-    public void setUp() throws MqttProtocolException {
+    public void setUp() throws MqttProtocolException, RefCountResourceException {
         MockitoAnnotations.initMocks(this);
 
         MqttClient mqttClient = mock(MqttClient.class);
@@ -39,9 +43,12 @@ public class MqttProtocolServerTest {
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
         when(settings.createConnectedMqttClient()).thenReturn(mqttClient);
 
+        refCountResource = mock(RefCountResource.class);
+        when(refCountResource.retain()).thenReturn(new Pair(settings, mqttClient));
+
         servient = mock(Servient.class);
 
-        server = new MqttProtocolServer(settings);
+        server = new MqttProtocolServer(refCountResource);
         server.start(servient).join();
     }
 
