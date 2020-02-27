@@ -1,5 +1,6 @@
 package city.sane.wot;
 
+import city.sane.Futures;
 import city.sane.wot.binding.*;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -15,6 +16,8 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +27,6 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -401,7 +403,7 @@ public class Servient {
      *
      * @return
      */
-    public CompletableFuture<Collection<Thing>> discover() {
+    public Observable<Thing> discover() throws ServientException {
         return discover(new ThingFilter(DiscoveryMethod.ANY));
     }
 
@@ -413,37 +415,59 @@ public class Servient {
      * @param filter
      * @return
      */
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-        if (filter.getMethod() == DiscoveryMethod.DIRECTORY) {
-            return discoverDirectory(filter);
-        }
-        else {
-            Set<Thing> discoveredThings = new HashSet<>();
-            AtomicBoolean atLeastOneImplementation = new AtomicBoolean(false);
-
-            // get local Things with or without filter query
-            if (filter.getQuery() != null) {
-                discoveredThings.addAll(filter.getQuery().filter(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList())));
-            }
-            else {
-                discoveredThings.addAll(getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList()));
-            }
-
-            if (filter.getMethod() == DiscoveryMethod.LOCAL) {
-                return discoverLocal(discoveredThings);
-            }
-
-            try {
-                return discoverUsingProtocolBindings(filter, discoveredThings, atLeastOneImplementation);
-            }
-            catch (ProtocolClientException e) {
-                return failedFuture(e);
-            }
+    public Observable<Thing> discover(ThingFilter filter) throws ServientException {
+        switch (filter.getMethod()) {
+            case DIRECTORY:
+                return discoverDirectory(filter);
+            case LOCAL:
+                return discoverLocal(filter);
+            default:
+                return discoverAny(filter);
         }
     }
 
-    private CompletableFuture<Collection<Thing>> discoverDirectory(ThingFilter filter) {
-        return fetchDirectory(filter.getUrl()).thenApply(Map::values);
+    private @io.reactivex.rxjava3.annotations.NonNull Observable<Thing> discoverDirectory(
+            ThingFilter filter) {
+        return Futures
+                .toObservable(fetchDirectory(filter.getUrl()).thenApply(Map::values))
+                .flatMapIterable(things -> things);
+    }
+
+    private @io.reactivex.rxjava3.annotations.NonNull Observable<Thing> discoverLocal(ThingFilter filter) {
+        List<Thing> myThings = getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList());
+        if (filter.getQuery() != null) {
+            return Observable.fromIterable(filter.getQuery().filter(myThings));
+        }
+        else {
+            return Observable.fromIterable(myThings);
+        }
+    }
+
+    private Observable<Thing> discoverAny(ThingFilter filter) throws ServientException {
+        @NonNull Observable<Thing> observable = Observable.empty();
+
+        // try to run a discovery with every available protocol binding
+        boolean leastOneClientHasImplementedDiscovery = false;
+        try {
+            for (ProtocolClientFactory factory : clientFactories.values()) {
+                ProtocolClient client = factory.getClient();
+                observable = observable.mergeWith(client.discover(filter));
+                leastOneClientHasImplementedDiscovery = true;
+            }
+        }
+        catch (ProtocolClientNotImplementedException e) {
+            // ignore
+        }
+
+        // fail if none of the available protocol bindings support discovery
+        if (!leastOneClientHasImplementedDiscovery) {
+            throw new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'. Therefore discovery function is not available.");
+        }
+
+        // ensure local things are contained
+        observable = observable.mergeWith(discoverLocal(filter));
+
+        return observable;
     }
 
     /**
@@ -451,50 +475,8 @@ public class Servient {
      *
      * @return
      */
-    private Map<String, ExposedThing> getThings() {
+    Map<String, ExposedThing> getThings() {
         return things;
-    }
-
-    private CompletableFuture<Collection<Thing>> discoverLocal(Set<Thing> discoveredThings) {
-        CompletableFuture<Collection<Thing>> future = new CompletableFuture<>();
-        future.complete(discoveredThings);
-        return future;
-    }
-
-    private CompletableFuture<Collection<Thing>> discoverUsingProtocolBindings(ThingFilter filter,
-                                                                               Set<Thing> discoveredThings,
-                                                                               AtomicBoolean atLeastOneImplementation) throws ProtocolClientException {
-        List<CompletableFuture> discoverFutures = new ArrayList<>();
-        for (ProtocolClientFactory factory : clientFactories.values()) {
-            ProtocolClient client = factory.getClient();
-            CompletableFuture<Void> future = client.discover(filter).handle((clientThings, e) -> {
-                if (e == null) {
-                    discoveredThings.addAll(clientThings);
-                    atLeastOneImplementation.set(true);
-                }
-                else if (!(e instanceof ProtocolClientNotImplementedException)) {
-                    throw new CompletionException(e);
-                }
-                return null;
-            });
-            discoverFutures.add(future);
-        }
-
-        CompletableFuture<Void> discoveryDone = CompletableFuture
-                .allOf(discoverFutures.toArray(CompletableFuture[]::new));
-        return discoveryDone.handle((r, e) -> {
-            if (e == null) {
-                if (atLeastOneImplementation.get()) {
-                    return discoveredThings;
-                }
-                else {
-                    throw new CompletionException(new ProtocolClientNotImplementedException("None of the available clients implements 'discovery'"));
-                }
-            }
-            else {
-                throw new CompletionException(e);
-            }
-        });
     }
 
     /**

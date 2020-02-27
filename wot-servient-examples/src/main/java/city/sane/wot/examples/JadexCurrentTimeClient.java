@@ -8,10 +8,9 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.JsonThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -24,9 +23,7 @@ class JadexCurrentTimeClient {
 
         ThingFilter filter = new ThingFilter()
                 .setQuery(new JsonThingQuery("{\"name\":\"JadexCurrentTime\"}"));
-        CompletableFuture<Collection<Thing>> discover = wot.discover(filter);
-
-        Collection<Thing> things = discover.get();
+        List<Thing> things = wot.discover(filter).toList().blockingGet();
 
         // get first
         Thing thing = things.stream().findFirst().get();

@@ -10,7 +10,6 @@ import city.sane.wot.thing.filter.ThingFilter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -26,10 +25,7 @@ class LuftdatenClient {
         ThingFilter filter = new ThingFilter()
                 .setMethod(DiscoveryMethod.DIRECTORY)
                 .setUrl(new URI("coap://localhost"));
-        Collection<Thing> things = wot.discover(filter).get();
-
-        // get first
-        Thing thing = things.stream().findFirst().get();
+        Thing thing = wot.discover(filter).firstElement().blockingGet();
 
         System.out.println("=== TD ===");
         String json = thing.toJson(true);

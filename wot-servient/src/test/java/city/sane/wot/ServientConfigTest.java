@@ -11,11 +11,10 @@ import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -132,8 +131,8 @@ public class ServientConfigTest {
         }
 
         @Override
-        public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
-            return completedFuture(Collections.emptyList());
+        public Observable<Thing> discover(ThingFilter filter) {
+            return Observable.empty();
         }
     }
 

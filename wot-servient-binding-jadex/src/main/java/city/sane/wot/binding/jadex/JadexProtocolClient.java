@@ -1,5 +1,6 @@
 package city.sane.wot.binding.jadex;
 
+import city.sane.Futures;
 import city.sane.Pair;
 import city.sane.Triple;
 import city.sane.wot.binding.ProtocolClient;
@@ -8,6 +9,7 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
+import io.reactivex.rxjava3.core.Observable;
 import jadex.bridge.IExternalAccess;
 import jadex.bridge.IInternalAccess;
 import jadex.bridge.SFuture;
@@ -115,8 +117,9 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
+    // TODO: Found Things should be transferred to the Observer immediately and not after the future has been completed
     @Override
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
+    public Observable<Thing> discover(ThingFilter filter) {
         CompletableFuture<Collection<Thing>> result = new CompletableFuture<>();
 
         platform.scheduleStep(ia -> {
@@ -130,7 +133,7 @@ public class JadexProtocolClient implements ProtocolClient {
             return DONE;
         });
 
-        return result;
+        return Futures.toObservable(result).flatMapIterable(things -> things);
     }
 
     private void discoverThingServices(ThingFilter filter,

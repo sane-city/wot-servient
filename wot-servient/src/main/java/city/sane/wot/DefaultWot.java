@@ -7,10 +7,10 @@ import city.sane.wot.thing.filter.DiscoveryMethod;
 import city.sane.wot.thing.filter.ThingFilter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.core.Observable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -93,12 +93,12 @@ public class DefaultWot implements Wot {
     }
 
     @Override
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
+    public Observable<Thing> discover(ThingFilter filter) throws WotException {
         return servient.discover(filter);
     }
 
     @Override
-    public CompletableFuture<Collection<Thing>> discover() {
+    public Observable<Thing> discover() throws WotException {
         return discover(new ThingFilter(DiscoveryMethod.ANY));
     }
 

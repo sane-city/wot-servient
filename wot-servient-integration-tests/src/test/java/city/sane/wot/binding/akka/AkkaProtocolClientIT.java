@@ -7,6 +7,7 @@ import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.akka.Messages.*;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
@@ -17,18 +18,18 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AkkaProtocolClientIT {
     private ActorSystem system;
@@ -91,18 +92,21 @@ public class AkkaProtocolClientIT {
     }
 
     @Test
-    public void discover() throws ExecutionException, InterruptedException {
+    public void discoverShouldRetuenEmptyCollection() throws ProtocolClientNotImplementedException {
         system.actorOf(Props.create(MyDiscoverActor.class, MyDiscoverActor::new));
 
-        assertThat(client.discover(new ThingFilter()).get(), instanceOf(Collection.class));
+        List<Thing> things = client.discover(new ThingFilter()).toList().blockingGet();
+        assertTrue(things.isEmpty());
     }
 
-    @Test
-    public void discoverShouldAbleToProcessMultipleDiscoveriesInParallel() throws ExecutionException, InterruptedException {
-        CompletableFuture<Collection<Thing>> discover1 = client.discover(new ThingFilter());
-        CompletableFuture<Collection<Thing>> discover2 = client.discover(new ThingFilter());
+    @Test(timeout = 20 * 1000L)
+    public void discoverShouldAbleToProcessMultipleDiscoveriesInParallel() throws ProtocolClientNotImplementedException {
+        Observable<Thing> discover1 = client.discover(new ThingFilter());
+        Observable<Thing> discover2 = client.discover(new ThingFilter());
 
-        assertNull(CompletableFuture.allOf(discover1, discover2).get());
+        // should not fail
+        discover1.blockingSubscribe();
+        discover2.blockingSubscribe();
     }
 
     private class MyReadActor extends AbstractActor {

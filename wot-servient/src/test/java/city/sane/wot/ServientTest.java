@@ -6,8 +6,9 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.DiscoveryMethod;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
-import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.form.Form;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -180,7 +181,7 @@ public class ServientTest {
     }
 
     @Test
-    public void fetchDirectory() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
+    public void fetchDirectoryShouldCallUnderlyingClient() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
         when(client.readResource(any())).thenReturn(completedFuture(null));
 
@@ -191,7 +192,7 @@ public class ServientTest {
     }
 
     @Test
-    public void fetchDirectoryString() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
+    public void fetchDirectoryWithStringShouldCallUnderlyingClient() throws URISyntaxException, ExecutionException, InterruptedException, ProtocolClientException {
         when(clientFactory.getClient()).thenReturn(client);
         when(client.readResource(any())).thenReturn(completedFuture(null));
 
@@ -202,59 +203,65 @@ public class ServientTest {
     }
 
     @Test
-    public void discover() throws ExecutionException, InterruptedException, ProtocolClientException {
+    public void discoverShouldCallUnderlyingClient() throws ServientException {
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.discover(any())).thenReturn(completedFuture(List.of(thing)));
+        when(client.discover(any())).thenReturn(Observable.just(thing));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
-        servient.discover().get();
+        servient.discover();
 
         verify(client, times(1)).discover(any());
     }
 
     @Test
-    public void discoverWithQuery() throws ExecutionException, InterruptedException, ThingQueryException, ProtocolClientException {
+    public void discoverWithQueryShouldCallUnderlyingClient() throws ServientException {
         ThingFilter filter = new ThingFilter().setQuery(new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> ."));
         when(clientFactory.getClient()).thenReturn(client);
-        when(client.discover(any())).thenReturn(completedFuture(List.of(thing)));
+        when(client.discover(any())).thenReturn(Observable.just(thing));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
-        servient.discover(filter).get();
+        servient.discover(filter);
 
         verify(client, times(1)).discover(filter);
     }
 
     @Test
-    public void discoverLocal() throws ExecutionException, InterruptedException, ProtocolClientException {
-        ThingFilter filter = new ThingFilter(DiscoveryMethod.LOCAL);
+    public void discoverLocalShouldReturnThingsOfTheServient() throws ServientException {
+        Servient servient = spy(new Servient(List.of(), Map.of(), Map.of(), Map.of("counter", exposedThing)));
+        ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.LOCAL);
+        @NonNull List<Thing> things = servient.discover(filter).toList().blockingGet();
 
-        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of("counter", exposedThing));
-
-        assertThat(servient.discover(filter).get(), hasItem(exposedThing));
+        verify(servient, times(1)).getThings();
+        assertThat(things, hasItem(exposedThing));
     }
 
     @Test
-    public void discoverDirectory() throws ExecutionException, InterruptedException, URISyntaxException, ProtocolClientException {
-        ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.DIRECTORY).setUrl(new URI("test:/"));
+    public void discoverDirectoryShouldAccessDirectoryWithUnderlyingClient() throws URISyntaxException, ServientException {
         when(clientFactory.getClient()).thenReturn(client);
         when(client.readResource(any())).thenReturn(completedFuture(null));
 
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
-        servient.discover(filter).get();
+        ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.DIRECTORY).setUrl(new URI("test:/"));
+        servient.discover(filter);
 
         verify(client, times(1)).readResource(new Form.Builder().setHref("test:/").build());
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
-    public void discoverWithNoClientImplementsDiscover() throws Throwable {
+    public void discoverWithNoClientImplementsDiscoverShouldFail() throws ServientException {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
+        servient.discover();
+    }
 
-        try {
-            servient.discover().get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+    @Test
+    public void discoverWithAtLeastOneClientImplementingDiscoverShouldSucceed() throws Throwable {
+        when(clientFactory.getClient()).thenReturn(client);
+        when(client.discover(any())).thenReturn(Observable.just(exposedThing));
+
+        Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
+        @NonNull List<Thing> things = servient.discover().toList().blockingGet();
+
+        assertThat(things, hasItem(exposedThing));
     }
 
     @Test(expected = ServientException.class)

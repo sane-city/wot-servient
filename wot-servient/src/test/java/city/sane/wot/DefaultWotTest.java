@@ -22,7 +22,7 @@ public class DefaultWotTest {
     }
 
     @Test
-    public void discover() {
+    public void discoverShouldCallUnderlyingServient() throws WotException {
         DefaultWot wot = new DefaultWot(servient);
         wot.discover();
 
@@ -30,7 +30,7 @@ public class DefaultWotTest {
     }
 
     @Test
-    public void produce() {
+    public void produceShouldCallUnderlyingServient() {
         DefaultWot wot = new DefaultWot(servient);
         wot.produce(thing);
 

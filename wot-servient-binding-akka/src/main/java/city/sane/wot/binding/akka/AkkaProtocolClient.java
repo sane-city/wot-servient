@@ -3,6 +3,7 @@ package city.sane.wot.binding.akka;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
+import city.sane.Futures;
 import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
@@ -20,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
@@ -119,20 +119,21 @@ public class AkkaProtocolClient implements ProtocolClient {
         );
     }
 
+    // TODO: Found Things should be transferred to the Observer immediately and not after the future has been completed
     @Override
-    public CompletableFuture<Collection<Thing>> discover(ThingFilter filter) {
+    public Observable<Thing> discover(ThingFilter filter) throws ProtocolClientNotImplementedException {
         if (system.settings().config().getStringList("wot.servient.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             Discover message = new Discover(filter);
             log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
             Duration timeout = Duration.ofSeconds(10);
-            return pattern.ask(discoveryActor, message, timeout)
+            return Futures.toObservable(pattern.ask(discoveryActor, message, timeout)
                     .thenApply(m -> ((Things) m).entities.values())
-                    .toCompletableFuture();
+                    .toCompletableFuture()).flatMapIterable(things -> things);
         }
         else {
             log.warn("DistributedPubSub extension missing. ANY Discovery is not be supported.");
-            return failedFuture(new ProtocolClientNotImplementedException(getClass(), "discover"));
+            throw new ProtocolClientNotImplementedException(getClass(), "discover");
         }
     }
 }
