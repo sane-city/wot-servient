@@ -3,6 +3,10 @@ package city.sane.wot.binding.coap;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.coap.resource.ThingResource;
 import city.sane.wot.thing.ExposedThing;
+import city.sane.wot.thing.action.ExposedThingAction;
+import city.sane.wot.thing.event.ExposedThingEvent;
+import city.sane.wot.thing.property.ExposedThingProperty;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.californium.core.CoapResource;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +31,9 @@ public class CoapProtocolServerTest {
     private WotCoapServer coapServer;
     private ExposedThing thing;
     private CoapResource resource;
+    private ExposedThingProperty<Object> property;
+    private ExposedThingAction<Object, Object> action;
+    private ExposedThingEvent<Object> event;
 
     @Before
     public void setUp() {
@@ -40,6 +47,9 @@ public class CoapProtocolServerTest {
         coapServer = mock(WotCoapServer.class);
         thing = mock(ExposedThing.class);
         resource = mock(CoapResource.class);
+        property = mock(ExposedThingProperty.class);
+        action = mock(ExposedThingAction.class);
+        event = mock(ExposedThingEvent.class);
     }
 
     @Test
@@ -70,6 +80,25 @@ public class CoapProtocolServerTest {
         server.expose(thing);
 
         verify(resources, timeout(1 * 1000L).times(1)).put(eq("counter"), any(ThingResource.class));
+    }
+
+    @Test
+    public void exposeShouldAddFormsToThing() {
+        when(coapServer.getRoot()).thenReturn(resource);
+        when(thing.getId()).thenReturn("counter");
+        when(thing.getProperties()).thenReturn(Map.of("count", property));
+        when(property.isObservable()).thenReturn(true);
+        when(property.observer()).thenReturn(PublishSubject.create());
+        when(thing.getActions()).thenReturn(Map.of("reset", action));
+        when(thing.getEvents()).thenReturn(Map.of("changed", event));
+        when(event.observer()).thenReturn(PublishSubject.create());
+
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, List.of("coap://localhost"), things, resources, serverSupplier, coapServer);
+        server.expose(thing);
+
+        verify(property, timeout(1 * 1000L).times(2)).addForm(any());
+        verify(action, timeout(1 * 1000L).times(1)).addForm(any());
+        verify(event, timeout(1 * 1000L).times(1)).addForm(any());
     }
 
     @Test

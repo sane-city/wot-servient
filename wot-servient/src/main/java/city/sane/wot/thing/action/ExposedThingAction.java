@@ -28,6 +28,7 @@ public class ExposedThingAction<I, O> extends ThingAction<I, O> {
         this(name, thing, new ActionState<>(), action.getDescription(), action.getDescriptions(), action.getUriVariables(), action.getInput(), action.getOutput());
     }
 
+    @SuppressWarnings("squid:S107")
     ExposedThingAction(String name,
                        ExposedThing thing,
                        ActionState<I, O> state,

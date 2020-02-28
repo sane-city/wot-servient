@@ -37,6 +37,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     @JsonIgnore
     private final Subject subject;
 
+    @SuppressWarnings("squid:S107")
     ExposedThing(Servient servient,
                  Subject subject,
                  String objectType,

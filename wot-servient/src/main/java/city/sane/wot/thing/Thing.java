@@ -63,6 +63,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     String base;
 
+    @SuppressWarnings("squid:S107")
     Thing(String objectType,
           Context objectContext,
           String id,

@@ -93,6 +93,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
             throw new NoFormForInteractionConsumedThingException(getId(), op);
         }
 
+        // sort available forms by order of client factories defined in config
         List<String> supportedSchemes = servient.getClientSchemes();
         Set<String> schemes = forms.stream().map(Form::getHrefScheme).filter(Objects::nonNull).sorted(Comparator.comparingInt(supportedSchemes::indexOf))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -101,6 +102,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
             throw new NoFormForInteractionConsumedThingException("No schemes in forms found");
         }
 
+        // search client from cache
         String scheme = null;
         ProtocolClient client = null;
         for (String s : schemes) {
@@ -128,26 +130,7 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
             clients.put(scheme, client);
         }
 
-        // find right operation and corresponding scheme in the array form
-        Form form = null;
-        for (Form f : forms) {
-            if (f.getOp() != null && f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
-                form = f;
-                break;
-            }
-        }
-
-        if (form == null) {
-            // if there no op was defined use default assignment
-            final String finalScheme = scheme;
-            Optional<Form> nonOpForm = forms.stream().filter(f -> (f.getOp() == null || f.getOp().isEmpty()) && f.getHrefScheme().equals(finalScheme)).findFirst();
-            if (nonOpForm.isPresent()) {
-                form = nonOpForm.get();
-            }
-            else {
-                throw new NoFormForInteractionConsumedThingException(getId(), op);
-            }
-        }
+        Form form = getFormForOpAndScheme(forms, op, scheme);
 
         return new Pair<>(client, form);
     }
@@ -178,6 +161,32 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
         catch (ProtocolClientException e) {
             throw new ConsumedThingException("Unable to create client: " + e.getMessage());
         }
+    }
+
+    private Form getFormForOpAndScheme(List<Form> forms,
+                                       Operation op,
+                                       String scheme) throws NoFormForInteractionConsumedThingException {
+        // find right operation and corresponding scheme in the array form
+        Form form = null;
+        for (Form f : forms) {
+            if (f.getOp() != null && f.getOp().contains(op) && f.getHrefScheme().equals(scheme)) {
+                form = f;
+                break;
+            }
+        }
+
+        if (form == null) {
+            // if there no op was defined use default assignment
+            final String finalScheme = scheme;
+            Optional<Form> nonOpForm = forms.stream().filter(f -> (f.getOp() == null || f.getOp().isEmpty()) && f.getHrefScheme().equals(finalScheme)).findFirst();
+            if (nonOpForm.isPresent()) {
+                form = nonOpForm.get();
+            }
+            else {
+                throw new NoFormForInteractionConsumedThingException(getId(), op);
+            }
+        }
+        return form;
     }
 
     public CompletableFuture<Map<String, Object>> readProperties(String... names) {

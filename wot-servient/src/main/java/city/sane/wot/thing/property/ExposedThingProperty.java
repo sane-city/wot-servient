@@ -24,6 +24,7 @@ public class ExposedThingProperty<T> extends ThingProperty<T> {
     @JsonIgnore
     private final PropertyState<T> state;
 
+    @SuppressWarnings("squid:S107")
     public ExposedThingProperty(String name,
                                 ExposedThing thing,
                                 PropertyState<T> state,

@@ -111,20 +111,7 @@ public class FileProtocolClient implements ProtocolClient {
             WatchKey watchKey;
             // Wait for the next event
             while (!source.isDisposed() && (watchKey = service.take()) != null) {
-                for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-                    // Get the type of the event
-                    WatchEvent.Kind<?> kind = watchEvent.kind();
-
-                    if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
-                        Path watchEventPath = (Path) watchEvent.context();
-
-                        // Call this if the right file is involved
-                        if (path.getFileName().equals(watchEventPath)) {
-                            Content content = getContentFromPath(path);
-                            source.onNext(content);
-                        }
-                    }
-                }
+                handleWatchKey(path, source, watchKey);
 
                 if (!watchKey.reset()) {
                     break;
@@ -134,6 +121,25 @@ public class FileProtocolClient implements ProtocolClient {
         catch (InterruptedException e) {
             if (!source.isDisposed()) {
                 throw e;
+            }
+        }
+    }
+
+    private void handleWatchKey(Path path,
+                                @NonNull ObservableEmitter<Content> source,
+                                WatchKey watchKey) throws IOException {
+        for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+            // Get the type of the event
+            WatchEvent.Kind<?> kind = watchEvent.kind();
+
+            if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
+                Path watchEventPath = (Path) watchEvent.context();
+
+                // Call this if the right file is involved
+                if (path.getFileName().equals(watchEventPath)) {
+                    Content content = getContentFromPath(path);
+                    source.onNext(content);
+                }
             }
         }
     }
