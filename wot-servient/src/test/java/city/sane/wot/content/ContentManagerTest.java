@@ -1,5 +1,6 @@
 package city.sane.wot.content;
 
+import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import city.sane.wot.thing.schema.StringSchema;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import static org.junit.Assert.*;
 
 public class ContentManagerTest {
     @Test
-    public void contentToValueWithUnsupportedFormat() throws ContentCodecException, IOException {
+    public void contentToValueShouldUseFallbackDeserializerForUnsupportedFormats() throws ContentCodecException, IOException {
         // serialize 42
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -20,7 +21,7 @@ public class ContentManagerTest {
         byte[] body = bos.toByteArray();
 
         Content content = new Content("none/none", body);
-        Object value = ContentManager.contentToValue(content, new StringSchema());
+        Object value = ContentManager.contentToValue(content, new NumberSchema());
 
         assertEquals(42, value);
     }

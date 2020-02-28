@@ -115,16 +115,7 @@ public class ContentManager {
         }
         else {
             log.warn("Content passthrough due to unsupported media type '{}'", mediaType);
-
-            try {
-                ByteArrayInputStream byteStream = new ByteArrayInputStream(content.getBody());
-                ObjectInputStream objectStream = new ObjectInputStream(byteStream);
-
-                return (T) objectStream.readObject();
-            }
-            catch (IOException | ClassNotFoundException e) {
-                throw new ContentCodecException("Unable to deserialize content: " + e.getMessage());
-            }
+            return fallbackBytesToValue(content, schema);
         }
     }
 
@@ -182,6 +173,19 @@ public class ContentManager {
         return parameters;
     }
 
+    private static <T> T fallbackBytesToValue(Content content,
+                                              DataSchema<T> schema) throws ContentCodecException {
+        try {
+            ByteArrayInputStream byteStream = new ByteArrayInputStream(content.getBody());
+            ObjectInputStream objectStream = new SecureObjectInputStream(byteStream, schema);
+
+            return (T) objectStream.readObject();
+        }
+        catch (IOException | ClassNotFoundException e) {
+            throw new ContentCodecException("Unable to deserialize content: " + e.getMessage());
+        }
+    }
+
     /**
      * Serialized <code>value</code> using default content type defined in {@link #DEFAULT} to a
      * {@link Content} object.
@@ -225,22 +229,27 @@ public class ContentManager {
         }
         else {
             log.warn("Content passthrough due to unsupported serialization format '{}'", mediaType);
-
-            try {
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
-
-                objectStream.writeObject(value);
-                objectStream.flush();
-
-                bytes = byteStream.toByteArray();
-            }
-            catch (IOException e) {
-                throw new ContentCodecException("Unable to serialize content: " + e.getMessage());
-            }
+            bytes = fallbackValueToBytes(value);
         }
 
         return new Content(contentType, bytes);
+    }
+
+    private static byte[] fallbackValueToBytes(Object value) throws ContentCodecException {
+        byte[] bytes;
+        try {
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
+
+            objectStream.writeObject(value);
+            objectStream.flush();
+
+            bytes = byteStream.toByteArray();
+        }
+        catch (IOException e) {
+            throw new ContentCodecException("Unable to serialize content: " + e.getMessage());
+        }
+        return bytes;
     }
 
     /**
@@ -262,5 +271,26 @@ public class ContentManager {
      */
     public static Set<String> getSupportedMediaTypes() {
         return CODECS.keySet();
+    }
+
+    private static class SecureObjectInputStream extends ObjectInputStream {
+        private final DataSchema schema;
+
+        public SecureObjectInputStream(InputStream in, DataSchema schema) throws IOException {
+            super(in);
+            this.schema = schema;
+        }
+
+        @Override
+        protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            if (!isAllowedClass(desc.getName())) {
+                throw new InvalidClassException("Disallowed class for DataSchema '" + schema + "': ", desc.getName());
+            }
+            return super.resolveClass(desc);
+        }
+
+        private boolean isAllowedClass(String className) throws ClassNotFoundException {
+            return schema.getClassType().isAssignableFrom(Class.forName(className));
+        }
     }
 }

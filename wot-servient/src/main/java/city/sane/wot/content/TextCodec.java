@@ -1,6 +1,6 @@
 package city.sane.wot.content;
 
-import city.sane.wot.thing.schema.DataSchema;
+import city.sane.wot.thing.schema.*;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -29,18 +29,22 @@ public class TextCodec implements ContentCodec {
         String type = schema.getType();
         // TODO: array, object
         switch (type) {
-            case "boolean":
+            case BooleanSchema
+                    .TYPE:
                 return (T) Boolean.valueOf(parsed);
-            case "integer":
+            case IntegerSchema
+                    .TYPE:
                 return (T) Integer.valueOf(parsed);
-            case "number":
+            case NumberSchema
+                    .TYPE:
                 if (parsed.contains(".")) {
                     return (T) Double.valueOf(parsed);
                 }
                 else {
                     return (T) Long.valueOf(parsed);
                 }
-            case "string":
+            case StringSchema
+                    .TYPE:
                 return (T) parsed;
             default:
                 return null;
