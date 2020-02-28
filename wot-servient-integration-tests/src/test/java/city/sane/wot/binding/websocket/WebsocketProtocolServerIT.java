@@ -7,7 +7,9 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
+import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.event.ThingEvent;
+import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -16,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -34,6 +36,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -214,12 +217,7 @@ public class WebsocketProtocolServerIT {
                 },
                 Pair::first,
                 pair -> pair.second().close()
-        ).doOnNext(new Consumer<AbstractServerMessage>() {
-            @Override
-            public void accept(AbstractServerMessage abstractServerMessage) throws Throwable {
-
-            }
-        });
+        );
     }
 
     @Test(timeout = 20 * 1000L)
@@ -257,16 +255,16 @@ public class WebsocketProtocolServerIT {
 
     @Test
     public void testSubscribeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
+        ExposedThingProperty<Object> property = thing.getProperty("count");
+
         // send SubscribeProperty message to server and wait for SubscribeNextResponse message from server
         SubscribeProperty request = new SubscribeProperty("counter", "count");
-
         Future<Content> future = subscription(request).firstElement().toFuture();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(10 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(property.getState().getSubject()::hasObservers);
 
-        thing.getProperty("count").write(1337).get();
+        property.write(1337).get();
 
         assertEquals(ContentManager.valueToContent(1337), future.get(10, TimeUnit.SECONDS));
     }
@@ -294,18 +292,16 @@ public class WebsocketProtocolServerIT {
 
     @Test
     public void testSubscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
-        // send SubscribeEvent message to server and wait for SubscribeNextResponse message from server
+        ExposedThingEvent<Object> event = thing.getEvent("change");
+        // send SubscribeEvent message to server
+        // and wait for SubscribeNextResponse message from server
         SubscribeEvent request = new SubscribeEvent("counter", "change");
-
         Future<Content> future = subscription(request).firstElement().toFuture();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(10 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(event.getState().getSubject()::hasObservers);
 
-        thing.getEvent("change").emit();
-
-        Thread.sleep(10 * 1000L);
+        event.emit();
 
         assertEquals(new Content(ContentManager.DEFAULT, "null".getBytes()), future.get(10, TimeUnit.SECONDS));
     }

@@ -24,10 +24,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 public class PropertyActorIT {
@@ -162,10 +164,11 @@ public class PropertyActorIT {
 
         actorRef.tell(new Subscribe(), testKit.getRef());
 
-        testKit.expectMsgClass(Messages.SubscriptionConfirmed.class);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(property.getState().getSubject()::hasObservers);
 
         property.write(23).get();
 
-        testKit.expectMsgClass(SubscriptionNext.class);
+        testKit.expectMsgClass(Duration.ofSeconds(10), SubscriptionNext.class);
     }
 }
