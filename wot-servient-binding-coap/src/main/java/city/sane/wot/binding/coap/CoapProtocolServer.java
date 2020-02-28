@@ -12,22 +12,20 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.typesafe.config.Config;
-import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.*;
@@ -47,8 +45,9 @@ public class CoapProtocolServer implements ProtocolServer {
     private final String bindHost;
     private final int bindPort;
     private final List<String> addresses;
-    private final Map<String, ExposedThing> things = new HashMap<>();
-    private final Map<String, CoapResource> resources = new HashMap<>();
+    private final Map<String, ExposedThing> things;
+    private final Map<String, CoapResource> resources;
+    private final Supplier<WotCoapServer> serverSupplier;
     private WotCoapServer server;
 
     public CoapProtocolServer(Config config) {
@@ -60,6 +59,25 @@ public class CoapProtocolServer implements ProtocolServer {
         else {
             addresses = Servient.getAddresses().stream().map(a -> "coap://" + a + ":" + bindPort).collect(Collectors.toList());
         }
+        things = new HashMap<>();
+        resources = new HashMap<>();
+        serverSupplier = () -> new WotCoapServer(this);
+    }
+
+    CoapProtocolServer(String bindHost,
+                       int bindPort,
+                       List<String> addresses,
+                       Map<String, ExposedThing> things,
+                       Map<String, CoapResource> resources,
+                       Supplier<WotCoapServer> serverSupplier,
+                       WotCoapServer server) {
+        this.bindHost = bindHost;
+        this.bindPort = bindPort;
+        this.addresses = addresses;
+        this.things = things;
+        this.resources = resources;
+        this.serverSupplier = serverSupplier;
+        this.server = server;
     }
 
     @Override
@@ -76,7 +94,7 @@ public class CoapProtocolServer implements ProtocolServer {
         }
 
         return runAsync(() -> {
-            server = new WotCoapServer(this);
+            server = serverSupplier.get();
             server.start();
         });
     }
@@ -365,43 +383,5 @@ public class CoapProtocolServer implements ProtocolServer {
 
     public Map<String, ExposedThing> getThings() {
         return things;
-    }
-
-    /**
-     * This methods blocks until <code>relation</code> is acknowledged. The maximum blocking time is
-     * specified with <code>duration</code>. If the relation is not acknowledged within the
-     * specified duration, a {@link TimeoutException} is thrown.
-     *
-     * @param relation
-     * @param duration
-     * @throws TimeoutException
-     */
-    public static void waitForRelationAcknowledgedObserveRelation(CoapObserveRelation relation,
-                                                                  Duration duration) throws TimeoutException {
-        CompletableFuture<Void> result = new CompletableFuture<>();
-
-        try {
-            Field requestField = CoapObserveRelation.class.getDeclaredField("request");
-            requestField.setAccessible(true);
-            Request request = (Request) requestField.get(relation);
-
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (request.isAcknowledged()) {
-                        result.complete(null);
-                    }
-                }
-            }, 0, 100);
-
-            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        catch (NoSuchFieldException | IllegalAccessException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
