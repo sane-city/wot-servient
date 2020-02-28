@@ -24,6 +24,7 @@ import java.util.Map;
 /**
  * Produces and exposes every Klimabotschafter's weather stations as a thing.
  */
+@SuppressWarnings("squid:S2925")
 class Klimabotschafter {
     private Klimabotschafter() throws InterruptedException, WotException {
         // create wot

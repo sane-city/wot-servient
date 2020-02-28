@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * This examples read properties from a phyNODE.
  */
+@SuppressWarnings("squid:S2925")
 class PhytecClient {
     private PhytecClient() throws URISyntaxException, WotException {
         // create wot

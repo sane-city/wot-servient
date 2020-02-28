@@ -18,8 +18,10 @@ import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
 import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
+import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ConsumedThingProperty;
+import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -34,10 +36,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.nullValue;
@@ -184,12 +190,14 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000L)
+    @Test
     public void observePropertyShouldHandleMultipleSubscription() throws ConsumedThingException, InterruptedException, ExecutionException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
             exposedThing.expose().join();
+
+            ExposedThingProperty<Object> property = exposedThing.getProperty("count");
 
             ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
 
@@ -201,27 +209,54 @@ public class ConsumedThingIT {
             Disposable disposable2 = consumedThing.getProperty("count").observer()
                     .subscribe(next -> results2.add(next.orElse(null)));
 
-            // wait until client establish subscription
-            // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-            Thread.sleep(5 * 1000L);
+            // wait until boths clients have established subscriptions
+            await()
+                    .atMost(Duration.ofSeconds(10))
+                    .until(() -> {
+                        Object[] subscribers = (Object[]) fieldIn(property.getState().getSubject())
+                                .ofType(AtomicReference.class)
+                                .andWithName("subscribers").call().get();
+                        if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                            // TODO: These bindings require only one Observer. Therefore, we cannot
+                            //  check whether the two clients have actually subscribed. Therefore
+                            //  race conditions can occur here
+                            return subscribers.length == 1;
+                        }
+                        else {
+                            return subscribers.length == 2;
+                        }
+                    });
 
-            exposedThing.getProperty("count").write(1337).get();
+            property.write(1337).get();
 
-            // wait until client fires next subscribe-request to server
-            // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-            Thread.sleep(5 * 1000L);
+            // wait until boths clients have established subscriptions
+            await()
+                    .atMost(Duration.ofSeconds(10))
+                    .until(() -> {
+                        Object[] subscribers = (Object[]) fieldIn(property.getState().getSubject())
+                                .ofType(AtomicReference.class)
+                                .andWithName("subscribers").call().get();
+                        if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                            // TODO: These bindings require only one Observer. Therefore, we cannot
+                            //  check whether the two clients have actually subscribed. Therefore
+                            //  race conditions can occur here
+                            return subscribers.length == 1;
+                        }
+                        else {
+                            return subscribers.length == 2;
+                        }
+                    });
 
-            exposedThing.getProperty("count").write(1338).get();
+            property.write(1338).get();
 
-            // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-            // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-            Thread.sleep(5 * 1000L);
+            // wait until boths clients have received all results
+            await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+                assertThat(results1, contains(1337, 1338));
+                assertThat(results2, contains(1337, 1338));
+            });
 
             disposable1.dispose();
             disposable2.dispose();
-
-            assertThat(results1, contains(1337, 1338));
-            assertThat(results2, contains(1337, 1338));
         }
         catch (ExecutionException e) {
             if (!(e.getCause() instanceof ProtocolClientNotImplementedException)) {
@@ -330,6 +365,8 @@ public class ConsumedThingIT {
         servient.addThing(exposedThing);
         exposedThing.expose().join();
 
+        ExposedThingEvent<Object> event = exposedThing.getEvent("change");
+
         ConsumedThing consumedThing = new ConsumedThing(servient, exposedThing);
 
         List<Object> results1 = new ArrayList<>();
@@ -340,27 +377,54 @@ public class ConsumedThingIT {
         Disposable disposable2 = consumedThing.getEvent("change").observer()
                 .subscribe(next -> results2.add(next.orElse(null)));
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
+        // wait until boths clients have established subscriptions
+        await()
+                .atMost(Duration.ofSeconds(10))
+                .until(() -> {
+                    Object[] subscribers = (Object[]) fieldIn(event.getState().getSubject())
+                            .ofType(AtomicReference.class)
+                            .andWithName("subscribers").call().get();
+                    if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                        // TODO: These bindings require only one Observer. Therefore, we cannot
+                        //  check whether the two clients have actually subscribed. Therefore
+                        //  race conditions can occur here
+                        return subscribers.length == 1;
+                    }
+                    else {
+                        return subscribers.length == 2;
+                    }
+                });
 
-        exposedThing.getEvent("change").emit();
+        event.emit();
 
-        // wait until client fires next subscribe-request to server
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(5 * 1000L);
+        // wait until boths clients have established subscriptions
+        await()
+                .atMost(Duration.ofSeconds(10))
+                .until(() -> {
+                    Object[] subscribers = (Object[]) fieldIn(event.getState().getSubject())
+                            .ofType(AtomicReference.class)
+                            .andWithName("subscribers").call().get();
+                    if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                        // TODO: These bindings require only one Observer. Therefore, we cannot
+                        //  check whether the two clients have actually subscribed. Therefore
+                        //  race conditions can occur here
+                        return subscribers.length == 1;
+                    }
+                    else {
+                        return subscribers.length == 2;
+                    }
+                });
 
-        exposedThing.getEvent("change").emit();
+        event.emit();
 
-        // Subscriptions are executed asynchronously. Therefore, wait "some" time before we check the result.
-        // TODO: This is error-prone. We need a function that notifies us when all subscriptions have been executed.
-        Thread.sleep(5 * 1000L);
+        // wait until boths clients have received all results
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            assertThat(results1, contains(nullValue(), nullValue()));
+            assertThat(results2, contains(nullValue(), nullValue()));
+        });
 
         disposable1.dispose();
         disposable2.dispose();
-
-        assertThat(results1, contains(nullValue(), nullValue()));
-        assertThat(results2, contains(nullValue(), nullValue()));
     }
 
     @Parameters(name = "{0}")
