@@ -31,10 +31,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 
 /**
@@ -123,18 +121,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
                     clientMessage = JSON_MAPPER.convertValue(message, AbstractClientMessage.class);
                 }
 
-                try {
-                    WebsocketClient client = getClientFor(form);
-                    AbstractServerMessage response = ask(client, clientMessage).get();
-                    return completedFuture(response.toContent());
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
-                catch (ExecutionException e) {
-                    return failedFuture(e);
-                }
+                WebsocketClient client = getClientFor(form);
+                return ask(client, clientMessage).thenApply(AbstractServerMessage::toContent);
             }
             catch (IllegalArgumentException e) {
                 return failedFuture(new ProtocolClientException("Client is unable to parse given message: " + e.getMessage()));
@@ -155,15 +143,9 @@ public class WebsocketProtocolClient implements ProtocolClient {
             if (client == null || !client.isOpen()) {
                 log.info("Create new websocket client for socket '{}'", uri);
 
-                try {
-                    client = new WebsocketClient(uri);
-                    clients.put(uri, client);
-                    return client;
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
+                client = new WebsocketClient(uri);
+                clients.put(uri, client);
+                return client;
             }
             else {
                 return client;
@@ -195,7 +177,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         private final URI uri;
         private final WebsocketClientHandshakerHandler handler;
 
-        public WebsocketClient(URI uri) throws InterruptedException {
+        public WebsocketClient(URI uri) {
             this.uri = uri;
             handler = new WebsocketClientHandshakerHandler(
                     WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders())
@@ -239,8 +221,8 @@ public class WebsocketProtocolClient implements ProtocolClient {
                             );
                         }
                     });
-            channel = clientBootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
-            handler.handshakeFuture().sync();
+            channel = clientBootstrap.connect(uri.getHost(), uri.getPort()).syncUninterruptibly().channel();
+            handler.handshakeFuture().syncUninterruptibly();
         }
 
         public void close() {

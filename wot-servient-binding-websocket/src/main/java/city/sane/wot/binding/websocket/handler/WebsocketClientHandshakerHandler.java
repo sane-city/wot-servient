@@ -28,10 +28,6 @@ public class WebsocketClientHandshakerHandler extends SimpleChannelInboundHandle
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);

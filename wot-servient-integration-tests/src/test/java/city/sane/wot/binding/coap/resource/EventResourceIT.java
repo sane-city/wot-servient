@@ -9,7 +9,10 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.eclipse.californium.core.*;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapHandler;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +22,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertNull;
 
 public class EventResourceIT {
@@ -115,10 +120,10 @@ public class EventResourceIT {
     }
 
     @Test
-    public void subscribeEvent() throws ExecutionException, InterruptedException, TimeoutException {
+    public void observeEvent() throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<Void> result = new CompletableFuture<>();
         CoapClient client = new CoapClient("coap://localhost:5683/change");
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
+        client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
                 client.shutdown();
@@ -131,15 +136,15 @@ public class EventResourceIT {
                 result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
             }
         });
+        ExposedThingEvent<Object> event = thing.getEvent("change");
 
-        // wait until client establish subscription
-        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(event.getState().getSubject()::hasObservers);
 
         // emit event
-        ExposedThingEvent<Object> event = thing.getEvent("change");
         event.emit();
 
         // future should complete within a few seconds
-        assertNull(result.get());
+        assertNull(result.get(10, TimeUnit.SECONDS));
     }
 }

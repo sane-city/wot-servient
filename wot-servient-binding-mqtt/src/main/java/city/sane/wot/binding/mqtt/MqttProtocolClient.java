@@ -85,7 +85,7 @@ public class MqttProtocolClient implements ProtocolClient {
                         ignore -> Observable.create(source -> {
                             log.debug("Subscribe to topic '+' to receive all Thing Descriptions.");
                             settingsClientPair.second().subscribe("+", (topic, message) -> {
-                                log.debug("Received Message for Discovery with topic '{}': ", topic, message);
+                                log.debug("Received Message for Discovery with topic '{}': {}", topic, message);
                                 Content content = new Content(message.getPayload());
                                 String json = ContentManager.contentToValue(content, new StringSchema());
                                 Thing thing = Thing.fromJson(json);

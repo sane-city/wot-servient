@@ -12,7 +12,10 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.eclipse.californium.core.*;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapHandler;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.junit.After;
 import org.junit.Before;
@@ -23,8 +26,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 public class ObservePropertyResourceIT {
@@ -118,11 +123,11 @@ public class ObservePropertyResourceIT {
         CoapProtocolServer.waitForPort(5683);
     }
 
-    @Test(timeout = 20 * 1000)
+    @Test
     public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
         CompletableFuture<Content> result = new CompletableFuture<>();
         CoapClient client = new CoapClient("coap://localhost:5683/observable");
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
+        client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
                 client.shutdown();
@@ -138,16 +143,16 @@ public class ObservePropertyResourceIT {
                 result.completeExceptionally(new ProtocolServerException("Error while observe '" + client.getURI() + "'"));
             }
         });
+        ExposedThingProperty<Object> property = thing.getProperty("count");
 
-        // wait until client establish subscription
-        CoapProtocolServer.waitForRelationAcknowledgedObserveRelation(relation, Duration.ofSeconds(5));
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(property.getState().getSubject()::hasObservers);
 
         // write new value
-        ExposedThingProperty<Object> property = thing.getProperty("count");
         property.write(1337).get();
 
         // wait until new value is received
-        Content content = result.get();
+        Content content = result.get(10, TimeUnit.SECONDS);
 
         Object newValue = ContentManager.contentToValue(content, property);
 

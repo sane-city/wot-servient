@@ -10,16 +10,14 @@ public class Futures {
     }
 
     public static <T> Observable<T> toObservable(CompletableFuture<T> future) {
-        return Observable.create(source -> {
-            future.whenComplete((result, e) -> {
-                if (e == null) {
-                    source.onNext(result);
-                    source.onComplete();
-                }
-                else {
-                    source.onError(e);
-                }
-            });
-        });
+        return Observable.create(source -> future.whenComplete((result, e) -> {
+            if (e == null) {
+                source.onNext(result);
+                source.onComplete();
+            }
+            else {
+                source.onError(e);
+            }
+        }));
     }
 }

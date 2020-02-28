@@ -103,6 +103,7 @@ public class GroovyEngine implements ScriptingEngine {
         return customizer;
     }
 
+    @SuppressWarnings("squid:S125")
     private SecureASTCustomizer getSecureASTCustomizer() {
         SecureASTCustomizer customizer = new SecureASTCustomizer();
         customizer.setMethodDefinitionAllowed(false);

@@ -18,6 +18,7 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,8 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.*;
 
 public class AkkaProtocolClientIT {
     private ActorSystem system;
@@ -105,8 +106,11 @@ public class AkkaProtocolClientIT {
         Observable<Thing> discover2 = client.discover(new ThingFilter());
 
         // should not fail
-        discover1.blockingSubscribe();
-        discover2.blockingSubscribe();
+        @NonNull List<Thing> things1 = discover1.toList().blockingGet();
+        @NonNull List<Thing> things2 = discover2.toList().blockingGet();
+
+        assertThat(things1, empty());
+        assertThat(things2, empty());
     }
 
     private class MyReadActor extends AbstractActor {

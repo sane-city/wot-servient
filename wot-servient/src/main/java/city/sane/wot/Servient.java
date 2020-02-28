@@ -430,7 +430,7 @@ public class Servient {
             ThingFilter filter) {
         return Futures
                 .toObservable(fetchDirectory(filter.getUrl()).thenApply(Map::values))
-                .flatMapIterable(things -> things);
+                .flatMapIterable(myThings -> myThings);
     }
 
     private @io.reactivex.rxjava3.annotations.NonNull Observable<Thing> discoverLocal(ThingFilter filter) {

@@ -99,7 +99,7 @@ public class FileProtocolClient implements ProtocolClient {
                 WatchService::close
         )
                 .doOnSubscribe(d -> subscriptionsCount.incrementAndGet())
-                .doOnDispose(() -> subscriptionsCount.decrementAndGet())
+                .doOnDispose(subscriptionsCount::decrementAndGet)
                 .subscribeOn(Schedulers.io());
     }
 
@@ -110,7 +110,6 @@ public class FileProtocolClient implements ProtocolClient {
             // Start the infinite polling loop
             WatchKey watchKey;
             // Wait for the next event
-            System.out.println("GEHT LOS");
             while (!source.isDisposed() && (watchKey = service.take()) != null) {
                 for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
                     // Get the type of the event

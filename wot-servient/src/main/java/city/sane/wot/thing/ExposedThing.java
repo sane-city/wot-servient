@@ -170,6 +170,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param handler
      * @return
      */
+    @SuppressWarnings("squid:S1905")
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
                                   Runnable handler) {
@@ -471,6 +472,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param handler
      * @return
      */
+    @SuppressWarnings("squid:S1905")
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
                                   Supplier<CompletableFuture<Object>> handler) {

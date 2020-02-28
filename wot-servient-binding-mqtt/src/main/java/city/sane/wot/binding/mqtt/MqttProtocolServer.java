@@ -88,7 +88,8 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("MqttServer exposes '{}' at '{}{}/*'", thing.getId(), createUrl(), thing.getId());
+        String baseUrl = createUrl();
+        log.info("MqttServer exposes '{}' at '{}{}/*'", thing.getId(), baseUrl, thing.getId());
 
         if (settingsClientPair == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before MqttServer has been started"));
@@ -96,9 +97,9 @@ public class MqttProtocolServer implements ProtocolServer {
 
         things.put(thing.getId(), thing);
 
-        exposeProperties(thing);
-        exposeActions(thing);
-        exposeEvents(thing);
+        exposeProperties(thing, baseUrl);
+        exposeActions(thing, baseUrl);
+        exposeEvents(thing, baseUrl);
         exposeTD(thing);
         listenOnMqttMessages();
 
@@ -121,7 +122,7 @@ public class MqttProtocolServer implements ProtocolServer {
         return base;
     }
 
-    private void exposeProperties(ExposedThing thing) {
+    private void exposeProperties(ExposedThing thing, String baseUrl) {
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
@@ -136,7 +137,7 @@ public class MqttProtocolServer implements ProtocolServer {
                             }
                     );
 
-            String href = createUrl() + topic;
+            String href = baseUrl + topic;
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
@@ -147,7 +148,7 @@ public class MqttProtocolServer implements ProtocolServer {
         });
     }
 
-    private void exposeActions(ExposedThing thing) {
+    private void exposeActions(ExposedThing thing, String baseUrl) {
         Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
         for (Map.Entry<String, ExposedThingAction<Object, Object>> entry : actions.entrySet()) {
             String name = entry.getKey();
@@ -157,7 +158,7 @@ public class MqttProtocolServer implements ProtocolServer {
             try {
                 settingsClientPair.second().subscribe(topic);
 
-                String href = createUrl() + topic;
+                String href = baseUrl + topic;
                 Form form = new Form.Builder()
                         .setHref(href)
                         .setContentType(ContentManager.DEFAULT)
@@ -172,7 +173,7 @@ public class MqttProtocolServer implements ProtocolServer {
         }
     }
 
-    private void exposeEvents(ExposedThing thing) {
+    private void exposeEvents(ExposedThing thing, String baseUrl) {
         Map<String, ExposedThingEvent<Object>> events = thing.getEvents();
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
@@ -187,7 +188,7 @@ public class MqttProtocolServer implements ProtocolServer {
                             }
                     );
 
-            String href = createUrl() + topic;
+            String href = baseUrl + topic;
             Form form = new Form.Builder()
                     .setHref(href)
                     .setContentType(ContentManager.DEFAULT)
@@ -211,7 +212,7 @@ public class MqttProtocolServer implements ProtocolServer {
             settingsClientPair.second().publish(topic, mqttMessage);
         }
         catch (ContentCodecException | MqttException e) {
-            log.warn("Unable to publish thing description to topic '" + topic + "': " + e.getMessage());
+            log.warn("Unable to publish thing description to topic '{}': {}", topic, e.getMessage());
         }
     }
 
