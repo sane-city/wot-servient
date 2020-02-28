@@ -108,10 +108,9 @@ public class FileProtocolClient implements ProtocolClient {
                                 WatchService service,
                                 @NonNull ObservableEmitter<Content> source) throws InterruptedException, IOException {
         // Start the infinite polling loop
-        System.out.println(System.nanoTime() + " READY");
         WatchKey watchKey;
         // Wait for the next event
-        while ((watchKey = service.take()) != null) {
+        while (!source.isDisposed() && (watchKey = service.take()) != null) {
             for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
                 // Get the type of the event
                 WatchEvent.Kind<?> kind = watchEvent.kind();

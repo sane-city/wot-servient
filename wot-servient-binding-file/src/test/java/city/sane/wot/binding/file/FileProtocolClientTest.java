@@ -2,6 +2,7 @@ package city.sane.wot.binding.file;
 
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +62,13 @@ public class FileProtocolClientTest {
         when(watchService.take()).thenAnswer(new AnswersWithDelay(5 * 1000L, new Returns(null)));
 
         FileProtocolClient client = new FileProtocolClient(hrefToPath);
-        client.observeResource(form).subscribe().dispose();
+        Disposable subscribe = client.observeResource(form).subscribe();
+
+        // wait until client establish subscription
+        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
+        Thread.sleep(1 * 1000L);
+
+        subscribe.dispose();
 
         verify(watchService, timeout(5 * 1000L).times(1)).close();
     }
