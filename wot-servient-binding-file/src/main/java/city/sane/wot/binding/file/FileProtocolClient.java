@@ -18,6 +18,7 @@ import java.nio.file.*;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -33,6 +34,8 @@ public class FileProtocolClient implements ProtocolClient {
             ".jsonld", "application/ld+json"
     );
     private final Function<String, Path> hrefToPath;
+    // counts active subscriptions. Is used by integration tests to avoid race conditions
+    private final AtomicInteger subscriptionsCount = new AtomicInteger(0);
 
     public FileProtocolClient() {
         this(FileProtocolClient::hrefToPath);
@@ -89,45 +92,49 @@ public class FileProtocolClient implements ProtocolClient {
                     // We watch for modification events
                     directory.register(service, ENTRY_MODIFY, ENTRY_DELETE, ENTRY_CREATE);
 
-                    try {
-                        pollFileChange(path, service, source);
-                    }
-                    catch (InterruptedException e) {
-                        if (!source.isDisposed()) {
-                            throw e;
-                        }
-                    }
+                    pollFileChange(path, service, source);
 
                     source.onComplete();
                 }),
                 WatchService::close
-        ).subscribeOn(Schedulers.io());
+        )
+                .doOnSubscribe(d -> subscriptionsCount.incrementAndGet())
+                .doOnDispose(() -> subscriptionsCount.decrementAndGet())
+                .subscribeOn(Schedulers.io());
     }
 
     private void pollFileChange(Path path,
                                 WatchService service,
                                 @NonNull ObservableEmitter<Content> source) throws InterruptedException, IOException {
-        // Start the infinite polling loop
-        WatchKey watchKey;
-        // Wait for the next event
-        while (!source.isDisposed() && (watchKey = service.take()) != null) {
-            for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-                // Get the type of the event
-                WatchEvent.Kind<?> kind = watchEvent.kind();
+        try {
+            // Start the infinite polling loop
+            WatchKey watchKey;
+            // Wait for the next event
+            System.out.println("GEHT LOS");
+            while (!source.isDisposed() && (watchKey = service.take()) != null) {
+                for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+                    // Get the type of the event
+                    WatchEvent.Kind<?> kind = watchEvent.kind();
 
-                if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
-                    Path watchEventPath = (Path) watchEvent.context();
+                    if (kind == ENTRY_MODIFY || kind == ENTRY_DELETE || kind == ENTRY_CREATE) {
+                        Path watchEventPath = (Path) watchEvent.context();
 
-                    // Call this if the right file is involved
-                    if (path.getFileName().equals(watchEventPath)) {
-                        Content content = getContentFromPath(path);
-                        source.onNext(content);
+                        // Call this if the right file is involved
+                        if (path.getFileName().equals(watchEventPath)) {
+                            Content content = getContentFromPath(path);
+                            source.onNext(content);
+                        }
                     }
                 }
-            }
 
-            if (!watchKey.reset()) {
-                break;
+                if (!watchKey.reset()) {
+                    break;
+                }
+            }
+        }
+        catch (InterruptedException e) {
+            if (!source.isDisposed()) {
+                throw e;
             }
         }
     }
