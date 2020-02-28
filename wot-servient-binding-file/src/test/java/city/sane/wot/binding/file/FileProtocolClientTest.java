@@ -27,7 +27,7 @@ public class FileProtocolClientTest {
     private WatchService watchService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         form = mock(Form.class);
         hrefToPath = mock(Function.class);
         path = mock(Path.class);
@@ -64,9 +64,8 @@ public class FileProtocolClientTest {
         FileProtocolClient client = new FileProtocolClient(hrefToPath);
         Disposable subscribe = client.observeResource(form).subscribe();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(1 * 1000L);
+        // wait until subscriptions as been established
+        verify(directory, timeout(5 * 1000L).times(1)).register(any(), any());
 
         subscribe.dispose();
 

@@ -19,12 +19,16 @@ import org.junit.Test;
 import spark.Service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -128,26 +132,24 @@ public class SubscribeEventRouteIT {
 
     @Test
     public void shouldReturnValueOnEventEmit() throws InterruptedException, ExecutionException {
-        CompletableFuture<Content> result = new CompletableFuture<>();
-        runAsync(() -> {
+        CompletableFuture<Content> result = supplyAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
-                result.complete(content);
+                return content;
             }
             catch (IOException e) {
-                result.completeExceptionally(e);
+                throw new CompletionException(e);
             }
         });
+        ExposedThingEvent<Object> event = thing.getEvent("change");
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(event.getState().getSubject()::hasObservers);
 
         // emit event
-        ExposedThingEvent<Object> event = thing.getEvent("change");
         event.emit();
 
         // future should complete within a few seconds
@@ -157,7 +159,7 @@ public class SubscribeEventRouteIT {
     }
 
     @Test
-    public void subscribeEventObserverPopulation() throws InterruptedException, ExecutionException {
+    public void subscribeEventObserverPopulation() {
         runAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/events/change");
@@ -167,19 +169,17 @@ public class SubscribeEventRouteIT {
                 throw new RuntimeException(e);
             }
         });
+        ExposedThingEvent<Object> event = thing.getEvent("change");
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(event.getState().getSubject()::hasObservers);
 
         // emit event
-        ExposedThingEvent<Object> event = thing.getEvent("change");
         event.emit();
 
-        // wait until client received answer
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
-
-        assertFalse("populated observer should have been removed", thing.getEvent("change").getState().getSubject().hasObservers());
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            assertFalse(event.getState().getSubject().hasObservers());
+        });
     }
 }

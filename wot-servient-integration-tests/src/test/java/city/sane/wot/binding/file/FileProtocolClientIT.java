@@ -1,6 +1,5 @@
 package city.sane.wot.binding.file;
 
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.junit.Before;
@@ -12,11 +11,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.fieldIn;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 public class FileProtocolClientIT {
@@ -58,8 +62,8 @@ public class FileProtocolClientIT {
         assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", Files.readString(thing.toPath()));
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void subscribeResourceFileChanged() throws ExecutionException, InterruptedException, IOException, ProtocolClientException {
+    @Test
+    public void subscribeResourceFileChanged() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         FileProtocolClient client = new FileProtocolClient();
         String href = thing.toPath().toUri().toString();
         Form form = new Form.Builder()
@@ -68,13 +72,16 @@ public class FileProtocolClientIT {
 
         Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(1 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10))
+                .untilAtomic(
+                        fieldIn(client).ofType(AtomicInteger.class).andWithName("subscriptionsCount").call(),
+                        equalTo(1)
+                );
 
         Files.writeString(thing.toPath(), "{\"id\":\"counter\",\"name\":\"Zähler\"}", StandardOpenOption.CREATE);
 
-        assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", new String(future.get().getBody()));
+        assertEquals("{\"id\":\"counter\",\"name\":\"Zähler\"}", new String(future.get(10, TimeUnit.SECONDS).getBody()));
     }
 
     @Test
@@ -89,9 +96,12 @@ public class FileProtocolClientIT {
 
         Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(1 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10))
+                .untilAtomic(
+                        fieldIn(client).ofType(AtomicInteger.class).andWithName("subscriptionsCount").call(),
+                        equalTo(1)
+                );
 
         Files.writeString(thing.toPath(), "{\"id\":\"counter\",\"name\":\"Zähler\"}", StandardOpenOption.CREATE);
 
@@ -108,9 +118,12 @@ public class FileProtocolClientIT {
 
         Future<Content> future = client.observeResource(form).firstElement().toFuture();
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a feature that notifies us when the subscription is active.
-        Thread.sleep(1 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10))
+                .untilAtomic(
+                        fieldIn(client).ofType(AtomicInteger.class).andWithName("subscriptionsCount").call(),
+                        equalTo(1)
+                );
 
         thing.delete();
 

@@ -21,12 +21,15 @@ import org.junit.Test;
 import spark.Service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 public class ObservePropertyRouteIT {
@@ -128,26 +131,24 @@ public class ObservePropertyRouteIT {
 
     @Test
     public void observeProperty() throws InterruptedException, ExecutionException, ContentCodecException {
-        CompletableFuture<Content> result = new CompletableFuture<>();
-        runAsync(() -> {
+        CompletableFuture<Content> result = supplyAsync(() -> {
             try {
                 HttpUriRequest request = new HttpGet("http://localhost:8080/counter/properties/count/observable");
                 HttpResponse response = HttpClientBuilder.create().build().execute(request);
                 byte[] body = response.getEntity().getContent().readAllBytes();
                 Content content = new Content("application/json", body);
-                result.complete(content);
+                return content;
             }
             catch (IOException e) {
-                result.completeExceptionally(e);
+                throw new CompletionException(e);
             }
         });
+        ExposedThingProperty<Object> property = thing.getProperty("count");
 
-        // wait until client establish subscription
-        // TODO: This is error-prone. We need a client that notifies us when the observation is active.
-        Thread.sleep(5 * 1000L);
+        // wait until client has established subscription
+        await().atMost(Duration.ofSeconds(10)).until(property.getState().getSubject()::hasObservers);
 
         // write new value
-        ExposedThingProperty<Object> property = thing.getProperty("count");
         property.write(1337).get();
 
         // wait until new value is received
