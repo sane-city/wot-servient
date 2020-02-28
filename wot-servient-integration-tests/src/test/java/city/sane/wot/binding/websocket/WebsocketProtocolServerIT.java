@@ -14,6 +14,7 @@ import city.sane.wot.thing.schema.ObjectSchema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -154,12 +155,23 @@ public class WebsocketProtocolServerIT {
     }
 
     /**
-     * Sends the message in <code>request</code> to the server and waits for the response.
+     * Sends the message in <code>request</code> to the server and waits for the first response.
      *
      * @param request
      * @return
      */
     private AbstractServerMessage ask(AbstractClientMessage request) {
+        return messageObserver(request).firstElement().blockingGet();
+    }
+
+    /**
+     * Sends the message in <code>request</code> to the server and waits for the responses.
+     *
+     * @param request
+     * @return
+     */
+    @NonNull
+    private Observable<AbstractServerMessage> messageObserver(AbstractClientMessage request) {
         return Observable.using(
                 () -> {
                     PublishSubject<AbstractServerMessage> subject = PublishSubject.create();
@@ -207,7 +219,7 @@ public class WebsocketProtocolServerIT {
             public void accept(AbstractServerMessage abstractServerMessage) throws Throwable {
 
             }
-        }).firstElement().blockingGet();
+        });
     }
 
     @Test(timeout = 20 * 1000L)
@@ -248,7 +260,7 @@ public class WebsocketProtocolServerIT {
         // send SubscribeProperty message to server and wait for SubscribeNextResponse message from server
         SubscribeProperty request = new SubscribeProperty("counter", "count");
 
-        Future<Content> future = observe(request).firstElement().toFuture();
+        Future<Content> future = subscription(request).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
@@ -259,58 +271,25 @@ public class WebsocketProtocolServerIT {
         assertEquals(ContentManager.valueToContent(1337), future.get(10, TimeUnit.SECONDS));
     }
 
-    private Observable<Content> observe(AbstractClientMessage request) {
-        return Observable.using(
-                () -> {
-                    PublishSubject<Content> subject = PublishSubject.create();
-                    WebSocketClient client = new WebSocketClient(new URI("ws://localhost:8081")) {
-                        @Override
-                        public void onOpen(ServerHandshake handshake) {
-                            try {
-                                String json = WebsocketProtocolServerIT.JSON_MAPPER.writeValueAsString(request);
-                                send(json);
-                            }
-                            catch (JsonProcessingException e) {
-                                subject.onError(e);
-                            }
-                        }
-
-                        @Override
-                        public void onMessage(String json) {
-                            try {
-                                AbstractServerMessage message = JSON_MAPPER.readValue(json, AbstractServerMessage.class);
-                                if (message instanceof SubscribeNextResponse) {
-                                    subject.onNext(message.toContent());
-                                }
-                                else if (message instanceof SubscribeCompleteResponse) {
-                                    subject.onComplete();
-                                }
-                                else if (message instanceof SubscribeErrorResponse) {
-                                    subject.onError(((SubscribeErrorResponse) message).getError());
-                                }
-                            }
-                            catch (IOException e) {
-                                subject.onError(e);
-                            }
-                        }
-
-                        @Override
-                        public void onClose(int code, String reason, boolean remote) {
-                            subject.onComplete();
-                        }
-
-                        @Override
-                        public void onError(Exception ex) {
-                            subject.onError(ex);
-                        }
-                    };
-                    client.connect();
-
-                    return new Pair<>(subject, client);
-                },
-                Pair::first,
-                pair -> pair.second().close()
-        );
+    /**
+     * Sends the subscribe message in <code>request</code> to the server and waits for the subscribe
+     * responses.
+     *
+     * @param request
+     * @return
+     */
+    private Observable<Content> subscription(AbstractClientMessage request) {
+        return messageObserver(request).flatMap(message -> Observable.create(source -> {
+            if (message instanceof SubscribeNextResponse) {
+                source.onNext(message.toContent());
+            }
+            else if (message instanceof SubscribeCompleteResponse) {
+                source.onComplete();
+            }
+            else if (message instanceof SubscribeErrorResponse) {
+                source.onError(((SubscribeErrorResponse) message).getError());
+            }
+        }));
     }
 
     @Test
@@ -318,7 +297,7 @@ public class WebsocketProtocolServerIT {
         // send SubscribeEvent message to server and wait for SubscribeNextResponse message from server
         SubscribeEvent request = new SubscribeEvent("counter", "change");
 
-        Future<Content> future = observe(request).firstElement().toFuture();
+        Future<Content> future = subscription(request).firstElement().toFuture();
 
         // wait until client establish subscription
         // TODO: This is error-prone. We need a client that notifies us when the observation is active.
