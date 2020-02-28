@@ -39,7 +39,7 @@ public class HttpProtocolServer implements ProtocolServer {
     private final int bindPort;
     private final List<String> addresses;
     private final Service server;
-    private final Map<String, ExposedThing> things = new HashMap<>();
+    private final Map<String, ExposedThing> things;
     private final Map<String, Object> security;
     private final String securityScheme;
     private boolean started = false;
@@ -53,6 +53,7 @@ public class HttpProtocolServer implements ProtocolServer {
         else {
             addresses = Servient.getAddresses().stream().map(a -> "http://" + a + ":" + bindPort).collect(Collectors.toList());
         }
+        things = new HashMap<>();
         security = config.getObject("wot.servient.http.security").unwrapped();
 
         // Auth
@@ -74,6 +75,24 @@ public class HttpProtocolServer implements ProtocolServer {
         }
 
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
+    }
+
+    HttpProtocolServer(String bindHost,
+                              int bindPort,
+                              List<String> addresses,
+                              Service server,
+                              Map<String, ExposedThing> things,
+                              Map<String, Object> security,
+                              String securityScheme,
+                              boolean started) {
+        this.bindHost = bindHost;
+        this.bindPort = bindPort;
+        this.addresses = addresses;
+        this.server = server;
+        this.things = things;
+        this.security = security;
+        this.securityScheme = securityScheme;
+        this.started = started;
     }
 
     @Override

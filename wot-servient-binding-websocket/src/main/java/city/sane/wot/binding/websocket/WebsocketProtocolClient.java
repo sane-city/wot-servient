@@ -45,8 +45,18 @@ public class WebsocketProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(WebsocketProtocolClient.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private static final String WEBSOCKET_MESSAGE = "websocket:message";
-    private final Map<URI, WebsocketClient> clients = new HashMap<>();
-    private final Map<String, Consumer<AbstractServerMessage>> openRequests = new HashMap<>();
+    private final Map<URI, WebsocketClient> clients;
+    private final Map<String, Consumer<AbstractServerMessage>> openRequests;
+
+    public WebsocketProtocolClient() {
+        this(new HashMap<>(), new HashMap<>());
+    }
+
+    WebsocketProtocolClient(Map<URI, WebsocketClient> clients,
+                            Map<String, Consumer<AbstractServerMessage>> openRequests) {
+        this.clients = clients;
+        this.openRequests = openRequests;
+    }
 
     @Override
     public CompletableFuture<Content> readResource(Form form) {
@@ -171,7 +181,7 @@ public class WebsocketProtocolClient implements ProtocolClient {
         clients.values().forEach(WebsocketClient::close);
     }
 
-    private class WebsocketClient {
+    class WebsocketClient {
         private final Channel channel;
         private final EventLoopGroup group;
         private final URI uri;

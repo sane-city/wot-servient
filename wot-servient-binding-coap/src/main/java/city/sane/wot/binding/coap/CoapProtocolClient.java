@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 /**
  * Allows consuming Things via CoAP.
@@ -27,9 +28,19 @@ import java.util.concurrent.ExecutorService;
 public class CoapProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
     private final ExecutorService executor;
+    private final Function<String, CoapClient> clientCreator;
 
     public CoapProtocolClient(ExecutorService executor) {
         this.executor = executor;
+        this.clientCreator = url -> new CoapClient(url)
+                .setExecutor(executor)
+                .setTimeout(10 * 1000L);
+    }
+
+    CoapProtocolClient(ExecutorService executor,
+                       Function<String, CoapClient> clientCreator) {
+        this.executor = executor;
+        this.clientCreator = clientCreator;
     }
 
     @Override
@@ -37,9 +48,7 @@ public class CoapProtocolClient implements ProtocolClient {
         CompletableFuture<Content> future = new CompletableFuture<>();
 
         String url = form.getHref();
-        CoapClient client = new CoapClient(url)
-                .setExecutor(executor)
-                .setTimeout(10 * 1000L);
+        CoapClient client = clientCreator.apply(url);
 
         Request request = generateRequest(form, CoAP.Code.GET);
         log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
@@ -54,9 +63,7 @@ public class CoapProtocolClient implements ProtocolClient {
         CompletableFuture<Content> future = new CompletableFuture<>();
 
         String url = form.getHref();
-        CoapClient client = new CoapClient(url)
-                .setExecutor(executor)
-                .setTimeout(10 * 1000L);
+        CoapClient client = clientCreator.apply(url);
 
         Request request = generateRequest(form, CoAP.Code.PUT);
         log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
@@ -74,9 +81,7 @@ public class CoapProtocolClient implements ProtocolClient {
         CompletableFuture<Content> future = new CompletableFuture<>();
 
         String url = form.getHref();
-        CoapClient client = new CoapClient(url)
-                .setExecutor(executor)
-                .setTimeout(10 * 1000L);
+        CoapClient client = clientCreator.apply(url);
 
         Request request = generateRequest(form, CoAP.Code.POST);
         log.debug("CoapClient sending '{}' to '{}'", request.getCode(), url);
@@ -94,7 +99,7 @@ public class CoapProtocolClient implements ProtocolClient {
         String url = form.getHref();
 
         return Observable.using(
-                () -> new CoapClient(url).setExecutor(executor),
+                () -> clientCreator.apply(url),
                 client -> Observable.create(source -> {
                     // Californium does not offer any method to wait until the observation is established...
                     // This causes new values not being recognized directly after observation creation.

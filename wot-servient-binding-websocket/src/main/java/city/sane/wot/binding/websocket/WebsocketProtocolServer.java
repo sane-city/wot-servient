@@ -38,10 +38,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 public class WebsocketProtocolServer implements ProtocolServer {
+    static final String WEBSOCKET_MESSAGE_THING_ID = "thingId";
+    static final String WEBSOCKET_MESSAGE_TYPE = "type";
+    static final String WEBSOCKET_MESSAGE_NAME = "name";
     private static final String WEBSOCKET_MESSAGE = "websocket:message";
-    private static final String WEBSOCKET_MESSAGE_THING_ID = "thingId";
-    private static final String WEBSOCKET_MESSAGE_TYPE = "type";
-    private static final String WEBSOCKET_MESSAGE_NAME = "name";
     private final Logger log = LoggerFactory.getLogger(WebsocketProtocolServer.class);
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
@@ -71,20 +71,29 @@ public class WebsocketProtocolServer implements ProtocolServer {
         things = new HashMap<>();
     }
 
+    WebsocketProtocolServer(ServerBootstrap serverBootstrap,
+                                   EventLoopGroup serverBossGroup,
+                                   EventLoopGroup serverWorkerGroup,
+                                   Map<String, ExposedThing> things,
+                                   List<String> addresses,
+                                   int bindPort,
+                                   Channel serverChannel) {
+        this.serverBootstrap = serverBootstrap;
+        this.serverBossGroup = serverBossGroup;
+        this.serverWorkerGroup = serverWorkerGroup;
+        this.things = things;
+        this.addresses = addresses;
+        this.bindPort = bindPort;
+        this.serverChannel = serverChannel;
+    }
+
     @Override
     public CompletableFuture<Void> start(Servient servient) {
         if (serverChannel != null) {
             return completedFuture(null);
         }
 
-        return runAsync(() -> {
-            try {
-                serverChannel = serverBootstrap.bind(bindPort).sync().channel();
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        return runAsync(() -> serverChannel = serverBootstrap.bind(bindPort).syncUninterruptibly().channel());
     }
 
     @Override
@@ -94,15 +103,10 @@ public class WebsocketProtocolServer implements ProtocolServer {
         }
 
         return runAsync(() -> {
-            try {
-                serverChannel.close().sync();
-                serverBossGroup.shutdownGracefully().sync();
-                serverWorkerGroup.shutdownGracefully().sync();
-                serverChannel = null;
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            serverChannel.close().syncUninterruptibly();
+            serverBossGroup.shutdownGracefully().syncUninterruptibly();
+            serverWorkerGroup.shutdownGracefully().syncUninterruptibly();
+            serverChannel = null;
         });
     }
 
