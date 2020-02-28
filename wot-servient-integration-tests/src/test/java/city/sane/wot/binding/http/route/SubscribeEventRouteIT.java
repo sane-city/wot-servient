@@ -30,6 +30,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 public class SubscribeEventRouteIT {
@@ -177,6 +178,8 @@ public class SubscribeEventRouteIT {
         event.emit();
 
         // wait until client has established subscription
-        await().atMost(Duration.ofSeconds(10)).until(() -> !event.getState().getSubject().hasObservers());
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            assertFalse(event.getState().getSubject().hasObservers());
+        });
     }
 }
