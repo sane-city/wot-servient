@@ -5,7 +5,7 @@
     <groupId>city.sane.wot-servient</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.8</version>
+    <version>1.9-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -126,7 +126,7 @@
 
     <scm>
         <developerConnection>scm:git:ssh://git@git.informatik.uni-hamburg.de/sane-public/wot-servient.git</developerConnection>
-        <tag>1.8</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
