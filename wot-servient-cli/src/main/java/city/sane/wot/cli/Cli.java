@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 class Cli {
@@ -157,7 +156,7 @@ class Cli {
             return;
         }
 
-        List<Future> completionFutures = new ArrayList<>();
+        List<CompletableFuture> completionFutures = new ArrayList<>();
         final Servient servient = getServient(cmd);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Stop all scripts and shutdown Servient");
@@ -168,7 +167,7 @@ class Cli {
 
         for (File script : scripts) {
             log.info("Servient is running script '{}'", script);
-            Future completionFuture = servient.runPrivilegedScript(script, wot);
+            CompletableFuture completionFuture = servient.runPrivilegedScript(script, wot);
             completionFutures.add(completionFuture);
         }
 
@@ -176,12 +175,9 @@ class Cli {
         try {
             completionFutures.forEach(future -> {
                 try {
-                    future.get();
+                    future.join();
                 }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                catch (ExecutionException | CancellationException e) {
+                catch (CancellationException e) {
                     throw new RuntimeException(e);
                 }
             });
