@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * Standard implementation of {@link Wot}.
  */
 public class DefaultWot implements Wot {
-    private final Servient servient;
+    protected final Servient servient;
 
     /**
      * Creates a new DefaultWot instance for given <code>servient</code>.

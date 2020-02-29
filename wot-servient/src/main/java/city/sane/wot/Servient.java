@@ -475,7 +475,7 @@ public class Servient {
      *
      * @return
      */
-    Map<String, ExposedThing> getThings() {
+    public Map<String, ExposedThing> getThings() {
         return things;
     }
 
