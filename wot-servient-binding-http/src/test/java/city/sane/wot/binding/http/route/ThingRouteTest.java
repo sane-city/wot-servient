@@ -44,8 +44,8 @@ public class ThingRouteTest {
         ThingRoute route = new ThingRoute(servient, "Basic", things);
 
         assertEquals("Unauthorized", route.handle(request, response));
-        verify(response, times(1)).header(eq("WWW-Authenticate"), eq("Basic realm=\"counter\""));
-        verify(response, times(1)).status(401);
+        verify(response).header(eq("WWW-Authenticate"), eq("Basic realm=\"counter\""));
+        verify(response).status(401);
     }
 
     @Test

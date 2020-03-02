@@ -30,7 +30,7 @@ public class ExposedThingEventTest {
         ExposedThingEvent event = new ExposedThingEvent<>(name, state);
         event.emit();
 
-        verify(subject, times(1)).onNext(Optional.empty());
+        verify(subject).onNext(Optional.empty());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ExposedThingEventTest {
         ExposedThingEvent event = new ExposedThingEvent<>(name, state);
         event.emit("Hallo Welt");
 
-        verify(subject, times(1)).onNext(Optional.of("Hallo Welt"));
+        verify(subject).onNext(Optional.of("Hallo Welt"));
     }
 
     @Test
@@ -50,6 +50,6 @@ public class ExposedThingEventTest {
         ExposedThingEvent event = new ExposedThingEvent<>(name, state);
         event.observer().subscribe(observer);
 
-        verify(subject, times(1)).subscribe(observer);
+        verify(subject).subscribe(observer);
     }
 }

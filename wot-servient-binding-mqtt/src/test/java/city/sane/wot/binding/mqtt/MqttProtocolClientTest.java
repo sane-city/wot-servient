@@ -23,8 +23,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -58,7 +60,7 @@ public class MqttProtocolClientTest {
         client = new MqttProtocolClient(new Pair(settings, mqttClient), topicSubjects);
         client.invokeResource(form);
 
-        verify(mqttClient, times(1)).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage(new byte[0]))));
+        verify(mqttClient).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage(new byte[0]))));
     }
 
     @Test
@@ -69,7 +71,7 @@ public class MqttProtocolClientTest {
         client = new MqttProtocolClient(new Pair(settings, mqttClient), topicSubjects);
         client.invokeResource(form, content);
 
-        verify(mqttClient, times(1)).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage("Hallo Welt".getBytes()))));
+        verify(mqttClient).publish(eq("counter/actions/increment"), argThat(new MqttMessageMatcher(new MqttMessage("Hallo Welt".getBytes()))));
     }
 
     @Test
@@ -80,10 +82,10 @@ public class MqttProtocolClientTest {
         client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap<>());
         client.observeResource(form).subscribe();
 
-        verify(mqttClient, times(1)).subscribe(eq("counter/events/change"), any());
+        verify(mqttClient).subscribe(eq("counter/events/change"), any());
     }
 
-    @Test(timeout = 5 * 1000L)
+    @Test
     public void subscribeResourceShouldInformObserverAboutNextValue() throws ProtocolClientException, MqttException, ContentCodecException, ExecutionException, InterruptedException, TimeoutException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(form.getContentType()).thenReturn("application/json");
@@ -99,10 +101,10 @@ public class MqttProtocolClientTest {
 
         client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap<>());
 
-        assertEquals(
+        await().untilAsserted(() -> assertEquals(
                 ContentManager.valueToContent("Hallo Welt"),
                 client.observeResource(form).firstElement().blockingGet()
-        );
+        ));
     }
 
     @Test
@@ -119,7 +121,7 @@ public class MqttProtocolClientTest {
         client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap(Map.of("counter/events/change", subject)));
         client.observeResource(form).subscribe(observer);
 
-        verify(subject, times(1)).subscribe(observer);
+        verify(subject).subscribe(observer);
     }
 
     @Test
@@ -137,7 +139,7 @@ public class MqttProtocolClientTest {
         client.observeResource(form).subscribe(observer);
         observer.dispose();
 
-        verify(mqttClient, times(1)).unsubscribe(eq("counter/events/change"));
+        verify(mqttClient).unsubscribe(eq("counter/events/change"));
     }
 
     private class MqttMessageMatcher implements ArgumentMatcher<MqttMessage> {

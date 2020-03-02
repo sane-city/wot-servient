@@ -76,7 +76,7 @@ public class ConsumedThingPropertyTest {
         ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.read();
 
-        verify(client, times(1)).readResource(any());
+        verify(client).readResource(any());
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ConsumedThingPropertyTest {
         ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.write("123");
 
-        verify(client, times(1)).writeResource(any(), any());
+        verify(client).writeResource(any(), any());
     }
 
     @Test
@@ -99,6 +99,6 @@ public class ConsumedThingPropertyTest {
         ConsumedThingProperty<Object> consumedThingProperty = new ConsumedThingProperty<Object>("myProperty", property, thing);
         consumedThingProperty.observer().subscribe(observer);
 
-        verify(client, times(1)).observeResource(any());
+        verify(client).observeResource(any());
     }
 }

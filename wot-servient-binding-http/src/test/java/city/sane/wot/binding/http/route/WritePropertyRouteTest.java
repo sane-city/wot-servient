@@ -40,8 +40,8 @@ public class WritePropertyRouteTest {
         WritePropertyRoute route = new WritePropertyRoute(servient, "Basic", things);
 
         assertEquals("Unauthorized", route.handle(request, response));
-        verify(response, times(1)).header(eq("WWW-Authenticate"), eq("Basic realm=\"counter\""));
-        verify(response, times(1)).status(401);
+        verify(response).header(eq("WWW-Authenticate"), eq("Basic realm=\"counter\""));
+        verify(response).status(401);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class WritePropertyRouteTest {
         WritePropertyRoute route = new WritePropertyRoute(servient, "Basic", things);
 
         assertEquals("Property not found", route.handle(request, response));
-        verify(response, times(1)).status(404);
+        verify(response).status(404);
     }
 
     @Test
@@ -69,6 +69,6 @@ public class WritePropertyRouteTest {
         WritePropertyRoute route = new WritePropertyRoute(servient, "Bearer", things);
 
         assertEquals("Property not found", route.handle(request, response));
-        verify(response, times(1)).status(404);
+        verify(response).status(404);
     }
 }

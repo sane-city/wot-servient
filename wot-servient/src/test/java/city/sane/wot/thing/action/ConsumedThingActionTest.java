@@ -36,6 +36,6 @@ public class ConsumedThingActionTest {
         ConsumedThingAction consumedThingAction = new ConsumedThingAction("myAction", action, thing);
         consumedThingAction.invoke();
 
-        verify(client, times(1)).invokeResource(any(), any());
+        verify(client).invokeResource(any(), any());
     }
 }

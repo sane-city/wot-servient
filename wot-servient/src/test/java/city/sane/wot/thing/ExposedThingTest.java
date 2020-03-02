@@ -92,7 +92,7 @@ public class ExposedThingTest {
 
         exposedThing.readProperties().get();
 
-        verify(property, times(1)).read();
+        verify(property).read();
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ExposedThingTest {
 
         exposedThing.writeProperties(Map.of("count", 0)).get();
 
-        verify(property, times(1)).write(0);
+        verify(property).write(0);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class ExposedThingTest {
 
         exposedThing.expose();
 
-        verify(servient, times(1)).expose(id);
+        verify(servient).expose(id);
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ExposedThingTest {
 
         exposedThing.destroy();
 
-        verify(servient, times(1)).destroy(id);
+        verify(servient).destroy(id);
     }
 
     @Test

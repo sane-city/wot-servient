@@ -26,7 +26,7 @@ public class DefaultWotTest {
         DefaultWot wot = new DefaultWot(servient);
         wot.discover();
 
-        verify(servient, times(1)).discover(any());
+        verify(servient).discover(any());
     }
 
     @Test
@@ -34,7 +34,7 @@ public class DefaultWotTest {
         DefaultWot wot = new DefaultWot(servient);
         wot.produce(thing);
 
-        verify(servient, times(1)).addThing(any());
+        verify(servient).addThing(any());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class DefaultWotTest {
         DefaultWot wot = new DefaultWot(servient);
         wot.fetch("http://localhost");
 
-        verify(servient, times(1)).fetch("http://localhost");
+        verify(servient).fetch("http://localhost");
     }
 
     @Test
@@ -57,7 +57,7 @@ public class DefaultWotTest {
         DefaultWot wot = new DefaultWot(servient);
         wot.destroy();
 
-        verify(servient, times(1)).shutdown();
+        verify(servient).shutdown();
     }
 
     @Test

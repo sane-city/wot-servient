@@ -35,7 +35,7 @@ public class CoapProtocolClientTest {
         CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
         client.readResource(form);
 
-        verify(coapClient, timeout(1 * 1000L).times(1)).advanced(any(), any());
+        verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class CoapProtocolClientTest {
         CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
         client.writeResource(form, content);
 
-        verify(coapClient, timeout(1 * 1000L).times(1)).advanced(any(), any());
+        verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class CoapProtocolClientTest {
         CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
         client.invokeResource(form);
 
-        verify(coapClient, timeout(1 * 1000L).times(1)).advanced(any(), any());
+        verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
     }
 
     @Test
@@ -67,6 +67,6 @@ public class CoapProtocolClientTest {
         CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
         client.observeResource(form).subscribe();
 
-        verify(coapClient, timeout(1 * 1000L).times(1)).observe(any());
+        verify(coapClient, timeout(1 * 1000L)).observe(any());
     }
 }

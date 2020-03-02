@@ -102,7 +102,7 @@ public class ConsumedThingTest {
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
         consumedThing.readProperties().get();
 
-        verify(client, times(1)).readResource(form1);
+        verify(client).readResource(form1);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ConsumedThingTest {
         assertThat(values, hasEntry("foo", 1));
         assertThat(values, hasEntry("bar", 2));
         assertThat(values, not(hasEntry("baz", 3)));
-        verify(client, times(1)).readResource(form1);
+        verify(client).readResource(form1);
     }
 
     @Test

@@ -31,7 +31,7 @@ public class AkkaProtocolClientTest {
         AkkaProtocolClient client = new AkkaProtocolClient(system, discoveryActor);
         client.observeResource(form).subscribe();
 
-        verify(system, times(1)).actorOf(any());
+        verify(system).actorOf(any());
     }
 
     @Test
@@ -47,6 +47,6 @@ public class AkkaProtocolClientTest {
         client.observeResource(form).subscribe(observer);
         observer.dispose();
 
-        verify(system, times(1)).stop(any());
+        verify(system).stop(any());
     }
 }

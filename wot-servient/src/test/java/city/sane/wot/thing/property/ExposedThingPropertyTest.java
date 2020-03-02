@@ -51,7 +51,7 @@ public class ExposedThingPropertyTest {
 
         exposedProperty.read();
 
-        verify(state, times(1)).getValue();
+        verify(state).getValue();
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ExposedThingPropertyTest {
 
         exposedProperty.read();
 
-        verify(readHandler, times(1)).get();
+        verify(readHandler).get();
     }
 
     @Test(expected = ExecutionException.class)
@@ -83,8 +83,8 @@ public class ExposedThingPropertyTest {
 
         exposedProperty.write(1337);
 
-        verify(state, times(1)).setValue(1337);
-        verify(subject, times(1)).onNext(Optional.of(1337));
+        verify(state).setValue(1337);
+        verify(subject).onNext(Optional.of(1337));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ExposedThingPropertyTest {
 
         exposedProperty.write(1337);
 
-        verify(writeHandler, times(1)).apply(1337);
-        verify(subject, times(1)).onNext(Optional.of(1337));
+        verify(writeHandler).apply(1337);
+        verify(subject).onNext(Optional.of(1337));
     }
 }

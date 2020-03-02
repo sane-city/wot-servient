@@ -48,7 +48,7 @@ public class MqttProtocolServerTest {
         server = new MqttProtocolServer(refCountResource, settingsClientPair);
         server.expose(thing);
 
-        verify(mqttClient, times(1)).publish(eq("counter"), any());
+        verify(mqttClient).publish(eq("counter"), any());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class MqttProtocolServerTest {
         server = new MqttProtocolServer(refCountResource, settingsClientPair);
         server.expose(thing);
 
-        verify(property, times(1)).addForm(any());
+        verify(property).addForm(any());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class MqttProtocolServerTest {
         server = new MqttProtocolServer(refCountResource, settingsClientPair);
         server.expose(thing);
 
-        verify(action, times(1)).addForm(any());
+        verify(action).addForm(any());
     }
 
     @Test
@@ -92,6 +92,6 @@ public class MqttProtocolServerTest {
         server = new MqttProtocolServer(refCountResource, settingsClientPair);
         server.expose(thing);
 
-        verify(event, times(1)).addForm(any());
+        verify(event).addForm(any());
     }
 }

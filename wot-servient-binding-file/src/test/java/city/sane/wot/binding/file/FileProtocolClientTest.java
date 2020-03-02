@@ -50,7 +50,7 @@ public class FileProtocolClientTest {
         FileProtocolClient client = new FileProtocolClient(hrefToPath);
         client.observeResource(form).subscribe(observer);
 
-        verify(directory, timeout(5 * 1000L).times(1)).register(any(), any());
+        verify(directory, timeout(5 * 1000L)).register(any(), any());
     }
 
     @Test
@@ -65,10 +65,10 @@ public class FileProtocolClientTest {
         Disposable subscribe = client.observeResource(form).subscribe();
 
         // wait until subscriptions as been established
-        verify(directory, timeout(5 * 1000L).times(1)).register(any(), any());
+        verify(directory, timeout(5 * 1000L)).register(any(), any());
 
         subscribe.dispose();
 
-        verify(watchService, timeout(5 * 1000L).times(1)).close();
+        verify(watchService, timeout(5 * 1000L)).close();
     }
 }

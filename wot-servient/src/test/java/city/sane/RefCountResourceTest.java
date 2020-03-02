@@ -27,7 +27,7 @@ public class RefCountResourceTest {
         RefCountResource resource = new RefCountResource(resourceSupplier, resourceCleanup, refCount, new AtomicReference(null));
         resource.retain();
 
-        verify(resourceSupplier, times(1)).get();
+        verify(resourceSupplier).get();
         assertEquals(1, refCount.get());
     }
 
@@ -47,7 +47,7 @@ public class RefCountResourceTest {
         RefCountResource resource = new RefCountResource(resourceSupplier, resourceCleanup, refCount, new AtomicReference(new Object()));
         resource.release();
 
-        verify(resourceCleanup, times(1)).accept(any());
+        verify(resourceCleanup).accept(any());
         assertEquals(0, refCount.get());
     }
 

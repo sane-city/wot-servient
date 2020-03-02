@@ -59,8 +59,8 @@ public class CoapProtocolServerTest {
         CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, null);
         server.start(servient);
 
-        verify(serverSupplier, timeout(1 * 1000L).times(1)).get();
-        verify(coapServer, timeout(1 * 1000L).times(1)).start();
+        verify(serverSupplier, timeout(1 * 1000L)).get();
+        verify(coapServer, timeout(1 * 1000L)).start();
     }
 
     @Test
@@ -68,8 +68,8 @@ public class CoapProtocolServerTest {
         CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
         server.stop();
 
-        verify(coapServer, timeout(1 * 1000L).times(1)).stop();
-        verify(coapServer, timeout(1 * 1000L).times(1)).destroy();
+        verify(coapServer, timeout(1 * 1000L)).stop();
+        verify(coapServer, timeout(1 * 1000L)).destroy();
     }
 
     @Test
@@ -79,7 +79,7 @@ public class CoapProtocolServerTest {
         CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
         server.expose(thing);
 
-        verify(resources, timeout(1 * 1000L).times(1)).put(eq("counter"), any(ThingResource.class));
+        verify(resources, timeout(1 * 1000L)).put(eq("counter"), any(ThingResource.class));
     }
 
     @Test
@@ -97,8 +97,8 @@ public class CoapProtocolServerTest {
         server.expose(thing);
 
         verify(property, timeout(1 * 1000L).times(2)).addForm(any());
-        verify(action, timeout(1 * 1000L).times(1)).addForm(any());
-        verify(event, timeout(1 * 1000L).times(1)).addForm(any());
+        verify(action, timeout(1 * 1000L)).addForm(any());
+        verify(event, timeout(1 * 1000L)).addForm(any());
     }
 
     @Test
@@ -109,7 +109,7 @@ public class CoapProtocolServerTest {
         CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
         server.destroy(thing);
 
-        verify(resource, timeout(1 * 1000L).times(1)).delete(resource);
+        verify(resource, timeout(1 * 1000L)).delete(resource);
     }
 
     @Test

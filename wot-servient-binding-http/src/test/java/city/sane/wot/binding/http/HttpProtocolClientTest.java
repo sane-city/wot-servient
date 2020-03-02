@@ -63,7 +63,7 @@ public class HttpProtocolClientTest {
         client.readResource(form).join();
 
         HttpUriRequest request = RequestBuilder.create("GET").setUri("http://localhost/foo").build();
-        verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
+        verify(requestClient).execute(argThat(new HttpUriRequestMatcher(request)));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class HttpProtocolClientTest {
                 .setUri("http://localhost/foo")
                 .addHeader(HttpHeaders.AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(("foo:bar").getBytes())))
                 .build();
-        verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
+        verify(requestClient).execute(argThat(new HttpUriRequestMatcher(request)));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class HttpProtocolClientTest {
                 .setUri("http://localhost/foo")
                 .addHeader(HttpHeaders.AUTHORIZATION, "Bearer achu6Ahx")
                 .build();
-        verify(requestClient, times(1)).execute(argThat(new HttpUriRequestMatcher(request)));
+        verify(requestClient).execute(argThat(new HttpUriRequestMatcher(request)));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class HttpProtocolClientTest {
         client = new HttpProtocolClient(requestClient, clientCreator);
         client.observeResource(form).subscribe(observer);
 
-        verify(httpClient, timeout(1 * 1000L).times(1)).execute(any());
+        verify(httpClient, timeout(1 * 1000L)).execute(any());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class HttpProtocolClientTest {
 
         subscribe.dispose();
 
-        verify(httpClient, timeout(5 * 1000L).times(1)).close();
+        verify(httpClient, timeout(5 * 1000L)).close();
     }
 
     private class HttpUriRequestMatcher implements ArgumentMatcher<HttpUriRequest> {

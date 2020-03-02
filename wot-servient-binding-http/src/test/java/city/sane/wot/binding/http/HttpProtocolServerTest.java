@@ -72,7 +72,7 @@ public class HttpProtocolServerTest {
         HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, List.of("http://localhost"), httpServer, things, security, securityScheme, true);
         server.expose(thing);
 
-        verify(thing, timeout(1 * 1000L).times(1)).addForm(any());
+        verify(thing, timeout(1 * 1000L)).addForm(any());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class HttpProtocolServerTest {
         HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true);
         server.destroy(thing);
 
-        verify(things, timeout(1 * 1000L).times(1)).remove("counter");
+        verify(things, timeout(1 * 1000L)).remove("counter");
     }
 
     @Test

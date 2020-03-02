@@ -51,7 +51,7 @@ public class WebsocketProtocolServerTest {
         WebsocketProtocolServer server = new WebsocketProtocolServer(serverBootstrap, serverBossGroup, serverWorkerGroup, things, addresses, bindPort, null);
         server.start(servient);
 
-        verify(serverBootstrap, timeout(1 * 1000L).times(1)).bind(80);
+        verify(serverBootstrap, timeout(1 * 1000L)).bind(80);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class WebsocketProtocolServerTest {
         WebsocketProtocolServer server = new WebsocketProtocolServer(serverBootstrap, serverBossGroup, serverWorkerGroup, things, addresses, bindPort, serverChannel);
         server.stop();
 
-        verify(serverChannel, timeout(1 * 1000L).times(1)).close();
+        verify(serverChannel, timeout(1 * 1000L)).close();
     }
 
     @Test
@@ -74,8 +74,8 @@ public class WebsocketProtocolServerTest {
         server.expose(thing);
 
         verify(property, timeout(1 * 1000L).times(3)).addForm(any());
-        verify(action, timeout(1 * 1000L).times(1)).addForm(any());
-        verify(event, timeout(1 * 1000L).times(1)).addForm(any());
+        verify(action, timeout(1 * 1000L)).addForm(any());
+        verify(event, timeout(1 * 1000L)).addForm(any());
     }
 
     @Test
@@ -85,6 +85,6 @@ public class WebsocketProtocolServerTest {
         WebsocketProtocolServer server = new WebsocketProtocolServer(serverBootstrap, serverBossGroup, serverWorkerGroup, things, List.of("ws://localhost"), bindPort, serverChannel);
         server.destroy(thing);
 
-        verify(things, timeout(1 * 1000L).times(1)).remove("counter");
+        verify(things, timeout(1 * 1000L)).remove("counter");
     }
 }

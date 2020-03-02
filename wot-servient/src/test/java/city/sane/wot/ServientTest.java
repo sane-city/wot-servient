@@ -96,7 +96,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
         assertThat(servient.expose("counter").get(), is(exposedThing));
-        verify(server, times(1)).expose(exposedThing);
+        verify(server).expose(exposedThing);
     }
 
     @Test(expected = ServientException.class)
@@ -130,7 +130,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
         assertThat(servient.destroy("counter").get(), is(exposedThing));
-        verify(server, times(1)).destroy(exposedThing);
+        verify(server).destroy(exposedThing);
     }
 
     @Test(expected = ServientException.class)
@@ -165,7 +165,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetch("test:/counter").get();
 
-        verify(client, times(1)).readResource(any());
+        verify(client).readResource(any());
     }
 
     @Test(expected = ServientException.class)
@@ -188,7 +188,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetchDirectory(new URI("test:/")).get();
 
-        verify(client, times(1)).readResource(any());
+        verify(client).readResource(any());
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.fetchDirectory("test:/").get();
 
-        verify(client, times(1)).readResource(any());
+        verify(client).readResource(any());
     }
 
     @Test
@@ -210,7 +210,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.discover();
 
-        verify(client, times(1)).discover(any());
+        verify(client).discover(any());
     }
 
     @Test
@@ -222,7 +222,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         servient.discover(filter);
 
-        verify(client, times(1)).discover(filter);
+        verify(client).discover(filter);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class ServientTest {
         ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.LOCAL);
         @NonNull List<Thing> things = servient.discover(filter).toList().blockingGet();
 
-        verify(servient, times(1)).getThings();
+        verify(servient).getThings();
         assertThat(things, hasItem(exposedThing));
     }
 
@@ -244,7 +244,7 @@ public class ServientTest {
         ThingFilter filter = new ThingFilter().setMethod(DiscoveryMethod.DIRECTORY).setUrl(new URI("test:/"));
         servient.discover(filter);
 
-        verify(client, times(1)).readResource(new Form.Builder().setHref("test:/").build());
+        verify(client).readResource(new Form.Builder().setHref("test:/").build());
     }
 
     @Test(expected = ProtocolClientNotImplementedException.class)
@@ -303,7 +303,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), new HashMap<>());
         servient.addThing(exposedThing);
 
-        verify(exposedThing, times(1)).setId(any());
+        verify(exposedThing).setId(any());
     }
 
     @Test

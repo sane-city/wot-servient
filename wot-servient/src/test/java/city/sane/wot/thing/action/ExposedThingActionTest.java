@@ -50,7 +50,7 @@ public class ExposedThingActionTest {
         ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
         exposedThingAction.invoke(invokeInput, invokeOptions);
 
-        verify(handler, times(1)).apply(invokeInput, invokeOptions);
+        verify(handler).apply(invokeInput, invokeOptions);
     }
 
     @Test(expected = ExecutionException.class)
@@ -61,7 +61,7 @@ public class ExposedThingActionTest {
         ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
         exposedThingAction.invoke(invokeInput, invokeOptions).get();
 
-        verify(handler, times(1)).apply(invokeInput, invokeOptions);
+        verify(handler).apply(invokeInput, invokeOptions);
     }
 
     @Test

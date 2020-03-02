@@ -42,6 +42,6 @@ public class ConsumedThingEventTest {
         ConsumedThingEvent<Object> consumedThingEvent = new ConsumedThingEvent<Object>("myEvent", event, thing);
         consumedThingEvent.observer().subscribe(observer);
 
-        verify(client, times(1)).observeResource(any());
+        verify(client).observeResource(any());
     }
 }

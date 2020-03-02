@@ -46,7 +46,7 @@ public class WebsocketProtocolClientTest {
         WebsocketProtocolClient client = new WebsocketProtocolClient(clients, openRequests);
         client.readResource(form);
 
-        verify(websocketClient, timeout(1 * 1000L).times(1)).send(any(ReadProperty.class));
+        verify(websocketClient, timeout(1 * 1000L)).send(any(ReadProperty.class));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class WebsocketProtocolClientTest {
         WebsocketProtocolClient client = new WebsocketProtocolClient(clients, openRequests);
         client.writeResource(form, content);
 
-        verify(websocketClient, timeout(1 * 1000L).times(1)).send(any(WriteProperty.class));
+        verify(websocketClient, timeout(1 * 1000L)).send(any(WriteProperty.class));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class WebsocketProtocolClientTest {
         WebsocketProtocolClient client = new WebsocketProtocolClient(clients, openRequests);
         client.invokeResource(form);
 
-        verify(websocketClient, timeout(1 * 1000L).times(1)).send(any(InvokeAction.class));
+        verify(websocketClient, timeout(1 * 1000L)).send(any(InvokeAction.class));
     }
 
     @Test
@@ -97,6 +97,6 @@ public class WebsocketProtocolClientTest {
         WebsocketProtocolClient client = new WebsocketProtocolClient(clients, openRequests);
         client.observeResource(form).subscribe();
 
-        verify(websocketClient, timeout(1 * 1000L).times(1)).send(any(SubscribeProperty.class));
+        verify(websocketClient, timeout(1 * 1000L)).send(any(SubscribeProperty.class));
     }
 }
