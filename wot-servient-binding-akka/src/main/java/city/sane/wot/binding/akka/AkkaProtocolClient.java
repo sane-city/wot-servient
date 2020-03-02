@@ -36,15 +36,20 @@ public class AkkaProtocolClient implements ProtocolClient {
     private final ActorSystem system;
     private final ActorRef discoveryActor;
     private final AkkaProtocolPattern pattern;
+    private final Duration askTimeout;
 
-    public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor) {
-        this(system, discoveryActor, new AkkaProtocolPattern());
+    public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, Duration askTimeout) {
+        this(system, discoveryActor, askTimeout, new AkkaProtocolPattern());
     }
 
-    AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, AkkaProtocolPattern pattern) {
+    AkkaProtocolClient(ActorSystem system,
+                       ActorRef discoveryActor,
+                       Duration askTimeout,
+                       AkkaProtocolPattern pattern) {
         this.system = system;
         this.discoveryActor = discoveryActor;
         this.pattern = pattern;
+        this.askTimeout = askTimeout;
     }
 
     @SuppressWarnings("squid:S1192")
@@ -58,8 +63,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
-        Duration timeout = Duration.ofSeconds(10);
-        return pattern.ask(selection, message, timeout)
+        return pattern.ask(selection, message, askTimeout)
                 .thenApply(m -> ((RespondRead) m).content)
                 .toCompletableFuture();
     }
@@ -74,8 +78,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
-        Duration timeout = Duration.ofSeconds(10);
-        return pattern.ask(selection, message, timeout)
+        return pattern.ask(selection, message, askTimeout)
                 .thenApply(m -> ((Written) m).content)
                 .toCompletableFuture();
     }
@@ -90,8 +93,7 @@ public class AkkaProtocolClient implements ProtocolClient {
         log.debug("AkkaClient sending '{}' to {}", message, href);
 
         ActorSelection selection = system.actorSelection(href);
-        Duration timeout = Duration.ofSeconds(10);
-        return pattern.ask(selection, message, timeout)
+        return pattern.ask(selection, message, askTimeout)
                 .thenApply(m -> ((Invoked) m).content)
                 .toCompletableFuture();
     }
@@ -126,8 +128,7 @@ public class AkkaProtocolClient implements ProtocolClient {
             Discover message = new Discover(filter);
             log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
 
-            Duration timeout = Duration.ofSeconds(10);
-            return Futures.toObservable(pattern.ask(discoveryActor, message, timeout)
+            return Futures.toObservable(pattern.ask(discoveryActor, message, askTimeout)
                     .thenApply(m -> ((Things) m).entities.values())
                     .toCompletableFuture()).flatMapIterable(things -> things);
         }

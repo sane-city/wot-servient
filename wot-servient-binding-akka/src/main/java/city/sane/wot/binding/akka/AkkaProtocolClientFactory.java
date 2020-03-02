@@ -11,6 +11,7 @@ import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -26,11 +27,13 @@ import static java.util.concurrent.CompletableFuture.*;
 public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
     private final RefCountResource<ActorSystem> actorSystemProvider;
+    private final Duration askTimeout;
     private ActorSystem system = null;
     private ActorRef discoveryActor = null;
 
     public AkkaProtocolClientFactory(Config config) {
         actorSystemProvider = SharedActorSystemProvider.singleton(config);
+        askTimeout = config.getDuration("wot.servient.akka.ask-timeout");
     }
 
     @Override
@@ -45,7 +48,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public ProtocolClient getClient() {
-        return new AkkaProtocolClient(system, discoveryActor);
+        return new AkkaProtocolClient(system, discoveryActor, askTimeout);
     }
 
     @Override
