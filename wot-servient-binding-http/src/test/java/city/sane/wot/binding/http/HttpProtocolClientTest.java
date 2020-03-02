@@ -5,11 +5,13 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.BearerSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -17,6 +19,7 @@ import org.apache.http.message.BasicHeader;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
+import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,7 +32,7 @@ import static org.mockito.Mockito.*;
 public class HttpProtocolClientTest {
     private HttpClient requestClient;
     private Form form;
-    private HttpResponse httpResponse;
+    private CloseableHttpResponse httpResponse;
     private StatusLine statusLine;
     private HttpEntity httpEntity;
     private HttpProtocolClient client;
@@ -41,7 +44,7 @@ public class HttpProtocolClientTest {
     public void setUp() {
         requestClient = mock(HttpClient.class);
         form = mock(Form.class);
-        httpResponse = mock(HttpResponse.class);
+        httpResponse = mock(CloseableHttpResponse.class);
         statusLine = mock(StatusLine.class);
         httpEntity = mock(HttpEntity.class);
         securityScheme = mock(SecurityScheme.class);
@@ -122,16 +125,19 @@ public class HttpProtocolClientTest {
     }
 
     @Test
-    public void subscribeResourceShouldCloseHttpRequestWhenObserverIsDone() throws IOException {
+    public void observeResourceShouldCloseHttpRequestWhenObserverIsDone() throws IOException {
         when(clientCreator.apply(any())).thenReturn(httpClient);
-        when(requestClient.execute(any())).thenReturn(httpResponse);
-        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+        doAnswer(new AnswersWithDelay(10 * 1000L, invocation -> httpResponse)).when(httpClient).execute(any());
 
         client = new HttpProtocolClient(requestClient, clientCreator);
-        client.observeResource(form).subscribe().dispose();
+        Disposable subscribe = client.observeResource(form).subscribe();
 
-        verify(httpClient, timeout(1 * 1000L).times(1)).close();
+        // wait until subscriptions as been established
+        verify(httpClient, timeout(1 * 1000L)).execute(any());
+
+        subscribe.dispose();
+
+        verify(httpClient, timeout(5 * 1000L).times(1)).close();
     }
 
     private class HttpUriRequestMatcher implements ArgumentMatcher<HttpUriRequest> {
