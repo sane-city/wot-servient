@@ -33,10 +33,10 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  */
 public class AkkaProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
-    private final ActorSystem system;
-    private final ActorRef discoveryActor;
-    private final AkkaProtocolPattern pattern;
-    private final Duration askTimeout;
+    protected final ActorSystem system;
+    protected final ActorRef discoveryActor;
+    protected final AkkaProtocolPattern pattern;
+    protected final Duration askTimeout;
 
     public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, Duration askTimeout) {
         this(system, discoveryActor, askTimeout, new AkkaProtocolPattern());
