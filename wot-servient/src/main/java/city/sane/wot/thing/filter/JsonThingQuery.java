@@ -1,9 +1,17 @@
 package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Thing;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,33 +26,72 @@ import java.util.List;
  * </p>
  */
 public class JsonThingQuery implements ThingQuery {
-    private final SparqlThingQuery sparql;
+    @JsonDeserialize(using = JsonThingQueryQueryDeserializer.class)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+    private final SparqlThingQuery query;
 
-    public JsonThingQuery(String query) throws ThingQueryException {
+    public JsonThingQuery(String jsonQueryString) throws ThingQueryException {
+        this(new SparqlThingQuery(jsonToSparqlQuery(jsonQueryString)));
+    }
+
+    JsonThingQuery(SparqlThingQuery query) {
+        this.query = query;
+    }
+
+    private static String jsonToSparqlQuery(String queryString) throws ThingQueryException {
         try {
-            StringReader reader = new StringReader(query);
+            StringReader reader = new StringReader(queryString);
             Model frame = Rio.parse(reader, "", RDFFormat.JSONLD);
             ByteArrayOutputStream o = new ByteArrayOutputStream();
             Rio.write(frame, o, RDFFormat.NTRIPLES);
 
-            String sparqlQuery = o.toString().replace("_:", "?");
-
-            sparql = new SparqlThingQuery(sparqlQuery);
+            return o.toString().replace("_:", "?");
         }
         catch (IOException e) {
             throw new ThingQueryException(e);
         }
     }
 
+    JsonThingQuery() {
+        // required by jackson
+        query = null;
+    }
+
     @Override
     public List<Thing> filter(Collection<Thing> things) {
-        return sparql.filter(things);
+        return query.filter(things);
     }
 
     @Override
     public String toString() {
         return "JsonThingQuery{" +
-                "sparql=" + sparql +
+                "sparql=" + query +
                 '}';
+    }
+
+    public SparqlThingQuery getQuery() {
+        return query;
+    }
+
+    static class JsonThingQueryQueryDeserializer extends JsonDeserializer {
+        private static final Logger log = LoggerFactory.getLogger(JsonThingQueryQueryDeserializer.class);
+
+        @Override
+        public Object deserialize(JsonParser p,
+                                  DeserializationContext ctxt) throws IOException {
+            try {
+                JsonToken t = p.currentToken();
+                if (t == JsonToken.VALUE_STRING) {
+                    return new SparqlThingQuery(jsonToSparqlQuery(p.getValueAsString()));
+                }
+                else {
+                    log.warn("Unable to deserialize JsonThingQuery of type '{}'", t);
+                    return null;
+                }
+            }
+            catch (ThingQueryException e) {
+                throw new IOException(e);
+            }
+        }
     }
 }

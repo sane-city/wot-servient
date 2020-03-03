@@ -38,6 +38,11 @@ public class SparqlThingQuery implements ThingQuery {
         this.query = query;
     }
 
+    SparqlThingQuery() {
+        // required by jackson
+        query = null;
+    }
+
     @Override
     public String toString() {
         return "SparqlThingQuery{" +
@@ -83,5 +88,9 @@ public class SparqlThingQuery implements ThingQuery {
         repository.shutDown();
 
         return filteredThings;
+    }
+
+    public String getQuery() {
+        return query;
     }
 }
