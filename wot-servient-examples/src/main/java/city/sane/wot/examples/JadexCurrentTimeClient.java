@@ -10,7 +10,6 @@ import city.sane.wot.thing.filter.ThingFilter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -27,11 +26,10 @@ class JadexCurrentTimeClient {
         Wot wot = DefaultWot.clientOnly(config);
 
         ThingFilter filter = new ThingFilter()
-                .setQuery(new JsonThingQuery("{\"name\":\"JadexCurrentTime\"}"));
-        List<Thing> things = wot.discover(filter).toList().blockingGet();
+                .setQuery(new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}"));
 
         // get first
-        Thing thing = things.stream().findFirst().get();
+        Thing thing = wot.discover(filter).firstElement().blockingGet();
 
         System.out.println("=== TD ===");
         String json = thing.toJson(true);

@@ -7,20 +7,18 @@ import jadex.base.PlatformConfigurationHandler;
 import jadex.base.Starter;
 import jadex.bridge.IExternalAccess;
 
-import java.util.concurrent.CompletableFuture;
-
-public class JadexProtocolClientConfig {
+public class JadexProtocolPlatformConfig {
     private final IPlatformConfiguration config;
 
-    public JadexProtocolClientConfig(Config wotConfig) {
+    public JadexProtocolPlatformConfig(Config wotConfig) {
         config = PlatformConfigurationHandler.getDefault();
-        if (wotConfig.hasPath("wot.servient.jadex.client")) {
-            ConfigObject objects = wotConfig.getObject("wot.servient.jadex.client");
+        if (wotConfig.hasPath("wot.servient.jadex")) {
+            ConfigObject objects = wotConfig.getObject("wot.servient.jadex");
             objects.forEach((key, value) -> config.setValue(key, value.unwrapped()));
         }
     }
 
-    public CompletableFuture<IExternalAccess> createPlatform() {
-        return FutureConverters.fromJadex(Starter.createPlatform(config));
+    public IExternalAccess createPlatform() {
+        return Starter.createPlatform(config).get();
     }
 }
