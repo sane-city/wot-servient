@@ -52,6 +52,10 @@ public class SparqlThingQuery implements ThingQuery {
 
     @Override
     public List<Thing> filter(Collection<Thing> things) {
+        if (things.isEmpty()) {
+            return List.of();
+        }
+
         // create rdf repository with all things
         SailRepository repository = new SailRepository(new MemoryStore());
         repository.init();
