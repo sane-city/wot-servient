@@ -1,5 +1,7 @@
 package city.sane.wot.binding.jadex;
 
+import city.sane.RefCountResource;
+import city.sane.RefCountResourceException;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -7,15 +9,17 @@ import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
 import jadex.bridge.IExternalAccess;
 import jadex.bridge.service.IService;
+import jadex.bridge.service.search.ServiceQuery;
+import jadex.bridge.service.types.cms.CreationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.*;
 
 /**
  * Allows exposing Things via Jadex Micro Agents.<br> Starts a Jadex Platform and a {@link
@@ -26,33 +30,45 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 public class JadexProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
     private final Map<String, ExposedThing> things = new HashMap<>();
-    private final JadexProtocolServerConfig config;
-    private IExternalAccess platform;
+    private final RefCountResource<IExternalAccess> platformProvider;
+    private IExternalAccess platform = null;
     private ThingsService thingsService;
     @SuppressWarnings("squid:S1068")
     private String thingsServiceId;
 
-    public JadexProtocolServer(Config wotConfig) {
-        this(new JadexProtocolServerConfig(wotConfig));
+    public JadexProtocolServer(Config config) {
+        this(SharedPlatformProvider.singleton(config));
     }
 
-    JadexProtocolServer(JadexProtocolServerConfig config) {
-        this.config = config;
+    JadexProtocolServer(RefCountResource<IExternalAccess> platformProvider) {
+        this.platformProvider = platformProvider;
     }
 
     @Override
     public CompletableFuture<Void> start(Servient servient) {
         log.info("JadexServer is starting Jadex Platform");
 
-        if (platform != null) {
+        if (platform == null) {
+            return runAsync(() -> {
+                try {
+                    platform = platformProvider.retain();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
+            }).thenCompose(ignore -> {
+                CreationInfo info = new CreationInfo()
+                        .setFilenameClass(ThingsAgent.class)
+                        .addArgument("things", things);
+                return FutureConverters.fromJadex(platform.createComponent(info));
+            }).thenCompose(agent -> FutureConverters.fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class)))).thenAccept(thingsService -> {
+                this.thingsService = thingsService;
+                this.thingsServiceId = ((IService) thingsService).getServiceId().toString();
+            });
+        }
+        else {
             return completedFuture(null);
         }
-
-        return config.createPlatform(things).thenAccept(result -> {
-            platform = result.first();
-            thingsService = result.second();
-            thingsServiceId = ((IService) thingsService).getServiceId().toString();
-        });
     }
 
     @Override
@@ -60,9 +76,14 @@ public class JadexProtocolServer implements ProtocolServer {
         log.info("JadexServer is stopping Jadex Platform '{}'", platform);
 
         if (platform != null) {
-            return FutureConverters.fromJadex(platform.killComponent()).thenApply(r -> {
-                platform = null;
-                return null;
+            return runAsync(() -> {
+                try {
+                    platform = null;
+                    platformProvider.release();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
             });
         }
         else {

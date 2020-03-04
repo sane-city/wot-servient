@@ -61,17 +61,20 @@ public class AkkaProtocolServer implements ProtocolServer {
         log.info("Start AkkaServer");
 
         if (system == null) {
-            try {
-                system = actorSystemProvider.retain();
-            }
-            catch (RefCountResourceException e) {
-                return failedFuture(e);
-            }
+            return runAsync(() -> {
+                try {
+                    system = actorSystemProvider.retain();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
 
-            thingsActor = system.actorOf(ThingsActor.props(things), "things");
+                thingsActor = system.actorOf(ThingsActor.props(things), "things");
+            });
         }
-
-        return completedFuture(null);
+        else {
+            return completedFuture(null);
+        }
     }
 
     @Override

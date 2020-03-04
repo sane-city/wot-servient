@@ -9,12 +9,12 @@ import static org.junit.Assert.assertEquals;
 
 public class JadexProtocolClientFactoryTest {
     @Test
-    public void getScheme() {
+    public void getSchemeShouldReturnCorrectScheme() {
         assertEquals("jadex", new JadexProtocolClientFactory(ConfigFactory.load()).getScheme());
     }
 
     @Test
-    public void getClient() {
+    public void getClientShouldReturnJadexClient() {
         assertThat(new JadexProtocolClientFactory(ConfigFactory.load()).getClient(), instanceOf(JadexProtocolClient.class));
     }
 }

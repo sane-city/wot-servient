@@ -135,10 +135,8 @@ public class ThingAgent implements ThingService {
     }
 
     @AgentKilled
-    public IFuture<Void> killed() {
+    public void killed() {
         log.debug("Kill Agent with ThingService with id '{}'", thingServiceId);
-
-        return DONE;
     }
 
     @Override

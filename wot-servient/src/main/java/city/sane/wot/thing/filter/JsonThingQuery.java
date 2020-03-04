@@ -45,7 +45,13 @@ public class JsonThingQuery implements ThingQuery {
             ByteArrayOutputStream o = new ByteArrayOutputStream();
             Rio.write(frame, o, RDFFormat.NTRIPLES);
 
-            return o.toString().replace("_:", "?");
+            String sparlQueryString = o.toString().replace("_:", "?");
+
+            if (sparlQueryString.isEmpty()) {
+                throw new ThingQueryException("Translated SPARQL Query is empty. Something seems wrong with your JSON query: " + queryString);
+            }
+
+            return sparlQueryString;
         }
         catch (IOException e) {
             throw new ThingQueryException(e);

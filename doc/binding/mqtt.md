@@ -6,7 +6,7 @@ The Thing Descriptions of all exposed Things are published as retainable message
 
 ## Configuration
 
-To add MQTT support to the Servient, `"city.sane.wot.binding.mqtt.MqttProtocolServer"` must be added to Config parameter `wot.servient.server` and
+To add MQTT support to the Servient, `"city.sane.wot.binding.mqtt.MqttProtocolServer"` must be added to Config parameter `wot.servient.servers` and
 `"city.sane.wot.binding.mqtt.MqttProtocolClientFactory"` must be added to parameter
 `wot.servient.client-factories`.
 

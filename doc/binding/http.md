@@ -4,7 +4,7 @@ This binding uses an Message Queuing Telemetry Transport broker to interact with
 
 ## Configuration
 
-To add HTTP support to the Servient, `"city.sane.wot.binding.http.HttpProtocolServer"` must be added to Config parameter `wot.servient.server` and
+To add HTTP support to the Servient, `"city.sane.wot.binding.http.HttpProtocolServer"` must be added to Config parameter `wot.servient.servers` and
 `"city.sane.wot.binding.http.HttpProtocolClientFactory"` and `"city.sane.wot.binding.http.HttpsProtocolClientFactory"` must be added to parameter
 `wot.servient.client-factories`.
 
