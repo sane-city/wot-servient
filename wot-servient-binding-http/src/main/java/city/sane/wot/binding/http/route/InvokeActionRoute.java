@@ -39,7 +39,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
                 Content content = new Content(requestContentType, request.bodyAsBytes());
                 Object input = ContentManager.contentToValue(content, action.getInput());
 
-                Map<String, Object> options = Map.of(
+                Map<String, Map<String, Object>> options = Map.of(
                         "uriVariables", parseUrlParameters(request.queryMap().toMap(), action.getUriVariables())
                 );
 
@@ -63,7 +63,7 @@ public class InvokeActionRoute extends AbstractInteractionRoute {
     }
 
     private Map<String, Object> parseUrlParameters(Map<String, String[]> urlParams,
-                                                   Map<String, Map> uriVariables) {
+                                                   Map<String, Map<String, Object>> uriVariables) {
         log.debug("parse url parameters '{}' with uri variables '{}'", urlParams.keySet(), uriVariables);
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry<String, String[]> entry : urlParams.entrySet()) {

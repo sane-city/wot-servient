@@ -27,7 +27,7 @@ public class ExposedThingPropertyTest {
     private boolean observable;
     private boolean readOnly;
     private boolean writeOnly;
-    private Map<String, Map> uriVariables;
+    private Map<String, Map<String, Object>> uriVariables;
     private Map<String, Object> optionalProperties;
     private ExposedThingProperty<Object> exposedProperty;
     private Supplier<CompletableFuture<Object>> readHandler;

@@ -21,7 +21,7 @@ public abstract class ThingInteraction<T> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<Form> forms = new ArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, Map> uriVariables = new HashMap<>();
+    protected Map<String, Map<String, Object>> uriVariables = new HashMap<String, Map<String, Object>>();
 
     public String getDescription() {
         return description;
@@ -35,7 +35,7 @@ public abstract class ThingInteraction<T> {
         return forms;
     }
 
-    public Map<String, Map> getUriVariables() {
+    public Map<String, Map<String, Object>> getUriVariables() {
         return uriVariables;
     }
 
@@ -73,7 +73,7 @@ public abstract class ThingInteraction<T> {
         String description;
         Map<String, String> descriptions;
         List<Form> forms = new ArrayList<>();
-        Map<String, Map> uriVariables = new HashMap<>();
+        Map<String, Map<String, Object>> uriVariables = new HashMap<String, Map<String, Object>>();
 
         public T setDescription(String description) {
             this.description = description;
@@ -95,7 +95,7 @@ public abstract class ThingInteraction<T> {
             return (T) this;
         }
 
-        public T setUriVariables(Map<String, Map> uriVariables) {
+        public T setUriVariables(Map<String, Map<String, Object>> uriVariables) {
             this.uriVariables = uriVariables;
             return (T) this;
         }

@@ -175,7 +175,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
                                   Runnable handler) {
-        return addAction(name, action, (BiConsumer<Object, Map<String, Object>>) (input, options) -> handler.run());
+        return addAction(name, action, (BiConsumer<Object, Map<String, Map<String, Object>>>) (input, options) -> handler.run());
     }
 
     /**
@@ -190,7 +190,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      */
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
-                                  BiConsumer<Object, Map<String, Object>> handler) {
+                                  BiConsumer<Object, Map<String, Map<String, Object>>> handler) {
         return addAction(name, action, (input, options) -> {
             try {
                 handler.accept(input, options);
@@ -214,7 +214,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      */
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
-                                  BiFunction<Object, Map<String, Object>, CompletableFuture<Object>> handler) {
+                                  BiFunction<Object, Map<String, Map<String, Object>>, CompletableFuture<Object>> handler) {
         log.debug("'{}' adding Action '{}'", getId(), name);
 
         ExposedThingAction<Object, Object> exposedAction = new ExposedThingAction<>(name, action, this);
@@ -419,8 +419,8 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addAction(String name,
-                                  BiFunction<Object, Map<String, Object>, CompletableFuture<Object>> handler) {
-        return addAction(name, new ThingAction<Object, Object>(), handler);
+                                  BiFunction<Object, Map<String, Map<String, Object>>, CompletableFuture<Object>> handler) {
+        return addAction(name, new ThingAction<>(), handler);
     }
 
     /**
@@ -433,8 +433,9 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param handler
      * @return
      */
-    public ExposedThing addAction(String name, BiConsumer<Object, Map<String, Object>> handler) {
-        return addAction(name, new ThingAction<Object, Object>(), handler);
+    public ExposedThing addAction(String name,
+                                  BiConsumer<Object, Map<String, Map<String, Object>>> handler) {
+        return addAction(name, new ThingAction<>(), handler);
     }
 
     /**
@@ -447,7 +448,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addAction(String name, Runnable handler) {
-        return addAction(name, new ThingAction<Object, Object>(), handler);
+        return addAction(name, new ThingAction<>(), handler);
     }
 
     /**
@@ -477,7 +478,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     public ExposedThing addAction(String name,
                                   ThingAction<Object, Object> action,
                                   Supplier<CompletableFuture<Object>> handler) {
-        return addAction(name, action, (BiFunction<Object, Map<String, Object>, CompletableFuture<Object>>) (input, options) -> handler.get());
+        return addAction(name, action, (BiFunction<Object, Map<String, Map<String, Object>>, CompletableFuture<Object>>) (input, options) -> handler.get());
     }
 
     /**
@@ -487,7 +488,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addAction(String name) {
-        return addAction(name, new ThingAction<Object, Object>());
+        return addAction(name, new ThingAction<>());
     }
 
     /**

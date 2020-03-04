@@ -9,21 +9,21 @@ import java.util.function.BiFunction;
  * executed when the action is invoked.
  */
 public class ActionState<I, O> {
-    private BiFunction<I, Map<String, Object>, CompletableFuture<O>> handler;
+    private BiFunction<I, Map<String, Map<String, Object>>, CompletableFuture<O>> handler;
 
     public ActionState() {
         this(null);
     }
 
-    ActionState(BiFunction<I, Map<String, Object>, CompletableFuture<O>> handler) {
+    ActionState(BiFunction<I, Map<String, Map<String, Object>>, CompletableFuture<O>> handler) {
         this.handler = handler;
     }
 
-    public BiFunction<I, Map<String, Object>, CompletableFuture<O>> getHandler() {
+    public BiFunction<I, Map<String, Map<String, Object>>, CompletableFuture<O>> getHandler() {
         return handler;
     }
 
-    public void setHandler(BiFunction<I, Map<String, Object>, CompletableFuture<O>> handler) {
+    public void setHandler(BiFunction<I, Map<String, Map<String, Object>>, CompletableFuture<O>> handler) {
         this.handler = handler;
     }
 }

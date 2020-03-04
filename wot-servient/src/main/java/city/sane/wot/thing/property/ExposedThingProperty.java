@@ -35,7 +35,7 @@ public class ExposedThingProperty<T> extends ThingProperty<T> {
                                 boolean observable,
                                 boolean readOnly,
                                 boolean writeOnly,
-                                Map<String, Map> uriVariables,
+                                Map<String, Map<String, Object>> uriVariables,
                                 Map<String, Object> optionalProperties) {
         this.name = name;
         this.thing = thing;

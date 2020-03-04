@@ -21,7 +21,7 @@ public class ExposedThingActionTest {
     private DataSchema output;
     private BiFunction handler;
     private Object invokeInput;
-    private Map<String, Object> invokeOptions;
+    private Map<String, Map<String, Object>> invokeOptions;
 
     @Before
     public void setUp() {

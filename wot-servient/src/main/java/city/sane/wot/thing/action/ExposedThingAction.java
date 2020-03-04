@@ -34,7 +34,7 @@ public class ExposedThingAction<I, O> extends ThingAction<I, O> {
                        ActionState<I, O> state,
                        String description,
                        Map<String, String> descriptions,
-                       Map<String, Map> uriVariables,
+                       Map<String, Map<String, Object>> uriVariables,
                        DataSchema input,
                        DataSchema output) {
         this.name = name;
@@ -76,7 +76,7 @@ public class ExposedThingAction<I, O> extends ThingAction<I, O> {
      * @param options
      * @return
      */
-    public CompletableFuture<O> invoke(I input, Map<String, Object> options) {
+    public CompletableFuture<O> invoke(I input, Map<String, Map<String, Object>> options) {
         log.debug("'{}' has Action state of '{}': {}", thing.getId(), name, getState());
 
         if (getState().getHandler() != null) {
