@@ -55,7 +55,12 @@ class Cli {
                 printVersion();
             }
             else {
-                runScripts(cmd);
+                try {
+                    runScripts(cmd);
+                }
+                catch (CliShutdownException e) {
+                    // do nothing
+                }
             }
         }
         catch (ServientException | ParseException e) {
@@ -188,7 +193,7 @@ class Cli {
 
         // Shutdown servient if we are in client-only mode and all scripts have been executed, otherwise wait for termination by user
         if (cmd.hasOption(OPT_CLIENTONLY)) {
-            System.exit(0);
+            throw new CliShutdownException();
         }
     }
 
