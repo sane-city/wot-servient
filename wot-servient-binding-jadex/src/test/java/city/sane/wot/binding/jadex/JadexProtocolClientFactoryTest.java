@@ -1,20 +1,28 @@
 package city.sane.wot.binding.jadex;
 
-import com.typesafe.config.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class JadexProtocolClientFactoryTest {
-    @Test
-    public void getScheme() {
-        assertEquals("jadex", new JadexProtocolClientFactory(ConfigFactory.load()).getScheme());
+    private JadexProtocolClientConfig clientConfig;
+
+    @Before
+    public void setUp() {
+        clientConfig = mock(JadexProtocolClientConfig.class);
     }
 
     @Test
-    public void getClient() {
-        assertThat(new JadexProtocolClientFactory(ConfigFactory.load()).getClient(), instanceOf(JadexProtocolClient.class));
+    public void getSchemeShouldReturnCorrectScheme() {
+        assertEquals("jadex", new JadexProtocolClientFactory(clientConfig).getScheme());
+    }
+
+    @Test
+    public void getClientShouldReturnJadexClient() {
+        assertThat(new JadexProtocolClientFactory(clientConfig).getClient(), instanceOf(JadexProtocolClient.class));
     }
 }

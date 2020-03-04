@@ -1,6 +1,5 @@
 package city.sane.wot.binding.jadex;
 
-import city.sane.Futures;
 import city.sane.Pair;
 import city.sane.Triple;
 import city.sane.wot.binding.ProtocolClient;
@@ -22,12 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static jadex.commons.future.IFuture.DONE;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -117,57 +113,32 @@ public class JadexProtocolClient implements ProtocolClient {
         }
     }
 
-    // TODO: Found Things should be transferred to the Observer immediately and not after the future has been completed
     @Override
     public Observable<Thing> discover(ThingFilter filter) {
-        CompletableFuture<Collection<Thing>> result = new CompletableFuture<>();
-
-        platform.scheduleStep(ia -> {
-            ServiceQuery<ThingService> query = new ServiceQuery<>(ThingService.class, ServiceScope.GLOBAL);
-
-            AtomicInteger ai = new AtomicInteger();
-            ai.incrementAndGet(); // start searchServices()
-            ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-            search.addResultListener(services -> discoverThingServices(filter, result, ai, services), result::completeExceptionally);
-
-            return DONE;
-        });
-
-        return Futures.toObservable(result).flatMapIterable(things -> things);
-    }
-
-    private void discoverThingServices(ThingFilter filter,
-                                       CompletableFuture<Collection<Thing>> result,
-                                       AtomicInteger ai,
-                                       Collection<ThingService> services) {
-        Collection<Thing> things = new ArrayList<>();
-        services.forEach(service -> {
-            ai.incrementAndGet(); // start get()
-            service.get().addResultListener(json -> {
-                Thing thing = Thing.fromJson(json);
-                things.add(thing);
-                if (ai.decrementAndGet() < 1) { // end get()
+        return Observable
+                .<ThingService>create(source -> {
+                    platform.scheduleStep(ia -> {
+                        ServiceQuery<ThingService> query = new ServiceQuery<>(ThingService.class, ServiceScope.GLOBAL);
+                        ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
+                        search.addIntermediateResultListener(source::onNext, source::onComplete, source::onError);
+                        return DONE;
+                    });
+                })
+                .flatMap(thingService -> Observable.<Thing>create(source -> {
+                    thingService.get().addResultListener(json -> {
+                        source.onNext(Thing.fromJson(json));
+                        source.onComplete();
+                    }, source::onError);
+                }))
+                .filter(thing -> {
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side
-                        List<Thing> filtered = filter.getQuery().filter(things);
-                        result.complete(filtered);
+                        return !filter.getQuery().filter(List.of(thing)).isEmpty();
                     }
                     else {
-                        result.complete(things);
+                        return true;
                     }
-                }
-            }, result::completeExceptionally);
-        });
-        if (ai.decrementAndGet() < 1) { // end searchServices()
-            if (filter.getQuery() != null) {
-                // TODO: move filter to server-side
-                List<Thing> filtered = filter.getQuery().filter(things);
-                result.complete(filtered);
-            }
-            else {
-                result.complete(things);
-            }
-        }
+                });
     }
 
     private Pair<String, String> parseAsWriteResourceHref(String href) throws ProtocolClientException {

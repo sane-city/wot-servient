@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static jadex.commons.future.IFuture.DONE;
-
 /**
  * This Agent is started together with {@link city.sane.wot.binding.jadex.JadexProtocolServer} and
  * is responsible for exposing things. For each exposed Thing a {@link ThingAgent} is created, which
@@ -46,10 +44,8 @@ public class ThingsAgent implements ThingsService {
     }
 
     @AgentCreated
-    public IFuture<Void> created() {
+    public void created() {
         log.debug("Agent created");
-
-        return DONE;
     }
 
     @Override

@@ -7,6 +7,8 @@ import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.property.ThingProperty;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +21,10 @@ import java.util.TimerTask;
 class JadexCurrentTime {
     public static void main(String[] args) throws WotException {
         // create wot
-        Wot wot = new DefaultWot();
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"city.sane.wot.binding.jadex.JadexProtocolServer\"]")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.serverOnly(config);
 
         // create & expose thing
         Thing thing = new Thing.Builder()

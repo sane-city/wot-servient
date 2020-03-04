@@ -7,6 +7,8 @@ import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.JsonThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import java.util.List;
 import java.util.Timer;
@@ -19,7 +21,10 @@ import java.util.concurrent.ExecutionException;
 class JadexCurrentTimeClient {
     public static void main(String[] args) throws WotException {
         // create wot
-        Wot wot = DefaultWot.clientOnly();
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = [\"city.sane.wot.binding.jadex.JadexProtocolClientFactory\"]")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.clientOnly(config);
 
         ThingFilter filter = new ThingFilter()
                 .setQuery(new JsonThingQuery("{\"name\":\"JadexCurrentTime\"}"));
