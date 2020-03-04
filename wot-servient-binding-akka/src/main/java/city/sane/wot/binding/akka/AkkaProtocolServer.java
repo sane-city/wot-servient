@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import city.sane.RefCountResource;
 import city.sane.RefCountResourceException;
+import city.sane.Triple;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -32,11 +32,9 @@ import static java.util.concurrent.CompletableFuture.*;
  */
 public class AkkaProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolServer.class);
-    private final Map<String, ExposedThing> things = new HashMap<>();
-    private final RefCountResource<ActorSystem> actorSystemProvider;
+    private final RefCountResource<Triple<ActorSystem, Map<String, ExposedThing>, ActorRef>> actorSystemProvider;
     private final AkkaProtocolPattern pattern;
-    private ActorSystem system;
-    private ActorRef thingsActor;
+    private Triple<ActorSystem, Map<String, ExposedThing>, ActorRef> triple;
 
     public AkkaProtocolServer(Config config) {
         this(
@@ -45,7 +43,7 @@ public class AkkaProtocolServer implements ProtocolServer {
         );
     }
 
-    protected AkkaProtocolServer(RefCountResource<ActorSystem> actorSystemProvider,
+    protected AkkaProtocolServer(RefCountResource<Triple<ActorSystem, Map<String, ExposedThing>, ActorRef>> actorSystemProvider,
                                  AkkaProtocolPattern pattern) {
         this.actorSystemProvider = actorSystemProvider;
         this.pattern = pattern;
@@ -60,16 +58,14 @@ public class AkkaProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> start(Servient servient) {
         log.info("Start AkkaServer");
 
-        if (system == null) {
+        if (triple == null) {
             return runAsync(() -> {
                 try {
-                    system = actorSystemProvider.retain();
+                    triple = actorSystemProvider.retain();
                 }
                 catch (RefCountResourceException e) {
                     throw new CompletionException(e);
                 }
-
-                thingsActor = system.actorOf(ThingsActor.props(things), "things");
             });
         }
         else {
@@ -81,10 +77,10 @@ public class AkkaProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> stop() {
         log.info("Stop AkkaServer");
 
-        if (system != null) {
+        if (triple != null) {
             return runAsync(() -> {
                 try {
-                    system = null;
+                    triple = null;
                     actorSystemProvider.release();
                 }
                 catch (RefCountResourceException e) {
@@ -101,17 +97,17 @@ public class AkkaProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> expose(ExposedThing thing) {
         log.info("AkkaServer exposes '{}'", thing.getId());
 
-        if (system == null) {
+        if (triple == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before AkkaServer has been started"));
         }
 
-        things.put(thing.getId(), thing);
+        triple.second().put(thing.getId(), thing);
 
         Duration timeout = Duration.ofSeconds(10);
-        return pattern.ask(thingsActor, new ThingsActor.Expose(thing.getId()), timeout)
+        return pattern.ask(triple.third(), new ThingsActor.Expose(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
-                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+                    String endpoint = thingActor.path().toStringWithAddress(triple.first().provider().getDefaultAddress());
                     log.debug("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -121,19 +117,19 @@ public class AkkaProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         log.info("AkkaServer stop exposing '{}'", thing.getId());
 
-        if (system == null) {
+        if (triple == null) {
             return completedFuture(null);
         }
 
-        if (things.remove(thing.getId()) == null) {
+        if (triple.second().remove(thing.getId()) == null) {
             return completedFuture(null);
         }
 
         Duration timeout = Duration.ofSeconds(10);
-        return pattern.ask(thingsActor, new ThingsActor.Destroy(thing.getId()), timeout)
+        return pattern.ask(triple.third(), new ThingsActor.Destroy(thing.getId()), timeout)
                 .thenApply(m -> {
                     ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
-                    String endpoint = thingActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+                    String endpoint = thingActor.path().toStringWithAddress(triple.first().provider().getDefaultAddress());
                     log.debug("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
                     return (Void) null;
                 }).toCompletableFuture();
@@ -142,7 +138,7 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            String endpoint = thingsActor.path().toStringWithAddress(system.provider().getDefaultAddress());
+            String endpoint = triple.third().path().toStringWithAddress(triple.first().provider().getDefaultAddress());
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
@@ -154,7 +150,7 @@ public class AkkaProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            String endpoint = thingsActor.path().child(id).toStringWithAddress(system.provider().getDefaultAddress());
+            String endpoint = triple.third().path().child(id).toStringWithAddress(triple.first().provider().getDefaultAddress());
             return new URI(endpoint);
         }
         catch (URISyntaxException e) {
@@ -164,6 +160,6 @@ public class AkkaProtocolServer implements ProtocolServer {
     }
 
     public ActorSystem getActorSystem() {
-        return system;
+        return triple.first();
     }
 }
