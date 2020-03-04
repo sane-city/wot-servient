@@ -8,7 +8,7 @@ The actor system created by this binding uses [Akka Cluster](https://doc.akka.io
 
 ## Configuration
 
-To add Akka support to the Servient, `"city.sane.wot.binding.akka.AkkaProtocolServer"` must be added to Config parameter `wot.servient.server` and
+To add Akka support to the Servient, `"city.sane.wot.binding.akka.AkkaProtocolServer"` must be added to Config parameter `wot.servient.servers` and
 `"city.sane.wot.binding.akka.AkkaProtocolClientFactory"` must be added to parameter
 `wot.servient.client-factories`.
 

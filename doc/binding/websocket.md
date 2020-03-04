@@ -4,8 +4,8 @@ This binding uses the WebSocket protocol to interact with Things.
 
 ## Configuration
 
-To add Websocket support to the Servient, `"city.sane.wot.binding.http.WebsocketProtocolServer"` must be added to Config parameter `wot.servient.server` and
-`"city.sane.wot.binding.websocket.WebsocketProtocolClientFactory" must be added to parameter
+To add Websocket support to the Servient, `"city.sane.wot.binding.http.WebsocketProtocolServer"` must be added to Config parameter `wot.servient.servers` and
+`"city.sane.wot.binding.websocket.WebsocketProtocolClientFactory"` must be added to parameter
 `wot.servient.client-factories`.
 
 All configurations associated with Websocket Binding are located in the `wot.servient.websocket` namespace:
