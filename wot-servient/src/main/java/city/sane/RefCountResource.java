@@ -69,7 +69,7 @@ public class RefCountResource<T> {
     public void release() throws RefCountResourceException {
         synchronized (this) {
             if (refCount.updateAndGet(i -> i > 0 ? i - 1 : i) == 0 && resource.get() != null) {
-                log.debug("No more Reference. Cleanup Resource.");
+                log.debug("No more References. Cleanup Resource: {}", resource.get());
                 try {
                     resourceCleanup.accept(resource.getAndSet(null));
                 }

@@ -11,10 +11,9 @@ import akka.event.LoggingAdapter;
 import city.sane.wot.binding.akka.actor.ThingsActor.Things;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This actor is temporarily created for a discovery process. The actor searches for the desired
@@ -23,14 +22,15 @@ import java.util.Map;
 public class DiscoverActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Cancellable timer;
-    private final ActorRef requester;
     private final ThingFilter filter;
     private final ActorRef mediator;
-    private final Map<String, Thing> things = new HashMap<>();
+    private final PublishSubject<Thing> subject;
+    private final Duration timeout;
 
-    private DiscoverActor(ActorRef requester, Duration timeout, ThingFilter filter) {
-        this.requester = requester;
+    public DiscoverActor(PublishSubject<Thing> subject, ThingFilter filter, Duration timeout) {
+        this.subject = subject;
         this.filter = filter;
+
         if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
@@ -39,11 +39,12 @@ public class DiscoverActor extends AbstractActor {
             mediator = null;
         }
 
+        this.timeout = timeout;
         timer = getContext()
                 .getSystem()
                 .scheduler()
                 .scheduleOnce(
-                        timeout,
+                        this.timeout,
                         getSelf(),
                         new DiscoverTimeout(),
                         getContext().getDispatcher(),
@@ -61,45 +62,39 @@ public class DiscoverActor extends AbstractActor {
 
     @Override
     public void postStop() {
-        log.debug("Stopped");
+        log.debug("Stopped. Complete subject");
 
         timer.cancel();
+        subject.onComplete();
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Things.class, this::foundThings)
-                .match(DiscoverTimeout.class, m -> stop())
+                .match(DiscoverTimeout.class, m -> timeout())
                 .build();
     }
 
     private void foundThings(Things m) {
-        log.debug("Received {} thing(s) from {}", m.entities.size(), getSender());
-        things.putAll(m.entities);
+        log.debug("Received {} thing(s) from {}. Send to subject", m.entities.size(), getSender());
+        m.entities.values().forEach(subject::onNext);
     }
 
-    private void stop() {
-        log.debug("AkkaDiscovery timed out. Send all Things collected so far to parent");
-        getContext().getParent().tell(new Done(requester, things), getSelf());
+    private void timeout() {
+        log.debug("AkkaDiscovery timed out after {} second(s). Stop temporary discover actor.", timeout.toSeconds());
         getContext().stop(getSelf());
     }
 
-    public static Props props(ActorRef requester, Duration timeout, ThingFilter filter) {
-        return Props.create(DiscoverActor.class, () -> new DiscoverActor(requester, timeout, filter));
+    public static Props props(PublishSubject<Thing> subject,
+                              ThingFilter filter,
+                              Duration timeout) {
+        return Props.create(DiscoverActor.class, () -> new DiscoverActor(subject, filter, timeout));
     }
 
-    // CrudMessages
     public static class DiscoverTimeout {
-    }
-
-    public static class Done {
-        public final ActorRef requester;
-        public final Map<String, Thing> things;
-
-        public Done(ActorRef requester, Map<String, Thing> things) {
-            this.requester = requester;
-            this.things = things;
+        public DiscoverTimeout() {
+            // required by jackson
         }
     }
 }

@@ -3,14 +3,13 @@ package city.sane.wot.binding.akka;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import city.sane.Futures;
 import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.akka.Messages.*;
+import city.sane.wot.binding.akka.actor.DiscoverActor;
 import city.sane.wot.binding.akka.actor.ObserveActor;
-import city.sane.wot.binding.akka.actor.ThingsActor.Discover;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
-import static city.sane.wot.binding.akka.actor.ThingsActor.Things;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 
 /**
@@ -34,22 +32,24 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
 public class AkkaProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClient.class);
     protected final ActorSystem system;
-    protected final ActorRef discoveryActor;
-    protected final AkkaProtocolPattern pattern;
     protected final Duration askTimeout;
+    protected final AkkaProtocolPattern pattern;
+    private final Duration discoverTimeout;
 
-    public AkkaProtocolClient(ActorSystem system, ActorRef discoveryActor, Duration askTimeout) {
-        this(system, discoveryActor, askTimeout, new AkkaProtocolPattern());
+    public AkkaProtocolClient(ActorSystem system,
+                              Duration askTimeout,
+                              Duration discoverTimeout) {
+        this(system, askTimeout, discoverTimeout, new AkkaProtocolPattern());
     }
 
     AkkaProtocolClient(ActorSystem system,
-                       ActorRef discoveryActor,
                        Duration askTimeout,
+                       Duration discoverTimeout,
                        AkkaProtocolPattern pattern) {
         this.system = system;
-        this.discoveryActor = discoveryActor;
-        this.pattern = pattern;
         this.askTimeout = askTimeout;
+        this.discoverTimeout = discoverTimeout;
+        this.pattern = pattern;
     }
 
     @SuppressWarnings("squid:S1192")
@@ -115,22 +115,28 @@ public class AkkaProtocolClient implements ProtocolClient {
                 },
                 Pair::first,
                 pair -> {
-                    log.debug("No more observers. Stop temporary actor form resource observation: {}", href);
+                    log.debug("No more observers. Stop temporary actor from resource observation: {}", href);
                     system.stop(pair.second());
                 }
         );
     }
 
-    // TODO: Found Things should be transferred to the Observer immediately and not after the future has been completed
     @Override
     public Observable<Thing> discover(ThingFilter filter) throws ProtocolClientNotImplementedException {
         if (system.settings().config().getStringList("wot.servient.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
-            Discover message = new Discover(filter);
-            log.debug("AkkaClient sending '{}' to {}", message, discoveryActor);
-
-            return Futures.toObservable(pattern.ask(discoveryActor, message, askTimeout)
-                    .thenApply(m -> ((Things) m).entities.values())
-                    .toCompletableFuture()).flatMapIterable(things -> things);
+            return Observable.using(
+                    () -> {
+                        log.debug("Create temporary actor to discover things matching filter: {}", filter);
+                        PublishSubject<Thing> subject = PublishSubject.create();
+                        ActorRef actorRef = system.actorOf(DiscoverActor.props(subject, filter, discoverTimeout));
+                        return new Pair<>(subject, actorRef);
+                    },
+                    Pair::first,
+                    pair -> {
+                        log.debug("No more observers. Stop temporary actor for thing discovery with filter: {}", filter);
+                        system.stop(pair.second());
+                    }
+            );
         }
         else {
             log.warn("DistributedPubSub extension missing. ANY Discovery is not be supported.");

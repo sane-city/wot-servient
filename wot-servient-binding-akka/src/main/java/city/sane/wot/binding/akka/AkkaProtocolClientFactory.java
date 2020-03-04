@@ -1,12 +1,10 @@
 package city.sane.wot.binding.akka;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import city.sane.RefCountResource;
 import city.sane.RefCountResourceException;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
-import city.sane.wot.binding.akka.actor.DiscoveryDispatcherActor;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +26,13 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     private static final Logger log = LoggerFactory.getLogger(AkkaProtocolClientFactory.class);
     private final RefCountResource<ActorSystem> actorSystemProvider;
     private final Duration askTimeout;
+    private final Duration discoverTimeout;
     private ActorSystem system = null;
-    private ActorRef discoveryActor = null;
 
     public AkkaProtocolClientFactory(Config config) {
         actorSystemProvider = SharedActorSystemProvider.singleton(config);
         askTimeout = config.getDuration("wot.servient.akka.ask-timeout");
+        discoverTimeout = config.getDuration("wot.servient.akka.discover-timeout");
     }
 
     @Override
@@ -48,7 +47,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public ProtocolClient getClient() {
-        return new AkkaProtocolClient(system, discoveryActor, askTimeout);
+        return new AkkaProtocolClient(system, askTimeout, discoverTimeout);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
         log.debug("Init Actor System");
         try {
             system = actorSystemProvider.retain();
-            return runAsync(() -> discoveryActor = system.actorOf(DiscoveryDispatcherActor.props(), "discovery-dispatcher"));
+            return completedFuture(null);
         }
         catch (RefCountResourceException e) {
             return failedFuture(e);

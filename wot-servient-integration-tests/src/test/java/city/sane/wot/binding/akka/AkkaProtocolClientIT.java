@@ -93,7 +93,7 @@ public class AkkaProtocolClientIT {
     }
 
     @Test
-    public void discoverShouldRetuenEmptyCollection() throws ProtocolClientNotImplementedException {
+    public void discoverShouldReturnEmptyCollectionWhenThereAreNoThings() throws ProtocolClientNotImplementedException {
         system.actorOf(Props.create(MyDiscoverActor.class, MyDiscoverActor::new));
 
         List<Thing> things = client.discover(new ThingFilter()).toList().blockingGet();

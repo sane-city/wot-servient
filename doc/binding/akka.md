@@ -18,6 +18,7 @@ All configurations associated with Akka Binding are located in the `wot.servient
 |-------------------|---------------|---------------|
 | `system-name`       | Name of the ActorSystem. | `"wot"`
 | `ask-timeout`       | Time how long Akka should wait for answers before the request fails. | `60s`
+| `discover-timeout`       | Time how long Akka should wait for answers from a Thing Discovery before the Discovery is considered finished. | `5s`
 
 All parameters in this namespace are passed directly to Akka and are used to configure the underlying actor system (e.g. the parameter
 `wot.servient.akka.actor.provider` is passed as `akka.actor.provider` to the ActorSystem).

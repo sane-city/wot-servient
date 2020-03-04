@@ -1,6 +1,5 @@
 package city.sane.wot.binding.akka;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.Content;
@@ -16,23 +15,23 @@ import static org.mockito.Mockito.*;
 
 public class AkkaProtocolClientTest {
     private ActorSystem system;
-    private ActorRef discoveryActor;
     private Form form;
-    private Duration duration;
+    private Duration askTimeout;
+    private Duration discoverTimeout;
 
     @Before
     public void setUp() {
         system = mock(ActorSystem.class);
-        discoveryActor = mock(ActorRef.class);
         form = mock(Form.class);
-        duration = Duration.ofSeconds(60);
+        askTimeout = Duration.ofSeconds(60);
+        discoverTimeout = Duration.ofSeconds(5);
     }
 
     @Test
     public void subscribeResourceShouldCreateActor() throws ProtocolClientException {
         when(form.getHref()).thenReturn("akka://foo/bar");
 
-        AkkaProtocolClient client = new AkkaProtocolClient(system, discoveryActor, duration);
+        AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout);
         client.observeResource(form).subscribe();
 
         verify(system).actorOf(any());
@@ -47,7 +46,7 @@ public class AkkaProtocolClientTest {
         }, s -> {
         });
 
-        AkkaProtocolClient client = new AkkaProtocolClient(system, discoveryActor, duration);
+        AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout);
         client.observeResource(form).subscribe(observer);
         observer.dispose();
 
