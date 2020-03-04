@@ -22,6 +22,7 @@ public class CliIT {
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
     private final PrintStream originalErr = System.err;
+    private Cli cli;
 
     @Before
     public void setUp() {
@@ -33,24 +34,30 @@ public class CliIT {
     public void tearDown() {
         System.setOut(originalOut);
         System.setErr(originalErr);
+
+        if (cli != null) {
+            cli.shutdown();
+        }
     }
 
     @Test
-    public void helpShouldPrintHelp() throws CliException {
-        new Cli(new String[]{ "--help" });
+    public void runShouldPrintHelp() throws CliException {
+        cli = new Cli();
+        cli.run(new String[]{ "--help" });
 
         assertThat(outContent.toString(), containsString("Usage:"));
     }
 
     @Test
-    public void versionShouldPrintVersion() throws CliException {
-        new Cli(new String[]{ "--version" });
+    public void runShouldPrintVersion() throws CliException {
+        cli = new Cli();
+        cli.run(new String[]{ "--version" });
 
         assertThat(outContent.toString(), containsString(Servient.getVersion()));
     }
 
     @Test
-    public void shouldPrintOutputFromScript() throws CliException, IOException {
+    public void runShouldPrintOutputFromScript() throws CliException, IOException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -86,7 +93,8 @@ public class CliIT {
         File file = folder.newFile("my-thing.groovy");
         Files.write(script, file, Charset.defaultCharset());
 
-        new Cli(new String[]{
+        cli = new Cli();
+        cli.run(new String[]{
                 "--clientonly",
                 file.getAbsolutePath()
         });
@@ -104,7 +112,8 @@ public class CliIT {
         Files.write(script, file, Charset.defaultCharset());
 
         assertThrows(CliException.class, () -> {
-            new Cli(new String[]{
+            cli = new Cli();
+            cli.run(new String[]{
                     file.getAbsolutePath()
             });
         });
