@@ -13,7 +13,8 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Creates new {@link AkkaProtocolClient} instances. An Actor System is created for this purpose.
@@ -53,12 +54,19 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> init() {
         log.debug("Init Actor System");
-        try {
-            system = actorSystemProvider.retain();
-            return completedFuture(null);
+
+        if (system == null) {
+            return runAsync(() -> {
+                try {
+                    system = actorSystemProvider.retain();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
+            });
         }
-        catch (RefCountResourceException e) {
-            return failedFuture(e);
+        else {
+            return completedFuture(null);
         }
     }
 

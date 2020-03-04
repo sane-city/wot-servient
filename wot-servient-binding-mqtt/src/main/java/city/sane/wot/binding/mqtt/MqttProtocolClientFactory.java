@@ -43,14 +43,20 @@ public class MqttProtocolClientFactory implements ProtocolClientFactory {
     @Override
     public CompletableFuture<Void> init() {
         log.debug("Init MqttClient");
-        return runAsync(() -> {
-            try {
-                settingsClientPair = settingsClientPairProvider.retain();
-            }
-            catch (RefCountResourceException e) {
-                throw new CompletionException(e);
-            }
-        });
+
+        if (settingsClientPair == null) {
+            return runAsync(() -> {
+                try {
+                    settingsClientPair = settingsClientPairProvider.retain();
+                }
+                catch (RefCountResourceException e) {
+                    throw new CompletionException(e);
+                }
+            });
+        }
+        else {
+            return completedFuture(null);
+        }
     }
 
     @Override
