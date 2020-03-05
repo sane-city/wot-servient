@@ -4,6 +4,8 @@ import city.sane.wot.DefaultWot;
 import city.sane.wot.Wot;
 import city.sane.wot.WotException;
 import city.sane.wot.thing.ConsumedThing;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -15,8 +17,13 @@ import java.util.TimerTask;
  */
 class MqttSubscribe {
     public static void main(String[] args) throws IOException, WotException {
+        // Setup MQTT broker address/port details in application.json!
+
         // create wot
-        Wot wot = DefaultWot.clientOnly();
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = [\"city.sane.wot.binding.mqtt.MqttProtocolClientFactory\"]")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.clientOnly(config);
 
         String thing = "{\n" +
                 "    \"@context\": \"https://www.w3.org/2019/td/v1\",\n" +

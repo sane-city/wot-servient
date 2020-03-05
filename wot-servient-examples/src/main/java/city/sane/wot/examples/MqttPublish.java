@@ -6,6 +6,8 @@ import city.sane.wot.WotException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.event.ThingEvent;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -16,10 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class MqttPublish {
     public static void main(String[] args) throws WotException {
-        System.out.println("Setup MQTT broker address/port details in application.json!");
+        // Setup MQTT broker address/port details in application.json!
 
         // create wot
-        Wot wot = new DefaultWot();
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"city.sane.wot.binding.mqtt.MqttProtocolServer\"]")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.serverOnly(config);
 
         Thing thing = new Thing.Builder()
                 .setId("MQTT-Test")

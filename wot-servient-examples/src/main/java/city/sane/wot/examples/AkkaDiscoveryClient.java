@@ -8,6 +8,8 @@ import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.SparqlThingQuery;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.filter.ThingQuery;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -18,8 +20,12 @@ import java.util.concurrent.ExecutionException;
  * AkkaDiscovery}.
  */
 class AkkaDiscoveryClient {
-    public static void main(String[] args) throws WotException {
-        Wot wot = DefaultWot.clientOnly();
+    public static void main(String[] args) throws WotException, InterruptedException {
+        // create wot
+        Config config = ConfigFactory
+                .parseString("wot.servient.client-factories = [\"city.sane.wot.binding.akka.AkkaProtocolClientFactory\"]\nwot.servient.akka.remote.artery.canonical.port = 0")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.clientOnly(config);
 
         // Search for things providing a Temperature
         ThingQuery query = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/saref#Temperature> .");

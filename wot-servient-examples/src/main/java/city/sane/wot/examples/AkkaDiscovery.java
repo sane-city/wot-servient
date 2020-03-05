@@ -7,6 +7,8 @@ import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.property.ThingProperty;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * This example exposes a Thing that can be discovered by other Actor Systems.
@@ -15,7 +17,10 @@ import city.sane.wot.thing.property.ThingProperty;
 class AkkaDiscovery {
     public static void main(String[] args) throws WotException {
         // create wot
-        Wot wot = DefaultWot.serverOnly();
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"city.sane.wot.binding.akka.AkkaProtocolServer\"]")
+                .withFallback(ConfigFactory.load());
+        Wot wot = DefaultWot.serverOnly(config);
 
         // create thing
         Thing thing = new Thing.Builder()
