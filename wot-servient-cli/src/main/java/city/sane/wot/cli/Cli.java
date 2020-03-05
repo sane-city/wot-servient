@@ -31,10 +31,23 @@ class Cli {
     private static final String OPT_CLIENTONLY = "clientonly";
     private static final String OPT_CONFIGFILE = "configfile";
     private static final String OPT_HELP = "help";
+    private Servient servient;
 
-    public Cli(String[] args) throws CliException {
+    {
         ScriptingManager.addEngine(new GroovyEngine());
+    }
 
+    public Cli() {
+
+    }
+
+    public static void main(String[] args) throws CliException {
+        Cli cli = new Cli();
+        cli.run(args);
+        Runtime.getRuntime().addShutdownHook(new Thread(cli::shutdown));
+    }
+
+    public void run(String[] args) throws CliException {
         Options options = getOptions();
 
         try {
@@ -55,11 +68,23 @@ class Cli {
                 printVersion();
             }
             else {
-                runScripts(cmd);
+                try {
+                    runScripts(cmd);
+                }
+                catch (CliShutdownException e) {
+                    // do nothing
+                }
             }
         }
         catch (ServientException | ParseException e) {
             throw new CliException(e);
+        }
+    }
+
+    void shutdown() {
+        if (servient != null) {
+            log.info("Stop all scripts and shutdown Servient");
+            servient.shutdown().join();
         }
     }
 
@@ -157,11 +182,7 @@ class Cli {
         }
 
         List<CompletableFuture> completionFutures = new ArrayList<>();
-        final Servient servient = getServient(cmd);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Stop all scripts and shutdown Servient");
-            servient.shutdown().join();
-        }));
+        servient = getServient(cmd);
         servient.start().join();
         Wot wot = new DefaultWot(servient);
 
@@ -188,7 +209,7 @@ class Cli {
 
         // Shutdown servient if we are in client-only mode and all scripts have been executed, otherwise wait for termination by user
         if (cmd.hasOption(OPT_CLIENTONLY)) {
-            System.exit(0);
+            throw new CliShutdownException();
         }
     }
 
@@ -219,9 +240,5 @@ class Cli {
             servient = Servient.clientOnly(config);
         }
         return servient;
-    }
-
-    public static void main(String[] args) throws CliException {
-        new Cli(args);
     }
 }

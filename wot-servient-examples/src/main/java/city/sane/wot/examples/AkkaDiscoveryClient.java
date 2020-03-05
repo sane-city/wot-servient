@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
  * AkkaDiscovery}.
  */
 class AkkaDiscoveryClient {
-    public static void main(String[] args) throws WotException, InterruptedException {
+    public static void main(String[] args) throws WotException {
         // create wot
         Config config = ConfigFactory
                 .parseString("wot.servient.client-factories = [\"city.sane.wot.binding.akka.AkkaProtocolClientFactory\"]\nwot.servient.akka.remote.artery.canonical.port = 0")
