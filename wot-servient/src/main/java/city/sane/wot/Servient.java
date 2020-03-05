@@ -467,6 +467,9 @@ public class Servient {
         // ensure local things are contained
         observable = observable.mergeWith(discoverLocal(filter));
 
+        // remove duplicate things
+        observable = observable.distinct(Thing::getId);
+
         return observable;
     }
 
