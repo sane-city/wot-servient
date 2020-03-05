@@ -255,6 +255,7 @@ public class ServientTest {
 
     @Test
     public void discoverWithAtLeastOneClientImplementingDiscoverShouldSucceed() throws Throwable {
+        when(exposedThing.getId()).thenReturn("counter");
         when(clientFactory.getClient()).thenReturn(client);
         when(client.discover(any())).thenReturn(Observable.just(exposedThing));
 
