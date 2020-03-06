@@ -14,6 +14,7 @@ import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
+import city.sane.wot.thing.filter.ThingQueryException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -96,16 +97,24 @@ public class ThingsActor extends AbstractActor {
         Collection<Thing> thingCollection = things.values().stream()
                 .map(t -> (Thing) t).collect(Collectors.toList());
 
-        if (m.filter.getQuery() != null) {
-            thingCollection = m.filter.getQuery().filter(thingCollection);
+        try {
+            if (m.filter.getQuery() != null) {
+                thingCollection = m.filter.getQuery().filter(thingCollection);
+            }
+
+            Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
+
+            getSender().tell(
+                    new Things(thingsMap),
+                    getSelf()
+            );
         }
-
-        Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
-
-        getSender().tell(
-                new Things(thingsMap),
-                getSelf()
-        );
+        catch (ThingQueryException e) {
+            getSender().tell(
+                    new DiscoverError(e),
+                    getSelf()
+            );
+        }
     }
 
     private void expose(Expose m) {
@@ -255,6 +264,21 @@ public class ThingsActor extends AbstractActor {
         public String toString() {
             return "Deleted{" +
                     "id=" + id +
+                    '}';
+        }
+    }
+
+    public static class DiscoverError {
+        public final Throwable e;
+
+        public DiscoverError(Throwable e) {
+            this.e = e;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" +
+                    "e=" + e +
                     '}';
         }
     }
