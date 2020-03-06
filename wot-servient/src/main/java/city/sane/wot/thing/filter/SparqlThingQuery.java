@@ -44,13 +44,6 @@ public class SparqlThingQuery implements ThingQuery {
     }
 
     @Override
-    public String toString() {
-        return "SparqlThingQuery{" +
-                "query='" + query + '\'' +
-                '}';
-    }
-
-    @Override
     public List<Thing> filter(Collection<Thing> things) {
         if (things.isEmpty()) {
             return List.of();
@@ -96,5 +89,29 @@ public class SparqlThingQuery implements ThingQuery {
 
     public String getQuery() {
         return query;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(query);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SparqlThingQuery that = (SparqlThingQuery) o;
+        return Objects.equals(query, that.query);
+    }
+
+    @Override
+    public String toString() {
+        return "SparqlThingQuery{" +
+                "query='" + query + '\'' +
+                '}';
     }
 }

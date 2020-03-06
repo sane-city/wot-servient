@@ -23,5 +23,5 @@ public interface ThingQuery {
      * @param things
      * @return
      */
-    List<Thing> filter(Collection<Thing> things);
+    List<Thing> filter(Collection<Thing> things) throws ThingQueryException;
 }

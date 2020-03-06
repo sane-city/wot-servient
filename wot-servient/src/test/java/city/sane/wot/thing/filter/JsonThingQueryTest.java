@@ -11,6 +11,8 @@ import java.util.List;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonThingQueryTest {
     @Test
@@ -18,13 +20,13 @@ public class JsonThingQueryTest {
         JsonThingQuery query = new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}");
 
         assertThat(
-                query.getQuery().getQuery(),
+                query.getSparqlQuery().getQuery(),
                 matchesPattern("\\?genid.* <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .\n")
         );
     }
 
     @Test
-    public void filterType() throws ThingQueryException {
+    public void filterShouldReturnOnlyMatchingThings() throws ThingQueryException {
         List<Thing> things = new ArrayList<>();
         things.add(new Thing.Builder()
                 .setObjectContext(new Context("https://www.w3.org/2019/wot/td/v1"))
@@ -42,5 +44,17 @@ public class JsonThingQueryTest {
         Collection<Thing> filtered = query.filter(things);
 
         assertEquals(1, filtered.size());
+    }
+
+    @Test
+    public void testEquals() {
+        JsonThingQuery queryA = new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}");
+        JsonThingQuery queryB = new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}");
+        JsonThingQuery queryC = new JsonThingQuery("{\"http://www.w3.org/ns/td#title\":\"Klimabotschafter:Rahlstedt\"}");
+
+        assertTrue(queryA.equals(queryB));
+        assertTrue(queryB.equals(queryA));
+        assertFalse(queryA.equals(queryC));
+        assertFalse(queryC.equals(queryA));
     }
 }

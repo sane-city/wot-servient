@@ -10,6 +10,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SparqlThingQueryTest {
     @Test
@@ -56,5 +58,17 @@ public class SparqlThingQueryTest {
         SparqlThingQuery query = new SparqlThingQuery("?idiotype ?p ?o");
 
         assertNotNull(query);
+    }
+
+    @Test
+    public void testEquals() throws ThingQueryException {
+        SparqlThingQuery queryA = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .");
+        SparqlThingQuery queryB = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .");
+        SparqlThingQuery queryC = new SparqlThingQuery("?s ?p ?o .");
+
+        assertTrue(queryA.equals(queryB));
+        assertTrue(queryB.equals(queryA));
+        assertFalse(queryA.equals(queryC));
+        assertFalse(queryC.equals(queryA));
     }
 }
