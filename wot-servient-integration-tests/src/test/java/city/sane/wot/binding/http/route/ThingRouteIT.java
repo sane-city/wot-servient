@@ -76,8 +76,8 @@ public class ThingRouteIT {
                 if (input != null && ((Map) input).containsKey("step")) {
                     step = (Integer) ((Map) input).get("step");
                 }
-                else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
-                    step = (int) ((Map) options.get("uriVariables")).get("step");
+                else if (options.containsKey("uriVariables") && options.get("uriVariables").containsKey("step")) {
+                    step = (int) options.get("uriVariables").get("step");
                 }
                 else {
                     step = 1;

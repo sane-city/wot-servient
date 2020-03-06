@@ -78,13 +78,13 @@ public class HttpProtocolServer implements ProtocolServer {
     }
 
     HttpProtocolServer(String bindHost,
-                              int bindPort,
-                              List<String> addresses,
-                              Service server,
-                              Map<String, ExposedThing> things,
-                              Map<String, Object> security,
-                              String securityScheme,
-                              boolean started) {
+                       int bindPort,
+                       List<String> addresses,
+                       Service server,
+                       Map<String, ExposedThing> things,
+                       Map<String, Object> security,
+                       String securityScheme,
+                       boolean started) {
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         this.addresses = addresses;
