@@ -73,7 +73,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void readProperty() throws ExecutionException, InterruptedException {
+    public void readPropertyShouldReturnCorrectValue() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -170,7 +170,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void writeProperty() throws ExecutionException, InterruptedException {
+    public void writePropertyShouldUpdateValue() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -180,7 +180,7 @@ public class ConsumedThingIT {
         ConsumedThingProperty<Object> counter = thing.getProperty("count");
 
         try {
-            Object o = counter.write(1337).get();
+            counter.write(1337).get();
             assertEquals(1337, counter.read().get());
         }
         catch (CompletionException e) {
@@ -266,7 +266,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void readProperties() throws ExecutionException, InterruptedException {
+    public void readPropertiesShouldReturnCorrectValues() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -306,7 +306,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void invokeAction() throws ExecutionException, InterruptedException {
+    public void invokeActionShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -333,7 +333,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void invokeActionWithParameters() throws ExecutionException, InterruptedException {
+    public void invokeActionWithParametersShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -360,7 +360,7 @@ public class ConsumedThingIT {
     }
 
     @Test
-    public void observeEventShouldHandleMultipleSubscription() throws InterruptedException, ConsumedThingException {
+    public void observeEventShouldHandleMultipleSubscription() throws ConsumedThingException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
