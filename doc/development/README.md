@@ -36,3 +36,7 @@ mvn -DskipTests -pl wot-servient-cli -am package
 docker build -t git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest .
 docker push git.informatik.uni-hamburg.de:4567/sane-public/wot-servient:latest
 ```
+
+## Code Style
+
+We use a custom Java code style for which is described in the following file (IntelliJ IDEA only) [SANE.xml](../SANE.xml).
