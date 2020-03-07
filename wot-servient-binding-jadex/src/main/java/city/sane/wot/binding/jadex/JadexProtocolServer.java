@@ -29,7 +29,7 @@ import static java.util.concurrent.CompletableFuture.*;
  */
 public class JadexProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
-    private final Map<String, ExposedThing> things = new HashMap<>();
+    private final Map<String, ExposedThing> things;
     private final RefCountResource<IExternalAccess> platformProvider;
     private IExternalAccess platform = null;
     private ThingsService thingsService;
@@ -37,11 +37,17 @@ public class JadexProtocolServer implements ProtocolServer {
     private String thingsServiceId;
 
     public JadexProtocolServer(Config config) {
-        this(SharedPlatformProvider.singleton(config));
+        this(SharedPlatformProvider.singleton(config), null, null, new HashMap<>());
     }
 
-    JadexProtocolServer(RefCountResource<IExternalAccess> platformProvider) {
+    JadexProtocolServer(RefCountResource<IExternalAccess> platformProvider,
+                        IExternalAccess platform,
+                        ThingsService thingsService,
+                        Map<String, ExposedThing> things) {
         this.platformProvider = platformProvider;
+        this.platform = platform;
+        this.thingsService = thingsService;
+        this.things = things;
     }
 
     @Override
