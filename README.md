@@ -53,9 +53,9 @@ Add SANE WoT as dependency to your `pom.xml`:
 </dependency>
 ```
 
-### Official Build
+### Official Builds
 
-https://git.informatik.uni-hamburg.de/sane/wot-servient/-/jobs/artifacts/master/download?job=build-dist
+https://git.informatik.uni-hamburg.de/sane-public/wot-servient/-/releases
 
 ## Usage
 
