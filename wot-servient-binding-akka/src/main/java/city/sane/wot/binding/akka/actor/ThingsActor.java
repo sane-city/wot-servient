@@ -7,21 +7,23 @@ import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import city.sane.Pair;
+import city.sane.wot.binding.akka.Message;
+import city.sane.wot.binding.akka.Message.ErrorMessage;
+import city.sane.wot.binding.akka.actor.DiscoverActor.Discover;
+import city.sane.wot.binding.akka.actor.DiscoverActor.Discovered;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
-import city.sane.wot.thing.filter.ThingFilter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import static city.sane.wot.binding.akka.Messages.Read;
-import static city.sane.wot.binding.akka.Messages.RespondRead;
 
 /**
  * This Actor is started together with {@link city.sane.wot.binding.akka.AkkaProtocolServer} and is
@@ -32,11 +34,25 @@ public class ThingsActor extends AbstractActor {
     public static final String TOPIC = "thing-discovery";
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final Map<String, ExposedThing> things;
-    private final Map<String, ActorRef> children = new HashMap<>();
+    private final Map<String, ActorRef> thingActors;
+    private final Map<String, ActorRef> exposeRequesters;
+    private final Map<String, ActorRef> destroyRequesters;
     private final ActorRef mediator;
+    private final BiFunction<ActorContext, ExposedThing, ActorRef> thingActorCreator;
+    private final BiConsumer<ActorContext, ActorRef> thingActorDestroyer;
 
-    private ThingsActor(Map<String, ExposedThing> things) {
+    private ThingsActor(Map<String, ExposedThing> things,
+                        Map<String, ActorRef> thingActors,
+                        Map<String, ActorRef> exposeRequesters,
+                        Map<String, ActorRef> destroyRequesters,
+                        BiFunction<ActorContext, ExposedThing, ActorRef> thingActorCreator,
+                        BiConsumer<ActorContext, ActorRef> thingActorDestroyer) {
         this.things = things;
+        this.thingActors = thingActors;
+        this.exposeRequesters = exposeRequesters;
+        this.destroyRequesters = destroyRequesters;
+        this.thingActorCreator = thingActorCreator;
+        this.thingActorDestroyer = thingActorDestroyer;
         if (getContext().system().settings().config().getStringList("akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             mediator = DistributedPubSub.get(getContext().system()).mediator();
         }
@@ -68,12 +84,12 @@ public class ThingsActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(DistributedPubSubMediator.SubscribeAck.class, this::subscriptionAcknowledged)
-                .match(Read.class, m -> getThings())
+                .match(GetThings.class, m -> getThings())
                 .match(Discover.class, this::discover)
                 .match(Expose.class, this::expose)
-                .match(Created.class, this::exposed)
+                .match(Exposed.class, this::exposed)
                 .match(Destroy.class, this::destroy)
-                .match(Deleted.class, this::destroyed)
+                .match(Destroyed.class, this::destroyed)
                 .build();
     }
 
@@ -81,18 +97,23 @@ public class ThingsActor extends AbstractActor {
         log.debug("Subscribed to topic '{}'", m.subscribe().topic());
     }
 
-    private void getThings() throws ContentCodecException {
-        log.debug("Read message received. Respond with my things.");
+    private void getThings() {
+        ActorRef sender = getSender();
+        log.debug("Received GetThings message from {}", sender);
 
-        Content content = ContentManager.valueToContent(things);
-
-        getSender().tell(
-                new RespondRead(content),
-                getSelf()
-        );
+        try {
+            Content content = ContentManager.valueToContent(things);
+            sender.tell(new Things(content), getSelf());
+        }
+        catch (ContentCodecException e) {
+            sender.tell(new GetThingsFailed(e), getSelf());
+        }
     }
 
     private void discover(Discover m) {
+        ActorRef sender = getSender();
+        log.debug("Received Discover message from {}", sender);
+
         Collection<Thing> thingCollection = things.values().stream()
                 .map(t -> (Thing) t).collect(Collectors.toList());
 
@@ -101,127 +122,164 @@ public class ThingsActor extends AbstractActor {
         }
 
         Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
-
-        getSender().tell(
-                new Things(thingsMap),
-                getSelf()
-        );
+        sender.tell(new Discovered(thingsMap), getSelf());
     }
 
     private void expose(Expose m) {
-        String id = m.entity;
-        ActorRef thingActor = getContext().actorOf(ThingActor.props(getSender(), things.get(id)), id);
-        children.put(id, thingActor);
+        ActorRef sender = getSender();
+        log.debug("Received Expose message from {}", sender);
+
+        String id = m.id;
+        ExposedThing thing = things.get(id);
+
+        if (thing != null) {
+            // save requestor
+            exposeRequesters.put(id, sender);
+
+            // create thing actor
+            ActorRef thingActor = thingActorCreator.apply(getContext(), thing);
+            thingActors.put(id, thingActor);
+        }
+        else {
+            log.warning("Thing with id {} not found", id);
+            sender.tell(new ExposeFailed(new Exception("Thing with name " + id + " not found")), getSelf());
+        }
     }
 
-    private void exposed(Created m) {
-        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.entity;
-        ActorRef requester = pair.first();
-        String id = pair.second();
-        log.debug("Thing '{}' has been exposed", id);
-        requester.tell(new Created(getSender()), getSelf());
+    private void exposed(Exposed m) {
+        ActorRef sender = getSender();
+        log.debug("Received Exposed message from {}", sender);
+
+        String id = m.id;
+        ActorRef requester = exposeRequesters.remove(id);
+
+        if (requester != null) {
+            log.debug("Inform requester that thing '{}' has been exposed '{}'", id, requester);
+            requester.tell(m, getSelf());
+        }
     }
 
     private void destroy(Destroy m) {
+        ActorRef sender = getSender();
+        log.debug("Received Destroy message from {}", sender);
+
         String id = m.id;
-        ActorRef actorRef = children.remove(id);
+
+        // destroy thing
+        ActorRef actorRef = thingActors.remove(id);
+
         if (actorRef != null) {
+            // save requestor
+            destroyRequesters.put(id, sender);
+
             log.debug("Destroy Thing '{}'. Stop Actor '{}'", id, actorRef);
-            getContext().stop(actorRef);
-            getContext().watchWith(actorRef, new Deleted<>(new Pair<>(getSender(), id)));
+            thingActorDestroyer.accept(getContext(), actorRef);
         }
     }
 
-    private void destroyed(Deleted m) {
-        Pair<ActorRef, String> pair = (Pair<ActorRef, String>) m.id;
-        ActorRef requester = pair.first();
-        String id = pair.second();
-        log.debug("Thing '{}' is no longer exposed", id);
-        requester.tell(new Deleted<>(getSender()), getSelf());
+    private void destroyed(Destroyed m) {
+        ActorRef sender = getSender();
+        log.debug("Received Destroyed message from {}", sender);
+
+        String id = m.id;
+        ActorRef requester = destroyRequesters.remove(id);
+
+        if (requester != null) {
+            log.debug("Inform requester that thing '{}' has been destroyed '{}'", id, requester);
+            requester.tell(m, getSelf());
+        }
     }
 
     public static Props props(Map<String, ExposedThing> things) {
-        return Props.create(ThingsActor.class, () -> new ThingsActor(things));
+        return props(
+                things,
+                new HashMap<>(),
+                new HashMap<>(),
+                new HashMap<>(),
+                (context, thing) -> context.actorOf(ThingActor.props(thing), thing.getId()),
+                (context, actorRef) -> context.stop(actorRef)
+        );
     }
 
-    // CrudMessages
-    public static class Discover {
-        public final ThingFilter filter;
+    public static Props props(Map<String, ExposedThing> things,
+                              Map<String, ActorRef> thingActors,
+                              Map<String, ActorRef> exposeRequesters,
+                              Map<String, ActorRef> destroyRequesters,
+                              BiFunction<ActorContext, ExposedThing, ActorRef> thingActorProvider,
+                              BiConsumer<ActorContext, ActorRef> thingActorDestroyer) {
+        return Props.create(ThingsActor.class, () -> new ThingsActor(things, thingActors, exposeRequesters, destroyRequesters, thingActorProvider, thingActorDestroyer));
+    }
 
-        public Discover(ThingFilter filter) {
-            this.filter = filter;
-        }
-
-        Discover() {
-            filter = null;
+    // https://stackoverflow.com/a/53845446/1074188
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    public static class GetThings implements Message {
+        public GetThings() {
+            // required by jackson
         }
 
         @Override
         public String toString() {
-            return "Discover{" +
-                    "filter=" + filter +
-                    '}';
+            return "GetThings{}";
         }
     }
 
-    public static class Things {
-        public final Map<String, Thing> entities;
-
-        public Things(Map<String, Thing> entities) {
-            this.entities = entities;
-        }
-
-        Things() {
-            entities = null;
-        }
-
-        @Override
-        public String toString() {
-            return "Things{" +
-                    "entities=" + entities +
-                    '}';
+    public static class GetThingsFailed extends ErrorMessage {
+        public GetThingsFailed(Throwable e) {
+            super(e);
         }
     }
 
-    public static class Expose {
-        final String entity;
+    public static class Things extends Message.ContentMessage {
+        public Things(Content content) {
+            super(content);
+        }
+    }
 
-        public Expose(String entity) {
-            this.entity = entity;
+    public static class Expose implements Message {
+        final String id;
+
+        public Expose(String id) {
+            this.id = id;
         }
 
         Expose() {
-            entity = null;
+            id = null;
         }
 
         @Override
         public String toString() {
             return "Expose{" +
-                    "entity='" + entity + '\'' +
+                    "id='" + id + '\'' +
                     '}';
         }
     }
 
-    public static class Created<E> {
-        public final E entity;
+    public static class ExposeFailed extends ErrorMessage {
+        public ExposeFailed(Throwable e) {
+            super(e);
+        }
+    }
 
-        public Created(E entity) {
-            this.entity = entity;
+    public static class Exposed implements Message {
+        public final String id;
+
+        public Exposed(String id) {
+            this.id = id;
         }
 
-        Created() {
-            entity = null;
+        Exposed() {
+            id = null;
         }
 
         @Override
         public String toString() {
-            return "Created{" +
-                    "entity=" + entity +
+            return "Exposed{" +
+                    "id='" + id + '\'' +
                     '}';
         }
     }
 
-    public static class Destroy {
+    public static class Destroy implements Message {
         final String id;
 
         public Destroy(String id) {
@@ -240,21 +298,21 @@ public class ThingsActor extends AbstractActor {
         }
     }
 
-    public static class Deleted<K> {
-        public final K id;
+    public static class Destroyed implements Message {
+        public final String id;
 
-        Deleted() {
+        Destroyed() {
             id = null;
         }
 
-        public Deleted(K id) {
+        public Destroyed(String id) {
             this.id = id;
         }
 
         @Override
         public String toString() {
-            return "Deleted{" +
-                    "id=" + id +
+            return "Destroyed{" +
+                    "id='" + id + '\'' +
                     '}';
         }
     }

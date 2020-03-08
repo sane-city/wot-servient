@@ -105,12 +105,8 @@ public class AkkaProtocolServer implements ProtocolServer {
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(triple.third(), new ThingsActor.Expose(thing.getId()), timeout)
-                .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((ThingsActor.Created) m).entity;
-                    String endpoint = thingActor.path().toStringWithAddress(triple.first().provider().getDefaultAddress());
-                    log.debug("AkkaServer has '{}' exposed at {}", thing.getId(), endpoint);
-                    return (Void) null;
-                }).toCompletableFuture();
+                .thenRun(() -> log.debug("AkkaServer has '{}' exposed", thing.getId()))
+                .toCompletableFuture();
     }
 
     @Override
@@ -127,19 +123,15 @@ public class AkkaProtocolServer implements ProtocolServer {
 
         Duration timeout = Duration.ofSeconds(10);
         return pattern.ask(triple.third(), new ThingsActor.Destroy(thing.getId()), timeout)
-                .thenApply(m -> {
-                    ActorRef thingActor = (ActorRef) ((ThingsActor.Deleted) m).id;
-                    String endpoint = thingActor.path().toStringWithAddress(triple.first().provider().getDefaultAddress());
-                    log.debug("AkkaServer does not expose more '{}' at {}", thing.getId(), endpoint);
-                    return (Void) null;
-                }).toCompletableFuture();
+                .thenRun(() -> log.debug("AkkaServer does not expose more '{}'", thing.getId()))
+                .toCompletableFuture();
     }
 
     @Override
     public URI getDirectoryUrl() {
         try {
             String endpoint = triple.third().path().toStringWithAddress(triple.first().provider().getDefaultAddress());
-            return new URI(endpoint);
+            return new URI(endpoint + "#thing-directory");
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create directory url", e);
@@ -151,7 +143,7 @@ public class AkkaProtocolServer implements ProtocolServer {
     public URI getThingUrl(String id) {
         try {
             String endpoint = triple.third().path().child(id).toStringWithAddress(triple.first().provider().getDefaultAddress());
-            return new URI(endpoint);
+            return new URI(endpoint + "#thing");
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create thing url", e);
