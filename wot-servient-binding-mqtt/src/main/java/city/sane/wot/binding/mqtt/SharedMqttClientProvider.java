@@ -16,7 +16,8 @@ public class SharedMqttClientProvider {
         // singleton class
     }
 
-    public static synchronized RefCountResource<Pair<MqttProtocolSettings, MqttClient>> singleton(Config config) {
+    public static synchronized RefCountResource<Pair<MqttProtocolSettings, MqttClient>> singleton(
+            Config config) {
         if (singleton == null) {
             singleton = new RefCountResource<>(
                     () -> {

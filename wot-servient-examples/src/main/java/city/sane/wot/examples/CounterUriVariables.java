@@ -56,8 +56,8 @@ class CounterUriVariables {
                         if (input != null && ((Map) input).containsKey("step")) {
                             step = (Integer) ((Map) input).get("step");
                         }
-                        else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
-                            step = (int) ((Map) options.get("uriVariables")).get("step");
+                        else if (options.containsKey("uriVariables") && options.get("uriVariables").containsKey("step")) {
+                            step = (int) options.get("uriVariables").get("step");
                         }
                         else {
                             step = 1;
@@ -85,8 +85,8 @@ class CounterUriVariables {
                     System.out.println("CounterUriVariables: Decrementing, input= " + input + ", options= " + options);
                     exposedThing.getProperty("count").read().thenApply(value -> {
                         int step = 1;
-                        if (options.get("uriVariables") != null && ((Map) options.get("uriVariables")).get("step") != null) {
-                            step = (int) ((Map) options.get("uriVariables")).get("step");
+                        if (options.get("uriVariables") != null && options.get("uriVariables").get("step") != null) {
+                            step = (int) options.get("uriVariables").get("step");
                         }
                         int newValue = ((Integer) value) - step;
                         exposedThing.getProperty("count").write(newValue);

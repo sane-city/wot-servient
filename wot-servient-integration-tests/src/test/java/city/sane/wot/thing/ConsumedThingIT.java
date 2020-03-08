@@ -68,7 +68,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void readProperty() throws ExecutionException, InterruptedException {
+    public void readPropertyShouldReturnCorrectValue() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -127,8 +127,8 @@ public class ConsumedThingIT {
                         if (input != null && ((Map) input).containsKey("step")) {
                             step = (Integer) ((Map) input).get("step");
                         }
-                        else if (options.containsKey("uriVariables") && ((Map) options.get("uriVariables")).containsKey("step")) {
-                            step = (int) ((Map) options.get("uriVariables")).get("step");
+                        else if (options.containsKey("uriVariables") && options.get("uriVariables").containsKey("step")) {
+                            step = (int) options.get("uriVariables").get("step");
                         }
                         else {
                             step = 1;
@@ -165,7 +165,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void writeProperty() throws ExecutionException, InterruptedException {
+    public void writePropertyShouldUpdateValue() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -175,7 +175,7 @@ public class ConsumedThingIT {
         ConsumedThingProperty<Object> counter = thing.getProperty("count");
 
         try {
-            Object o = counter.write(1337).get();
+            counter.write(1337).get();
             assertEquals(1337, counter.read().get());
         }
         catch (CompletionException e) {
@@ -261,7 +261,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void readProperties() throws ExecutionException, InterruptedException {
+    public void readPropertiesShouldReturnCorrectValues() throws ExecutionException, InterruptedException {
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -301,7 +301,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void invokeAction() throws ExecutionException, InterruptedException {
+    public void invokeActionShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -328,7 +328,7 @@ public class ConsumedThingIT {
     }
 
     @Test(timeout = 20 * 1000L)
-    public void invokeActionWithParameters() throws ExecutionException, InterruptedException {
+    public void invokeActionWithParametersShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);

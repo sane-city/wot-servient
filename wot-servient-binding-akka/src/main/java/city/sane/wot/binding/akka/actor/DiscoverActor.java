@@ -117,6 +117,12 @@ public class DiscoverActor extends AbstractActor {
         }
     }
 
+    public static class DiscoverFailed extends Message.ErrorMessage {
+        public DiscoverFailed(Throwable e) {
+            super(e);
+        }
+    }
+
     public static class Discovered implements Message {
         public final Map<String, ? extends Thing> things;
 

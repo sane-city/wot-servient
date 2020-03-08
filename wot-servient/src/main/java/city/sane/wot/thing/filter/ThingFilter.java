@@ -1,6 +1,7 @@
 package city.sane.wot.thing.filter;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * ThingFilter is used for the discovery process and specifies what things to look for and where to
@@ -17,15 +18,6 @@ public class ThingFilter {
 
     public ThingFilter(DiscoveryMethod method) {
         this.method = method;
-    }
-
-    @Override
-    public String toString() {
-        return "ThingFilter{" +
-                "method=" + method +
-                ", url=" + url +
-                ", query=" + query +
-                '}';
     }
 
     public DiscoveryMethod getMethod() {
@@ -77,5 +69,33 @@ public class ThingFilter {
     public ThingFilter setQuery(ThingQuery query) {
         this.query = query;
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(method, url, query);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ThingFilter that = (ThingFilter) o;
+        return method == that.method &&
+                Objects.equals(url, that.url) &&
+                Objects.equals(query, that.query);
+    }
+
+    @Override
+    public String toString() {
+        return "ThingFilter{" +
+                "method=" + method +
+                ", url=" + url +
+                ", query=" + query +
+                '}';
     }
 }

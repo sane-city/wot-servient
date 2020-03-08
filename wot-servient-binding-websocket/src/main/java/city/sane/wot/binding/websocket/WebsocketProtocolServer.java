@@ -72,12 +72,12 @@ public class WebsocketProtocolServer implements ProtocolServer {
     }
 
     WebsocketProtocolServer(ServerBootstrap serverBootstrap,
-                                   EventLoopGroup serverBossGroup,
-                                   EventLoopGroup serverWorkerGroup,
-                                   Map<String, ExposedThing> things,
-                                   List<String> addresses,
-                                   int bindPort,
-                                   Channel serverChannel) {
+                            EventLoopGroup serverBossGroup,
+                            EventLoopGroup serverWorkerGroup,
+                            Map<String, ExposedThing> things,
+                            List<String> addresses,
+                            int bindPort,
+                            Channel serverChannel) {
         this.serverBootstrap = serverBootstrap;
         this.serverBossGroup = serverBossGroup;
         this.serverWorkerGroup = serverWorkerGroup;

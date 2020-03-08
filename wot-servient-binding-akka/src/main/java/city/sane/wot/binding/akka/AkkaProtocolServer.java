@@ -45,8 +45,15 @@ public class AkkaProtocolServer implements ProtocolServer {
 
     protected AkkaProtocolServer(RefCountResource<Triple<ActorSystem, Map<String, ExposedThing>, ActorRef>> actorSystemProvider,
                                  AkkaProtocolPattern pattern) {
+        this(actorSystemProvider, pattern, null);
+    }
+
+    protected AkkaProtocolServer(RefCountResource<Triple<ActorSystem, Map<String, ExposedThing>, ActorRef>> actorSystemProvider,
+                                 AkkaProtocolPattern pattern,
+                                 Triple<ActorSystem, Map<String, ExposedThing>, ActorRef> triple) {
         this.actorSystemProvider = actorSystemProvider;
         this.pattern = pattern;
+        this.triple = triple;
     }
 
     @Override

@@ -10,12 +10,14 @@ import akka.event.LoggingAdapter;
 import city.sane.wot.binding.akka.Message;
 import city.sane.wot.binding.akka.Message.ErrorMessage;
 import city.sane.wot.binding.akka.actor.DiscoverActor.Discover;
+import city.sane.wot.binding.akka.actor.DiscoverActor.DiscoverFailed;
 import city.sane.wot.binding.akka.actor.DiscoverActor.Discovered;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.filter.ThingQueryException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Collection;
@@ -114,15 +116,20 @@ public class ThingsActor extends AbstractActor {
         ActorRef sender = getSender();
         log.debug("Received Discover message from {}", sender);
 
-        Collection<Thing> thingCollection = things.values().stream()
-                .map(t -> (Thing) t).collect(Collectors.toList());
+        try {
+            Collection<Thing> thingCollection = things.values().stream()
+                    .map(t -> (Thing) t).collect(Collectors.toList());
 
-        if (m.filter.getQuery() != null) {
-            thingCollection = m.filter.getQuery().filter(thingCollection);
+            if (m.filter.getQuery() != null) {
+                thingCollection = m.filter.getQuery().filter(thingCollection);
+            }
+
+            Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
+            sender.tell(new Discovered(thingsMap), getSelf());
         }
-
-        Map<String, Thing> thingsMap = thingCollection.stream().collect(Collectors.toMap(Thing::getId, t -> t));
-        sender.tell(new Discovered(thingsMap), getSelf());
+        catch (ThingQueryException e) {
+            sender.tell(new DiscoverFailed(e), getSelf());
+        }
     }
 
     private void expose(Expose m) {

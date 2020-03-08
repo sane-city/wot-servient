@@ -1,23 +1,16 @@
 package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Thing;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Allows filtering of things during discovery process using a JSON query.
@@ -26,36 +19,10 @@ import java.util.List;
  * </p>
  */
 public class JsonThingQuery implements ThingQuery {
-    @JsonDeserialize(using = JsonThingQueryQueryDeserializer.class)
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-    private final SparqlThingQuery query;
+    private final String query;
 
-    public JsonThingQuery(String jsonQueryString) throws ThingQueryException {
-        this(new SparqlThingQuery(jsonToSparqlQuery(jsonQueryString)));
-    }
-
-    JsonThingQuery(SparqlThingQuery query) {
+    public JsonThingQuery(String query) {
         this.query = query;
-    }
-
-    private static String jsonToSparqlQuery(String queryString) throws ThingQueryException {
-        try {
-            StringReader reader = new StringReader(queryString);
-            Model frame = Rio.parse(reader, "", RDFFormat.JSONLD);
-            ByteArrayOutputStream o = new ByteArrayOutputStream();
-            Rio.write(frame, o, RDFFormat.NTRIPLES);
-
-            String sparlQueryString = o.toString().replace("_:", "?");
-
-            if (sparlQueryString.isEmpty()) {
-                throw new ThingQueryException("Translated SPARQL Query is empty. Something seems wrong with your JSON query: " + queryString);
-            }
-
-            return sparlQueryString;
-        }
-        catch (IOException e) {
-            throw new ThingQueryException(e);
-        }
     }
 
     JsonThingQuery() {
@@ -64,8 +31,20 @@ public class JsonThingQuery implements ThingQuery {
     }
 
     @Override
-    public List<Thing> filter(Collection<Thing> things) {
-        return query.filter(things);
+    public int hashCode() {
+        return Objects.hash(query);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        JsonThingQuery that = (JsonThingQuery) o;
+        return Objects.equals(query, that.query);
     }
 
     @Override
@@ -75,29 +54,32 @@ public class JsonThingQuery implements ThingQuery {
                 '}';
     }
 
-    public SparqlThingQuery getQuery() {
-        return query;
+    @Override
+    public List<Thing> filter(Collection<Thing> things) throws ThingQueryException {
+        return getSparqlQuery().filter(things);
     }
 
-    static class JsonThingQueryQueryDeserializer extends JsonDeserializer {
-        private static final Logger log = LoggerFactory.getLogger(JsonThingQueryQueryDeserializer.class);
+    SparqlThingQuery getSparqlQuery() throws ThingQueryException {
+        try {
+            StringReader reader = new StringReader(query);
+            Model frame = Rio.parse(reader, "", RDFFormat.JSONLD);
+            ByteArrayOutputStream o = new ByteArrayOutputStream();
+            Rio.write(frame, o, RDFFormat.NTRIPLES);
 
-        @Override
-        public Object deserialize(JsonParser p,
-                                  DeserializationContext ctxt) throws IOException {
-            try {
-                JsonToken t = p.currentToken();
-                if (t == JsonToken.VALUE_STRING) {
-                    return new SparqlThingQuery(jsonToSparqlQuery(p.getValueAsString()));
-                }
-                else {
-                    log.warn("Unable to deserialize JsonThingQuery of type '{}'", t);
-                    return null;
-                }
+            String sparlQueryString = o.toString().replace("_:", "?");
+
+            if (sparlQueryString.isEmpty()) {
+                throw new ThingQueryException("Translated SPARQL Query is empty. Something seems wrong with your JSON query: " + query);
             }
-            catch (ThingQueryException e) {
-                throw new IOException(e);
-            }
+
+            return new SparqlThingQuery(sparlQueryString);
         }
+        catch (IOException e) {
+            throw new ThingQueryException(e);
+        }
+    }
+
+    public String getQuery() {
+        return query;
     }
 }

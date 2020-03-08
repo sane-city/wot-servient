@@ -11,6 +11,7 @@ import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.filter.DiscoveryMethod;
 import city.sane.wot.thing.filter.ThingFilter;
+import city.sane.wot.thing.filter.ThingQueryException;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import city.sane.wot.thing.schema.ObjectSchema;
@@ -131,8 +132,8 @@ public class Servient {
     /**
      * All servers supported by Servient are instructed to expose the Thing with the given
      * <code>id</code>. Then it is possible to interact with the Thing via different protocols
-     * (e.g.
-     * HTTP, CoAP, ...). Before a thing can be exposed, it must be added via {@link #addThing}.
+     * (e.g. HTTP, CoAP, ...). Before a thing can be exposed, it must be added via {@link
+     * #addThing}.
      *
      * @param id
      * @return
@@ -436,7 +437,13 @@ public class Servient {
     private @io.reactivex.rxjava3.annotations.NonNull Observable<Thing> discoverLocal(ThingFilter filter) {
         List<Thing> myThings = getThings().values().stream().map(Thing.class::cast).collect(Collectors.toList());
         if (filter.getQuery() != null) {
-            return Observable.fromIterable(filter.getQuery().filter(myThings));
+            try {
+                List<Thing> filteredThings = filter.getQuery().filter(myThings);
+                return Observable.fromIterable(filteredThings);
+            }
+            catch (ThingQueryException e) {
+                return Observable.error(e);
+            }
         }
         else {
             return Observable.fromIterable(myThings);
