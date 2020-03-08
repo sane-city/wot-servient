@@ -7,9 +7,11 @@ import city.sane.Pair;
 import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
-import city.sane.wot.binding.akka.Messages.*;
+import city.sane.wot.binding.akka.Message.ContentMessage;
 import city.sane.wot.binding.akka.actor.DiscoverActor;
 import city.sane.wot.binding.akka.actor.ObserveActor;
+import city.sane.wot.binding.akka.actor.ThingActor.*;
+import city.sane.wot.binding.akka.actor.ThingsActor.GetThings;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static java.util.concurrent.CompletableFuture.failedFuture;
 
@@ -55,75 +58,67 @@ public class AkkaProtocolClient implements ProtocolClient {
     @SuppressWarnings("squid:S1192")
     @Override
     public CompletableFuture<Content> readResource(Form form) {
-        Read message = new Read();
-        String href = form.getHref();
-        if (href == null) {
-            return failedFuture(new ProtocolClientException("no href given"));
-        }
-        log.debug("AkkaClient sending '{}' to {}", message, href);
-
-        ActorSelection selection = system.actorSelection(href);
-        return pattern.ask(selection, message, askTimeout)
-                .thenApply(m -> ((RespondRead) m).content)
-                .toCompletableFuture();
+        return request(form, resourceIdentifier -> {
+            if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("properties")) {
+                return new ReadProperty(resourceIdentifier[1]);
+            }
+            else if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("all") && resourceIdentifier[1].equals("properties")) {
+                return new ReadAllProperties();
+            }
+            else if (resourceIdentifier.length == 1 && resourceIdentifier[0].equals("thing")) {
+                return new GetThingDescription();
+            }
+            else if (resourceIdentifier.length == 1 && resourceIdentifier[0].equals("thing-directory")) {
+                return new GetThings();
+            }
+            else {
+                return null;
+            }
+        });
     }
 
     @Override
     public CompletableFuture<Content> writeResource(Form form, Content content) {
-        Write message = new Write(content);
-        String href = form.getHref();
-        if (href == null) {
-            return failedFuture(new ProtocolClientException("no href given"));
-        }
-        log.debug("AkkaClient sending '{}' to {}", message, href);
-
-        ActorSelection selection = system.actorSelection(href);
-        return pattern.ask(selection, message, askTimeout)
-                .thenApply(m -> ((Written) m).content)
-                .toCompletableFuture();
+        return request(form, resourceIdentifier -> {
+            if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("properties")) {
+                return new WriteProperty(resourceIdentifier[1], content);
+            }
+            else {
+                return null;
+            }
+        });
     }
 
     @Override
     public CompletableFuture<Content> invokeResource(Form form, Content content) {
-        Invoke message = new Invoke(content);
-        String href = form.getHref();
-        if (href == null) {
-            return failedFuture(new ProtocolClientException("no href given"));
-        }
-        log.debug("AkkaClient sending '{}' to {}", message, href);
-
-        ActorSelection selection = system.actorSelection(href);
-        return pattern.ask(selection, message, askTimeout)
-                .thenApply(m -> ((Invoked) m).content)
-                .toCompletableFuture();
+        return request(form, resourceIdentifier -> {
+            if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("actions")) {
+                return new InvokeAction(resourceIdentifier[1], content);
+            }
+            else {
+                return null;
+            }
+        });
     }
 
     @Override
-    public Observable<Content> observeResource(Form form) throws ProtocolClientException {
-        String href = form.getHref();
-        if (href == null) {
-            throw new ProtocolClientException("no href given");
-        }
-        ActorSelection selection = system.actorSelection(href);
-
-        return Observable.using(
-                () -> {
-                    log.debug("Create temporary actor to observe resource: {}", href);
-                    PublishSubject<Content> subject = PublishSubject.create();
-                    ActorRef actorRef = system.actorOf(ObserveActor.props(subject, selection));
-                    return new Pair<>(subject, actorRef);
-                },
-                Pair::first,
-                pair -> {
-                    log.debug("No more observers. Stop temporary actor from resource observation: {}", href);
-                    system.stop(pair.second());
-                }
-        );
+    public Observable<Content> observeResource(Form form) {
+        return observe(form, resourceIdentifier -> {
+            if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("properties")) {
+                return new SubscribeProperty(resourceIdentifier[1]);
+            }
+            else if (resourceIdentifier.length == 2 && resourceIdentifier[0].equals("events")) {
+                return new SubscribeEvent(resourceIdentifier[1]);
+            }
+            else {
+                return null;
+            }
+        });
     }
 
     @Override
     public Observable<Thing> discover(ThingFilter filter) throws ProtocolClientNotImplementedException {
-        if (system.settings().config().getStringList("wot.servient.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
+        if (system.settings().config() != null && system.settings().config().getStringList("wot.servient.akka.extensions").contains("akka.cluster.pubsub.DistributedPubSub")) {
             return Observable.using(
                     () -> {
                         log.debug("Create temporary actor to discover things matching filter: {}", filter);
@@ -141,6 +136,76 @@ public class AkkaProtocolClient implements ProtocolClient {
         else {
             log.warn("DistributedPubSub extension missing. ANY Discovery is not be supported.");
             throw new ProtocolClientNotImplementedException(getClass(), "discover");
+        }
+    }
+
+    private Observable<Content> observe(Form form,
+                                        Function<String[], Message> messageProvider) {
+        try {
+            Pair<String, String[]> pair = getActorPathAndResourceIdentifier(form);
+            String actorPath = pair.first();
+            String[] resourceIdentifier = pair.second();
+
+            Message message = messageProvider.apply(resourceIdentifier);
+
+            if (message != null) {
+                log.debug("AkkaClient sending '{}' to {}", message, actorPath);
+                ActorSelection selection = system.actorSelection(actorPath);
+                return Observable.using(
+                        () -> {
+                            log.debug("Create temporary actor to observe resource: {}", actorPath);
+                            PublishSubject<Content> subject = PublishSubject.create();
+                            ActorRef actorRef = system.actorOf(ObserveActor.props(subject, selection, message));
+                            return new Pair<>(subject, actorRef);
+                        },
+                        Pair::first,
+                        myPair -> {
+                            log.debug("No more observers. Stop temporary actor from resource observation: {}", actorPath);
+                            system.stop(myPair.second());
+                        }
+                );
+            }
+            else {
+                return Observable.error(new ProtocolClientException("Unknown resource identifier: " + String.join("/", resourceIdentifier)));
+            }
+        }
+        catch (ProtocolClientException e) {
+            return Observable.error(e);
+        }
+    }
+
+    private CompletableFuture<Content> request(Form form,
+                                               Function<String[], Message> messageProvider) {
+        try {
+            Pair<String, String[]> pair = getActorPathAndResourceIdentifier(form);
+            String actorPath = pair.first();
+            String[] resourceIdentifier = pair.second();
+
+            Message message = messageProvider.apply(resourceIdentifier);
+
+            if (message != null) {
+                log.debug("AkkaClient sending '{}' to {}", message, actorPath);
+                ActorSelection selection = system.actorSelection(actorPath);
+                return pattern.ask(selection, message, askTimeout)
+                        .thenApply(m -> ((ContentMessage) m).content)
+                        .toCompletableFuture();
+            }
+            else {
+                return failedFuture(new ProtocolClientException("Unknown resource identifier: " + String.join("/", resourceIdentifier)));
+            }
+        }
+        catch (ProtocolClientException e) {
+            return failedFuture(e);
+        }
+    }
+
+    private Pair<String, String[]> getActorPathAndResourceIdentifier(Form form) throws ProtocolClientException {
+        String[] parts = form.getHref().split("#", 2);
+        if (parts.length == 2) {
+            return new Pair<>(parts[0], parts[1].split("/"));
+        }
+        else {
+            throw new ProtocolClientException("Unable to read resource identifier from href " + form.getHref());
         }
     }
 }

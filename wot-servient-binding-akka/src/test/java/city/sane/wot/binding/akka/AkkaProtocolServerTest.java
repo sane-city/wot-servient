@@ -40,7 +40,7 @@ public class AkkaProtocolServerTest {
         when(triple.second()).thenReturn(things);
         when(triple.third()).thenReturn(thingsActor);
         when(pattern.ask(any(ActorRef.class), any(), any())).thenReturn(completionStage);
-        when(completionStage.thenApply(any())).thenReturn(completionStage);
+        when(completionStage.thenRun(any())).thenReturn(completionStage);
 
         AkkaProtocolServer server = new AkkaProtocolServer(actorSystemProvider, pattern, triple);
         server.expose(thing);

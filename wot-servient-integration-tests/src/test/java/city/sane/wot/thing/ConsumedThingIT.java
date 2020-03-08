@@ -8,14 +8,9 @@ import city.sane.wot.binding.ProtocolClientNotImplementedException;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
-import city.sane.wot.binding.coap.CoapProtocolClientFactory;
 import city.sane.wot.binding.coap.CoapProtocolServer;
-import city.sane.wot.binding.http.HttpProtocolClientFactory;
-import city.sane.wot.binding.http.HttpProtocolServer;
 import city.sane.wot.binding.mqtt.MqttProtocolClientFactory;
 import city.sane.wot.binding.mqtt.MqttProtocolServer;
-import city.sane.wot.binding.websocket.WebsocketProtocolClientFactory;
-import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.action.ConsumedThingAction;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
@@ -430,13 +425,7 @@ public class ConsumedThingIT {
     @Parameters(name = "{0}")
     public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
         return Arrays.asList(
-                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class),
-                new Pair<>(CoapProtocolServer.class, CoapProtocolClientFactory.class),
-                new Pair<>(HttpProtocolServer.class, HttpProtocolClientFactory.class),
-                // Jadex platform discovery is unstable
-//                new Pair<>(JadexProtocolServer.class, JadexProtocolClientFactory.class),
-                new Pair<>(MqttProtocolServer.class, MqttProtocolClientFactory.class),
-                new Pair<>(WebsocketProtocolServer.class, WebsocketProtocolClientFactory.class)
+                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class)
         );
     }
 }
