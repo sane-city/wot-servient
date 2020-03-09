@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertThat;
 
@@ -25,23 +24,22 @@ public class CoapProtocolServerIT {
     }
 
     @After
-    public void tearDown() throws TimeoutException {
+    public void tearDown() {
         server.stop().join();
-        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, Matchers.matchesPattern("coap://.*:5683"));
+        assertThat(url, Matchers.matchesPattern("coap://.*:\\d+"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, Matchers.matchesPattern("coap://.*:5683/counter"));
+        assertThat(url, Matchers.matchesPattern("coap://.*:\\d+/counter"));
     }
 
     private ExposedThing getCounterThing() {
