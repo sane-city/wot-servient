@@ -1,6 +1,6 @@
 # HTTP Binding
 
-This binding uses an Message Queuing Telemetry Transport broker to interact with Things.
+Uses the Hypertext Transfer Protocol for interaction with Things.
 
 ## Configuration
 
