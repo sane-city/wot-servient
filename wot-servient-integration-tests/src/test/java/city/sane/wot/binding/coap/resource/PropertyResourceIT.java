@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -24,7 +23,6 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -91,7 +89,7 @@ public class PropertyResourceIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -101,7 +99,7 @@ public class PropertyResourceIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -109,15 +107,14 @@ public class PropertyResourceIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent<Object>());
+        thing.addEvent("change", new ThingEvent<>());
 
         return thing;
     }
 
     @After
-    public void teardown() throws TimeoutException {
+    public void teardown() {
         server.stop();
-        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test

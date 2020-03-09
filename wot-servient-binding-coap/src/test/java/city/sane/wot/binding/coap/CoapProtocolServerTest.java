@@ -56,7 +56,7 @@ public class CoapProtocolServerTest {
     public void startShouldCreateAndStartServer() {
         when(serverSupplier.get()).thenReturn(coapServer);
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, null);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, null, bindPort, addresses);
         server.start(servient);
 
         verify(serverSupplier, timeout(1 * 1000L)).get();
@@ -65,7 +65,7 @@ public class CoapProtocolServerTest {
 
     @Test
     public void stopShouldStopAndDestroyServer() {
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer, bindPort, addresses);
         server.stop();
 
         verify(coapServer, timeout(1 * 1000L)).stop();
@@ -76,7 +76,7 @@ public class CoapProtocolServerTest {
     public void exposeShouldCreateThingResource() {
         when(thing.getId()).thenReturn("counter");
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer, bindPort, addresses);
         server.expose(thing);
 
         verify(resources, timeout(1 * 1000L)).put(eq("counter"), any(ThingResource.class));
@@ -93,7 +93,7 @@ public class CoapProtocolServerTest {
         when(thing.getEvents()).thenReturn(Map.of("changed", event));
         when(event.observer()).thenReturn(PublishSubject.create());
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, List.of("coap://localhost"), things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, List.of("coap://localhost"), things, resources, serverSupplier, coapServer, bindPort, List.of("coap://localhost"));
         server.expose(thing);
 
         verify(property, timeout(1 * 1000L).times(2)).addForm(any());
@@ -106,7 +106,7 @@ public class CoapProtocolServerTest {
         when(resources.remove(any())).thenReturn(resource);
         when(coapServer.getRoot()).thenReturn(resource);
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer, bindPort, addresses);
         server.destroy(thing);
 
         verify(resource, timeout(1 * 1000L)).delete(resource);
@@ -116,7 +116,7 @@ public class CoapProtocolServerTest {
     public void getDirectoryUrlShouldReturnFristAddress() throws URISyntaxException {
         when(addresses.get(0)).thenReturn("coap://0.0.0.0");
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer, bindPort, addresses);
 
         assertEquals(new URI("coap://0.0.0.0"), server.getDirectoryUrl());
     }
@@ -125,7 +125,7 @@ public class CoapProtocolServerTest {
     public void getThingUrl() throws URISyntaxException {
         when(addresses.get(0)).thenReturn("coap://0.0.0.0");
 
-        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer);
+        CoapProtocolServer server = new CoapProtocolServer(bindHost, bindPort, addresses, things, resources, serverSupplier, coapServer, bindPort, addresses);
 
         assertEquals(new URI("coap://0.0.0.0/counter"), server.getThingUrl("counter"));
     }

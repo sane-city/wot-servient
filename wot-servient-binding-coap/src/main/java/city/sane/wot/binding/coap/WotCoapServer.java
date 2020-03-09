@@ -23,4 +23,8 @@ public class WotCoapServer extends org.eclipse.californium.core.CoapServer {
     public CoapProtocolServer getProtocolServer() {
         return protocolServer;
     }
+
+    public int getPort() {
+        return getEndpoints().get(0).getAddress().getPort();
+    }
 }

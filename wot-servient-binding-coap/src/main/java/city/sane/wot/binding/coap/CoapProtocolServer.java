@@ -18,13 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -49,6 +49,8 @@ public class CoapProtocolServer implements ProtocolServer {
     private final Map<String, CoapResource> resources;
     private final Supplier<WotCoapServer> serverSupplier;
     private WotCoapServer server;
+    private int actualPort;
+    private List<String> actualAddresses;
 
     public CoapProtocolServer(Config config) {
         bindHost = "0.0.0.0";
@@ -70,7 +72,9 @@ public class CoapProtocolServer implements ProtocolServer {
                        Map<String, ExposedThing> things,
                        Map<String, CoapResource> resources,
                        Supplier<WotCoapServer> serverSupplier,
-                       WotCoapServer server) {
+                       WotCoapServer server,
+                       int actualPort,
+                       List<String> actualAddresses) {
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         this.addresses = addresses;
@@ -78,6 +82,8 @@ public class CoapProtocolServer implements ProtocolServer {
         this.resources = resources;
         this.serverSupplier = serverSupplier;
         this.server = server;
+        this.actualPort = actualPort;
+        this.actualAddresses = actualAddresses;
     }
 
     @Override
@@ -96,12 +102,16 @@ public class CoapProtocolServer implements ProtocolServer {
         return runAsync(() -> {
             server = serverSupplier.get();
             server.start();
+            actualPort = server.getPort();
+            actualAddresses = addresses.stream()
+                    .map(a -> a.replace(":" + bindPort, ":" + actualPort))
+                    .collect(Collectors.toList());
         });
     }
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, actualPort);
 
         if (server == null) {
             return completedFuture(null);
@@ -111,29 +121,18 @@ public class CoapProtocolServer implements ProtocolServer {
             server.stop();
             server.destroy();
 
-            try {
-                // TODO: Wait some time after the server has shut down. Apparently the CoAP server reports too early that it was terminated, even though the
-                //  port is still in use. This sometimes led to errors during the tests because other CoAP servers were not able to be started because the port
-                //  was already in use. This error only occurred in the GitLab CI (in Docker). Instead of waiting, the error should be reported to the
-                //  maintainer of the CoAP server and fixed. Because the isolation of the error is so complex, this workaround was chosen.
-                waitForPort(bindPort);
-            }
-            catch (TimeoutException e) {
-                throw new CompletionException(e);
-            }
-
             log.debug("Server stopped");
         });
     }
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://{}:{}/{}", bindHost, bindPort,
-                thing.getId(), bindHost, bindPort, thing.getId());
-
         if (server == null) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before CoapServer has been started"));
         }
+
+        log.info("CoapServer on '{}' port '{}' exposes '{}' at coap://{}:{}/{}", bindHost, actualPort,
+                thing.getId(), bindHost, actualPort, thing.getId());
 
         things.put(thing.getId(), thing);
 
@@ -146,21 +145,21 @@ public class CoapProtocolServer implements ProtocolServer {
         }
         root.add(thingResource);
 
-        exposeProperties(thing, thingResource, addresses, ContentManager.getOfferedMediaTypes());
-        exposeActions(thing, thingResource, addresses, ContentManager.getOfferedMediaTypes());
-        exposeEvents(thing, thingResource, addresses, ContentManager.getOfferedMediaTypes());
+        exposeProperties(thing, thingResource, actualAddresses, ContentManager.getOfferedMediaTypes());
+        exposeActions(thing, thingResource, actualAddresses, ContentManager.getOfferedMediaTypes());
+        exposeEvents(thing, thingResource, actualAddresses, ContentManager.getOfferedMediaTypes());
 
         return completedFuture(null);
     }
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://{}:{}/{}", bindHost, bindPort,
-                thing.getId(), bindHost, bindPort, thing.getId());
-
         if (server == null) {
             return completedFuture(null);
         }
+
+        log.info("CoapServer on '{}' port '{}' stop exposing '{}' at coap://{}:{}/{}", bindHost, actualPort,
+                thing.getId(), bindHost, actualPort, thing.getId());
 
         things.remove(thing.getId());
 
@@ -175,7 +174,7 @@ public class CoapProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            return new URI(addresses.get(0));
+            return new URI(actualAddresses.get(0));
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create directory url", e);
@@ -186,7 +185,7 @@ public class CoapProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            return new URI(addresses.get(0)).resolve("/" + id);
+            return new URI(actualAddresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to thing url", e);
@@ -326,54 +325,6 @@ public class CoapProtocolServer implements ProtocolServer {
 
                 eventsResource.add(new EventResource(name, event));
             });
-        }
-    }
-
-    /**
-     * This method blocks until the port specified in <code>port</code> is available (again). The
-     * maximum blocking time is 10 seconds. If the port does not become available within 10 seconds,
-     * a {@link TimeoutException} is thrown.
-     *
-     * @param port
-     * @throws TimeoutException
-     */
-    public static void waitForPort(int port) throws TimeoutException {
-        waitForPort(port, Duration.ofSeconds(10));
-    }
-
-    /**
-     * This method blocks until the port specified in <code>port</code> is available (again). The
-     * maximum blocking time is specified with <code>duration</code>. If the port does not become
-     * available within the specified duration, a {@link TimeoutException} is thrown.
-     *
-     * @param port
-     * @param duration
-     * @throws TimeoutException
-     */
-    public static void waitForPort(int port, Duration duration) throws TimeoutException {
-        CompletableFuture<Boolean> result = new CompletableFuture<>();
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try (ServerSocket socket = new ServerSocket(port)) {
-                    result.complete(true);
-                }
-                catch (IOException e) {
-                    // ignore
-                }
-            }
-        }, 0, 100);
-
-        try {
-            result.get(duration.toMillis(), TimeUnit.MILLISECONDS);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException e) {
-            // ignore
         }
     }
 

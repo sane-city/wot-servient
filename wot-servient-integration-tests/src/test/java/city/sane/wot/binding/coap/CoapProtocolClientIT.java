@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -40,10 +39,9 @@ public class CoapProtocolClientIT {
     }
 
     @After
-    public void tearDown() throws TimeoutException {
+    public void tearDown() {
         clientFactory.destroy().join();
         server.stop();
-        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test

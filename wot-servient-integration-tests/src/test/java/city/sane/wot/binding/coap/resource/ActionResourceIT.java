@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap.resource;
 
-import city.sane.wot.binding.coap.CoapProtocolServer;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -24,7 +23,6 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -115,9 +113,8 @@ public class ActionResourceIT {
     }
 
     @After
-    public void teardown() throws TimeoutException {
+    public void teardown() {
         server.stop();
-        CoapProtocolServer.waitForPort(5683);
     }
 
     @Test
