@@ -13,7 +13,7 @@ All configurations associated with HTTP Binding are located in the `wot.servient
 | Parameter         | Explanation  | Default Value |
 |-------------------|---------------|---------------|
 | `bind-host`       | IP address that HTTP server should listen on. | `"0.0.0.0"`
-| `bind-port`       | Port that HTTP server should listen on. | `80` |
+| `bind-port`       | Port that HTTP server should listen on.<br> A port number of `0` means that the port number is automatically allocated. | `80` |
 | `addresses`       | List of URLs, which are used in the Thing Description as accessible addresses. If no addresses are specified, the service automatically determines its local addresses. However, it may be necessary to set the address manually, for example when using Docker. | `[]` |
 | `security.scheme` | Defines the security mechanism with which the interaction with Things is secured. | `null` |
 

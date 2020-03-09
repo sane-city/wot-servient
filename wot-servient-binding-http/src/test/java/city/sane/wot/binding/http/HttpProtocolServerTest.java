@@ -69,7 +69,7 @@ public class HttpProtocolServerTest {
 
     @Test
     public void exposeShouldAddForms() {
-        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, List.of("http://localhost"), httpServer, things, security, securityScheme, true);
+        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, List.of("http://localhost"), httpServer, things, security, securityScheme, true, bindPort, List.of("http://localhost"));
         server.expose(thing);
 
         verify(thing, timeout(1 * 1000L)).addForm(any());
@@ -79,7 +79,7 @@ public class HttpProtocolServerTest {
     public void destroyShouldRemoveThing() {
         when(thing.getId()).thenReturn("counter");
 
-        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true);
+        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true, bindPort, addresses);
         server.destroy(thing);
 
         verify(things, timeout(1 * 1000L)).remove("counter");
@@ -89,7 +89,7 @@ public class HttpProtocolServerTest {
     public void getDirectoryUrlShouldReturnFristAddress() throws URISyntaxException {
         when(addresses.get(0)).thenReturn("http://0.0.0.0");
 
-        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true);
+        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true, bindPort, addresses);
 
         assertEquals(new URI("http://0.0.0.0"), server.getDirectoryUrl());
     }
@@ -98,7 +98,7 @@ public class HttpProtocolServerTest {
     public void getThingUrl() throws URISyntaxException {
         when(addresses.get(0)).thenReturn("http://0.0.0.0");
 
-        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true);
+        HttpProtocolServer server = new HttpProtocolServer(bindHost, bindPort, addresses, httpServer, things, security, securityScheme, true, bindPort, addresses);
 
         assertEquals(new URI("http://0.0.0.0/counter"), server.getThingUrl("counter"));
     }

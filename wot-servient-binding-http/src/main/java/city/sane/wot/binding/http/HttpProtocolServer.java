@@ -43,6 +43,8 @@ public class HttpProtocolServer implements ProtocolServer {
     private final Map<String, Object> security;
     private final String securityScheme;
     private boolean started = false;
+    private int actualPort;
+    private List<String> actualAddresses;
 
     public HttpProtocolServer(Config config) throws ProtocolServerException {
         bindHost = config.getString("wot.servient.http.bind-host");
@@ -84,7 +86,9 @@ public class HttpProtocolServer implements ProtocolServer {
                        Map<String, ExposedThing> things,
                        Map<String, Object> security,
                        String securityScheme,
-                       boolean started) {
+                       boolean started,
+                       int actualPort,
+                       List<String> actualAddresses) {
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         this.addresses = addresses;
@@ -93,6 +97,8 @@ public class HttpProtocolServer implements ProtocolServer {
         this.security = security;
         this.securityScheme = securityScheme;
         this.started = started;
+        this.actualPort = actualPort;
+        this.actualAddresses = actualAddresses;
     }
 
     @Override
@@ -122,13 +128,18 @@ public class HttpProtocolServer implements ProtocolServer {
                 server.get("", new ThingRoute(servient, securityScheme, things));
             });
 
+            actualPort = server.port();
+            actualAddresses = addresses.stream()
+                    .map(a -> a.replace(":" + bindPort, ":" + actualPort))
+                    .collect(Collectors.toList());
+
             started = true;
         });
     }
 
     @Override
     public CompletableFuture<Void> stop() {
-        log.info("Stopping on '{}' port '{}'", bindHost, bindPort);
+        log.info("Stopping on '{}' port '{}'", bindHost, actualPort);
 
         return runAsync(() -> {
             started = false;
@@ -139,16 +150,16 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> expose(ExposedThing thing) {
-        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
-                bindHost, bindPort, thing.getId());
-
         if (!started) {
             return failedFuture(new ProtocolServerException("Unable to expose thing before HttpServer has been started"));
         }
 
+        log.info("HttpServer on '{}' port '{}' exposes '{}' at http://{}:{}/{}", bindHost, actualPort, thing.getId(),
+                bindHost, actualPort, thing.getId());
+
         things.put(thing.getId(), thing);
 
-        for (String address : addresses) {
+        for (String address : actualAddresses) {
             for (String contentType : ContentManager.getOfferedMediaTypes()) {
                 // make reporting of all properties optional?
                 if (true) {
@@ -174,8 +185,12 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("HttpServer on '{}' port '{}' stop exposing '{}' at http://{}:{}/{}", bindHost, bindPort, thing.getId(),
-                bindHost, bindPort, thing.getId());
+        if (!started) {
+            return completedFuture(null);
+        }
+
+        log.info("HttpServer on '{}' port '{}' stop exposing '{}' at http://{}:{}/{}", bindHost, actualPort, thing.getId(),
+                bindHost, actualPort, thing.getId());
         things.remove(thing.getId());
 
         return completedFuture(null);
@@ -184,7 +199,7 @@ public class HttpProtocolServer implements ProtocolServer {
     @Override
     public URI getDirectoryUrl() {
         try {
-            return new URI(addresses.get(0));
+            return new URI(actualAddresses.get(0));
         }
         catch (URISyntaxException e) {
             log.warn("Unable to create directory url", e);
@@ -195,7 +210,7 @@ public class HttpProtocolServer implements ProtocolServer {
     @Override
     public URI getThingUrl(String id) {
         try {
-            return new URI(addresses.get(0)).resolve("/" + id);
+            return new URI(actualAddresses.get(0)).resolve("/" + id);
         }
         catch (URISyntaxException e) {
             log.warn("Unable to thing url", e);
@@ -282,5 +297,9 @@ public class HttpProtocolServer implements ProtocolServer {
         }
 
         return address + "/" + thing.getId() + "/" + type + "/" + interactionName + variables;
+    }
+
+    public int getPort() {
+        return actualPort;
     }
 }

@@ -8,7 +8,6 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.typesafe.config.ConfigFactory;
-import org.hamcrest.text.MatchesPattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -39,14 +39,14 @@ public class HttpProtocolServerIT {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, MatchesPattern.matchesPattern("http://.*:8080"));
+        assertThat(url, matchesPattern("http://.*:\\d+"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, MatchesPattern.matchesPattern("http://.*:8080/counter"));
+        assertThat(url, matchesPattern("http://.*:\\d+/counter"));
     }
 
     @Test
