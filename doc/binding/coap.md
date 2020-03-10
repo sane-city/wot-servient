@@ -14,3 +14,4 @@ All configurations associated with COAP Binding are located in the `wot.servient
 |-------------------|---------------|---------------|
 | `bind-port`       | Port that CoAP server should listen on.<br>A port number of `0` means that the port number is automatically allocated. | `5683` |
 | `addresses`       | List of URLs, which are used in the Thing Description as accessible addresses. If no addresses are specified, the service automatically determines its local addresses. However, it may be necessary to set the address manually, for example when using Docker. | `[]` |
+| `timeout`        | Sets the maximum amount of time to wait for response. | `60s` |

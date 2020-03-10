@@ -1,8 +1,11 @@
 package city.sane.wot.binding.coap;
 
 import city.sane.wot.binding.ProtocolClientFactory;
+import com.typesafe.config.Config;
+import org.eclipse.californium.core.CoapClient;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,9 +20,18 @@ public class CoapProtocolClientFactory implements ProtocolClientFactory {
     }
 
     private final ExecutorService executor;
+    private final Duration timeout;
 
-    public CoapProtocolClientFactory() {
-        executor = Executors.newFixedThreadPool(10);
+    public CoapProtocolClientFactory(Config config) {
+        this(
+                Executors.newFixedThreadPool(10),
+                config.getDuration("wot.servient.coap.timeout")
+        );
+    }
+
+    CoapProtocolClientFactory(ExecutorService executor, Duration timeout) {
+        this.executor = executor;
+        this.timeout = timeout;
     }
 
     @Override
@@ -34,6 +46,10 @@ public class CoapProtocolClientFactory implements ProtocolClientFactory {
 
     @Override
     public CoapProtocolClient getClient() {
-        return new CoapProtocolClient(executor, timeout);
+        return new CoapProtocolClient(
+                url -> new CoapClient(url)
+                        .setExecutor(executor),
+                timeout
+        );
     }
 }

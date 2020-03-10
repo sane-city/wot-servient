@@ -4,6 +4,7 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
+import com.typesafe.config.ConfigFactory;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
@@ -25,7 +26,7 @@ public class CoapProtocolClientIT {
 
     @Before
     public void setUp() {
-        clientFactory = new CoapProtocolClientFactory();
+        clientFactory = new CoapProtocolClientFactory(ConfigFactory.load());
         clientFactory.init().join();
 
         client = clientFactory.getClient();
