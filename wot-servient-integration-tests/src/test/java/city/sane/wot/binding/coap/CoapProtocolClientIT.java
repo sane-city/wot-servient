@@ -22,6 +22,7 @@ public class CoapProtocolClientIT {
     private CoapProtocolClientFactory clientFactory;
     private ProtocolClient client;
     private CoapServer server;
+    private int port;
 
     @Before
     public void setUp() {
@@ -30,12 +31,13 @@ public class CoapProtocolClientIT {
 
         client = clientFactory.getClient();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new MyReadResource());
         server.add(new MyWriteResource());
         server.add(new MyInvokeResource());
         server.add(new MySubscribeResource());
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     @After
@@ -46,7 +48,7 @@ public class CoapProtocolClientIT {
 
     @Test
     public void readResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "coap://localhost/read";
+        String href = "coap://localhost:" + port + "/read";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
@@ -54,7 +56,7 @@ public class CoapProtocolClientIT {
 
     @Test
     public void writeResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "coap://localhost/write";
+        String href = "coap://localhost:" + port + "/write";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(42), client.writeResource(form, ContentManager.valueToContent(1337)).get());
@@ -62,7 +64,7 @@ public class CoapProtocolClientIT {
 
     @Test
     public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
-        String href = "coap://localhost/invoke";
+        String href = "coap://localhost:" + port + "/invoke";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(ContentManager.valueToContent(42), client.invokeResource(form, ContentManager.valueToContent(1337)).get());
@@ -70,7 +72,7 @@ public class CoapProtocolClientIT {
 
     @Test(timeout = 5 * 1000)
     public void subscribeResource() throws ProtocolClientException, ContentCodecException {
-        String href = "coap://localhost/subscribe";
+        String href = "coap://localhost:" + port + "/subscribe";
         Form form = new Form.Builder().setHref(href).build();
 
         assertEquals(

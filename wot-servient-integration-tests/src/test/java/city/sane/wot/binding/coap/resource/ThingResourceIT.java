@@ -22,12 +22,14 @@ import java.util.Map;
 
 public class ThingResourceIT {
     private CoapServer server;
+    private int port;
 
     @Before
     public void setup() {
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new ThingResource(getCounterThing()));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -109,7 +111,7 @@ public class ThingResourceIT {
 
     @Test
     public void getThing() {
-        CoapClient client = new CoapClient("coap://localhost:5683/counter");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/counter");
         CoapResponse response = client.get();
 
         Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
@@ -118,7 +120,7 @@ public class ThingResourceIT {
 
     @Test
     public void getThingWithCustomContentType() {
-        CoapClient client = new CoapClient("coap://localhost:5683/counter");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/counter");
         Request request = new Request(CoAP.Code.GET);
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);

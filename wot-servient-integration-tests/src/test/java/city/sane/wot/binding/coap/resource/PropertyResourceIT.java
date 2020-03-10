@@ -30,14 +30,16 @@ import static org.junit.Assert.assertEquals;
 
 public class PropertyResourceIT {
     private CoapServer server;
+    private int port;
 
     @Before
     public void setup() {
         ExposedThing thing = getCounterThing();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new PropertyResource("count", thing.getProperty("count")));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -119,7 +121,7 @@ public class PropertyResourceIT {
 
     @Test
     public void readProperty() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/count");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/count");
         CoapResponse response = client.get();
 
         int responseContentType = response.getOptions().getContentFormat();
@@ -134,7 +136,7 @@ public class PropertyResourceIT {
 
     @Test
     public void readPropertyWithCustomContentType() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/count");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/count");
         Request request = new Request(CoAP.Code.GET);
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
@@ -153,7 +155,7 @@ public class PropertyResourceIT {
 
     @Test
     public void writeProperty() {
-        CoapClient client = new CoapClient("coap://localhost:5683/count");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/count");
         CoapResponse response = client.put("1337", MediaTypeRegistry.APPLICATION_JSON);
 
         Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
@@ -162,7 +164,7 @@ public class PropertyResourceIT {
 
     @Test
     public void writePropertyWithCustomContentType() {
-        CoapClient client = new CoapClient("coap://localhost:5683/count");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/count");
         Request request = new Request(CoAP.Code.PUT);
         request.setPayload("1337");
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);

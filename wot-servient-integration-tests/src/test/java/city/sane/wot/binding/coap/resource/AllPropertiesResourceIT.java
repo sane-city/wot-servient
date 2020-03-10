@@ -22,14 +22,16 @@ import java.util.Map;
 
 public class AllPropertiesResourceIT {
     private CoapServer server;
+    private int port;
 
     @Before
     public void setup() {
         ExposedThing thing = getCounterThing();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new AllPropertiesResource(thing));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -111,7 +113,7 @@ public class AllPropertiesResourceIT {
 
     @Test
     public void readAllProperties() {
-        CoapClient client = new CoapClient("coap://localhost:5683/properties");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/properties");
         Request request = new Request(CoAP.Code.GET);
         CoapResponse response = client.advanced(request);
 

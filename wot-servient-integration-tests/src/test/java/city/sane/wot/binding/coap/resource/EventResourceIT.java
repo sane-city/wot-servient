@@ -30,14 +30,16 @@ import static org.junit.Assert.assertNull;
 public class EventResourceIT {
     private CoapServer server;
     private ExposedThing thing;
+    private int port;
 
     @Before
     public void setup() {
         thing = getCounterThing();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new EventResource("change", thing.getEvent("change")));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -120,7 +122,7 @@ public class EventResourceIT {
     @Test
     public void observeEvent() throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<Void> result = new CompletableFuture<>();
-        CoapClient client = new CoapClient("coap://localhost:5683/change");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/change");
         client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {

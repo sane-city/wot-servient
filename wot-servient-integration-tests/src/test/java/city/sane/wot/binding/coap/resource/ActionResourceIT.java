@@ -30,14 +30,16 @@ import static org.junit.Assert.assertEquals;
 
 public class ActionResourceIT {
     private CoapServer server;
+    private int port;
 
     @Before
     public void setup() {
         ExposedThing thing = getCounterThing();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new ActionResource("increment", thing.getAction("increment")));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -119,7 +121,7 @@ public class ActionResourceIT {
 
     @Test
     public void invokeAction() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/increment");
         CoapResponse response = client.post("", MediaTypeRegistry.APPLICATION_JSON);
 
         Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
@@ -136,7 +138,7 @@ public class ActionResourceIT {
 
     @Test
     public void invokeActionWithCustomContentType() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/increment");
         Request request = new Request(CoAP.Code.POST);
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
@@ -155,7 +157,7 @@ public class ActionResourceIT {
 
     @Test
     public void invokeActionWithParameters() throws ContentCodecException {
-        CoapClient client = new CoapClient("coap://localhost:5683/increment");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/increment");
         Content inputContent = ContentManager.valueToContent(Map.of("step", 3), "application/json");
         CoapResponse response = client.post(inputContent.getBody(), MediaTypeRegistry.APPLICATION_JSON);
 

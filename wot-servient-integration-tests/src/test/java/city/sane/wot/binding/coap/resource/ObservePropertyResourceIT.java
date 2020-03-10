@@ -34,14 +34,16 @@ import static org.junit.Assert.assertEquals;
 public class ObservePropertyResourceIT {
     private CoapServer server;
     private ExposedThing thing;
+    private int port;
 
     @Before
     public void setup() {
         thing = getCounterThing();
 
-        server = new CoapServer(5683);
+        server = new CoapServer(0);
         server.add(new ObservePropertyResource("count", thing.getProperty("count")));
         server.start();
+        port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
     private ExposedThing getCounterThing() {
@@ -124,7 +126,7 @@ public class ObservePropertyResourceIT {
     @Test
     public void observeProperty() throws ExecutionException, InterruptedException, ContentCodecException, TimeoutException {
         CompletableFuture<Content> result = new CompletableFuture<>();
-        CoapClient client = new CoapClient("coap://localhost:5683/observable");
+        CoapClient client = new CoapClient("coap://localhost:" + port + "/observable");
         client.observe(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse response) {
