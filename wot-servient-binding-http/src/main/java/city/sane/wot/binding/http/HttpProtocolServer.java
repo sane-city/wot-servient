@@ -115,7 +115,12 @@ public class HttpProtocolServer implements ProtocolServer {
             server.init();
             server.awaitInitialization();
 
-            server.get("/", new ThingsRoute(things));
+            actualPort = server.port();
+            actualAddresses = addresses.stream()
+                    .map(a -> a.replace(":" + bindPort, ":" + actualPort))
+                    .collect(Collectors.toList());
+
+            server.get("/", new ThingsRoute(actualAddresses, things));
             server.path("/:id", () -> {
                 server.path("/properties/:name", () -> {
                     server.get("/observable", new ObservePropertyRoute(servient, securityScheme, things));
@@ -128,10 +133,6 @@ public class HttpProtocolServer implements ProtocolServer {
                 server.get("", new ThingRoute(servient, securityScheme, things));
             });
 
-            actualPort = server.port();
-            actualAddresses = addresses.stream()
-                    .map(a -> a.replace(":" + bindPort, ":" + actualPort))
-                    .collect(Collectors.toList());
 
             started = true;
         });

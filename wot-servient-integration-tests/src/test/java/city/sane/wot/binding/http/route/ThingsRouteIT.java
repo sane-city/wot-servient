@@ -1,13 +1,15 @@
 package city.sane.wot.binding.http.route;
 
 import city.sane.wot.binding.http.ContentResponseTransformer;
+import city.sane.wot.content.ContentCodecException;
+import city.sane.wot.content.JsonCodec;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.schema.ArraySchema;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -20,13 +22,14 @@ import spark.Service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class ThingsRouteIT {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private Service service;
 
     @Before
@@ -35,7 +38,7 @@ public class ThingsRouteIT {
         service.defaultResponseTransformer(new ContentResponseTransformer());
         service.init();
         service.awaitInitialization();
-        service.get("/", new ThingsRoute(Map.of("counter", getCounterThing())));
+        service.get("/", new ThingsRoute(List.of("http://127.0.0.1:8080"), Map.of("counter", getCounterThing())));
     }
 
     private ExposedThing getCounterThing() {
@@ -91,7 +94,7 @@ public class ThingsRouteIT {
             });
         });
 
-        thing.addAction("decrement", new ThingAction<Object, Object>(), (input, options) -> {
+        thing.addAction("decrement", new ThingAction<>(), (input, options) -> {
             return thing.getProperty("count").read().thenApply(value -> {
                 int newValue = ((Integer) value) - 1;
                 thing.getProperty("count").write(newValue);
@@ -101,7 +104,7 @@ public class ThingsRouteIT {
             });
         });
 
-        thing.addAction("reset", new ThingAction<Object, Object>(), (input, options) -> {
+        thing.addAction("reset", new ThingAction<>(), (input, options) -> {
             return thing.getProperty("count").write(0).thenApply(value -> {
                 thing.getProperty("lastChange").write(new Date().toString());
                 thing.getEvent("change").emit();
@@ -109,7 +112,7 @@ public class ThingsRouteIT {
             });
         });
 
-        thing.addEvent("change", new ThingEvent<Object>());
+        thing.addEvent("change", new ThingEvent<>());
 
         return thing;
     }
@@ -121,15 +124,13 @@ public class ThingsRouteIT {
     }
 
     @Test
-    public void getAllThings() throws IOException {
+    public void getRequestShouldReturnListOfThingUrls() throws IOException, ContentCodecException {
         HttpUriRequest request = new HttpGet("http://localhost:8080");
         HttpResponse response = HttpClientBuilder.create().build().execute(request);
 
         assertEquals(200, response.getStatusLine().getStatusCode());
         assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertTrue(
-                "Should return map with \"counter\" element",
-                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("counter")
-        );
+        List<String> things = new JsonCodec().bytesToValue(response.getEntity().getContent().readAllBytes(), new ArraySchema(), Map.of());
+        assertThat(things, contains("http://127.0.0.1:8080/counter"));
     }
 }
