@@ -5,7 +5,6 @@ import akka.actor.ActorSystem;
 import city.sane.RefCountResource;
 import city.sane.RefCountResourceException;
 import city.sane.Triple;
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
@@ -64,7 +63,7 @@ public class AkkaProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public AkkaProtocolClient getClient() {
         return new AkkaProtocolClient(triple.first(), askTimeout, discoverTimeout);
     }
 

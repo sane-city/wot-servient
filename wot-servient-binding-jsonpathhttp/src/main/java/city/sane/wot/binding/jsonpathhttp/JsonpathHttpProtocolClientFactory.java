@@ -1,6 +1,5 @@
 package city.sane.wot.binding.jsonpathhttp;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 
 /**
@@ -13,7 +12,7 @@ public class JsonpathHttpProtocolClientFactory implements ProtocolClientFactory 
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public JsonpathHttpProtocolClient getClient() {
         return new JsonpathHttpProtocolClient();
     }
 }

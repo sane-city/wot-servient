@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -34,7 +33,7 @@ public class CoapProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
-        return new CoapProtocolClient(executor);
+    public CoapProtocolClient getClient() {
+        return new CoapProtocolClient(executor, timeout);
     }
 }

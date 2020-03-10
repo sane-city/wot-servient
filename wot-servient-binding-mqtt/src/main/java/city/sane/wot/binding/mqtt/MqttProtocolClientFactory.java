@@ -4,7 +4,6 @@ import city.sane.Pair;
 import city.sane.RefCountResource;
 import city.sane.RefCountResourceException;
 import city.sane.wot.ServientDiscoveryIgnore;
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import com.typesafe.config.Config;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -36,7 +35,7 @@ public class MqttProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public MqttProtocolClient getClient() {
         return new MqttProtocolClient(settingsClientPair);
     }
 

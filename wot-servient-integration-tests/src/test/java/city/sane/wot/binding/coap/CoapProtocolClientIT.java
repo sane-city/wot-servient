@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
@@ -20,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 public class CoapProtocolClientIT {
     private CoapProtocolClientFactory clientFactory;
-    private ProtocolClient client;
+    private CoapProtocolClient client;
     private CoapServer server;
     private int port;
 
