@@ -1,6 +1,5 @@
 package city.sane.wot.binding.file;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 
 /**
@@ -13,7 +12,7 @@ public class FileProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public FileProtocolClient getClient() {
         return new FileProtocolClient();
     }
 }

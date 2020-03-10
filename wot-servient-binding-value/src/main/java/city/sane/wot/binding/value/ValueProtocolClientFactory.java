@@ -1,6 +1,5 @@
 package city.sane.wot.binding.value;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 
 /**
@@ -13,7 +12,7 @@ public class ValueProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public ValueProtocolClient getClient() {
         return new ValueProtocolClient();
     }
 }

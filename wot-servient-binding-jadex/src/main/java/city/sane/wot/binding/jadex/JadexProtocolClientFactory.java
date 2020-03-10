@@ -2,7 +2,6 @@ package city.sane.wot.binding.jadex;
 
 import city.sane.RefCountResource;
 import city.sane.RefCountResourceException;
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 import com.typesafe.config.Config;
 import jadex.bridge.IExternalAccess;
@@ -44,7 +43,7 @@ public class JadexProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public JadexProtocolClient getClient() {
         return new JadexProtocolClient(platform);
     }
 

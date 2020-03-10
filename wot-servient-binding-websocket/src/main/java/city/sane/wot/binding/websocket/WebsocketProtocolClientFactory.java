@@ -1,6 +1,5 @@
 package city.sane.wot.binding.websocket;
 
-import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.binding.ProtocolClientFactory;
 
 import java.util.HashSet;
@@ -21,7 +20,7 @@ public class WebsocketProtocolClientFactory implements ProtocolClientFactory {
     }
 
     @Override
-    public ProtocolClient getClient() {
+    public WebsocketProtocolClient getClient() {
         WebsocketProtocolClient client = new WebsocketProtocolClient();
         clients.add(client);
         return client;
