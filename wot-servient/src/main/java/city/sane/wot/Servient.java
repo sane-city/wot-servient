@@ -634,7 +634,7 @@ public class Servient {
     }
 
     /**
-     * Returns the version of the servient. If this is not possible, <code>zero</code> is returned.
+     * Returns the version of the servient. If this is not possible, {@code null} is returned.
      *
      * @return
      */
