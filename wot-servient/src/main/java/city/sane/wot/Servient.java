@@ -165,9 +165,8 @@ public class Servient {
     }
 
     /**
-     * All servers supported by Servient are instructed not to expose the Thing with the given
-     * <code>id</code> any longer. After that it is not possible to interact with the Thing via the
-     * different protocols (e.g. HTTP, CoAP, ...).
+     * All servers supported by Servient are instructed to stop exposing the Thing with the given
+     * {@code id}. After that no further interaction with the thing is possible.
      *
      * @param id
      * @return

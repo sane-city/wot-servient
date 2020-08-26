@@ -34,12 +34,13 @@ public interface Wot {
     /**
      * Accepts a <code>thing</code> argument of type {@link Thing} and returns an {@link
      * ExposedThing} object.<br> The result can be used to start exposing interfaces for thing
-     * interaction.
+     * interaction. Returns a failed future if thing with same id is already exposed.
      *
      * @param thing
      * @return
+     * @throws WotException If thing with same id is already exposed
      */
-    ExposedThing produce(Thing thing);
+    ExposedThing produce(Thing thing) throws WotException;
 
     /**
      * Accepts a <code>thing</code> argument of type {@link Thing} and returns a {@link
