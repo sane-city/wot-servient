@@ -30,7 +30,9 @@ public class DefaultWotTest {
     }
 
     @Test
-    public void produceShouldCallUnderlyingServient() {
+    public void produceShouldCallUnderlyingServient() throws WotException {
+        when(servient.addThing(any())).thenReturn(true);
+
         DefaultWot wot = new DefaultWot(servient);
         wot.produce(thing);
 

@@ -103,10 +103,14 @@ public class DefaultWot implements Wot {
     }
 
     @Override
-    public ExposedThing produce(Thing thing) {
+    public ExposedThing produce(Thing thing) throws WotException {
         ExposedThing exposedThing = new ExposedThing(servient, thing);
-        servient.addThing(exposedThing);
-        return exposedThing;
+        if (servient.addThing(exposedThing)) {
+            return exposedThing;
+        }
+        else {
+            throw new WotException("Thing already exists: " + thing.getId());
+        }
     }
 
     @Override
