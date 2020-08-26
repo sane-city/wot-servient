@@ -16,11 +16,15 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.typesafe.config.Config;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,16 +40,23 @@ public class MqttProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(MqttProtocolServer.class);
     private final Map<String, ExposedThing> things = new HashMap<>();
     private final RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider;
+    private final Multimap<String, Disposable> subscriptions;
     private Pair<MqttProtocolSettings, MqttClient> settingsClientPair;
 
-    public MqttProtocolServer(Config config) {
-        mqttClientProvider = SharedMqttClientProvider.singleton(config);
-    }
-
     MqttProtocolServer(RefCountResource<Pair<MqttProtocolSettings, MqttClient>> mqttClientProvider,
+                       Multimap<String, Disposable> subscriptions,
                        Pair<MqttProtocolSettings, MqttClient> settingsClientPair) {
         this.mqttClientProvider = mqttClientProvider;
+        this.subscriptions = subscriptions;
         this.settingsClientPair = settingsClientPair;
+    }
+
+    public MqttProtocolServer(Config config) {
+        this(
+                SharedMqttClientProvider.singleton(config),
+                HashMultimap.create(),
+                null
+        );
     }
 
     @Override
@@ -109,6 +120,13 @@ public class MqttProtocolServer implements ProtocolServer {
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         log.info("MqttServer stop exposing '{}' as unique '/{}/*'", thing.getId(), thing.getId());
+
+        // dispose all created subscriptions
+        Collection<Disposable> thingSubscriptions = subscriptions.removeAll(thing.getId());
+        for (Disposable subscription: thingSubscriptions) {
+            subscription.dispose();
+        }
+
         things.remove(thing.getId());
 
         return completedFuture(null);
@@ -127,7 +145,7 @@ public class MqttProtocolServer implements ProtocolServer {
         properties.forEach((name, property) -> {
             String topic = thing.getId() + "/properties/" + name;
 
-            property.observer()
+            Disposable subscription = property.observer()
                     .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
                     .map(content -> new MqttMessage(content.getBody()))
                     .subscribe(
@@ -136,6 +154,7 @@ public class MqttProtocolServer implements ProtocolServer {
                             () -> {
                             }
                     );
+            subscriptions.put(thing.getId(), subscription);
 
             String href = baseUrl + topic;
             Form form = new Form.Builder()
@@ -178,7 +197,7 @@ public class MqttProtocolServer implements ProtocolServer {
         events.forEach((name, event) -> {
             String topic = thing.getId() + "/events/" + name;
 
-            event.observer()
+            Disposable subscription = event.observer()
                     .map(optional -> ContentManager.valueToContent(optional.orElse(null)))
                     .map(content -> new MqttMessage(content.getBody()))
                     .subscribe(
@@ -187,6 +206,7 @@ public class MqttProtocolServer implements ProtocolServer {
                             () -> {
                             }
                     );
+            subscriptions.put(thing.getId(), subscription);
 
             String href = baseUrl + topic;
             Form form = new Form.Builder()

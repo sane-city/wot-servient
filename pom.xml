@@ -12,6 +12,7 @@
         <maven.compiler.release>11</maven.compiler.release>
         <akka.version>2.6.8</akka.version>
         <netty.version>4.1.51.Final</netty.version>
+        <guava.version>29.0-jre</guava.version>
     </properties>
 
     <build>
@@ -238,6 +239,13 @@
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
                 <version>4.0.3</version>
+            </dependency>
+
+            <!-- Guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

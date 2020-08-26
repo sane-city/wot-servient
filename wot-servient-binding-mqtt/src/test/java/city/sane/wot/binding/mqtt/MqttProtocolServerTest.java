@@ -6,6 +6,9 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -22,6 +25,7 @@ public class MqttProtocolServerTest {
     private MqttProtocolSettings settings;
     private MqttClient mqttClient;
     private Pair<MqttProtocolSettings, MqttClient> settingsClientPair;
+    private Multimap<String, Disposable> subcriptions;
     private ExposedThing thing;
     private ExposedThingProperty<Object> property;
     private ExposedThingAction action;
@@ -33,6 +37,7 @@ public class MqttProtocolServerTest {
         mqttClient = mock(MqttClient.class);
         refCountResource = mock(RefCountResource.class);
         settingsClientPair = mock(Pair.class);
+        subcriptions = HashMultimap.create();
         thing = mock(ExposedThing.class);
         property = mock(ExposedThingProperty.class);
         action = mock(ExposedThingAction.class);
@@ -45,7 +50,7 @@ public class MqttProtocolServerTest {
         when(settingsClientPair.first()).thenReturn(settings);
         when(settingsClientPair.second()).thenReturn(mqttClient);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
-        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server = new MqttProtocolServer(refCountResource, subcriptions, settingsClientPair);
         server.expose(thing);
 
         verify(mqttClient).publish(eq("counter"), any());
@@ -60,7 +65,7 @@ public class MqttProtocolServerTest {
         when(settingsClientPair.second()).thenReturn(mqttClient);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
 
-        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server = new MqttProtocolServer(refCountResource, subcriptions, settingsClientPair);
         server.expose(thing);
 
         verify(property).addForm(any());
@@ -74,7 +79,7 @@ public class MqttProtocolServerTest {
         when(settingsClientPair.second()).thenReturn(mqttClient);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
 
-        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server = new MqttProtocolServer(refCountResource, subcriptions, settingsClientPair);
         server.expose(thing);
 
         verify(action).addForm(any());
@@ -89,7 +94,7 @@ public class MqttProtocolServerTest {
         when(settingsClientPair.second()).thenReturn(mqttClient);
         when(settings.getBroker()).thenReturn("tcp://dummy-broker");
 
-        server = new MqttProtocolServer(refCountResource, settingsClientPair);
+        server = new MqttProtocolServer(refCountResource, subcriptions, settingsClientPair);
         server.expose(thing);
 
         verify(event).addForm(any());
