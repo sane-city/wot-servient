@@ -121,6 +121,8 @@ public class MqttProtocolServer implements ProtocolServer {
     public CompletableFuture<Void> destroy(ExposedThing thing) {
         log.info("MqttServer stop exposing '{}' as unique '/{}/*'", thing.getId(), thing.getId());
 
+        unexposeTD(thing);
+
         // dispose all created subscriptions
         Collection<Disposable> thingSubscriptions = subscriptions.removeAll(thing.getId());
         for (Disposable subscription: thingSubscriptions) {
@@ -233,6 +235,26 @@ public class MqttProtocolServer implements ProtocolServer {
         }
         catch (ContentCodecException | MqttException e) {
             log.warn("Unable to publish thing description to topic '{}': {}", topic, e.getMessage());
+        }
+    }
+
+    /**
+     * To "delete" a retained message from the broker, we need to publish an empty message under the
+     * same topic.
+     *
+     * @param thing
+     */
+    private void unexposeTD(ExposedThing thing) {
+        String topic = thing.getId();
+        log.debug("Remove published '{}' Thing Description at topic '{}'", thing.getId(), topic);
+
+        try {
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setRetained(true);
+            settingsClientPair.second().publish(topic, mqttMessage);
+        }
+        catch (MqttException e) {
+            log.warn("Unable to remove published thing description at topic '{}': {}", topic, e.getMessage());
         }
     }
 
