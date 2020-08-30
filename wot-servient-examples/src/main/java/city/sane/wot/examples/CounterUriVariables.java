@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * Produces and exposes a counter thing with variables for interaction.
  */
+@SuppressWarnings({ "java:S106", "java:S1192" })
 class CounterUriVariables {
     public static void main(String[] args) throws WotException {
         // create wot

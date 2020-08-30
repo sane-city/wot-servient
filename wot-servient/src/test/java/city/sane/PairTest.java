@@ -3,8 +3,7 @@ package city.sane;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class PairTest {
     @Test
@@ -27,9 +26,9 @@ public class PairTest {
         Pair pairB = new Pair(5, "beers");
         Pair pairC = new Pair(10, "beeers");
 
-        assertTrue(pairA.equals(pairB));
-        assertTrue(pairB.equals(pairA));
-        assertFalse(pairA.equals(pairC));
-        assertFalse(pairC.equals(pairA));
+        assertEquals(pairA, pairB);
+        assertEquals(pairB, pairA);
+        assertNotEquals(pairA, pairC);
+        assertNotEquals(pairC, pairA);
     }
 }

@@ -3,8 +3,7 @@ package city.sane;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class TripleTest {
     @Test
@@ -34,9 +33,9 @@ public class TripleTest {
         Triple tripleB = new Triple(1, "cold", "beer");
         Triple tripleC = new Triple(1, "warm", "beer");
 
-        assertTrue(tripleA.equals(tripleB));
-        assertTrue(tripleB.equals(tripleA));
-        assertFalse(tripleA.equals(tripleC));
-        assertFalse(tripleC.equals(tripleA));
+        assertEquals(tripleA, tripleB);
+        assertEquals(tripleB, tripleA);
+        assertNotEquals(tripleA, tripleC);
+        assertNotEquals(tripleC, tripleA);
     }
 }

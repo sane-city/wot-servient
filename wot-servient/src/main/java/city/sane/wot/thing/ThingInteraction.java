@@ -4,7 +4,11 @@ import city.sane.ObjectBuilder;
 import city.sane.wot.thing.form.Form;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Abstract representation of a Thing Interaction (inherited from {@link
@@ -21,7 +25,7 @@ public abstract class ThingInteraction<T> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<Form> forms = new ArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<String, Map<String, Object>> uriVariables = new HashMap<String, Map<String, Object>>();
+    protected Map<String, Map<String, Object>> uriVariables = new HashMap<>();
 
     public String getDescription() {
         return description;
@@ -73,7 +77,7 @@ public abstract class ThingInteraction<T> {
         String description;
         Map<String, String> descriptions;
         List<Form> forms = new ArrayList<>();
-        Map<String, Map<String, Object>> uriVariables = new HashMap<String, Map<String, Object>>();
+        Map<String, Map<String, Object>> uriVariables = new HashMap<>();
 
         public T setDescription(String description) {
             this.description = description;

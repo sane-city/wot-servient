@@ -27,19 +27,15 @@ import java.util.function.Function;
 @SuppressWarnings("squid:S1192")
 public class CoapProtocolClient implements ProtocolClient {
     private static final Logger log = LoggerFactory.getLogger(CoapProtocolClient.class);
-    private final ExecutorService executor;
     private final Function<String, CoapClient> clientCreator;
 
     public CoapProtocolClient(ExecutorService executor) {
-        this.executor = executor;
         this.clientCreator = url -> new CoapClient(url)
                 .setExecutor(executor)
                 .setTimeout(10 * 1000L);
     }
 
-    CoapProtocolClient(ExecutorService executor,
-                       Function<String, CoapClient> clientCreator) {
-        this.executor = executor;
+    CoapProtocolClient(Function<String, CoapClient> clientCreator) {
         this.clientCreator = clientCreator;
     }
 

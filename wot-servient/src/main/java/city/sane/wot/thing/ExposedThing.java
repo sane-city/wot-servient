@@ -15,7 +15,11 @@ import io.reactivex.rxjava3.subjects.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
@@ -334,7 +338,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     public ExposedThing addProperty(String name,
                                     Supplier<CompletableFuture<Object>> readHandler,
                                     Function<Object, CompletableFuture<Object>> writeHandler) {
-        return addProperty(name, new ThingProperty<Object>(), readHandler, writeHandler);
+        return addProperty(name, new ThingProperty<>(), readHandler, writeHandler);
     }
 
     /**
@@ -393,7 +397,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addProperty(String name) {
-        return addProperty(name, new ThingProperty<Object>());
+        return addProperty(name, new ThingProperty<>());
     }
 
     /**
@@ -461,7 +465,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addAction(String name, Supplier<CompletableFuture<Object>> handler) {
-        return addAction(name, new ThingAction<Object, Object>(), handler);
+        return addAction(name, new ThingAction<>(), handler);
     }
 
     /**
@@ -510,7 +514,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @return
      */
     public ExposedThing addEvent(String name) {
-        return addEvent(name, new ThingEvent<Object>());
+        return addEvent(name, new ThingEvent<>());
     }
 
     /**

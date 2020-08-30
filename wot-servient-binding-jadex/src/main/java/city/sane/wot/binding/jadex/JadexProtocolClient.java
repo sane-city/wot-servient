@@ -116,20 +116,16 @@ public class JadexProtocolClient implements ProtocolClient {
     @Override
     public Observable<Thing> discover(ThingFilter filter) {
         return Observable
-                .<ThingService>create(source -> {
-                    platform.scheduleStep(ia -> {
-                        ServiceQuery<ThingService> query = new ServiceQuery<>(ThingService.class, ServiceScope.GLOBAL);
-                        ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-                        search.addIntermediateResultListener(source::onNext, source::onComplete, source::onError);
-                        return DONE;
-                    });
-                })
-                .flatMap(thingService -> Observable.<Thing>create(source -> {
-                    thingService.get().addResultListener(json -> {
-                        source.onNext(Thing.fromJson(json));
-                        source.onComplete();
-                    }, source::onError);
+                .<ThingService>create(source -> platform.scheduleStep(ia -> {
+                    ServiceQuery<ThingService> query = new ServiceQuery<>(ThingService.class, ServiceScope.GLOBAL);
+                    ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
+                    search.addIntermediateResultListener(source::onNext, source::onComplete, source::onError);
+                    return DONE;
                 }))
+                .flatMap(thingService -> Observable.<Thing>create(source -> thingService.get().addResultListener(json -> {
+                    source.onNext(Thing.fromJson(json));
+                    source.onComplete();
+                }, source::onError)))
                 .filter(thing -> {
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side

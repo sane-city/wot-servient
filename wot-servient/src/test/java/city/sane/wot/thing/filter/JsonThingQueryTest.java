@@ -11,8 +11,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class JsonThingQueryTest {
     @Test
@@ -52,9 +51,9 @@ public class JsonThingQueryTest {
         JsonThingQuery queryB = new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}");
         JsonThingQuery queryC = new JsonThingQuery("{\"http://www.w3.org/ns/td#title\":\"Klimabotschafter:Rahlstedt\"}");
 
-        assertTrue(queryA.equals(queryB));
-        assertTrue(queryB.equals(queryA));
-        assertFalse(queryA.equals(queryC));
-        assertFalse(queryC.equals(queryA));
+        assertEquals(queryA, queryB);
+        assertEquals(queryB, queryA);
+        assertNotEquals(queryA, queryC);
+        assertNotEquals(queryC, queryA);
     }
 }

@@ -10,7 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CoapProtocolClientTest {
     private ExecutorService executor;
@@ -32,7 +35,7 @@ public class CoapProtocolClientTest {
     public void readResourceShouldCreateCoapRequest() {
         when(clientCreator.apply(any())).thenReturn(coapClient);
 
-        CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
+        CoapProtocolClient client = new CoapProtocolClient(clientCreator);
         client.readResource(form);
 
         verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
@@ -42,7 +45,7 @@ public class CoapProtocolClientTest {
     public void writeResourceShouldCreateCoapRequest() {
         when(clientCreator.apply(any())).thenReturn(coapClient);
 
-        CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
+        CoapProtocolClient client = new CoapProtocolClient(clientCreator);
         client.writeResource(form, content);
 
         verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
@@ -53,7 +56,7 @@ public class CoapProtocolClientTest {
         when(form.getHref()).thenReturn("coap://localhost/counter/actions/reset");
         when(clientCreator.apply(any())).thenReturn(coapClient);
 
-        CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
+        CoapProtocolClient client = new CoapProtocolClient(clientCreator);
         client.invokeResource(form);
 
         verify(coapClient, timeout(1 * 1000L)).advanced(any(), any());
@@ -64,7 +67,7 @@ public class CoapProtocolClientTest {
         when(form.getHref()).thenReturn("coap://localhost/counter/properties/count");
         when(clientCreator.apply(any())).thenReturn(coapClient);
 
-        CoapProtocolClient client = new CoapProtocolClient(executor, clientCreator);
+        CoapProtocolClient client = new CoapProtocolClient(clientCreator);
         client.observeResource(form).subscribe();
 
         verify(coapClient, timeout(1 * 1000L)).observe(any());

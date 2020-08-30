@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
  * This examples uses Akka's cluster functionality to discovery (remote) things exposed by {@link
  * AkkaDiscovery}.
  */
+@SuppressWarnings({ "java:S106" })
 class AkkaDiscoveryClient {
     public static void main(String[] args) throws WotException {
         // create wot

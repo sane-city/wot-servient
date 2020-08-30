@@ -21,7 +21,15 @@ import com.damnhandy.uri.template.UriTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -63,13 +71,13 @@ public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, Consumed
             base = thing.getBase();
 
             Map<String, ThingProperty> properties = thing.getProperties();
-            properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty<Object>(name, property, this)));
+            properties.forEach((name, property) -> this.properties.put(name, new ConsumedThingProperty<>(name, property, this)));
 
             Map<String, ThingAction<Object, Object>> actions = thing.getActions();
             actions.forEach((name, action) -> this.actions.put(name, new ConsumedThingAction(name, action, this)));
 
             Map<String, ThingEvent<Object>> events = thing.getEvents();
-            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent<Object>(name, event, this)));
+            events.forEach((name, event) -> this.events.put(name, new ConsumedThingEvent<>(name, event, this)));
         }
     }
 

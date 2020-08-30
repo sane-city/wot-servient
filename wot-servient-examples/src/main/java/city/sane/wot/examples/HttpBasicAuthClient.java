@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
  * wot { servient { credentials { "urn:dev:wot:http:auth:basic" = { username = "guest" password =
  * "guest" } } } }
  */
+@SuppressWarnings({ "java:S106" })
 class HttpBasicAuthClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         Wot wot = DefaultWot.clientOnly();

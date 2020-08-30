@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Discover thing description exposes by {@link JadexCurrentTime} and then interact with it.
  */
+@SuppressWarnings({ "java:S106", "java:S112" })
 class JadexCurrentTimeClient {
     public static void main(String[] args) throws WotException {
         // create wot

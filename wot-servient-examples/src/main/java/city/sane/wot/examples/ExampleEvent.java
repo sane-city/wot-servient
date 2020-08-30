@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Produces and exposes a thing that will fire an event every few seconds.
  */
+@SuppressWarnings({ "java:S106", "java:S112" })
 class ExampleEvent {
     public static void main(String[] args) throws WotException {
         // create wot
@@ -31,7 +32,7 @@ class ExampleEvent {
         System.out.println("Produced " + exposedThing.getId());
 
         AtomicInteger counter = new AtomicInteger();
-        exposedThing.addAction("reset", new ThingAction<Object, Object>(),
+        exposedThing.addAction("reset", new ThingAction<>(),
                 () -> {
                     System.out.println("Resetting");
                     counter.set(0);

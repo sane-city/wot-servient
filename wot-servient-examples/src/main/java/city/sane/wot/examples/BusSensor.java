@@ -20,6 +20,7 @@ import java.util.Map;
 /**
  * Receives data from a The Things Network-connected LoRa Sensor deployed on a HOCHBAHN bus.
  */
+@SuppressWarnings({ "java:S106" })
 class BusSensor {
     public static void main(String[] args) throws WotException {
         // create wot

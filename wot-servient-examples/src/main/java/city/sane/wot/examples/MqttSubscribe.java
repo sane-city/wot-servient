@@ -15,6 +15,7 @@ import java.util.TimerTask;
  * Interacts with the thing produces by {@link MqttSubscribe}. Reads the counter and resets it
  * periodically.
  */
+@SuppressWarnings({ "java:S106" })
 class MqttSubscribe {
     public static void main(String[] args) throws IOException, WotException {
         // Setup MQTT broker address/port details in application.json!

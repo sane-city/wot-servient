@@ -27,7 +27,7 @@ import java.util.stream.StreamSupport;
 /**
  * Produces and exposes luftdaten.info's sensors in given area as things.
  */
-@SuppressWarnings("squid:S2925")
+@SuppressWarnings({ "squid:S2925", "java:S106", "java:S1192" })
 class Luftdaten {
     private Luftdaten() throws InterruptedException, WotException {
         // create wot

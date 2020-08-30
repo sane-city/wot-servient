@@ -10,7 +10,13 @@ import city.sane.wot.scripting.GroovyEngine;
 import city.sane.wot.scripting.ScriptingManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +39,8 @@ class Cli {
     private static final String OPT_HELP = "help";
     private Servient servient;
 
-    {
+    static {
         ScriptingManager.addEngine(new GroovyEngine());
-    }
-
-    public Cli() {
-
     }
 
     public static void main(String[] args) throws CliException {
@@ -68,13 +70,11 @@ class Cli {
                 printVersion();
             }
             else {
-                try {
-                    runScripts(cmd);
-                }
-                catch (CliShutdownException e) {
-                    // do nothing
-                }
+                runScripts(cmd);
             }
+        }
+        catch (CliShutdownException e) {
+            // do nothing
         }
         catch (ServientException | ParseException e) {
             throw new CliException(e);
@@ -116,6 +116,7 @@ class Cli {
         context.getLoggerList().stream().filter(l -> l.getName().startsWith("city.sane")).forEach(l -> l.setLevel(level));
     }
 
+    @SuppressWarnings({ "java:S1192" })
     private void printHelp(Options options) {
         String header = "" +
                 "       wot-servient\n" +
@@ -158,6 +159,7 @@ class Cli {
         formatter.printHelp("wot-servient [options] [SCRIPT]...", header, options, footer);
     }
 
+    @SuppressWarnings({ "java:S106" })
     private void printVersion() {
         String version = Servient.getVersion();
         System.out.println(version);
@@ -232,13 +234,13 @@ class Cli {
             config = ConfigFactory.parseFile(file).withFallback(ConfigFactory.load());
         }
 
-        Servient servient;
+        Servient myServient;
         if (!cmd.hasOption(OPT_CLIENTONLY)) {
-            servient = new Servient(config);
+            myServient = new Servient(config);
         }
         else {
-            servient = Servient.clientOnly(config);
+            myServient = Servient.clientOnly(config);
         }
-        return servient;
+        return myServient;
     }
 }

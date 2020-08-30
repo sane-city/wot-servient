@@ -3,7 +3,12 @@ package city.sane.wot.binding.coap;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
-import city.sane.wot.binding.coap.resource.*;
+import city.sane.wot.binding.coap.resource.ActionResource;
+import city.sane.wot.binding.coap.resource.AllPropertiesResource;
+import city.sane.wot.binding.coap.resource.EventResource;
+import city.sane.wot.binding.coap.resource.ObservePropertyResource;
+import city.sane.wot.binding.coap.resource.PropertyResource;
+import city.sane.wot.binding.coap.resource.ThingResource;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.action.ExposedThingAction;
@@ -28,7 +33,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via CoAP.
@@ -66,6 +73,7 @@ public class CoapProtocolServer implements ProtocolServer {
         serverSupplier = () -> new WotCoapServer(this);
     }
 
+    @SuppressWarnings({ "java:S107" })
     CoapProtocolServer(String bindHost,
                        int bindPort,
                        List<String> addresses,
@@ -201,73 +209,87 @@ public class CoapProtocolServer implements ProtocolServer {
         if (!properties.isEmpty()) {
             // make reporting of all properties optional?
             if (true) {
-                CoapResource allResource = new CoapResource("all");
-                thingResource.add(allResource);
-
-                for (String address : addresses) {
-                    for (String contentType : contentTypes) {
-                        String href = address + "/" + thing.getId() + "/all/properties";
-                        Form form = new Form.Builder()
-                                .setHref(href)
-                                .setContentType(contentType)
-                                .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
-                                .build();
-
-                        thing.addForm(form);
-                        log.debug("Assign '{}' for reading all properties", href);
-                    }
-                }
-
-                allResource.add(new AllPropertiesResource(thing));
+                addAllPropertiesForm(thing, thingResource, addresses, contentTypes);
             }
 
             CoapResource propertiesResource = new CoapResource("properties");
             thingResource.add(propertiesResource);
 
-            properties.forEach((name, property) -> {
-                for (String address : addresses) {
-                    for (String contentType : contentTypes) {
-                        String href = address + "/" + thing.getId() + "/properties/" + name;
-                        Form.Builder form = new Form.Builder()
-                                .setHref(href)
-                                .setContentType(contentType);
-                        if (property.isReadOnly()) {
-                            form.setOp(Operation.READ_PROPERTY);
-                        }
-                        else if (property.isWriteOnly()) {
-                            form.setOp(Operation.WRITE_PROPERTY);
-                        }
-                        else {
-                            form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
-                        }
-
-                        property.addForm(form.build());
-                        log.debug("Assign '{}' to Property '{}'", href, name);
-
-                        // if property is observable add an additional form with a observable href
-                        if (property.isObservable()) {
-                            String observableHref = href + "/observable";
-                            Form observableForm = new Form.Builder()
-                                    .setHref(observableHref)
-                                    .setContentType(contentType)
-                                    .setOp(Operation.OBSERVE_PROPERTY)
-                                    .setSubprotocol("longpoll")
-                                    .build();
-
-                            property.addForm(observableForm);
-                            log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
-                        }
-                    }
-                }
-
-                PropertyResource propertyResource = new PropertyResource(name, property);
-                propertiesResource.add(propertyResource);
-
-                if (property.isObservable()) {
-                    propertyResource.add(new ObservePropertyResource(name, property));
-                }
-            });
+            properties.forEach((name, property) -> addPropertyForm(thing, addresses, contentTypes, propertiesResource, name, property));
         }
+    }
+
+    private void addPropertyForm(ExposedThing thing,
+                                 List<String> addresses,
+                                 Set<String> contentTypes,
+                                 CoapResource propertiesResource,
+                                 String name,
+                                 ExposedThingProperty<Object> property) {
+        for (String address : addresses) {
+            for (String contentType : contentTypes) {
+                String href = address + "/" + thing.getId() + "/properties/" + name;
+                Form.Builder form = new Form.Builder()
+                        .setHref(href)
+                        .setContentType(contentType);
+                if (property.isReadOnly()) {
+                    form.setOp(Operation.READ_PROPERTY);
+                }
+                else if (property.isWriteOnly()) {
+                    form.setOp(Operation.WRITE_PROPERTY);
+                }
+                else {
+                    form.setOp(Operation.READ_PROPERTY, Operation.WRITE_PROPERTY);
+                }
+
+                property.addForm(form.build());
+                log.debug("Assign '{}' to Property '{}'", href, name);
+
+                // if property is observable add an additional form with a observable href
+                if (property.isObservable()) {
+                    String observableHref = href + "/observable";
+                    Form observableForm = new Form.Builder()
+                            .setHref(observableHref)
+                            .setContentType(contentType)
+                            .setOp(Operation.OBSERVE_PROPERTY)
+                            .setSubprotocol("longpoll")
+                            .build();
+
+                    property.addForm(observableForm);
+                    log.debug("Assign '{}' to observe Property '{}'", observableHref, name);
+                }
+            }
+        }
+
+        PropertyResource propertyResource = new PropertyResource(name, property);
+        propertiesResource.add(propertyResource);
+
+        if (property.isObservable()) {
+            propertyResource.add(new ObservePropertyResource(name, property));
+        }
+    }
+
+    private void addAllPropertiesForm(ExposedThing thing,
+                                      CoapResource thingResource,
+                                      List<String> addresses,
+                                      Set<String> contentTypes) {
+        CoapResource allResource = new CoapResource("all");
+        thingResource.add(allResource);
+
+        for (String address : addresses) {
+            for (String contentType : contentTypes) {
+                String href = address + "/" + thing.getId() + "/all/properties";
+                Form form = new Form.Builder()
+                        .setHref(href)
+                        .setContentType(contentType)
+                        .setOp(Operation.READ_ALL_PROPERTIES, Operation.READ_MULTIPLE_PROPERTIES/*, Operation.writeallproperties, Operation.writemultipleproperties*/)
+                        .build();
+
+                thing.addForm(form);
+                log.debug("Assign '{}' for reading all properties", href);
+            }
+        }
+
+        allResource.add(new AllPropertiesResource(thing));
     }
 
     private void exposeActions(ExposedThing thing,

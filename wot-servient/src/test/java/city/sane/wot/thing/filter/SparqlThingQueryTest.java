@@ -9,9 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SparqlThingQueryTest {
     @Test
@@ -66,9 +65,9 @@ public class SparqlThingQueryTest {
         SparqlThingQuery queryB = new SparqlThingQuery("?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td##Thing> .");
         SparqlThingQuery queryC = new SparqlThingQuery("?s ?p ?o .");
 
-        assertTrue(queryA.equals(queryB));
-        assertTrue(queryB.equals(queryA));
-        assertFalse(queryA.equals(queryC));
-        assertFalse(queryC.equals(queryA));
+        assertEquals(queryA, queryB);
+        assertEquals(queryB, queryA);
+        assertNotEquals(queryA, queryC);
+        assertNotEquals(queryC, queryA);
     }
 }

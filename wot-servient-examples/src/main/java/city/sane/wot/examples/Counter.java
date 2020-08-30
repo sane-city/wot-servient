@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * Produces and exposes a counter thing.
  */
-@SuppressWarnings("squid:S106")
+@SuppressWarnings({ "squid:S106", "java:S1192" })
 class Counter {
     public static void main(String[] args) throws WotException {
         // create wot

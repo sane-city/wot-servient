@@ -3,7 +3,14 @@ package city.sane.wot.binding.http;
 import city.sane.wot.Servient;
 import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.ProtocolServerException;
-import city.sane.wot.binding.http.route.*;
+import city.sane.wot.binding.http.route.InvokeActionRoute;
+import city.sane.wot.binding.http.route.ObservePropertyRoute;
+import city.sane.wot.binding.http.route.ReadAllPropertiesRoute;
+import city.sane.wot.binding.http.route.ReadPropertyRoute;
+import city.sane.wot.binding.http.route.SubscribeEventRoute;
+import city.sane.wot.binding.http.route.ThingRoute;
+import city.sane.wot.binding.http.route.ThingsRoute;
+import city.sane.wot.binding.http.route.WritePropertyRoute;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.ThingInteraction;
@@ -26,7 +33,9 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via HTTP.
@@ -79,6 +88,7 @@ public class HttpProtocolServer implements ProtocolServer {
         server = Service.ignite().ipAddress(bindHost).port(bindPort);
     }
 
+    @SuppressWarnings({ "java:S107" })
     HttpProtocolServer(String bindHost,
                        int bindPort,
                        List<String> addresses,

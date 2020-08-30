@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutionException;
  * Fetch and consume one thing description exposes by {@link Klimabotschafter} and then observe some
  * properties.
  */
+@SuppressWarnings({ "java:S106" })
 class KlimabotschafterClient {
     public static void main(String[] args) throws URISyntaxException, IOException, WotException {
         // create wot

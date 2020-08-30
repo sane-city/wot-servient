@@ -18,6 +18,7 @@ import java.util.TimerTask;
 /**
  * Creates and exposes a thing that returns the current time.
  */
+@SuppressWarnings({ "java:S106" })
 class JadexCurrentTime {
     public static void main(String[] args) throws WotException {
         // create wot

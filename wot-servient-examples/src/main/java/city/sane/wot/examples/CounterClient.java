@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Fetch thing description exposes by {@link Counter} and then interact with it.
  */
+@SuppressWarnings({ "java:S106", "java:S1192" })
 class CounterClient {
     public static void main(String[] args) throws URISyntaxException, WotException {
         // create wot

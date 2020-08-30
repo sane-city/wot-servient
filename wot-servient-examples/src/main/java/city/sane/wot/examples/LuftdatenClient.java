@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
  * Fetch and consume first thing description exposes by {@link Luftdaten} and then read some
  * properties.
  */
+@SuppressWarnings({ "java:S106" })
 class LuftdatenClient {
     public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException, WotException {
         // create wot

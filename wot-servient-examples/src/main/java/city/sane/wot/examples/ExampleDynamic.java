@@ -11,6 +11,7 @@ import city.sane.wot.thing.property.ThingProperty;
 /**
  * Produces and exposes a thing with change its description on interaction.
  */
+@SuppressWarnings({ "java:S106" })
 class ExampleDynamic {
     public static void main(String[] args) throws WotException {
         // create wot
@@ -24,7 +25,7 @@ class ExampleDynamic {
 
         System.out.println("Produced " + exposedThing.getId());
 
-        exposedThing.addAction("addProperty", new ThingAction<Object, Object>(),
+        exposedThing.addAction("addProperty", new ThingAction<>(),
                 () -> {
                     System.out.println("Adding Property");
                     exposedThing.addProperty("dynProperty",
@@ -35,7 +36,7 @@ class ExampleDynamic {
                 }
         );
 
-        exposedThing.addAction("remProperty", new ThingAction<Object, Object>(),
+        exposedThing.addAction("remProperty", new ThingAction<>(),
                 () -> {
                     System.out.println("Removing Property");
                     exposedThing.removeProperty("dynProperty");

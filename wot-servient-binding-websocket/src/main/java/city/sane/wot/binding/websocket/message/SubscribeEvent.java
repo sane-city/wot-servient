@@ -39,7 +39,7 @@ public class SubscribeEvent extends ThingInteraction {
                                     replyConsumer.accept(new SubscribeNextResponse(getId(), content));
                                 },
                                 e -> {
-                                    log.warn("Cannot process data for Event '{}': {}", name, e);
+                                    log.warn("Cannot process data for Event '{}':", name, e);
                                     replyConsumer.accept(new ServerErrorResponse(this, "Subscription produced error: " + e.getMessage()));
                                 },
                                 () -> replyConsumer.accept(new SubscribeCompleteResponse(getId())));

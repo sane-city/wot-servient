@@ -6,7 +6,12 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import city.sane.wot.binding.akka.Message;
-import city.sane.wot.binding.akka.Message.*;
+import city.sane.wot.binding.akka.Message.ContentMessage;
+import city.sane.wot.binding.akka.Message.ErrorMessage;
+import city.sane.wot.binding.akka.Message.InteractionMessage;
+import city.sane.wot.binding.akka.Message.InteractionWithContentMessage;
+import city.sane.wot.binding.akka.Message.SubscribeFailed;
+import city.sane.wot.binding.akka.Message.SubscriptionError;
 import city.sane.wot.binding.akka.actor.ThingsActor.Destroyed;
 import city.sane.wot.binding.akka.actor.ThingsActor.Exposed;
 import city.sane.wot.content.Content;
@@ -21,6 +26,7 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import static java.util.Objects.requireNonNull;
 
@@ -31,6 +37,7 @@ import static java.util.Objects.requireNonNull;
  * {@link city.sane.wot.thing.property.ExposedThingProperty}, {@link
  * city.sane.wot.thing.action.ExposedThingAction}, or {@link city.sane.wot.thing.event.ExposedThingEvent}.
  */
+@SuppressWarnings({ "java:S1192" })
 public class ThingActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private final ExposedThing thing;
@@ -194,26 +201,7 @@ public class ThingActor extends AbstractActor {
                 Content inputContent = m.content;
                 Object input = ContentManager.contentToValue(inputContent, property);
 
-                property.write(input).whenComplete((output, e) -> {
-                    if (e != null) {
-                        log.warning("Unable to write property: {}", e.getMessage());
-                    }
-                    else {
-                        if (output != null) {
-                            try {
-                                Content content = ContentManager.valueToContent(output);
-                                sender.tell(new WrittenProperty(content), getSelf());
-                            }
-                            catch (ContentCodecException ex) {
-                                log.warning("Unable to parse response content of write property operation. Return empty content: {}", ex.getMessage());
-                                sender.tell(new WritePropertyFailed(ex), getSelf());
-                            }
-                        }
-                        else {
-                            sender.tell(new WrittenProperty(Content.EMPTY_CONTENT), getSelf());
-                        }
-                    }
-                });
+                property.write(input).whenComplete(whenWritePropertyComplete(sender));
             }
             catch (ContentCodecException e) {
                 log.warning("Unable to write property: {}", e.getMessage());
@@ -224,6 +212,29 @@ public class ThingActor extends AbstractActor {
             log.warning("Property with name {} not found", m.name);
             sender.tell(new WritePropertyFailed(new Exception("Property with name " + m.name + " not found")), getSelf());
         }
+    }
+
+    private BiConsumer<Object, Throwable> whenWritePropertyComplete(ActorRef sender) {
+        return (output, e) -> {
+            if (e != null) {
+                log.warning("Unable to write property: {}", e.getMessage());
+            }
+            else {
+                if (output != null) {
+                    try {
+                        Content content = ContentManager.valueToContent(output);
+                        sender.tell(new WrittenProperty(content), getSelf());
+                    }
+                    catch (ContentCodecException ex) {
+                        log.warning("Unable to parse response content of write property operation. Return empty content: {}", ex.getMessage());
+                        sender.tell(new WritePropertyFailed(ex), getSelf());
+                    }
+                }
+                else {
+                    sender.tell(new WrittenProperty(Content.EMPTY_CONTENT), getSelf());
+                }
+            }
+        };
     }
 
     private void subscribeProperty(SubscribeProperty m) {

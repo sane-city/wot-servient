@@ -60,6 +60,7 @@ class RdfResource {
      * @param g an RDF graph
      * @return a UUID URN
      */
+    @SuppressWarnings({ "java:S1172" })
     private static IRI generate(Model g) {
         // TODO normalize graph and always return the same id for a fixed graph
         return SimpleValueFactory.getInstance().createIRI("urn:uuid:" + UUID.randomUUID());

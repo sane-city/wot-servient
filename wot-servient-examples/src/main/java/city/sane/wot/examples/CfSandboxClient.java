@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Consume thing description from string and then interact with the thing via coap.
  */
+@SuppressWarnings({ "java:S106" })
 class CfSandboxClient {
     public static void main(String[] args) throws ExecutionException, InterruptedException, WotException {
         // create wot

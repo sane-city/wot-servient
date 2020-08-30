@@ -8,7 +8,6 @@ import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
 import jadex.bridge.IExternalAccess;
-import jadex.bridge.service.IService;
 import jadex.bridge.service.search.ServiceQuery;
 import jadex.bridge.service.types.cms.CreationInfo;
 import org.slf4j.Logger;
@@ -19,7 +18,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via Jadex Micro Agents.<br> Starts a Jadex Platform and a {@link
@@ -33,8 +34,6 @@ public class JadexProtocolServer implements ProtocolServer {
     private final RefCountResource<IExternalAccess> platformProvider;
     private IExternalAccess platform = null;
     private ThingsService thingsService;
-    @SuppressWarnings("squid:S1068")
-    private String thingsServiceId;
 
     public JadexProtocolServer(Config config) {
         this(SharedPlatformProvider.singleton(config), null, null, new HashMap<>());
@@ -67,10 +66,7 @@ public class JadexProtocolServer implements ProtocolServer {
                         .setFilenameClass(ThingsAgent.class)
                         .addArgument("things", things);
                 return FutureConverters.fromJadex(platform.createComponent(info));
-            }).thenCompose(agent -> FutureConverters.fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class)))).thenAccept(thingsService -> {
-                this.thingsService = thingsService;
-                this.thingsServiceId = ((IService) thingsService).getServiceId().toString();
-            });
+            }).thenCompose(agent -> FutureConverters.fromJadex(agent.searchService(new ServiceQuery<>(ThingsService.class)))).thenAccept(myThingsService -> this.thingsService = myThingsService);
         }
         else {
             return completedFuture(null);
