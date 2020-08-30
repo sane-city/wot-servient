@@ -1,6 +1,11 @@
 package city.sane.wot;
 
-import city.sane.wot.binding.*;
+import city.sane.wot.binding.ProtocolClient;
+import city.sane.wot.binding.ProtocolClientException;
+import city.sane.wot.binding.ProtocolClientFactory;
+import city.sane.wot.binding.ProtocolClientNotImplementedException;
+import city.sane.wot.binding.ProtocolServer;
+import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.DiscoveryMethod;
@@ -24,8 +29,14 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ServientTest {
     private ServientConfig config;

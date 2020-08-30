@@ -6,7 +6,11 @@ import io.reactivex.rxjava3.annotations.NonNull;
 import jadex.bridge.IComponentStep;
 import jadex.bridge.IExternalAccess;
 import jadex.bridge.IInternalAccess;
-import jadex.commons.future.*;
+import jadex.commons.future.IFunctionalIntermediateFinishedListener;
+import jadex.commons.future.IFunctionalIntermediateResultListener;
+import jadex.commons.future.IFunctionalResultListener;
+import jadex.commons.future.IFuture;
+import jadex.commons.future.ITerminableIntermediateFuture;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,7 +19,9 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class JadexProtocolClientTest {
     private IExternalAccess platform;

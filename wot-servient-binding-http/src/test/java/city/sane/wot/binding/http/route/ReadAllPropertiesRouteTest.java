@@ -13,7 +13,11 @@ import java.util.Map;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ReadAllPropertiesRouteTest {
     private Servient servient;

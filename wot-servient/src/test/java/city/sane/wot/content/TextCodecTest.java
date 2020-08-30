@@ -1,10 +1,18 @@
 package city.sane.wot.content;
 
-import city.sane.wot.thing.schema.*;
+import city.sane.wot.thing.schema.BooleanSchema;
+import city.sane.wot.thing.schema.IntegerSchema;
+import city.sane.wot.thing.schema.NullSchema;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.StringSchema;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TextCodecTest {
     private TextCodec codec;

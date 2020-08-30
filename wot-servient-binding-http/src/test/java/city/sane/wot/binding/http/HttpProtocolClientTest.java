@@ -8,7 +8,11 @@ import city.sane.wot.thing.security.SecurityScheme;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,7 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class HttpProtocolClientTest {
     private HttpClient requestClient;

@@ -1,6 +1,10 @@
 package city.sane.wot.content;
 
-import city.sane.wot.thing.schema.*;
+import city.sane.wot.thing.schema.BooleanSchema;
+import city.sane.wot.thing.schema.DataSchema;
+import city.sane.wot.thing.schema.IntegerSchema;
+import city.sane.wot.thing.schema.NumberSchema;
+import city.sane.wot.thing.schema.StringSchema;
 
 import java.nio.charset.Charset;
 import java.util.Map;

@@ -20,7 +20,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.typesafe.config.Config;
 import io.reactivex.rxjava3.disposables.Disposable;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +34,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via MQTT.
@@ -125,7 +131,7 @@ public class MqttProtocolServer implements ProtocolServer {
 
         // dispose all created subscriptions
         Collection<Disposable> thingSubscriptions = subscriptions.removeAll(thing.getId());
-        for (Disposable subscription: thingSubscriptions) {
+        for (Disposable subscription : thingSubscriptions) {
             subscription.dispose();
         }
 

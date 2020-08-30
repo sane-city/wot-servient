@@ -8,7 +8,12 @@ import akka.testkit.TestActorRef;
 import akka.testkit.javadsl.TestKit;
 import city.sane.wot.binding.akka.actor.DiscoverActor.Discover;
 import city.sane.wot.binding.akka.actor.DiscoverActor.Discovered;
-import city.sane.wot.binding.akka.actor.ThingsActor.*;
+import city.sane.wot.binding.akka.actor.ThingsActor.Destroy;
+import city.sane.wot.binding.akka.actor.ThingsActor.Destroyed;
+import city.sane.wot.binding.akka.actor.ThingsActor.Expose;
+import city.sane.wot.binding.akka.actor.ThingsActor.Exposed;
+import city.sane.wot.binding.akka.actor.ThingsActor.GetThings;
+import city.sane.wot.binding.akka.actor.ThingsActor.Things;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
@@ -29,7 +34,10 @@ import static akka.actor.ActorRef.noSender;
 import static akka.pattern.Patterns.ask;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ThingsActorTest {
     private ActorSystem system;

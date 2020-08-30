@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Allows exposing Things via Akka Actors.<br> Starts an Actor System with an {@link ThingsActor}

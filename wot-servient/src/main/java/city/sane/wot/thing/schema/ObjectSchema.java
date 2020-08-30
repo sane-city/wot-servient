@@ -2,7 +2,11 @@ package city.sane.wot.thing.schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Describes data of type <a href="https://www.w3.org/TR/wot-thing-description/#objectschema">object</a>.

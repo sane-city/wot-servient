@@ -2,7 +2,11 @@ package city.sane.wot.binding.websocket;
 
 import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.binding.websocket.WebsocketProtocolClient.WebsocketClient;
-import city.sane.wot.binding.websocket.message.*;
+import city.sane.wot.binding.websocket.message.AbstractServerMessage;
+import city.sane.wot.binding.websocket.message.InvokeAction;
+import city.sane.wot.binding.websocket.message.ReadProperty;
+import city.sane.wot.binding.websocket.message.SubscribeProperty;
+import city.sane.wot.binding.websocket.message.WriteProperty;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.junit.Before;
@@ -12,9 +16,14 @@ import java.net.URI;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static city.sane.wot.binding.websocket.WebsocketProtocolServer.*;
+import static city.sane.wot.binding.websocket.WebsocketProtocolServer.WEBSOCKET_MESSAGE_NAME;
+import static city.sane.wot.binding.websocket.WebsocketProtocolServer.WEBSOCKET_MESSAGE_THING_ID;
+import static city.sane.wot.binding.websocket.WebsocketProtocolServer.WEBSOCKET_MESSAGE_TYPE;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class WebsocketProtocolClientTest {
     private Map<URI, WebsocketClient> clients;

@@ -13,7 +13,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ExposedThingPropertyTest {
     private ExposedThing thing;

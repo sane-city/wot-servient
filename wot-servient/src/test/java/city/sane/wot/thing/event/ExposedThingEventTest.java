@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ExposedThingEventTest {
     private String name;

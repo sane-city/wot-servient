@@ -13,7 +13,11 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AkkaProtocolServerTest {
     private ExposedThing thing;

@@ -3,7 +3,11 @@ package city.sane.wot.binding.akka;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
-import city.sane.wot.binding.akka.actor.ThingActor.*;
+import city.sane.wot.binding.akka.actor.ThingActor.GetThingDescription;
+import city.sane.wot.binding.akka.actor.ThingActor.InvokeAction;
+import city.sane.wot.binding.akka.actor.ThingActor.ReadAllProperties;
+import city.sane.wot.binding.akka.actor.ThingActor.ReadProperty;
+import city.sane.wot.binding.akka.actor.ThingActor.WriteProperty;
 import city.sane.wot.binding.akka.actor.ThingsActor.GetThings;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.filter.ThingFilter;
@@ -15,7 +19,11 @@ import java.time.Duration;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AkkaProtocolClientTest {
     private ActorSystem system;

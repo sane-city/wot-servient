@@ -16,7 +16,10 @@ import java.nio.file.WatchService;
 import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class FileProtocolClientTest {
     private Form form;

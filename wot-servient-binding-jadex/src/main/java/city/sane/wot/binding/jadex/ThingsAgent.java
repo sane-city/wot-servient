@@ -7,7 +7,11 @@ import jadex.bridge.service.ServiceScope;
 import jadex.bridge.service.types.cms.CreationInfo;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
-import jadex.micro.annotation.*;
+import jadex.micro.annotation.Agent;
+import jadex.micro.annotation.AgentArgument;
+import jadex.micro.annotation.AgentCreated;
+import jadex.micro.annotation.ProvidedService;
+import jadex.micro.annotation.ProvidedServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
