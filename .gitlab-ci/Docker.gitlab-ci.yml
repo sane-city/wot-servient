@@ -6,6 +6,8 @@
     - docker:dind
   before_script:
     - docker login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  tags:
+    - docker
 
 docker-build-master:
   <<: *docker
