@@ -181,6 +181,7 @@ public class Servient {
         log.info("Servient stop exposing '{}'", thing);
 
         // reset forms
+        thing.setForms(new ArrayList<>());
         Map<String, ExposedThingProperty<Object>> properties = thing.getProperties();
         properties.forEach((n, p) -> p.setForms(new ArrayList<>()));
         Map<String, ExposedThingAction<Object, Object>> actions = thing.getActions();
