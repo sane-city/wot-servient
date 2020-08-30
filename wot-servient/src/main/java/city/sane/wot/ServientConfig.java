@@ -88,7 +88,7 @@ public class ServientConfig {
 
     private static ScanResult scanClasspath() {
         if (scanResult == null) {
-            scanResult = new ClassGraph().whitelistPackages("city.sane.wot.binding").enableClassInfo().enableAnnotationInfo().scan();
+            scanResult = new ClassGraph().acceptPackages("city.sane.wot.binding").enableClassInfo().enableAnnotationInfo().scan();
         }
         return scanResult;
     }
