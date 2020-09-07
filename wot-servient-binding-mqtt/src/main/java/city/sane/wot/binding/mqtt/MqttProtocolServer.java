@@ -125,6 +125,11 @@ public class MqttProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
+        // if the server is not running, nothing needs to be done
+        if (settingsClientPair == null) {
+            return completedFuture(null);
+        }
+
         log.info("MqttServer stop exposing '{}' as unique '/{}/*'", thing.getId(), thing.getId());
 
         unexposeTD(thing);

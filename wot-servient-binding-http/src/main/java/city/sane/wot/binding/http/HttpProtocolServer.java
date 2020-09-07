@@ -195,6 +195,7 @@ public class HttpProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
+        // if the server is not running, nothing needs to be done
         if (!started) {
             return completedFuture(null);
         }

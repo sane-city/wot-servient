@@ -120,11 +120,12 @@ public class AkkaProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
-        log.info("AkkaServer stop exposing '{}'", thing.getId());
-
+        // if the server is not running, nothing needs to be done
         if (triple == null) {
             return completedFuture(null);
         }
+
+        log.info("AkkaServer stop exposing '{}'", thing.getId());
 
         if (triple.second().remove(thing.getId()) == null) {
             return completedFuture(null);

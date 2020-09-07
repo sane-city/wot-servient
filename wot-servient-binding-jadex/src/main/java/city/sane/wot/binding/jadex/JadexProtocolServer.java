@@ -32,7 +32,7 @@ public class JadexProtocolServer implements ProtocolServer {
     private static final Logger log = LoggerFactory.getLogger(JadexProtocolServer.class);
     private final Map<String, ExposedThing> things;
     private final RefCountResource<IExternalAccess> platformProvider;
-    private IExternalAccess platform = null;
+    private IExternalAccess platform;
     private ThingsService thingsService;
 
     public JadexProtocolServer(Config config) {
@@ -110,6 +110,13 @@ public class JadexProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
+        // if the server is not running, nothing needs to be done
+        if (platform == null) {
+            return completedFuture(null);
+        }
+
+        log.info("JadexServer stop exposing '{}'", thing.getId());
+
         if (things.remove(thing.getId()) == null) {
             return completedFuture(null);
         }

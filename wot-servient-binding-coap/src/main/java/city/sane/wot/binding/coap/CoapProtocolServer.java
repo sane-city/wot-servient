@@ -162,6 +162,7 @@ public class CoapProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
+        // if the server is not running, nothing needs to be done
         if (server == null) {
             return completedFuture(null);
         }

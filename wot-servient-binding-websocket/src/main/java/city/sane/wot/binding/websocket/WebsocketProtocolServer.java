@@ -51,9 +51,9 @@ public class WebsocketProtocolServer implements ProtocolServer {
     private final ServerBootstrap serverBootstrap;
     private final EventLoopGroup serverBossGroup;
     private final EventLoopGroup serverWorkerGroup;
-    private Map<String, ExposedThing> things;
-    private List<String> addresses;
-    private int bindPort;
+    private final Map<String, ExposedThing> things;
+    private final List<String> addresses;
+    private final int bindPort;
     private Channel serverChannel;
 
     public WebsocketProtocolServer(Config config) {
@@ -103,6 +103,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> stop() {
+        // if the server is not running, nothing needs to be done
         if (serverChannel == null) {
             return completedFuture(null);
         }
@@ -131,6 +132,11 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     @Override
     public CompletableFuture<Void> destroy(ExposedThing thing) {
+        // if the server is not running, nothing needs to be done
+        if (serverChannel == null) {
+            return completedFuture(null);
+        }
+
         log.info("WebsocketServer stop exposing '{}'", thing.getTitle());
         things.remove(thing.getId());
 
@@ -215,7 +221,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
 
     private class WebsocketProtocolServerInitializer extends ChannelInitializer<SocketChannel> {
         @Override
-        protected void initChannel(SocketChannel ch) throws Exception {
+        protected void initChannel(SocketChannel ch) {
             ChannelPipeline pipeline = ch.pipeline();
             pipeline.addLast(new HttpServerCodec());
             pipeline.addLast(new HttpObjectAggregator(65536));
@@ -231,7 +237,7 @@ public class WebsocketProtocolServer implements ProtocolServer {
             pipeline.addLast(new SimpleChannelInboundHandler<AbstractClientMessage>() {
                 @Override
                 protected void channelRead0(ChannelHandlerContext ctx,
-                                            AbstractClientMessage message) throws Exception {
+                                            AbstractClientMessage message) {
                     Consumer<AbstractServerMessage> replyConsumer = ctx.channel()::writeAndFlush;
                     message.reply(replyConsumer, things);
                 }
