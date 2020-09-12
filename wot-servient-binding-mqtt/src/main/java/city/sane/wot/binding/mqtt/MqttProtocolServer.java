@@ -28,6 +28,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +89,10 @@ public class MqttProtocolServer implements ProtocolServer {
         log.info("Stop MqttServer");
 
         if (settingsClientPair != null) {
-            return runAsync(() -> {
+            // remove all exposed things first
+            @SuppressWarnings("unchecked")
+            CompletableFuture<Void>[] destroyFutures = new ArrayList<>(things.values()).stream().map(this::destroy).toArray(CompletableFuture[]::new);
+            return CompletableFuture.allOf(destroyFutures).thenRunAsync(() -> {
                 try {
                     settingsClientPair = null;
                     mqttClientProvider.release();
