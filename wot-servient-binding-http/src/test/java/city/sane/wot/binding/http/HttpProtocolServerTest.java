@@ -5,8 +5,8 @@ import city.sane.wot.binding.ProtocolServerException;
 import city.sane.wot.thing.ExposedThing;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Service;
 
 import java.net.URI;
@@ -14,7 +14,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
@@ -34,7 +35,7 @@ public class HttpProtocolServerTest {
     private Servient servient;
     private ExposedThing thing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         config = mock(Config.class);
         configObject = mock(ConfigObject.class);
@@ -49,12 +50,12 @@ public class HttpProtocolServerTest {
         thing = mock(ExposedThing.class);
     }
 
-    @Test(expected = ProtocolServerException.class)
-    public void constructorShouldRejectInvalidSecurityScheme() throws ProtocolServerException {
+    @Test
+    public void constructorShouldRejectInvalidSecurityScheme() {
         when(configObject.unwrapped()).thenReturn(Map.of("scheme", "dsadadas"));
         when(config.getObject("wot.servient.http.security")).thenReturn(configObject);
 
-        new HttpProtocolServer(config);
+        assertThrows(ProtocolServerException.class, () -> new HttpProtocolServer(config));
     }
 
 //    @Test

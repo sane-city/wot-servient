@@ -5,15 +5,15 @@ import akka.actor.ActorSystem;
 import city.sane.RefCountResource;
 import city.sane.Triple;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class AkkaProtocolClientFactoryTest {
@@ -22,7 +22,7 @@ public class AkkaProtocolClientFactoryTest {
     private Duration discoverTimeout;
     private Triple<ActorSystem, Map<String, ExposedThing>, ActorRef> triple;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         actorSystemProvider = mock(RefCountResource.class);
         askTimeout = Duration.ofSeconds(60);

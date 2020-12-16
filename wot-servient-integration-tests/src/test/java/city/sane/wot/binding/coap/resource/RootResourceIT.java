@@ -12,26 +12,26 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RootResourceIT {
     private WotCoapServer server;
 
-    @Before
+    @BeforeEach
     public void setup() {
         server = new WotCoapServer(new CoapProtocolServer(ConfigFactory.load()));
         server.start();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }
@@ -41,10 +41,10 @@ public class RootResourceIT {
         CoapClient client = new CoapClient("coap://localhost:" + server.getPort());
         CoapResponse response = client.get();
 
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 
         int responseContentType = response.getOptions().getContentFormat();
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new ObjectSchema());
@@ -58,10 +58,10 @@ public class RootResourceIT {
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 
         int responseContentType = response.getOptions().getContentFormat();
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
+        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new ObjectSchema());

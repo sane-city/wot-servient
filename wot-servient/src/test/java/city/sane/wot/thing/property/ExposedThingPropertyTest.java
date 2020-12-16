@@ -2,8 +2,8 @@ package city.sane.wot.thing.property;
 
 import city.sane.wot.thing.ExposedThing;
 import io.reactivex.rxjava3.subjects.Subject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,7 +38,7 @@ public class ExposedThingPropertyTest {
     private Subject subject;
     private Function<Object, CompletableFuture<Object>> writeHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         thing = mock(ExposedThing.class);
         name = "foo";
@@ -68,14 +69,14 @@ public class ExposedThingPropertyTest {
         verify(readHandler).get();
     }
 
-    @Test(expected = ExecutionException.class)
-    public void readWithBrokenHandlerShouldReturnFailedFuture() throws ExecutionException, InterruptedException {
+    @Test
+    public void readWithBrokenHandlerShouldReturnFailedFuture() {
         when(readHandler.get()).thenThrow(new RuntimeException());
         when(state.getReadHandler()).thenReturn(readHandler);
 
         exposedProperty = new ExposedThingProperty<>(name, thing, state, objectType, description, descriptions, type, observable, readOnly, writeOnly, uriVariables, optionalProperties);
 
-        exposedProperty.read().get();
+        assertThrows(ExecutionException.class, () -> exposedProperty.read().get());
     }
 
     @Test

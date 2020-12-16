@@ -14,8 +14,8 @@ import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URI;
@@ -28,10 +28,11 @@ import java.util.concurrent.ExecutionException;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -46,7 +47,7 @@ public class ServientTest {
     private ExposedThing exposedThing;
     private Thing thing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         config = mock(ServientConfig.class);
         server = mock(ProtocolServer.class);
@@ -63,19 +64,21 @@ public class ServientTest {
         assertNull(servient.start().get());
     }
 
-    @Test(expected = ProtocolServerException.class)
+    @Test
     public void startFails() throws Throwable {
         when(server.start(any())).thenReturn(failedFuture(new ProtocolServerException()));
         when(config.getServers()).thenReturn(List.of(server));
 
         Servient servient = new Servient(config);
 
-        try {
-            servient.start().get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ProtocolServerException.class, () -> {
+            try {
+                servient.start().get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -85,19 +88,21 @@ public class ServientTest {
         assertNull(servient.shutdown().get());
     }
 
-    @Test(expected = ProtocolServerException.class)
+    @Test
     public void shutdownFails() throws Throwable {
         when(server.stop()).thenReturn(failedFuture(new ProtocolServerException()));
         when(config.getServers()).thenReturn(List.of(server));
 
         Servient servient = new Servient(config);
 
-        try {
-            servient.shutdown().get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ProtocolServerException.class, () -> {
+            try {
+                servient.shutdown().get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -110,28 +115,32 @@ public class ServientTest {
         verify(server).expose(exposedThing);
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void exposeWithoutServers() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
-        try {
-            servient.expose("counter").get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.expose("counter").get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void exposeUnknownThing() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.expose("counter").get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.expose("counter").get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -144,28 +153,32 @@ public class ServientTest {
         verify(server).destroy(exposedThing);
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void destroyWithoutServers() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
-        try {
-            servient.destroy("counter").get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.destroy("counter").get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void destroyUnknownThing() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.destroy("counter").get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.destroy("counter").get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -179,16 +192,18 @@ public class ServientTest {
         verify(client).readResource(any());
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void fetchMissingScheme() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.fetch("test:/counter").get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.fetch("test:/counter").get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -258,10 +273,10 @@ public class ServientTest {
         verify(client).readResource(new Form.Builder().setHref("test:/").build());
     }
 
-    @Test(expected = ProtocolClientNotImplementedException.class)
-    public void discoverWithNoClientImplementsDiscoverShouldFail() throws ServientException {
+    @Test
+    public void discoverWithNoClientImplementsDiscoverShouldFail() {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
-        servient.discover();
+        assertThrows(ProtocolClientNotImplementedException.class, () -> servient.discover());
     }
 
     @Test
@@ -276,28 +291,32 @@ public class ServientTest {
         assertThat(things, hasItem(exposedThing));
     }
 
-    @Test(expected = ServientException.class)
-    public void runScriptWithNoEngine() throws Throwable {
+    @Test
+    public void runScriptWithNoEngine() {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.runScript(new File("foo.bar"), null).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.runScript(new File("foo.bar"), null).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ServientException.class)
-    public void runPrivilegedScriptWithNoEngine() throws Throwable {
+    @Test
+    public void runPrivilegedScriptWithNoEngine() {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.runPrivilegedScript(new File("foo.bar"), null).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.runPrivilegedScript(new File("foo.bar"), null).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -325,27 +344,31 @@ public class ServientTest {
         assertNull(servient.getClientFor("test"));
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void registerShouldThrowExceptionBecauseNotImplemented() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.register("test://foo/bar", null).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.register("test://foo/bar", null).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ServientException.class)
+    @Test
     public void unregisterShouldThrowExceptionBecauseNotImplemented() throws Throwable {
         Servient servient = new Servient(List.of(), Map.of(), Map.of(), Map.of());
 
-        try {
-            servient.unregister("test://foo/bar", null).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ServientException.class, () -> {
+            try {
+                servient.unregister("test://foo/bar", null).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 }

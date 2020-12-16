@@ -9,8 +9,8 @@ import city.sane.wot.binding.websocket.message.SubscribeProperty;
 import city.sane.wot.binding.websocket.message.WriteProperty;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class WebsocketProtocolClientTest {
     private WebsocketClient websocketClient;
     private Content content;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         clients = mock(Map.class);
         openRequests = mock(Map.class);

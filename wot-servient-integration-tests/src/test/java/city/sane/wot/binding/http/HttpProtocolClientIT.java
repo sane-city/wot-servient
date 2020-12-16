@@ -5,9 +5,10 @@ import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -15,14 +16,16 @@ import spark.Service;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class HttpProtocolClientIT {
     private HttpProtocolClientFactory clientFactory;
     private ProtocolClient client;
     private Service service;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         clientFactory = new HttpProtocolClientFactory();
         clientFactory.init().join();
@@ -40,7 +43,7 @@ public class HttpProtocolClientIT {
         service.get("status/500", new MyStatusRoute());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         clientFactory.destroy().join();
 
@@ -56,43 +59,49 @@ public class HttpProtocolClientIT {
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
     }
 
-    @Test(expected = ProtocolClientException.class)
-    public void readResourceRedirection() throws Throwable {
+    @Test
+    public void readResourceRedirection() {
         String href = "http://localhost:8080/status/300";
         Form form = new Form.Builder().setHref(href).build();
 
-        try {
-            client.readResource(form).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ProtocolClientException.class, () -> {
+            try {
+                client.readResource(form).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ProtocolClientException.class)
-    public void readResourceClientError() throws Throwable {
+    @Test
+    public void readResourceClientError() {
         String href = "http://localhost:8080/status/400";
         Form form = new Form.Builder().setHref(href).build();
 
-        try {
-            client.readResource(form).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ProtocolClientException.class, () -> {
+            try {
+                client.readResource(form).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ProtocolClientException.class)
-    public void readResourceServerError() throws Throwable {
+    @Test
+    public void readResourceServerError() {
         String href = "http://localhost:8080/status/500";
         Form form = new Form.Builder().setHref(href).build();
 
-        try {
-            client.readResource(form).get();
-        }
-        catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ProtocolClientException.class, () -> {
+            try {
+                client.readResource(form).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
@@ -111,7 +120,8 @@ public class HttpProtocolClientIT {
         assertEquals(ContentManager.valueToContent(42), client.invokeResource(form, ContentManager.valueToContent(1337)).get());
     }
 
-    @Test(timeout = 5 * 1000)
+    @Test
+    @Timeout(value = 5, unit = SECONDS)
     public void subscribeResource() throws ProtocolClientException, ExecutionException, InterruptedException, ContentCodecException {
         String href = "http://localhost:8080/subscribe";
         Form form = new Form.Builder().setHref(href).build();

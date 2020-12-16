@@ -13,9 +13,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Service;
 
 import java.io.IOException;
@@ -31,13 +32,12 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 public class SubscribeEventRouteIT {
     private Service service;
     private ExposedThing thing;
 
-    @Before
+    @BeforeEach
     public void setup() {
         thing = getCounterThing();
 
@@ -124,7 +124,7 @@ public class SubscribeEventRouteIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         service.stop();
         service.awaitStop();
@@ -155,7 +155,7 @@ public class SubscribeEventRouteIT {
         // future should complete within a few seconds
         result.get();
 
-        assertThat(result.get(), instanceOf(Content.class));
+        MatcherAssert.assertThat(result.get(), instanceOf(Content.class));
     }
 
     @Test

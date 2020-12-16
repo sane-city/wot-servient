@@ -9,9 +9,9 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.filter.ThingFilter;
 import io.reactivex.rxjava3.core.Observer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Map;
@@ -27,7 +27,7 @@ public class DiscoverActorTest {
     private ThingFilter filter;
     private Duration timeout;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         system = ActorSystem.create();
         observer = mock(Observer.class);
@@ -35,7 +35,7 @@ public class DiscoverActorTest {
         timeout = Duration.ofSeconds(5);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         TestKit.shutdownActorSystem(system);
         system = null;

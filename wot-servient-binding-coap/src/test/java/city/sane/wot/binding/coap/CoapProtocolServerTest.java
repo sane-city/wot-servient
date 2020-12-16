@@ -8,8 +8,8 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.californium.core.CoapResource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -40,7 +40,7 @@ public class CoapProtocolServerTest {
     private ExposedThingAction<Object, Object> action;
     private ExposedThingEvent<Object> event;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         bindHost = "0.0.0.0";
         bindPort = 5683;

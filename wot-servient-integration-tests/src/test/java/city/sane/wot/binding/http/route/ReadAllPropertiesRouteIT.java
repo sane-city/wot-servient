@@ -13,23 +13,23 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Service;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReadAllPropertiesRouteIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private Service service;
 
-    @Before
+    @BeforeEach
     public void setup() {
         service = Service.ignite().ipAddress("127.0.0.1").port(8080);
         service.defaultResponseTransformer(new ContentResponseTransformer());
@@ -114,7 +114,7 @@ public class ReadAllPropertiesRouteIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         service.stop();
         service.awaitStop();
@@ -128,8 +128,7 @@ public class ReadAllPropertiesRouteIT {
         assertEquals(200, response.getStatusLine().getStatusCode());
         assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
         assertTrue(
-                "Should return map with \"count\" element",
-                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("count")
-        );
+                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("count"),
+                "Should return map with \"count\" element");
     }
 }

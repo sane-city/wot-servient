@@ -3,8 +3,8 @@ package city.sane.wot.binding.coap;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.eclipse.californium.core.CoapClient;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -22,7 +22,7 @@ public class CoapProtocolClientTest {
     private Form form;
     private Content content;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         executor = mock(ExecutorService.class);
         clientCreator = mock(Function.class);

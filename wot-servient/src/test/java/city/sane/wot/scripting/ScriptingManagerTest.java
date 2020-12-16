@@ -1,33 +1,33 @@
 package city.sane.wot.scripting;
 
 import city.sane.wot.Wot;
-import com.google.common.io.Files;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ScriptingManagerTest {
-    @Before
+    @BeforeEach
     public void setUp() {
         ScriptingManager.addEngine(new MyScriptingEngine());
     }
 
     @Test
-    public void runScript() throws IOException {
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.test");
-        Files.write("1+1", file, Charset.defaultCharset());
+    public void runScript(@TempDir Path folder) throws IOException {
+        File file = Paths.get(folder.toString(), "counter.test").toFile();
+        java.nio.file.Files.writeString(file.toPath(), "1+1");
 
         ScriptingManager.runScript(file, null);
 
@@ -43,22 +43,22 @@ public class ScriptingManagerTest {
         assertTrue(true);
     }
 
-    @Test(expected = ScriptingException.class)
+    @Test
     public void runScriptUnsupportedMediaType() throws Throwable {
-        try {
-            ScriptingManager.runScript("1+1", "application/lolcode", null).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ScriptingException.class, () -> {
+            try {
+                ScriptingManager.runScript("1+1", "application/lolcode", null).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test
-    public void runPrivilegedScript() throws IOException {
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.test");
-        Files.write("1+1", file, Charset.defaultCharset());
+    public void runPrivilegedScript(@TempDir Path folder) throws IOException {
+        File file = Paths.get(folder.toString(), "counter.test").toFile();
+        Files.writeString(file.toPath(), "1+1");
 
         ScriptingManager.runPrivilegedScript(file, null);
 
@@ -74,14 +74,16 @@ public class ScriptingManagerTest {
         assertTrue(true);
     }
 
-    @Test(expected = ScriptingException.class)
+    @Test
     public void runPrivilegedScriptUnsupportedMediaType() throws Throwable {
-        try {
-            ScriptingManager.runPrivilegedScript("1+1", "application/lolcode", null).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ScriptingException.class, () -> {
+            try {
+                ScriptingManager.runPrivilegedScript("1+1", "application/lolcode", null).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     static class MyScriptingEngine implements ScriptingEngine {

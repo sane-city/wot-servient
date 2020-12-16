@@ -1,14 +1,14 @@
 package city.sane.wot;
 
 import city.sane.wot.thing.Thing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -18,7 +18,7 @@ public class DefaultWotTest {
     private Servient servient;
     private Thing thing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         thing = mock(Thing.class);

@@ -14,8 +14,8 @@ import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 
@@ -46,7 +46,7 @@ public class MqttProtocolClientTest {
     private Subject subject;
     private Disposable disposable;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         settings = mock(MqttProtocolSettings.class);
         mqttClient = mock(MqttClient.class);

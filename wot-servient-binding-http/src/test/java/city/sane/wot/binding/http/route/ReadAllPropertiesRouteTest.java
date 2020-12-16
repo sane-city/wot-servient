@@ -3,8 +3,8 @@ package city.sane.wot.binding.http.route;
 import city.sane.wot.Servient;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
 
@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -27,7 +27,7 @@ public class ReadAllPropertiesRouteTest {
     private Response response;
     private ExposedThing exposedThing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         things = mock(Map.class);

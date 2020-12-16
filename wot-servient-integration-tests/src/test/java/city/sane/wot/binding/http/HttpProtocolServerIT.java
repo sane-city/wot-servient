@@ -8,9 +8,10 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.typesafe.config.ConfigFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Date;
@@ -18,19 +19,18 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class HttpProtocolServerIT {
     private HttpProtocolServer server;
 
-    @Before
+    @BeforeEach
     public void setUp() throws ProtocolServerException {
         server = new HttpProtocolServer(ConfigFactory.load());
         server.start(null).join();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         server.stop().join();
     }
@@ -39,14 +39,14 @@ public class HttpProtocolServerIT {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, matchesPattern("http://.*:\\d+"));
+        MatcherAssert.assertThat(url, matchesPattern("http://.*:\\d+"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, matchesPattern("http://.*:\\d+/counter"));
+        MatcherAssert.assertThat(url, matchesPattern("http://.*:\\d+/counter"));
     }
 
     @Test

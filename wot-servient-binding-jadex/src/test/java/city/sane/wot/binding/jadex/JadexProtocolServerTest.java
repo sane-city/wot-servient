@@ -4,8 +4,8 @@ import city.sane.RefCountResource;
 import city.sane.wot.thing.ExposedThing;
 import jadex.bridge.IExternalAccess;
 import jadex.commons.future.IFuture;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class JadexProtocolServerTest {
     private IExternalAccess platform;
     private Map<String, ExposedThing> things;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         thing = mock(ExposedThing.class);
         thingsService = mock(ThingsService.class);

@@ -9,13 +9,13 @@ import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,7 +29,7 @@ public class ConsumedThingPropertyTest {
     private Observer observer;
     private Observable<Content> observable;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         property = mock(ThingProperty.class);
         thing = mock(ConsumedThing.class);
