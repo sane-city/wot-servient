@@ -13,6 +13,7 @@
         <akka.version>2.6.10</akka.version>
         <netty.version>4.1.55.Final</netty.version>
         <guava.version>30.1-jre</guava.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
     <build>
@@ -174,7 +175,7 @@
             <!-- netty -->
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
+                <artifactId>netty-transport</artifactId>
                 <version>${netty.version}</version>
             </dependency>
             <dependency>
@@ -184,7 +185,7 @@
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
+                <artifactId>netty-codec-http</artifactId>
                 <version>${netty.version}</version>
             </dependency>
 
@@ -248,12 +249,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Logging -->
-        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <!-- Logging/SLF4J -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
 
