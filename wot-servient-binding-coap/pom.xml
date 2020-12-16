@@ -36,11 +36,11 @@
             <version>1.0.7</version>
         </dependency>
 
-        <!-- Californium uses java.util.logging. We need to redirect all log messages to logback -->
+        <!-- Californium uses java.util.logging. We need to redirect all log messages to SLF4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.0</version>
+            <version>1.7.30</version>
         </dependency>
     </dependencies>
 </project>
