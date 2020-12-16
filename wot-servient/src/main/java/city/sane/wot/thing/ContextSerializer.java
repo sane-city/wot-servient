@@ -11,13 +11,11 @@ import java.util.Map;
  * Serializes the single context or the list of contexts of a {@link Thing} to JSON. Is used by
  * Jackson
  */
-class ContextSerializer extends JsonSerializer {
+class ContextSerializer extends JsonSerializer<Context> {
     @Override
-    public void serialize(Object value,
+    public void serialize(Context context,
                           JsonGenerator gen,
                           SerializerProvider serializers) throws IOException {
-        Context context = (Context) value;
-
         String defaultUrl = context.getDefaultUrl();
         Map<String, String> prefixedUrls = context.getPrefixedUrls();
 

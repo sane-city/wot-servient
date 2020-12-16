@@ -19,11 +19,11 @@ import java.util.Map;
  * Deserializes the individual context or the list of contexts of a {@link Thing} from JSON. Is used
  * by Jackson
  */
-class ContextDeserializer extends JsonDeserializer {
+class ContextDeserializer extends JsonDeserializer<Context> {
     private static final Logger log = LoggerFactory.getLogger(ContextDeserializer.class);
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Context deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_STRING) {
             return new Context(p.getValueAsString());
