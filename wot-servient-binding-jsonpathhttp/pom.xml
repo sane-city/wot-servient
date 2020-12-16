@@ -23,11 +23,5 @@
             <artifactId>json-path</artifactId>
             <version>2.5.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
