@@ -10,6 +10,8 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ConsumedThingEventTest {
     private ThingEvent<Object> event;
     private ConsumedThing thing;
@@ -39,7 +42,6 @@ public class ConsumedThingEventTest {
     @Test
     public void subscribeShouldCallUnderlyingClient() throws ConsumedThingException, ProtocolClientException {
         when(thing.getClientFor(any(List.class), any())).thenReturn(new Pair(client, form));
-        when(form.getHref()).thenReturn("test:/myAction");
         when(client.observeResource(any())).thenReturn(observable);
 
         ConsumedThingEvent<Object> consumedThingEvent = new ConsumedThingEvent<Object>("myEvent", event, thing);

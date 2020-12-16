@@ -4,6 +4,8 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.schema.DataSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ExposedThingActionTest {
     private ExposedThing thing;
     private ActionState<Object, Object> state;

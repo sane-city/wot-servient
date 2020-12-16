@@ -10,6 +10,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class WebsocketProtocolServerTest {
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup serverBossGroup;

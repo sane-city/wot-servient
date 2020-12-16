@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+//@ExtendWith(MockitoExtension.class)
 public class ThingsActorTest {
     private ActorSystem system;
     private Map<String, ExposedThing> things;

@@ -10,6 +10,8 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.californium.core.CoapResource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CoapProtocolServerTest {
     private String bindHost;
     private int bindPort;

@@ -3,6 +3,8 @@ package city.sane.wot;
 import city.sane.wot.thing.Thing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URISyntaxException;
 
@@ -14,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class DefaultWotTest {
     private Servient servient;
     private Thing thing;

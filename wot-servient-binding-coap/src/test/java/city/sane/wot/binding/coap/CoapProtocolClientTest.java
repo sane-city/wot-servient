@@ -5,6 +5,8 @@ import city.sane.wot.thing.form.Form;
 import org.eclipse.californium.core.CoapClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -15,6 +17,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CoapProtocolClientTest {
     private ExecutorService executor;
     private Function<String, CoapClient> clientCreator;

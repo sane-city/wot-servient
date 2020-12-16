@@ -14,6 +14,8 @@ import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class AkkaProtocolClientTest {
     private ActorSystem system;
     private Form form;
@@ -78,7 +81,6 @@ public class AkkaProtocolClientTest {
     public void observeResourceShouldCreateCorrectActorForProperty() {
         when(form.getHref()).thenReturn("akka://foo/bar#properties/count");
         when(system.actorSelection(anyString())).thenReturn(actorSelection);
-        when(pattern.ask(any(ActorSelection.class), any(), any())).thenReturn(completedFuture(message));
 
         AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout, pattern);
         client.observeResource(form).subscribe();
@@ -138,7 +140,6 @@ public class AkkaProtocolClientTest {
     public void observeResourceShouldCreateCorrectActorForEvent() {
         when(form.getHref()).thenReturn("akka://foo/bar#events/change");
         when(system.actorSelection(anyString())).thenReturn(actorSelection);
-        when(pattern.ask(any(ActorSelection.class), any(), any())).thenReturn(completedFuture(message));
 
         AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout, pattern);
         client.observeResource(form).subscribe();
@@ -158,10 +159,6 @@ public class AkkaProtocolClientTest {
 
     @Test
     public void discoverShouldThrowException() {
-        when(form.getHref()).thenReturn("akka://foo/bar#properties/count");
-        when(system.actorSelection(anyString())).thenReturn(actorSelection);
-        when(pattern.ask(any(ActorSelection.class), any(), any())).thenReturn(completedFuture(message));
-
         AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout, pattern);
         assertThrows(ProtocolClientNotImplementedException.class, () -> client.discover(filter));
     }

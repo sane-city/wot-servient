@@ -9,6 +9,8 @@ import com.github.jsonldjava.shaded.com.google.common.base.Supplier;
 import io.reactivex.rxjava3.subjects.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ExposedThingTest {
     private Servient servient;
     private Subject subject;
@@ -154,7 +157,6 @@ public class ExposedThingTest {
 
     @Test
     public void addPropertyWithInitValue() {
-        when(property.write(any())).thenReturn(completedFuture(null));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, new HashMap(), Map.of(), Map.of());
 
         exposedThing.addProperty("count", property, 1337);

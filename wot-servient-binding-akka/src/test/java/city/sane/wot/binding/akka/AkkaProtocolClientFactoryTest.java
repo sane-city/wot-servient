@@ -7,6 +7,8 @@ import city.sane.Triple;
 import city.sane.wot.thing.ExposedThing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.util.Map;
@@ -16,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 public class AkkaProtocolClientFactoryTest {
     private RefCountResource<Triple<ActorSystem, Map<String, ExposedThing>, ActorRef>> actorSystemProvider;
     private Duration askTimeout;

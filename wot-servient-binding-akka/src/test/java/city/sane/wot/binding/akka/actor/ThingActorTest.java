@@ -24,10 +24,11 @@ import city.sane.wot.thing.action.ExposedThingAction;
 import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.util.Map;
@@ -44,6 +45,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ThingActorTest {
     private ActorSystem system;
     private ExposedThing thing;
@@ -73,10 +75,8 @@ public class ThingActorTest {
         when(thing.getId()).thenReturn("counter");
         when(thing.getProperties()).thenReturn(Map.of("count", property));
         when(property.isObservable()).thenReturn(true);
-        when(property.observer()).thenReturn(PublishSubject.create());
         when(thing.getActions()).thenReturn(Map.of("reset", action));
         when(thing.getEvents()).thenReturn(Map.of("changed", event));
-        when(event.observer()).thenReturn(PublishSubject.create());
 
         final Props props = ThingActor.props(thing);
         TestActorRef.create(system, props);

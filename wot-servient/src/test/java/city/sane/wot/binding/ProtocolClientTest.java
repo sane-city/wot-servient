@@ -6,6 +6,8 @@ import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.core.Observer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -15,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+@ExtendWith(MockitoExtension.class)
 public class ProtocolClientTest {
     private Form form;
     private Content content;

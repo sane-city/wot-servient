@@ -16,8 +16,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class MqttProtocolClientTest {
     private MqttProtocolSettings settings;
     private MqttClient mqttClient;
@@ -82,7 +85,6 @@ public class MqttProtocolClientTest {
     @Test
     public void subscribeResourceShouldSubscribeToBroker() throws MqttException, ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
-        when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
         client = new MqttProtocolClient(new Pair(settings, mqttClient), new HashMap<>());
         client.observeResource(form).subscribe();
@@ -94,7 +96,6 @@ public class MqttProtocolClientTest {
     public void subscribeResourceShouldInformObserverAboutNextValue() throws ProtocolClientException, MqttException, ContentCodecException, ExecutionException, InterruptedException, TimeoutException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
         when(form.getContentType()).thenReturn("application/json");
-        when(content.getBody()).thenReturn("Hallo Welt".getBytes());
         doAnswer(new AnswersWithDelay(1 * 1000L, invocation -> {
             String topic = invocation.getArgument(0, String.class);
             IMqttMessageListener listener = invocation.getArgument(1, IMqttMessageListener.class);
@@ -115,7 +116,6 @@ public class MqttProtocolClientTest {
     @Test
     public void subscribeResourceShouldReuseExistingBrokerSubscriptions() throws ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
-        when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
         LambdaObserver<Content> observer = new LambdaObserver<>(n -> {
         }, e -> {
@@ -132,7 +132,6 @@ public class MqttProtocolClientTest {
     @Test
     public void subscribeResourceShouldUnsubscribeFromBrokerWhenSubscriptionIsNotLongUsed() throws MqttException, ProtocolClientException {
         when(form.getHref()).thenReturn("tcp://dummy-broker/counter/events/change");
-        when(content.getBody()).thenReturn("Hallo Welt".getBytes());
 
         LambdaObserver<Content> observer = new LambdaObserver<>(n -> {
         }, e -> {

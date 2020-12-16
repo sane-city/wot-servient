@@ -7,6 +7,8 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import spark.Service;
 
 import java.net.URI;
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class HttpProtocolServerTest {
     private Config config;
     private ConfigObject configObject;

@@ -14,6 +14,8 @@ import com.typesafe.config.ConfigFactory;
 import io.reactivex.rxjava3.core.Observable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -25,6 +27,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 public class ServientConfigTest {
     private Config config;
 

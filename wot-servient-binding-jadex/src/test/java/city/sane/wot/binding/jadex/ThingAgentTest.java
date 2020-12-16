@@ -9,6 +9,8 @@ import jadex.bridge.service.IService;
 import jadex.bridge.service.IServiceIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+@ExtendWith(MockitoExtension.class)
 public class ThingAgentTest {
     private ExposedThing thing;
     private IInternalAccess ia;
@@ -45,9 +48,7 @@ public class ThingAgentTest {
     public void createdShouldAddForms() {
         when(ia.getProvidedService(ThingService.class)).thenReturn(thingService);
         when(((IService) thingService).getServiceId()).thenReturn(mock(IServiceIdentifier.class));
-        when(thing.getId()).thenReturn("counter");
         when(thing.getProperties()).thenReturn(Map.of("count", property));
-        when(property.isObservable()).thenReturn(true);
         when(thing.getActions()).thenReturn(Map.of("reset", action));
         when(thing.getEvents()).thenReturn(Map.of("changed", event));
 

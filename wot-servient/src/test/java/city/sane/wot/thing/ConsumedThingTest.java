@@ -10,6 +10,8 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ConsumedThingTest {
     private Servient servient;
     private ProtocolClient client;
@@ -85,11 +88,8 @@ public class ConsumedThingTest {
     }
 
     @Test
-    public void getClientForWithUnsupportedProtocol() throws ConsumedThingException, ProtocolClientException {
-        when(servient.hasClientFor("test")).thenReturn(true);
-        when(servient.getClientFor("test")).thenReturn(client);
+    public void getClientForWithUnsupportedProtocol() {
         when(form1.getHrefScheme()).thenReturn("http");
-        when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
 
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
         assertThrows(NoClientFactoryForSchemesConsumedThingException.class, () -> consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY));

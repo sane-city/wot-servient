@@ -11,6 +11,8 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Map;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class WebsocketProtocolClientTest {
     private Map<URI, WebsocketClient> clients;
     private Map<String, Consumer<AbstractServerMessage>> openRequests;

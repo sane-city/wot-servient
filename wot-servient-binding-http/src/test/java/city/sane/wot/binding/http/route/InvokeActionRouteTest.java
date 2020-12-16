@@ -4,6 +4,8 @@ import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import spark.Request;
 import spark.Response;
 
@@ -17,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class InvokeActionRouteTest {
     private Servient servient;
     private Map<String, ExposedThing> things;
@@ -37,7 +40,6 @@ public class InvokeActionRouteTest {
 
     @Test
     public void handleShouldPromptBasicAuthForBaseSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(things.get(any())).thenReturn(exposedThing);
 
@@ -50,7 +52,6 @@ public class InvokeActionRouteTest {
 
     @Test
     public void handleShouldGrantAccessAfterSuccessfulBasicAuthForBaseSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(request.headers("Authorization")).thenReturn("Basic Zm9vOmJhcg==");
         when(things.get(any())).thenReturn(exposedThing);
@@ -64,7 +65,6 @@ public class InvokeActionRouteTest {
 
     @Test
     public void handleShouldGrantAccessAfterSuccessfulBearerAuthForBearerSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(request.headers("Authorization")).thenReturn("Bearer iez0ic8Xohbu");
         when(things.get(any())).thenReturn(exposedThing);

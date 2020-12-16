@@ -6,8 +6,10 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class FileProtocolClientTest {
     private Form form;
     private Function hrefToPath;

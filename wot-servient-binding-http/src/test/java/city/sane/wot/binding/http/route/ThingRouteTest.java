@@ -6,13 +6,14 @@ import city.sane.wot.thing.ExposedThing;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import spark.Request;
 import spark.Response;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class ThingRouteTest {
     private Servient servient;
     private Map<String, ExposedThing> things;
@@ -41,7 +43,6 @@ public class ThingRouteTest {
 
     @Test
     public void handleShouldPromptBasicAuthForBaseSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(things.get(any())).thenReturn(exposedThing);
 
@@ -54,12 +55,10 @@ public class ThingRouteTest {
 
     @Test
     public void handleShouldGrantAccessAfterSuccessfulBasicAuthForBaseSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(request.headers("Authorization")).thenReturn("Basic Zm9vOmJhcg==");
         when(things.get(any())).thenReturn(exposedThing);
         when(servient.getCredentials(any())).thenReturn(Map.of("username", "foo", "password", "bar"));
-        when(exposedThing.readProperties()).thenReturn(completedFuture(Map.of()));
 
         ThingRoute route = new ThingRoute(servient, "Basic", things);
 
@@ -68,12 +67,10 @@ public class ThingRouteTest {
 
     @Test
     public void handleShouldGrantAccessAfterSuccessfulBearerAuthForBearerSecurityScheme() {
-        when(request.raw()).thenReturn(servletRequest);
         when(request.params(":id")).thenReturn("counter");
         when(request.headers("Authorization")).thenReturn("Bearer iez0ic8Xohbu");
         when(things.get(any())).thenReturn(exposedThing);
         when(servient.getCredentials(any())).thenReturn(Map.of("token", "iez0ic8Xohbu"));
-        when(exposedThing.readProperties()).thenReturn(completedFuture(Map.of()));
 
         ThingRoute route = new ThingRoute(servient, "Bearer", things);
 
