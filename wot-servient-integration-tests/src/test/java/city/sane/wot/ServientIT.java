@@ -14,6 +14,7 @@ import city.sane.wot.binding.websocket.WebsocketProtocolServer;
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
+import city.sane.wot.thing.Type;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.filter.DiscoveryMethod;
@@ -242,7 +243,7 @@ public class ServientIT {
         ExposedThing thingX = new ExposedThing(servient)
                 .setId("ThingX")
                 .setObjectContexts(new Context("https://www.w3.org/2019/wot/td/v1"))
-                .setObjectType("Thing");
+                .setObjectType(new Type("Thing"));
         servient.addThing(thingX);
         thingX.expose().join();
         ExposedThing thingY = new ExposedThing(servient).setId("ThingY");

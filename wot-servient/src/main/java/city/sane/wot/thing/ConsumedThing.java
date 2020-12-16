@@ -44,7 +44,7 @@ import static java.util.concurrent.CompletableFuture.failedFuture;
  */
 public class ConsumedThing extends Thing<ConsumedThingProperty<Object>, ConsumedThingAction<Object, Object>, ConsumedThingEvent<Object>> {
     private static final Logger log = LoggerFactory.getLogger(ConsumedThing.class);
-    private static final String DEFAULT_OBJECT_TYPE = "Thing";
+    private static final Type DEFAULT_OBJECT_TYPE = new Type("Thing");
     private static final Context DEFAULT_OBJECT_CONTEXT = new Context("https://www.w3.org/2019/wot/td/v1");
     private final Servient servient;
     private final Map<String, ProtocolClient> clients = new HashMap<>();

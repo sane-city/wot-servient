@@ -44,7 +44,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
     @SuppressWarnings("squid:S107")
     ExposedThing(Servient servient,
                  Subject subject,
-                 String objectType,
+                 Type objectType,
                  Context objectContext,
                  String id,
                  String title,
@@ -234,7 +234,7 @@ public class ExposedThing extends Thing<ExposedThingProperty<Object>, ExposedThi
      * @param objectType
      * @return
      */
-    public ExposedThing setObjectType(String objectType) {
+    public ExposedThing setObjectType(Type objectType) {
         this.objectType = objectType;
         return this;
     }

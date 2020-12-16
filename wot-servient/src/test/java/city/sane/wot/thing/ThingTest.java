@@ -5,10 +5,12 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.BasicSecurityScheme;
+import city.sane.wot.thing.security.NoSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 import net.javacrumbs.jsonunit.core.Option;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -31,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ThingTest {
-    private String objectType;
+    private Type objectType;
     private Context objectContext;
     private String id;
     private String title;
@@ -48,7 +50,7 @@ public class ThingTest {
 
     @BeforeEach
     public void setUp() {
-        objectType = "Thing";
+        objectType = new Type("Thing");
         objectContext = new Context("http://www.w3.org/ns/td");
         id = "foo";
         title = "Foo";
@@ -97,30 +99,96 @@ public class ThingTest {
                         "}");
     }
 
-    @Test
-    public void fromJson() {
-        String json = "{" +
-                "    \"id\":\"Foo\",\n" +
-                "    \"description\":\"Bar\",\n" +
-                "    \"@type\":\"Thing\",\n" +
-                "    \"@context\":[\"http://www.w3.org/ns/td\"],\n" +
-                "    \"securityDefinitions\": {\n" +
-                "        \"basic_sc\": {\n" +
-                "            \"scheme\": \"basic\",\n" +
-                "            \"in\": \"header\"\n" +
-                "        }\n" +
-                "    }," +
-                "    \"security\": [\"basic_sc\"]\n" +
-                "}";
+    @Nested
+    class FromJson {
+        @Test
+        void shouldDeserializeGivenJsonToThing() {
+            String json = "{" +
+                    "    \"id\":\"Foo\",\n" +
+                    "    \"description\":\"Bar\",\n" +
+                    "    \"@type\":\"Thing\",\n" +
+                    "    \"@context\":[\"http://www.w3.org/ns/td\"],\n" +
+                    "    \"securityDefinitions\": {\n" +
+                    "        \"basic_sc\": {\n" +
+                    "            \"scheme\": \"basic\",\n" +
+                    "            \"in\": \"header\"\n" +
+                    "        }\n" +
+                    "    }," +
+                    "    \"security\": [\"basic_sc\"]\n" +
+                    "}";
 
-        Thing thing = Thing.fromJson(json);
+            Thing thing = Thing.fromJson(json);
 
-        assertEquals("Foo", thing.getId());
-        assertEquals("Bar", thing.getDescription());
-        assertEquals("Thing", thing.getObjectType());
-        assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
-        assertEquals(Map.of("basic_sc", new BasicSecurityScheme("header")), thing.getSecurityDefinitions());
-        assertEquals(List.of("basic_sc"), thing.getSecurity());
+            assertEquals("Foo", thing.getId());
+            assertEquals("Bar", thing.getDescription());
+            assertEquals(new Type("Thing"), thing.getObjectType());
+            assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
+            assertEquals(Map.of("basic_sc", new BasicSecurityScheme("header")), thing.getSecurityDefinitions());
+            assertEquals(List.of("basic_sc"), thing.getSecurity());
+        }
+
+        @Test
+        void shouldDeserializeGivenJsonToThing2() {
+            String json = "{\n" +
+                    "  \"@context\": [\n" +
+                    "    \"https://www.w3.org/2019/wot/td/v1\",\n" +
+                    "    {\n" +
+                    "      \"cov\": \"http://www.example.org/coap-binding#\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"saref\": \"https://w3id.org/saref#\"\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"securityDefinitions\": {\n" +
+                    "    \"noschema\": {\n" +
+                    "      \"scheme\": \"nosec\",\n" +
+                    "      \"descriptions\": {\n" +
+                    "        \"en\": \"Basic sec schema\"\n" +
+                    "      },\n" +
+                    "      \"description\": \"Basic sec schema\"\n" +
+                    "    }\n" +
+                    "  },\n" +
+                    "  \"security\": [\n" +
+                    "    \"noschema\"\n" +
+                    "  ],\n" +
+                    "  \"@type\": [\n" +
+                    "    \"saref:LightSwitch\"\n" +
+                    "  ],\n" +
+                    "  \"titles\": {\n" +
+                    "    \"en\": \"English title\",\n" +
+                    "    \"de\": \"Deutscher Titel\"\n" +
+                    "  },\n" +
+                    "  \"title\": \"English title\",\n" +
+                    "  \"descriptions\": {\n" +
+                    "    \"en\": \"English description\",\n" +
+                    "    \"de\": \"Deutsche Beschreibung\"\n" +
+                    "  },\n" +
+                    "  \"description\": \"English description\",\n" +
+                    "  \"properties\": {\n" +
+                    "    \"echo\": {\n" +
+                    "      \"observable\": false,\n" +
+                    "      \"forms\": [\n" +
+                    "        {\n" +
+                    "          \"op\": [\n" +
+                    "            \"readproperty\"\n" +
+                    "          ],\n" +
+                    "          \"href\": \"/echo\",\n" +
+                    "          \"contentType\": \"text/plain\",\n" +
+                    "          \"cov:methodName\": \"GET\"\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}";
+
+            Thing thing = Thing.fromJson(json);
+
+            assertEquals("English description", thing.getDescription());
+            assertEquals(new Type("saref:LightSwitch"), thing.getObjectType());
+            assertEquals(new Context("https://www.w3.org/2019/wot/td/v1").addContext("saref", "https://w3id.org/saref#").addContext("cov", "http://www.example.org/coap-binding#"), thing.getObjectContext());
+            assertEquals(Map.of("noschema", new NoSecurityScheme()), thing.getSecurityDefinitions());
+            assertEquals(List.of("noschema"), thing.getSecurity());
+        }
     }
 
     @Test
@@ -134,7 +202,7 @@ public class ThingTest {
 
         assertEquals("Foo", thing.getId());
         assertEquals("Bar", thing.getDescription());
-        assertEquals("Thing", thing.getObjectType());
+        assertEquals(new Type("Thing"), thing.getObjectType());
         assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
     }
 
@@ -150,7 +218,7 @@ public class ThingTest {
 
         assertEquals("Foo", thing.getId());
         assertEquals("Bar", thing.getDescription());
-        assertEquals("Thing", thing.getObjectType());
+        assertEquals(new Type("Thing"), thing.getObjectType());
         assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
     }
 
@@ -251,7 +319,7 @@ public class ThingTest {
                 .setBase("http://sane.city")
                 .build();
 
-        assertEquals("saref:Temperature", thing.getObjectType());
+        assertEquals(new Type("saref:Temperature"), thing.getObjectType());
         assertEquals(new Context("http://www.w3.org/ns/td"), thing.getObjectContext());
         assertEquals("counter", thing.getId());
         assertEquals("Counter", thing.getTitle());

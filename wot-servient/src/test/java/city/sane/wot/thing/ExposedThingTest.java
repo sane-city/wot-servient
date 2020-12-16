@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class ExposedThingTest {
     private Servient servient;
     private Subject subject;
-    private String objectType;
+    private Type objectType;
     private Context objectContext;
     private String id;
     private String title;
@@ -52,7 +52,7 @@ public class ExposedThingTest {
     public void setUp() {
         servient = mock(Servient.class);
         subject = mock(Subject.class);
-        objectType = "";
+        objectType = mock(Type.class);
         objectContext = mock(Context.class);
         id = "count";
         title = "counter";
@@ -125,7 +125,7 @@ public class ExposedThingTest {
     }
 
     @Test
-    public void destroy() throws ExecutionException, InterruptedException, ServientException {
+    public void destroy() {
         when(servient.destroy(any())).thenReturn(completedFuture(null));
         ExposedThing exposedThing = new ExposedThing(servient, subject, objectType, objectContext, id, title, Map.of(), description, Map.of(), List.of(), List.of(), Map.of(), base, Map.of(), Map.of(), Map.of());
 

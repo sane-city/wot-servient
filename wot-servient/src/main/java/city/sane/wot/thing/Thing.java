@@ -37,7 +37,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     @JsonProperty("@type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    String objectType;
+    Type objectType;
     @JsonProperty("@context")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Context objectContext;
@@ -68,7 +68,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
     String base;
 
     @SuppressWarnings("squid:S107")
-    Thing(String objectType,
+    Thing(Type objectType,
           Context objectContext,
           String id,
           String title,
@@ -102,7 +102,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
 
     }
 
-    public String getObjectType() {
+    public Type getObjectType() {
         return objectType;
     }
 
@@ -327,7 +327,7 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
      * Allows building new {@link Thing} objects.
      */
     public static class Builder implements ObjectBuilder<Thing> {
-        private String objectType;
+        private Type objectType;
         private Context objectContext;
         private String id;
         private String title;
@@ -342,9 +342,13 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
         private Map<String, SecurityScheme> securityDefinitions = new HashMap<>();
         private String base;
 
-        public Builder setObjectType(String objectType) {
+        public Builder setObjectType(Type objectType) {
             this.objectType = objectType;
             return this;
+        }
+
+        public Builder setObjectType(String objectType) {
+            return setObjectType(new Type(objectType));
         }
 
         public Builder setObjectContext(Context objectContext) {
