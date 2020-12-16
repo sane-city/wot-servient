@@ -287,6 +287,12 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
         return "urn:uuid:" + UUID.randomUUID();
     }
 
+    /**
+     * Generates a Thing from {@code json}.
+     *
+     * @param json thing description in json format
+     * @return the generated thing or {@code null} on error.
+     */
     public static Thing fromJson(String json) {
         try {
             return JSON_MAPPER.readValue(json, Thing.class);
@@ -297,6 +303,12 @@ public class Thing<P extends ThingProperty<Object>, A extends ThingAction<Object
         }
     }
 
+    /**
+     * Generates a Thing by reading the content from file {@code json}.
+     *
+     * @param json thing description in json format
+     * @return the generated thing or {@code null} on error.
+     */
     public static Thing fromJson(File json) {
         try {
             return JSON_MAPPER.readValue(json, Thing.class);
