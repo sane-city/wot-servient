@@ -16,9 +16,9 @@ import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Date;
@@ -29,14 +29,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ObservePropertyResourceIT {
     private CoapServer server;
     private ExposedThing thing;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setup() {
         thing = getCounterThing();
 
@@ -118,7 +118,7 @@ public class ObservePropertyResourceIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }

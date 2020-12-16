@@ -16,23 +16,22 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PropertyResourceIT {
     private CoapServer server;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ExposedThing thing = getCounterThing();
 
@@ -114,7 +113,7 @@ public class PropertyResourceIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }
@@ -125,7 +124,7 @@ public class PropertyResourceIT {
         CoapResponse response = client.get();
 
         int responseContentType = response.getOptions().getContentFormat();
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, responseContentType);
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new IntegerSchema());
@@ -141,10 +140,10 @@ public class PropertyResourceIT {
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
 
         int responseContentType = response.getOptions().getContentFormat();
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, responseContentType);
+        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, responseContentType);
 
         Content content = new Content(MediaTypeRegistry.toString(responseContentType), response.getPayload());
         Object responseValue = ContentManager.contentToValue(content, new IntegerSchema());
@@ -158,8 +157,8 @@ public class PropertyResourceIT {
         CoapClient client = new CoapClient("coap://localhost:" + port + "/count");
         CoapResponse response = client.put("1337", MediaTypeRegistry.APPLICATION_JSON);
 
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
-        Assert.assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
     }
 
     @Test
@@ -170,7 +169,7 @@ public class PropertyResourceIT {
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
-        Assert.assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
+        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CHANGED, response.getCode());
     }
 }

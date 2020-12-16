@@ -3,8 +3,9 @@ package city.sane.wot.binding.http.route;
 import city.sane.wot.Servient;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
 
@@ -13,8 +14,7 @@ import java.util.Map;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -29,7 +29,7 @@ public class ThingRouteTest {
     private Response response;
     private ExposedThing exposedThing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         things = mock(Map.class);
@@ -63,7 +63,7 @@ public class ThingRouteTest {
 
         ThingRoute route = new ThingRoute(servient, "Basic", things);
 
-        assertThat(route.handle(request, response), instanceOf(ContentCodecException.class));
+        MatcherAssert.assertThat(route.handle(request, response), instanceOf(ContentCodecException.class));
     }
 
     @Test
@@ -77,6 +77,6 @@ public class ThingRouteTest {
 
         ThingRoute route = new ThingRoute(servient, "Bearer", things);
 
-        assertThat(route.handle(request, response), instanceOf(ContentCodecException.class));
+        MatcherAssert.assertThat(route.handle(request, response), instanceOf(ContentCodecException.class));
     }
 }

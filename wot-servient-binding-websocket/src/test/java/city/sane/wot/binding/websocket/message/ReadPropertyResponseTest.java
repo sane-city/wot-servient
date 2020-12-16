@@ -2,12 +2,12 @@ package city.sane.wot.binding.websocket.message;
 
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ReadPropertyResponseTest {
     private ReadProperty clientMessage;
@@ -15,20 +15,16 @@ public class ReadPropertyResponseTest {
     private ReadPropertyResponse rpr2;
     private Content value;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         clientMessage = new ReadProperty("123", "test");
         value = ContentManager.valueToContent(24);
         rpr1 = new ReadPropertyResponse(clientMessage, value);
     }
 
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorWithNull() {
-        rpr2 = new ReadPropertyResponse((ReadProperty) null, null);
+        assertThrows(NullPointerException.class, () -> new ReadPropertyResponse((ReadProperty) null, null));
     }
 
     @Test

@@ -8,8 +8,8 @@ import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class ConsumedThingEventTest {
     private Observer observer;
     private Observable observable;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         event = mock(ThingEvent.class);
         thing = mock(ConsumedThing.class);

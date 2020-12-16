@@ -7,15 +7,16 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import net.javacrumbs.jsonunit.core.Option;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,11 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ThingTest {
     private String objectType;
@@ -45,7 +46,7 @@ public class ThingTest {
     private List<Form> forms;
     private List<String> security;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         objectType = "Thing";
         objectContext = new Context("http://www.w3.org/ns/td");
@@ -123,13 +124,11 @@ public class ThingTest {
     }
 
     @Test
-    public void fromJsonFile() throws IOException {
+    public void fromJsonFile(@TempDir Path folder) throws IOException {
         String json = "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":[\"http://www.w3.org/ns/td\"]}";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.json");
-        Files.write(json, file, Charset.defaultCharset());
+        File file = Paths.get(folder.toString(), "counter.json").toFile();
+        Files.writeString(file.toPath(), json);
 
         Thing thing = Thing.fromJson(file);
 

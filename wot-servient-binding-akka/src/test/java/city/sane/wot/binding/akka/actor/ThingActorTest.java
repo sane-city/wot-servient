@@ -25,9 +25,9 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class ThingActorTest {
     private ExposedThingEvent<Object> event;
     private ExposedThingAction<Object, Object> action;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         system = ActorSystem.create();
         thing = mock(ExposedThing.class);
@@ -62,7 +62,7 @@ public class ThingActorTest {
         action = mock(ExposedThingAction.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         TestKit.shutdownActorSystem(system);
         system = null;

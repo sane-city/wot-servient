@@ -34,13 +34,13 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
@@ -49,17 +49,18 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebsocketProtocolServerIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private WebsocketProtocolServer server;
     private ExposedThing thing;
 
-    @Before
+    @BeforeEach
     public void setup() {
         server = new WebsocketProtocolServer(ConfigFactory.load());
         server.start(null).join();
@@ -145,13 +146,14 @@ public class WebsocketProtocolServerIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         server.stop().join();
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void testReadProperty() throws ExecutionException, URISyntaxException, InterruptedException, ContentCodecException {
+    @Test
+    @Timeout(value = 20, unit = SECONDS)
+    public void testReadProperty() throws ContentCodecException {
         // send ReadProperty message to server and wait for ReadPropertyResponse message from server
         ReadProperty request = new ReadProperty("counter", "count");
         ReadProperty request2 = new ReadProperty("zähler", "count");
@@ -233,8 +235,9 @@ public class WebsocketProtocolServerIT {
         );
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void testWriteProperty() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+    @Test
+    @Timeout(value = 20, unit = SECONDS)
+    public void testWriteProperty() throws ContentCodecException {
         // send WriteProperty message to server and wait for WritePropertyResponse message from server
         WriteProperty request = new WriteProperty("counter", "count", ContentManager.valueToContent(1337));
         WriteProperty request2 = new WriteProperty("Null", "count", ContentManager.valueToContent(1337));
@@ -253,8 +256,9 @@ public class WebsocketProtocolServerIT {
         assertEquals(ContentManager.valueToContent(null), ((WritePropertyResponse) response).getValue());
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void testInvokeAction() throws ExecutionException, InterruptedException, URISyntaxException, ContentCodecException {
+    @Test
+    @Timeout(value = 20, unit = SECONDS)
+    public void testInvokeAction() throws ContentCodecException {
         // send InvokeAction message to server and wait for InvokeActionResponse message from server
         Map<String, Integer> parameters = Map.of("step", 3);
         InvokeAction request = new InvokeAction("counter", "increment", ContentManager.valueToContent(parameters));

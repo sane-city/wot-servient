@@ -1,11 +1,8 @@
 package city.sane.wot.thing;
 
-import city.sane.Pair;
 import city.sane.wot.Servient;
 import city.sane.wot.ServientException;
-import city.sane.wot.binding.ProtocolClientFactory;
 import city.sane.wot.binding.ProtocolClientNotImplementedException;
-import city.sane.wot.binding.ProtocolServer;
 import city.sane.wot.binding.akka.AkkaProtocolClientFactory;
 import city.sane.wot.binding.akka.AkkaProtocolServer;
 import city.sane.wot.binding.coap.CoapProtocolServer;
@@ -23,57 +20,52 @@ import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.reactivex.rxjava3.disposables.Disposable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
 public class ConsumedThingIT {
-    @Parameter
-    public Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>> servientClasses;
     private Servient servient;
 
-    @Before
-    public void setup() throws ServientException {
-        Config config = ConfigFactory
-                .parseString("wot.servient.servers = [\"" + servientClasses.first().getName() + "\"]\n" +
-                        "wot.servient.client-factories = [\"" + servientClasses.second().getName() + "\"]")
-                .withFallback(ConfigFactory.load());
-
-        servient = new Servient(config);
-        servient.start().join();
-    }
-
-    @After
+    @AfterEach
     public void teardown() {
         servient.shutdown().join();
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void readPropertyShouldReturnCorrectValue() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void readPropertyShouldReturnCorrectValue(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -169,8 +161,17 @@ public class ConsumedThingIT {
         return thing;
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void writePropertyShouldUpdateValue() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void writePropertyShouldUpdateValue(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -190,8 +191,16 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test
-    public void observePropertyShouldHandleMultipleSubscription() throws ConsumedThingException, InterruptedException, ExecutionException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    public void observePropertyShouldHandleMultipleSubscription(Class server, Class clientFactory) throws ServientException, InterruptedException, ExecutionException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -216,7 +225,7 @@ public class ConsumedThingIT {
                         Object[] subscribers = (Object[]) fieldIn(property.getState().getSubject())
                                 .ofType(AtomicReference.class)
                                 .andWithName("subscribers").call().get();
-                        if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                        if (server == CoapProtocolServer.class || server == MqttProtocolServer.class) {
                             // TODO: These bindings require only one Observer. Therefore, we cannot
                             //  check whether the two clients have actually subscribed. Therefore
                             //  race conditions can occur here
@@ -236,7 +245,7 @@ public class ConsumedThingIT {
                         Object[] subscribers = (Object[]) fieldIn(property.getState().getSubject())
                                 .ofType(AtomicReference.class)
                                 .andWithName("subscribers").call().get();
-                        if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                        if (server == CoapProtocolServer.class || server == MqttProtocolServer.class) {
                             // TODO: These bindings require only one Observer. Therefore, we cannot
                             //  check whether the two clients have actually subscribed. Therefore
                             //  race conditions can occur here
@@ -265,8 +274,17 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void readPropertiesShouldReturnCorrectValues() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void readPropertiesShouldReturnCorrectValues(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -285,8 +303,17 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void readMultipleProperties() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void readMultipleProperties(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -305,8 +332,17 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void invokeActionShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void invokeActionShouldExecuteDefinedTask(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -317,7 +353,7 @@ public class ConsumedThingIT {
             ConsumedThingAction increment = thing.getAction("increment");
             Object output = increment.invoke().get();
 
-            if (MqttProtocolClientFactory.class.isAssignableFrom(servientClasses.second())) {
+            if (MqttProtocolClientFactory.class.isAssignableFrom(clientFactory)) {
                 // mqtt is not able to return a result
                 assertNull(output);
             }
@@ -332,8 +368,17 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void invokeActionWithParametersShouldExecuteDefinedTask() throws ExecutionException, InterruptedException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    @Timeout(value = 20, unit = SECONDS)
+    public void invokeActionWithParametersShouldExecuteDefinedTask(Class server, Class clientFactory) throws ExecutionException, InterruptedException, ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         try {
             ExposedThing exposedThing = getExposedCounterThing();
             servient.addThing(exposedThing);
@@ -344,7 +389,7 @@ public class ConsumedThingIT {
             ConsumedThingAction increment = thing.getAction("increment");
             Object output = increment.invoke(Map.of("step", 3)).get();
 
-            if (MqttProtocolClientFactory.class.isAssignableFrom(servientClasses.second())) {
+            if (MqttProtocolClientFactory.class.isAssignableFrom(clientFactory)) {
                 // mqtt is not able to return a result
                 assertNull(output);
             }
@@ -359,8 +404,16 @@ public class ConsumedThingIT {
         }
     }
 
-    @Test
-    public void observeEventShouldHandleMultipleSubscription() throws ConsumedThingException {
+    @ParameterizedTest
+    @ArgumentsSource(MyArgumentsProvider.class)
+    public void observeEventShouldHandleMultipleSubscription(Class server, Class clientFactory) throws ServientException {
+        Config config = ConfigFactory
+                .parseString("wot.servient.servers = [\"" + server.getName() + "\"]\n" +
+                        "wot.servient.client-factories = [\"" + clientFactory.getName() + "\"]")
+                .withFallback(ConfigFactory.load());
+        servient = new Servient(config);
+        servient.start().join();
+
         ExposedThing exposedThing = getExposedCounterThing();
         servient.addThing(exposedThing);
         exposedThing.expose().join();
@@ -384,7 +437,7 @@ public class ConsumedThingIT {
                     Object[] subscribers = (Object[]) fieldIn(event.getState().getSubject())
                             .ofType(AtomicReference.class)
                             .andWithName("subscribers").call().get();
-                    if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                    if (server == CoapProtocolServer.class || server == MqttProtocolServer.class) {
                         // TODO: These bindings require only one Observer. Therefore, we cannot
                         //  check whether the two clients have actually subscribed. Therefore
                         //  race conditions can occur here
@@ -404,7 +457,7 @@ public class ConsumedThingIT {
                     Object[] subscribers = (Object[]) fieldIn(event.getState().getSubject())
                             .ofType(AtomicReference.class)
                             .andWithName("subscribers").call().get();
-                    if (servientClasses.first() == CoapProtocolServer.class || servientClasses.first() == MqttProtocolServer.class) {
+                    if (server == CoapProtocolServer.class || server == MqttProtocolServer.class) {
                         // TODO: These bindings require only one Observer. Therefore, we cannot
                         //  check whether the two clients have actually subscribed. Therefore
                         //  race conditions can occur here
@@ -427,10 +480,16 @@ public class ConsumedThingIT {
         disposable2.dispose();
     }
 
-    @Parameters(name = "{0}")
-    public static Collection<Pair<Class<? extends ProtocolServer>, Class<? extends ProtocolClientFactory>>> data() {
-        return Arrays.asList(
-                new Pair<>(AkkaProtocolServer.class, AkkaProtocolClientFactory.class)
-        );
+    private static class MyArgumentsProvider implements ArgumentsProvider {
+        public MyArgumentsProvider() {
+        }
+
+        @Override
+        public Stream<? extends Arguments> provideArguments(
+                ExtensionContext extensionContext) {
+            return Stream.of(
+                    Arguments.of(AkkaProtocolServer.class, AkkaProtocolClientFactory.class)
+            );
+        }
     }
 }

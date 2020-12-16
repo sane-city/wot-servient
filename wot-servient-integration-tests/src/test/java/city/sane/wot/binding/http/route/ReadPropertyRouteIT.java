@@ -14,22 +14,22 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Service;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReadPropertyRouteIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private Service service;
 
-    @Before
+    @BeforeEach
     public void setup() {
         service = Service.ignite().ipAddress("127.0.0.1").port(8080);
         service.defaultResponseTransformer(new ContentResponseTransformer());
@@ -114,7 +114,7 @@ public class ReadPropertyRouteIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         service.stop();
         service.awaitStop();

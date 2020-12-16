@@ -3,27 +3,28 @@ package city.sane.wot.binding.websocket.message;
 import city.sane.wot.content.Content;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WritePropertyTest {
     private WriteProperty message;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Content content = ContentManager.valueToContent(24);
         message = new WriteProperty("counter", "count", content);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testConstructorNullParams() throws ContentCodecException {
-        new WriteProperty(null, null, null);
-        new WriteProperty("counter", null, ContentManager.valueToContent(24));
-        new WriteProperty(null, "count", ContentManager.valueToContent(24));
-        new WriteProperty("counter", "count", null);
+    @Test
+    public void testConstructorNullParams() {
+        assertThrows(NullPointerException.class, () -> new WriteProperty(null, null, null));
+        assertThrows(NullPointerException.class, () -> new WriteProperty("counter", null, ContentManager.valueToContent(24)));
+        assertThrows(NullPointerException.class, () -> new WriteProperty(null, "count", ContentManager.valueToContent(24)));
+        assertThrows(NullPointerException.class, () -> new WriteProperty("counter", "count", null));
     }
 
     @Test

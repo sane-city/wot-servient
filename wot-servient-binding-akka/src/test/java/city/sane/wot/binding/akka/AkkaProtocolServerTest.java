@@ -6,8 +6,8 @@ import city.sane.RefCountResource;
 import city.sane.Triple;
 import city.sane.wot.binding.akka.actor.ThingsActor;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -28,7 +28,7 @@ public class AkkaProtocolServerTest {
     private ActorRef thingsActor;
     private CompletionStage completionStage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         actorSystemProvider = mock(RefCountResource.class);
         pattern = mock(AkkaProtocolPattern.class);

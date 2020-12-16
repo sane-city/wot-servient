@@ -12,8 +12,8 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -35,7 +35,7 @@ public class MqttProtocolServerTest {
     private ExposedThingAction action;
     private ExposedThingEvent event;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         settings = mock(MqttProtocolSettings.class);
         mqttClient = mock(MqttClient.class);

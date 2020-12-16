@@ -12,9 +12,9 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.CoapServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Date;
@@ -32,7 +32,7 @@ public class EventResourceIT {
     private ExposedThing thing;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setup() {
         thing = getCounterThing();
 
@@ -114,7 +114,7 @@ public class EventResourceIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }

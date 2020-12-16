@@ -4,8 +4,8 @@ import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.observers.LambdaObserver;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
 
@@ -29,7 +29,7 @@ public class FileProtocolClientTest {
     private FileSystem fileSystem;
     private WatchService watchService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         form = mock(Form.class);
         hrefToPath = mock(Function.class);

@@ -8,8 +8,8 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +17,10 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -33,7 +34,7 @@ public class ConsumedThingTest {
     private Operation op;
     private Thing thing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         client = mock(ProtocolClient.class);
@@ -72,7 +73,7 @@ public class ConsumedThingTest {
         assertEquals(form2, clientFor.second());
     }
 
-    @Test(expected = NoFormForInteractionConsumedThingException.class)
+    @Test
     public void getClientForWithUnsupportedOperation() throws ConsumedThingException, ProtocolClientException {
         when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
@@ -80,10 +81,10 @@ public class ConsumedThingTest {
         when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
 
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
-        consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY);
+        assertThrows(NoFormForInteractionConsumedThingException.class, () -> consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY));
     }
 
-    @Test(expected = NoClientFactoryForSchemesConsumedThingException.class)
+    @Test
     public void getClientForWithUnsupportedProtocol() throws ConsumedThingException, ProtocolClientException {
         when(servient.hasClientFor("test")).thenReturn(true);
         when(servient.getClientFor("test")).thenReturn(client);
@@ -91,7 +92,7 @@ public class ConsumedThingTest {
         when(form1.getOp()).thenReturn(List.of(Operation.READ_PROPERTY));
 
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
-        consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY);
+        assertThrows(NoClientFactoryForSchemesConsumedThingException.class, () -> consumedThing.getClientFor(form1, Operation.WRITE_PROPERTY));
     }
 
     @Test

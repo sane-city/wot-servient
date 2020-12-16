@@ -1,20 +1,21 @@
 package city.sane.wot.cli;
 
 import city.sane.wot.Servient;
-import com.google.common.io.Files;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CliIT {
@@ -24,13 +25,13 @@ public class CliIT {
     private final PrintStream originalErr = System.err;
     private Cli cli;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         System.setOut(originalOut);
         System.setErr(originalErr);
@@ -45,7 +46,7 @@ public class CliIT {
         cli = new Cli();
         cli.run(new String[]{ "--help" });
 
-        assertThat(outContent.toString(), containsString("Usage:"));
+        MatcherAssert.assertThat(outContent.toString(), containsString("Usage:"));
     }
 
     @Test
@@ -53,11 +54,11 @@ public class CliIT {
         cli = new Cli();
         cli.run(new String[]{ "--version" });
 
-        assertThat(outContent.toString(), containsString(Servient.getVersion()));
+        MatcherAssert.assertThat(outContent.toString(), containsString(Servient.getVersion()));
     }
 
     @Test
-    public void runShouldPrintOutputFromScript() throws CliException, IOException {
+    public void runShouldPrintOutputFromScript(@TempDir Path folder) throws CliException, IOException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -88,10 +89,8 @@ public class CliIT {
                 ")\n" +
                 "println(exposedThing.toJson(true))";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("my-thing.groovy");
-        Files.write(script, file, Charset.defaultCharset());
+        File file = Paths.get(folder.toString(), "my-thing.groovy").toFile();
+        Files.writeString(file.toPath(), script);
 
         cli = new Cli();
         cli.run(new String[]{
@@ -99,17 +98,15 @@ public class CliIT {
                 file.getAbsolutePath()
         });
 
-        assertThat(outContent.toString(), containsString("KlimabotschafterWetterstation"));
+        MatcherAssert.assertThat(outContent.toString(), containsString("KlimabotschafterWetterstation"));
     }
 
     @Test
-    public void shouldPrintErrorOfBrokenScript() throws IOException {
+    public void shouldPrintErrorOfBrokenScript(@TempDir Path folder) throws IOException {
         String script = "1/0";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("my-thing.groovy");
-        Files.write(script, file, Charset.defaultCharset());
+        File file = Paths.get(folder.toString(), "my-thing.groovy").toFile();
+        Files.writeString(file.toPath(), script);
 
         assertThrows(CliException.class, () -> {
             cli = new Cli();
