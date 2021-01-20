@@ -7,6 +7,7 @@ import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.Thing;
 import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.property.ThingProperty;
+import city.sane.wot.thing.schema.ObjectSchema;
 
 import java.util.Map;
 
@@ -49,6 +50,7 @@ class CounterUriVariables {
                                         "maximum", 250
                                 )
                         ))
+                        .setInput(new ObjectSchema())
                         .build(),
                 (input, options) -> {
                     System.out.println("CounterUriVariables: Incrementing, input= " + input + ", options= " + options);
