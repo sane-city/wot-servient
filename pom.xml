@@ -107,18 +107,18 @@
     <repositories>
         <repository>
             <id>gitlab-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/2707/packages/maven</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/2707/packages/maven</url>
         </repository>
         <snapshotRepository>
             <id>gitlab-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/2707/packages/maven</url>
         </snapshotRepository>
         <!--        <snapshotRepository>-->
         <!--            <id>vsis-snapshots</id>-->
