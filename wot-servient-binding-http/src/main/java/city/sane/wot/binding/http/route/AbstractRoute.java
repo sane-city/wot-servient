@@ -27,6 +27,8 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import static city.sane.wot.util.LoggingUtil.sanitizeLogArg;
+
 /**
  * Abstract route for exposing Things. Inherited from all other routes.
  */
@@ -44,7 +46,7 @@ abstract class AbstractRoute implements Route {
 
     String unsupportedMediaTypeResponse(Response response, String requestContentType) {
         if (!ContentManager.isSupportedMediaType(requestContentType)) {
-            log.warn("Unsupported media type: {}", requestContentType);
+            log.warn("Unsupported media type: {}", sanitizeLogArg(requestContentType));
             response.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415);
             return "Unsupported Media Type (supported: " + String.join(", ", ContentManager.getSupportedMediaTypes()) + ")";
         }
