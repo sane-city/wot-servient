@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2021.
+ *
+ * This file is part of SANE Web of Things Servient.
+ *
+ * SANE Web of Things Servient is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * SANE Web of Things Servient is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with SANE Web of Things Servient.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package city.sane.wot;
 
 import city.sane.wot.binding.ProtocolServerNotImplementedException;
@@ -39,10 +58,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServientIT {
     private Servient servient;
@@ -67,9 +86,9 @@ public class ServientIT {
         thing.expose().join();
         thing.destroy().join();
 
-        assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
+        assertTrue(thing.getProperty("count").getForms().isEmpty(), "There must be no forms");
+        assertTrue(thing.getAction("increment").getForms().isEmpty(), "There must be no actions");
+        assertTrue(thing.getEvent("change").getForms().isEmpty(), "There must be no events");
     }
 
     private ExposedThing getExposedCounterThing() {

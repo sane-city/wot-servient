@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2021.
+ *
+ * This file is part of SANE Web of Things Servient.
+ *
+ * SANE Web of Things Servient is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * SANE Web of Things Servient is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with SANE Web of Things Servient.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package city.sane.wot.binding.jadex;
 
 import city.sane.wot.thing.Thing;
@@ -11,7 +30,6 @@ import jadex.commons.future.IFunctionalIntermediateResultListener;
 import jadex.commons.future.IFunctionalResultListener;
 import jadex.commons.future.IFuture;
 import jadex.commons.future.ITerminableIntermediateFuture;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -70,6 +89,6 @@ public class JadexProtocolClientTest {
         client = new JadexProtocolClient(platform);
         @NonNull List<Thing> things = client.discover(filter).toList().blockingGet();
 
-        MatcherAssert.assertThat(things, hasItem(new Thing.Builder().setId("counter").setTitle("Zähler").build()));
+        assertThat(things, hasItem(new Thing.Builder().setId("counter").setTitle("Zähler").build()));
     }
 }

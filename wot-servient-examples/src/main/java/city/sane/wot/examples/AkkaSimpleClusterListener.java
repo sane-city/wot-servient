@@ -1,5 +1,21 @@
 /*
- * Copyright (C) 2018-2019 Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (c) 2021.
+ *
+ * This file is part of SANE Web of Things Servient.
+ *
+ * SANE Web of Things Servient is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * SANE Web of Things Servient is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with SANE Web of Things Servient.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package city.sane.wot.examples;
 
@@ -7,7 +23,6 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.cluster.Cluster;
-import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
@@ -25,14 +40,13 @@ import com.typesafe.config.ConfigFactory;
  */
 class AkkaSimpleClusterListener extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private Cluster cluster = Cluster.get(getContext().getSystem());
+    private final Cluster cluster = Cluster.get(getContext().getSystem());
 
     // subscribe to cluster changes
     @Override
     public void preStart() {
         // #subscribe
-        cluster.subscribe(
-                getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
+        cluster.subscribe(getSelf(), MemberEvent.class, UnreachableMember.class);
         // #subscribe
     }
 
