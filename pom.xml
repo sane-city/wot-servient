@@ -255,7 +255,6 @@
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-testkit_2.13</artifactId>
                 <version>${akka.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.awaitility</groupId>
