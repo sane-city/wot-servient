@@ -23,7 +23,6 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.cluster.Cluster;
-import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
@@ -41,14 +40,13 @@ import com.typesafe.config.ConfigFactory;
  */
 class AkkaSimpleClusterListener extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    private Cluster cluster = Cluster.get(getContext().getSystem());
+    private final Cluster cluster = Cluster.get(getContext().getSystem());
 
     // subscribe to cluster changes
     @Override
     public void preStart() {
         // #subscribe
-        cluster.subscribe(
-                getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
+        cluster.subscribe(getSelf(), MemberEvent.class, UnreachableMember.class);
         // #subscribe
     }
 
