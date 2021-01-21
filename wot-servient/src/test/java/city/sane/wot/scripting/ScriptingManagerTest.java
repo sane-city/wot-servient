@@ -4,11 +4,13 @@ import city.sane.wot.Wot;
 import com.google.common.io.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,10 +26,8 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runScript() throws IOException {
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.test");
+    public void runScript(@TempDir Path folder) throws IOException {
+        File file = Paths.get(folder.toString(), "counter.test").toFile();
         Files.write("1+1", file, Charset.defaultCharset());
 
         ScriptingManager.runScript(file, null);
@@ -57,10 +57,8 @@ public class ScriptingManagerTest {
     }
 
     @Test
-    public void runPrivilegedScript() throws IOException {
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.test");
+    public void runPrivilegedScript(@TempDir Path folder) throws IOException {
+        File file = Paths.get(folder.toString(), "counter.test").toFile();
         Files.write("1+1", file, Charset.defaultCharset());
 
         ScriptingManager.runPrivilegedScript(file, null);

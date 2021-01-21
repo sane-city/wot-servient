@@ -12,11 +12,13 @@ import net.javacrumbs.jsonunit.core.Option;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -123,12 +125,10 @@ public class ThingTest {
     }
 
     @Test
-    public void fromJsonFile() throws IOException {
+    public void fromJsonFile(@TempDir Path folder) throws IOException {
         String json = "{\"id\":\"Foo\",\"description\":\"Bar\",\"@type\":\"Thing\",\"@context\":[\"http://www.w3.org/ns/td\"]}";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("counter.json");
+        File file = Paths.get(folder.toString(), "counter.json").toFile();
         Files.write(json, file, Charset.defaultCharset());
 
         Thing thing = Thing.fromJson(file);

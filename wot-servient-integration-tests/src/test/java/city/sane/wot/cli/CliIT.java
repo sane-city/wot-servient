@@ -6,13 +6,15 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,7 +59,7 @@ public class CliIT {
     }
 
     @Test
-    public void runShouldPrintOutputFromScript() throws CliException, IOException {
+    public void runShouldPrintOutputFromScript(@TempDir Path folder) throws CliException, IOException {
         String script = "def thing = [\n" +
                 "    id        : 'KlimabotschafterWetterstation',\n" +
                 "    title     : 'KlimabotschafterWetterstation',\n" +
@@ -88,9 +90,7 @@ public class CliIT {
                 ")\n" +
                 "println(exposedThing.toJson(true))";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("my-thing.groovy");
+        File file = Paths.get(folder.toString(), "my-thing.groovy").toFile();
         Files.write(script, file, Charset.defaultCharset());
 
         cli = new Cli();
@@ -103,12 +103,10 @@ public class CliIT {
     }
 
     @Test
-    public void shouldPrintErrorOfBrokenScript() throws IOException {
+    public void shouldPrintErrorOfBrokenScript(@TempDir Path folder) throws IOException {
         String script = "1/0";
 
-        TemporaryFolder folder = new TemporaryFolder();
-        folder.create();
-        File file = folder.newFile("my-thing.groovy");
+        File file = Paths.get(folder.toString(), "counter.json").toFile();
         Files.write(script, file, Charset.defaultCharset());
 
         assertThrows(CliException.class, () -> {
