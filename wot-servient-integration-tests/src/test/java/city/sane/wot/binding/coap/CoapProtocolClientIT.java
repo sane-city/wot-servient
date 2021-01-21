@@ -1,6 +1,5 @@
 package city.sane.wot.binding.coap;
 
-import city.sane.wot.binding.ProtocolClientException;
 import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
@@ -9,9 +8,10 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.ExecutionException;
 
@@ -23,7 +23,7 @@ public class CoapProtocolClientIT {
     private CoapServer server;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         clientFactory = new CoapProtocolClientFactory();
         clientFactory.init().join();
@@ -39,7 +39,7 @@ public class CoapProtocolClientIT {
         port = server.getEndpoints().get(0).getAddress().getPort();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         clientFactory.destroy().join();
         server.stop();
@@ -69,8 +69,9 @@ public class CoapProtocolClientIT {
         assertEquals(ContentManager.valueToContent(42), client.invokeResource(form, ContentManager.valueToContent(1337)).get());
     }
 
-    @Test(timeout = 5 * 1000)
-    public void subscribeResource() throws ProtocolClientException, ContentCodecException {
+    @Test
+    @Timeout(5 * 1000)
+    public void subscribeResource() throws ContentCodecException {
         String href = "coap://localhost:" + port + "/subscribe";
         Form form = new Form.Builder().setHref(href).build();
 

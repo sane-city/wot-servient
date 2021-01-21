@@ -1,8 +1,8 @@
 package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class JsonCodecTest {
     private JsonCodec codec;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         codec = new JsonCodec();
     }

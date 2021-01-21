@@ -2,9 +2,9 @@ package city.sane.wot.scripting;
 
 import city.sane.wot.DefaultWot;
 import city.sane.wot.WotException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -17,13 +17,13 @@ public class GroovyEngineTest {
     private ScriptingEngine engine;
     private ExecutorService executorService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         engine = new GroovyEngine();
         executorService = Executors.newCachedThreadPool();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         executorService.shutdown();
     }
@@ -67,17 +67,19 @@ public class GroovyEngineTest {
         assertTrue(true);
     }
 
-    @Test(expected = ScriptingEngineException.class)
+    @Test
     public void runPrivilegedScriptShouldFailOnInvalidScript() throws Throwable {
         String script = "wot.dahsjkdhajkdhajkdhasjk()";
 
         DefaultWot wot = new DefaultWot();
-        try {
-            engine.runPrivilegedScript(script, wot, executorService).get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            throw e.getCause();
-        }
+        assertThrows(ScriptingEngineException.class, () -> {
+            try {
+                engine.runPrivilegedScript(script, wot, executorService).get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     @Test

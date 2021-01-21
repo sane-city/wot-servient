@@ -2,8 +2,8 @@ package city.sane.wot.binding.value;
 
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 
@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class ValueProtocolClientTest {
     private ValueProtocolClient client;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         client = new ValueProtocolClient();
     }

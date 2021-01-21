@@ -11,8 +11,8 @@ import jadex.commons.future.IFunctionalIntermediateResultListener;
 import jadex.commons.future.IFunctionalResultListener;
 import jadex.commons.future.IFuture;
 import jadex.commons.future.ITerminableIntermediateFuture;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class JadexProtocolClientTest {
     private ThingService thingService;
     private IFuture<String> thingServiceFuture;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         platform = mock(IExternalAccess.class);
         filter = mock(ThingFilter.class);

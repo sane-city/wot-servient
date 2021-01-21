@@ -1,23 +1,24 @@
 package city.sane.wot.binding.websocket.message;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ReadPropertyTest {
     private ReadProperty message;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         message = new ReadProperty("counter", "count");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConstructorNullParams() {
-        new ReadProperty(null, null);
-        new ReadProperty("counter", null);
-        new ReadProperty(null, "count");
+        assertThrows(NullPointerException.class, () -> new ReadProperty(null, null));
+        assertThrows(NullPointerException.class, () -> new ReadProperty("counter", null));
+        assertThrows(NullPointerException.class, () -> new ReadProperty(null, "count"));
     }
 
     @Test

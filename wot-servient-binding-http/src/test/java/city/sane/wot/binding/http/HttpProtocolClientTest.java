@@ -20,8 +20,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 
@@ -50,7 +50,7 @@ public class HttpProtocolClientTest {
     private Function<RequestConfig, CloseableHttpClient> clientCreator;
     private CloseableHttpClient httpClient;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         requestClient = mock(HttpClient.class);
         form = mock(Form.class);

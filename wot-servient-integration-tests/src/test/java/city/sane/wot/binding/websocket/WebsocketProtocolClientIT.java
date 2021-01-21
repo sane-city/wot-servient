@@ -37,9 +37,10 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -57,7 +58,7 @@ public class WebsocketProtocolClientIT {
     private ServerBootstrap serverBootstrap;
     private Channel serverChannel;
 
-    @Before
+    @BeforeEach
     public void setUp() throws InterruptedException {
         clientFactory = new WebsocketProtocolClientFactory();
         clientFactory.init().join();
@@ -74,7 +75,7 @@ public class WebsocketProtocolClientIT {
         serverChannel = serverBootstrap.bind(8081).sync().channel();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws InterruptedException {
         clientFactory.destroy().join();
 
@@ -83,7 +84,8 @@ public class WebsocketProtocolClientIT {
         serverWorkerGroup.shutdownGracefully().sync();
     }
 
-    @Test(timeout = 20 * 1000L)
+    @Test
+    @Timeout(20 * 1000L)
     public void readResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
@@ -98,7 +100,8 @@ public class WebsocketProtocolClientIT {
         assertEquals(ContentManager.valueToContent(1337), client.readResource(form).get());
     }
 
-    @Test(timeout = 20 * 1000L)
+    @Test
+    @Timeout(20 * 1000L)
     public void writeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
@@ -113,7 +116,8 @@ public class WebsocketProtocolClientIT {
         assertEquals(Content.EMPTY_CONTENT, client.writeResource(form, ContentManager.valueToContent(1337)).get());
     }
 
-    @Test(timeout = 20 * 1000L)
+    @Test
+    @Timeout(20 * 1000L)
     public void invokeResource() throws ContentCodecException, ExecutionException, InterruptedException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
@@ -128,8 +132,9 @@ public class WebsocketProtocolClientIT {
         assertEquals(ContentManager.valueToContent(43), client.invokeResource(form).get());
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void subscribeProperty() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientException {
+    @Test
+    @Timeout(20 * 1000L)
+    public void subscribeProperty() throws ContentCodecException, ProtocolClientException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)
@@ -146,8 +151,9 @@ public class WebsocketProtocolClientIT {
         );
     }
 
-    @Test(timeout = 20 * 1000L)
-    public void subscribeEvent() throws ContentCodecException, ExecutionException, InterruptedException, ProtocolClientException {
+    @Test
+    @Timeout(20 * 1000L)
+    public void subscribeEvent() throws ProtocolClientException {
         Form form = new Form.Builder()
                 .setHref("ws://localhost:8081")
                 .setOp(Operation.INVOKE_ACTION)

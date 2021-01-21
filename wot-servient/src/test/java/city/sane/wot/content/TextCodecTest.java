@@ -5,8 +5,8 @@ import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.NullSchema;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.StringSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class TextCodecTest {
     private TextCodec codec;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         codec = new TextCodec();
     }

@@ -1,8 +1,8 @@
 package city.sane.wot.binding.akka;
 
 import com.typesafe.config.ConfigFactory;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNull;
 public class AkkaProtocolClientFactoryIT {
     private AkkaProtocolClientFactory factory = null;
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (factory != null) {
             factory.destroy().join();

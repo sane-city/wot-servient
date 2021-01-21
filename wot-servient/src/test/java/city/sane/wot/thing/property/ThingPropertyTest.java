@@ -1,6 +1,6 @@
 package city.sane.wot.thing.property;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 

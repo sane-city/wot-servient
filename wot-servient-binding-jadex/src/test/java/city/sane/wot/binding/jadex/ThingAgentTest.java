@@ -7,8 +7,8 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import jadex.bridge.IInternalAccess;
 import jadex.bridge.service.IService;
 import jadex.bridge.service.IServiceIdentifier;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -30,7 +30,7 @@ public class ThingAgentTest {
     private ThingService thingService;
     private JadexContent jadexContent;
 
-    @Before
+    @BeforeEach
     public void setup() {
         thing = mock(ExposedThing.class);
         ia = mock(IInternalAccess.class);

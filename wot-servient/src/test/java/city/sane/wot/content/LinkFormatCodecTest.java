@@ -1,8 +1,8 @@
 package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class LinkFormatCodecTest {
     private LinkFormatCodec codec;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         codec = new LinkFormatCodec();
     }

@@ -2,9 +2,9 @@ package city.sane.wot.cli;
 
 import city.sane.wot.Servient;
 import com.google.common.io.Files;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayOutputStream;
@@ -24,13 +24,13 @@ public class CliIT {
     private final PrintStream originalErr = System.err;
     private Cli cli;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         System.setOut(originalOut);
         System.setErr(originalErr);

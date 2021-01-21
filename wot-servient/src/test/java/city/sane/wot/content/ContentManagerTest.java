@@ -3,7 +3,7 @@ package city.sane.wot.content;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import city.sane.wot.thing.schema.StringSchema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +15,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ContentManagerTest {
     @Test
@@ -48,11 +49,11 @@ public class ContentManagerTest {
         assertEquals("Hello World", value);
     }
 
-    @Test(expected = ContentCodecException.class)
-    public void contentToValueBrokenByteArray() throws ContentCodecException {
+    @Test
+    public void contentToValueBrokenByteArray() {
         Content content = new Content("application/xml", new byte[]{ 0x4f });
 
-        ContentManager.contentToValue(content, new StringSchema());
+        assertThrows(ContentCodecException.class, () -> ContentManager.contentToValue(content, new StringSchema()));
     }
 
     @Test

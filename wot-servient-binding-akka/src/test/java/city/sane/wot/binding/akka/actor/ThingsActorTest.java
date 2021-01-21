@@ -18,9 +18,9 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.filter.ThingFilter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ public class ThingsActorTest {
     private Duration timeout;
     private ThingFilter filter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         system = ActorSystem.create();
         things = mock(Map.class);
@@ -67,7 +67,7 @@ public class ThingsActorTest {
         filter = mock(ThingFilter.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         TestKit.shutdownActorSystem(system);
         system = null;

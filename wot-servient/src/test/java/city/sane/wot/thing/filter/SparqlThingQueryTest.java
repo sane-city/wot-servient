@@ -2,7 +2,7 @@ package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.Thing;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +11,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SparqlThingQueryTest {
     @Test
@@ -47,9 +48,11 @@ public class SparqlThingQueryTest {
         assertEquals(1, filtered.size());
     }
 
-    @Test(expected = ThingQueryException.class)
-    public void filterWarnOnUseOfReservedWords() throws ThingQueryException {
-        new SparqlThingQuery("?__id__ ?p ?o");
+    @Test
+    public void filterWarnOnUseOfReservedWords() {
+        assertThrows(ThingQueryException.class, () -> {
+            new SparqlThingQuery("?__id__ ?p ?o");
+        });
     }
 
     @Test

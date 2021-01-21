@@ -5,8 +5,8 @@ import city.sane.wot.binding.ProtocolClient;
 import city.sane.wot.thing.ConsumedThing;
 import city.sane.wot.thing.ConsumedThingException;
 import city.sane.wot.thing.form.Form;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class ConsumedThingActionTest {
     private ProtocolClient client;
     private Form form;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         action = mock(ThingAction.class);
         thing = mock(ConsumedThing.class);

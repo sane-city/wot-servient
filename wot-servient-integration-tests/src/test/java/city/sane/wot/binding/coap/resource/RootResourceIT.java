@@ -12,10 +12,10 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
@@ -25,13 +25,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class RootResourceIT {
     private WotCoapServer server;
 
-    @Before
+    @BeforeEach
     public void setup() {
         server = new WotCoapServer(new CoapProtocolServer(ConfigFactory.load()));
         server.start();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }

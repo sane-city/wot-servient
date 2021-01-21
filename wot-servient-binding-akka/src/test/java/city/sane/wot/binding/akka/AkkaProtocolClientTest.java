@@ -12,12 +12,13 @@ import city.sane.wot.binding.akka.actor.ThingsActor.GetThings;
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
@@ -36,7 +37,7 @@ public class AkkaProtocolClientTest {
     private Content content;
     private ThingFilter filter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         system = mock(ActorSystem.class, RETURNS_DEEP_STUBS);
         form = mock(Form.class);
@@ -155,13 +156,13 @@ public class AkkaProtocolClientTest {
         verify(system).stop(any());
     }
 
-    @Test(expected = ProtocolClientNotImplementedException.class)
+    @Test
     public void discoverShouldThrowException() throws ProtocolClientNotImplementedException {
         when(form.getHref()).thenReturn("akka://foo/bar#properties/count");
         when(system.actorSelection(anyString())).thenReturn(actorSelection);
         when(pattern.ask(any(ActorSelection.class), any(), any())).thenReturn(completedFuture(message));
 
         AkkaProtocolClient client = new AkkaProtocolClient(system, askTimeout, discoverTimeout, pattern);
-        client.discover(filter);
+        assertThrows(ProtocolClientNotImplementedException.class, () -> client.discover(filter));
     }
 }

@@ -8,9 +8,9 @@ import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import spark.Service;
 
 import java.util.concurrent.ExecutionException;
@@ -23,7 +23,7 @@ public class JsonpathHttpProtocolClientIT {
     private Service server;
     private ProtocolClient client;
 
-    @Before
+    @BeforeEach
     public void setup() {
         server = Service.ignite().ipAddress("127.0.0.1").port(8080);
         server.init();
@@ -38,7 +38,7 @@ public class JsonpathHttpProtocolClientIT {
         });
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         server.stop();
         server.awaitStop();

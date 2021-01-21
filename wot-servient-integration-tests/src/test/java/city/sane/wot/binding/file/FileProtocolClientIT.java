@@ -2,14 +2,15 @@ package city.sane.wot.binding.file;
 
 import city.sane.wot.content.Content;
 import city.sane.wot.thing.form.Form;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
@@ -24,13 +25,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 public class FileProtocolClientIT {
-    @Rule
-    public final TemporaryFolder thingDirectory = new TemporaryFolder();
     private File thing;
 
-    @Before
-    public void setup() throws IOException {
-        thing = thingDirectory.newFile("ThingA.json");
+    @BeforeEach
+    public void setup(@TempDir Path thingDirectory) throws IOException {
+        thing = Paths.get(thingDirectory.toString(), "ThingA.json").toFile();
         Files.writeString(thing.toPath(), "{\"id\":\"counter\",\"name\":\"Counter\"}", StandardOpenOption.CREATE);
     }
 

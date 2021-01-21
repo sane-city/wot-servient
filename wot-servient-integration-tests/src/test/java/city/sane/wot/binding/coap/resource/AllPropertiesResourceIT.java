@@ -12,10 +12,10 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class AllPropertiesResourceIT {
     private CoapServer server;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ExposedThing thing = getCounterThing();
 
@@ -106,7 +106,7 @@ public class AllPropertiesResourceIT {
         return thing;
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         server.stop();
     }

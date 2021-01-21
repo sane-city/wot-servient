@@ -2,27 +2,33 @@ package city.sane.wot.binding;
 
 import city.sane.wot.Servient;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ProtocolServerTest {
     private String id;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         id = "counter";
     }
 
-    @Test(expected = ProtocolServerNotImplementedException.class)
-    public void getDirectoryUrl() throws ProtocolServerException {
-        new MyProtocolServer().getDirectoryUrl();
+    @Test
+    public void getDirectoryUrl() {
+        assertThrows(ProtocolServerNotImplementedException.class, () -> {
+            new MyProtocolServer().getDirectoryUrl();
+        });
     }
 
-    @Test(expected = ProtocolServerNotImplementedException.class)
-    public void getThingUrl() throws ProtocolServerException {
-        new MyProtocolServer().getThingUrl(id);
+    @Test
+    public void getThingUrl() {
+        assertThrows(ProtocolServerNotImplementedException.class, () -> {
+            new MyProtocolServer().getThingUrl(id);
+        });
     }
 
     class MyProtocolServer implements ProtocolServer {

@@ -8,8 +8,8 @@ import city.sane.wot.thing.property.ExposedThingProperty;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class WebsocketProtocolServerTest {
     private ExposedThingEvent<Object> event;
     private ExposedThingAction<Object, Object> action;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         serverBootstrap = mock(ServerBootstrap.class);
         serverBossGroup = mock(EventLoopGroup.class);

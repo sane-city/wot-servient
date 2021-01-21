@@ -7,8 +7,8 @@ import city.sane.wot.thing.event.ExposedThingEvent;
 import city.sane.wot.thing.property.ExposedThingProperty;
 import com.github.jsonldjava.shaded.com.google.common.base.Supplier;
 import io.reactivex.rxjava3.subjects.Subject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +45,7 @@ public class ExposedThingTest {
     private Runnable runnableHandler;
     private Supplier supplierHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         subject = mock(Subject.class);

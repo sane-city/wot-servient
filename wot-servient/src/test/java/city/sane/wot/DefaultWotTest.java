@@ -1,8 +1,8 @@
 package city.sane.wot;
 
 import city.sane.wot.thing.Thing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 
@@ -18,7 +18,7 @@ public class DefaultWotTest {
     private Servient servient;
     private Thing thing;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         servient = mock(Servient.class);
         thing = mock(Thing.class);

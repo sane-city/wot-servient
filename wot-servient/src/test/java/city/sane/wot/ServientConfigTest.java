@@ -12,8 +12,8 @@ import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.reactivex.rxjava3.core.Observable;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -22,12 +22,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 public class ServientConfigTest {
     private Config config;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         config = mock(Config.class);
     }
@@ -39,14 +40,18 @@ public class ServientConfigTest {
         assertThat(server, instanceOf(MyProtocolServer.class));
     }
 
-    @Test(expected = ServientConfigException.class)
-    public void initializeServerWithoutImplementation() throws ServientConfigException {
-        ServientConfig.initializeServer(config, MyBadMissingImplementationProtocolServer.class.getName());
+    @Test
+    public void initializeServerWithoutImplementation() {
+        assertThrows(ServientConfigException.class, () -> {
+            ServientConfig.initializeServer(config, MyBadMissingImplementationProtocolServer.class.getName());
+        });
     }
 
-    @Test(expected = ServientConfigException.class)
-    public void initializeServerMissingConstructor() throws ServientConfigException {
-        ServientConfig.initializeServer(config, MyBadMissingConstructorProtocolServer.class.getName());
+    @Test
+    public void initializeServerMissingConstructor() {
+        assertThrows(ServientConfigException.class, () -> {
+            ServientConfig.initializeServer(config, MyBadMissingConstructorProtocolServer.class.getName());
+        });
     }
 
     @Test
@@ -57,14 +62,18 @@ public class ServientConfigTest {
         assertThat(pair.second(), instanceOf(MyProtocolClientFactory.class));
     }
 
-    @Test(expected = ServientConfigException.class)
-    public void initializeClientFactoryWithoutImplementation() throws ServientConfigException {
-        ServientConfig.initializeClientFactory(config, MyBadMissingImplementationProtocolClientFactory.class.getName());
+    @Test
+    public void initializeClientFactoryWithoutImplementation() {
+        assertThrows(ServientConfigException.class, () -> {
+            ServientConfig.initializeClientFactory(config, MyBadMissingImplementationProtocolClientFactory.class.getName());
+        });
     }
 
-    @Test(expected = ServientConfigException.class)
-    public void initializeClientFactoryMissingConstructor() throws ServientConfigException {
-        ServientConfig.initializeClientFactory(config, MyBadMissingConstructorProtocolClientFactory.class.getName());
+    @Test
+    public void initializeClientFactoryMissingConstructor() {
+        assertThrows(ServientConfigException.class, () -> {
+            ServientConfig.initializeClientFactory(config, MyBadMissingConstructorProtocolClientFactory.class.getName());
+        });
     }
 
     @Test

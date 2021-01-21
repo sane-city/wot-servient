@@ -2,8 +2,8 @@ package city.sane.wot.thing.action;
 
 import city.sane.wot.thing.ExposedThing;
 import city.sane.wot.thing.schema.DataSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -26,7 +27,7 @@ public class ExposedThingActionTest {
     private Object invokeInput;
     private Map<String, Map<String, Object>> invokeOptions;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         thing = mock(ExposedThing.class);
         state = mock(ActionState.class);
@@ -56,13 +57,15 @@ public class ExposedThingActionTest {
         verify(handler).apply(invokeInput, invokeOptions);
     }
 
-    @Test(expected = ExecutionException.class)
-    public void invokeWithBrokenHandlerShouldReturnFailedFuture() throws ExecutionException, InterruptedException {
+    @Test
+    public void invokeWithBrokenHandlerShouldReturnFailedFuture() {
         when(handler.apply(any(), any())).thenThrow(new RuntimeException());
         when(state.getHandler()).thenReturn(handler);
 
         ExposedThingAction<Object, Object> exposedThingAction = new ExposedThingAction<Object, Object>("myAction", thing, state, description, Map.of(), Map.of(), input, output);
-        exposedThingAction.invoke(invokeInput, invokeOptions).get();
+        assertThrows(ExecutionException.class, () -> {
+            exposedThingAction.invoke(invokeInput, invokeOptions).get();
+        });
 
         verify(handler).apply(invokeInput, invokeOptions);
     }

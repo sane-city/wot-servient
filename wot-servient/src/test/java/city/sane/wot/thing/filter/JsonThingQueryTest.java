@@ -2,7 +2,7 @@ package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.Thing;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;

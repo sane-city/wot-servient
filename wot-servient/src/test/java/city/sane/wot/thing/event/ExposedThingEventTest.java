@@ -2,8 +2,8 @@ package city.sane.wot.thing.event;
 
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.subjects.Subject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ public class ExposedThingEventTest {
     private Subject subject;
     private Observer observer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         name = "change";
         state = mock(EventState.class);

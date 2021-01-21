@@ -6,9 +6,9 @@ import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.ConfigFactory;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 
@@ -17,13 +17,13 @@ import static org.junit.Assert.assertThat;
 public class CoapProtocolServerIT {
     private CoapProtocolServer server;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         server = new CoapProtocolServer(ConfigFactory.load());
         server.start(null).join();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         server.stop().join();
     }

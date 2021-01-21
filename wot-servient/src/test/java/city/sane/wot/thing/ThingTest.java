@@ -9,8 +9,8 @@ import city.sane.wot.thing.security.SecurityScheme;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import net.javacrumbs.jsonunit.core.Option;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class ThingTest {
     private List<Form> forms;
     private List<String> security;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         objectType = "Thing";
         objectContext = new Context("http://www.w3.org/ns/td");

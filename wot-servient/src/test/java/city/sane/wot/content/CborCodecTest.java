@@ -1,15 +1,15 @@
 package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.StringSchema;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class CborCodecTest {
     private CborCodec codec;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         codec = new CborCodec();
     }

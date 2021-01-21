@@ -5,8 +5,8 @@ import akka.actor.ActorSystem;
 import city.sane.RefCountResource;
 import city.sane.Triple;
 import city.sane.wot.thing.ExposedThing;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class AkkaProtocolClientFactoryTest {
     private Duration discoverTimeout;
     private Triple<ActorSystem, Map<String, ExposedThing>, ActorRef> triple;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         actorSystemProvider = mock(RefCountResource.class);
         askTimeout = Duration.ofSeconds(60);
