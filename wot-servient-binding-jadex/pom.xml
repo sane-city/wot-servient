@@ -33,6 +33,12 @@
             <groupId>org.activecomponents.jadex</groupId>
             <artifactId>jadex-platform-base</artifactId>
             <version>${jadex.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.activecomponents.jadex</groupId>
