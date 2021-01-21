@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.eclipse.californium</groupId>
             <artifactId>californium-core</artifactId>
-            <version>1.0.7</version>
+            <version>2.6.0</version>
         </dependency>
 
         <!-- Californium uses java.util.logging. We need to redirect all log messages to SLF4j -->
