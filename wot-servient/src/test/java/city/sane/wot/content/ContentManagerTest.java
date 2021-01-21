@@ -3,6 +3,7 @@ package city.sane.wot.content;
 import city.sane.wot.thing.schema.NumberSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import city.sane.wot.thing.schema.StringSchema;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -12,9 +13,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ContentManagerTest {
@@ -70,7 +70,7 @@ public class ContentManagerTest {
     @Test
     public void removeCodec() {
         try {
-            assertTrue(ContentManager.isSupportedMediaType("text/plain"));
+            Assertions.assertTrue(ContentManager.isSupportedMediaType("text/plain"));
             ContentManager.removeCodec("text/plain");
             assertFalse(ContentManager.isSupportedMediaType("text/plain"));
         }

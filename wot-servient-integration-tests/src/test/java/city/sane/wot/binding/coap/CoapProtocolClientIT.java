@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CoapProtocolClientIT {
     private CoapProtocolClientFactory clientFactory;

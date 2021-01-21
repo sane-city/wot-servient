@@ -5,14 +5,13 @@ import city.sane.wot.thing.action.ThingAction;
 import city.sane.wot.thing.event.ThingEvent;
 import city.sane.wot.thing.property.ThingProperty;
 import com.typesafe.config.ConfigFactory;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
-
-import static org.junit.Assert.assertThat;
 
 public class CoapProtocolServerIT {
     private CoapProtocolServer server;
@@ -32,14 +31,14 @@ public class CoapProtocolServerIT {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        assertThat(url, Matchers.matchesPattern("coap://.*:\\d+"));
+        MatcherAssert.assertThat(url, Matchers.matchesPattern("coap://.*:\\d+"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        assertThat(url, Matchers.matchesPattern("coap://.*:\\d+/counter"));
+        MatcherAssert.assertThat(url, Matchers.matchesPattern("coap://.*:\\d+/counter"));
     }
 
     private ExposedThing getCounterThing() {

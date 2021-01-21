@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ThingRouteIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
@@ -128,8 +128,7 @@ public class ThingRouteIT {
         assertEquals(200, response.getStatusLine().getStatusCode());
         assertEquals("application/json", ContentType.getOrDefault(response.getEntity()).getMimeType());
         assertTrue(
-                "Should return map with \"id\" element",
-                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("id")
-        );
+                JSON_MAPPER.readValue(response.getEntity().getContent(), Map.class).containsKey("id"),
+                "Should return map with \"id\" element");
     }
 }

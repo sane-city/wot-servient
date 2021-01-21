@@ -12,13 +12,14 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ThingResourceIT {
     private CoapServer server;
@@ -114,8 +115,8 @@ public class ThingResourceIT {
         CoapClient client = new CoapClient("coap://localhost:" + port + "/counter");
         CoapResponse response = client.get();
 
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
     }
 
     @Test
@@ -125,7 +126,7 @@ public class ThingResourceIT {
         request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_CBOR);
         CoapResponse response = client.advanced(request);
 
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(MediaTypeRegistry.APPLICATION_CBOR, response.getOptions().getContentFormat());
     }
 }

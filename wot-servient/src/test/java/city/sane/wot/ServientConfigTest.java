@@ -12,6 +12,7 @@ import city.sane.wot.thing.form.Form;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.reactivex.rxjava3.core.Observable;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
@@ -37,7 +37,7 @@ public class ServientConfigTest {
     public void initializeServer() throws ServientConfigException {
         ProtocolServer server = ServientConfig.initializeServer(config, MyProtocolServer.class.getName());
 
-        assertThat(server, instanceOf(MyProtocolServer.class));
+        MatcherAssert.assertThat(server, instanceOf(MyProtocolServer.class));
     }
 
     @Test
@@ -58,8 +58,8 @@ public class ServientConfigTest {
     public void initializeClientFactory() throws ServientConfigException {
         Pair<String, ProtocolClientFactory> pair = ServientConfig.initializeClientFactory(config, MyProtocolClientFactory.class.getName());
 
-        assertThat(pair.first(), is("test"));
-        assertThat(pair.second(), instanceOf(MyProtocolClientFactory.class));
+        MatcherAssert.assertThat(pair.first(), is("test"));
+        MatcherAssert.assertThat(pair.second(), instanceOf(MyProtocolClientFactory.class));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class ServientConfigTest {
                 .withFallback(ConfigFactory.load());
         ServientConfig servientConfig = new ServientConfig(config);
 
-        assertThat(servientConfig.getCredentialStore(), hasKey("counter"));
+        MatcherAssert.assertThat(servientConfig.getCredentialStore(), hasKey("counter"));
     }
 
     public static class MyProtocolServer implements ProtocolServer {

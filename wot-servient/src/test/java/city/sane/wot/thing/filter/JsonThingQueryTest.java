@@ -2,6 +2,7 @@ package city.sane.wot.thing.filter;
 
 import city.sane.wot.thing.Context;
 import city.sane.wot.thing.Thing;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -9,8 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class JsonThingQueryTest {
@@ -18,7 +18,7 @@ public class JsonThingQueryTest {
     public void constructorShouldTranslateJsonQueryToCorrectSparqlQuery() throws ThingQueryException {
         JsonThingQuery query = new JsonThingQuery("{\"@type\":\"https://www.w3.org/2019/wot/td#Thing\"}");
 
-        assertThat(
+        MatcherAssert.assertThat(
                 query.getSparqlQuery().getQuery(),
                 matchesPattern("\\?genid.* <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2019/wot/td#Thing> .\n")
         );

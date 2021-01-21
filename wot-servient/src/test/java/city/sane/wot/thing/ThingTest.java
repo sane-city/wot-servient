@@ -9,6 +9,7 @@ import city.sane.wot.thing.security.SecurityScheme;
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import net.javacrumbs.jsonunit.core.Option;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
@@ -25,9 +26,8 @@ import java.util.Map;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ThingTest {
     private String objectType;
@@ -259,22 +259,22 @@ public class ThingTest {
         assertEquals("This is a counter", thing.getDescription());
         assertEquals("http://sane.city", thing.getBase());
 
-        assertThat((Map<String, String>) thing.getTitles(), hasEntry("de", "Zähler"));
-        assertThat((Map<String, String>) thing.getDescriptions(), hasEntry("de", "Zähler Ding"));
+        MatcherAssert.assertThat((Map<String, String>) thing.getTitles(), hasEntry("de", "Zähler"));
+        MatcherAssert.assertThat((Map<String, String>) thing.getDescriptions(), hasEntry("de", "Zähler Ding"));
 
-        assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("lastChange", new ThingProperty.Builder().build()));
-        assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("lastChange", new ThingProperty.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingProperty<Object>>) thing.getProperties(), hasEntry("count", new ThingProperty.Builder().build()));
         assertEquals(new ThingProperty.Builder().build(), thing.getProperty("count"));
 
-        assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
-        assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("decrement", new ThingAction.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("increment", new ThingAction.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingAction<Object, Object>>) thing.getActions(), hasEntry("decrement", new ThingAction.Builder().build()));
         assertEquals(new ThingAction.Builder().build(), thing.getAction("increment"));
 
-        assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("change", new ThingEvent.Builder().build()));
-        assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("ping", new ThingEvent.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("change", new ThingEvent.Builder().build()));
+        MatcherAssert.assertThat((Map<String, ThingEvent<Object>>) thing.getEvents(), hasEntry("ping", new ThingEvent.Builder().build()));
         assertEquals(new ThingEvent.Builder().build(), thing.getEvent("ping"));
 
-        assertThat((Collection<Form>) thing.getForms(), contains(new Form.Builder().setHref("http://eins").build(), new Form.Builder().setHref("http://zwei").build()));
+        MatcherAssert.assertThat((Collection<Form>) thing.getForms(), contains(new Form.Builder().setHref("http://eins").build(), new Form.Builder().setHref("http://zwei").build()));
     }
 
     @Test

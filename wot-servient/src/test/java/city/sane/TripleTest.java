@@ -2,7 +2,8 @@ package city.sane;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class TripleTest {
@@ -15,9 +16,9 @@ public class TripleTest {
 
     @Test
     public void second() {
-        Triple pair = new Triple<>(10, false, "beers");
+        Triple<Integer, Boolean, String> pair = new Triple<>(10, false, "beers");
 
-        assertEquals(false, pair.second());
+        assertFalse(pair.second());
     }
 
     @Test

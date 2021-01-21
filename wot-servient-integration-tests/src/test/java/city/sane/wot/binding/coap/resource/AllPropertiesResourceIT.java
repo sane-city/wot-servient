@@ -12,13 +12,14 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AllPropertiesResourceIT {
     private CoapServer server;
@@ -117,7 +118,7 @@ public class AllPropertiesResourceIT {
         Request request = new Request(CoAP.Code.GET);
         CoapResponse response = client.advanced(request);
 
-        Assert.assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
-        Assert.assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
+        assertEquals(MediaTypeRegistry.APPLICATION_JSON, response.getOptions().getContentFormat());
+        assertEquals(CoAP.ResponseCode.CONTENT, response.getCode());
     }
 }

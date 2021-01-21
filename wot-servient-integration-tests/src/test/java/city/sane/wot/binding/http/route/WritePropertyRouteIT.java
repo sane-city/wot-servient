@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WritePropertyRouteIT {
     private Service service;

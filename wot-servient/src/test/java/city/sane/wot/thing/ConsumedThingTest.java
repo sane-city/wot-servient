@@ -8,6 +8,7 @@ import city.sane.wot.content.ContentCodecException;
 import city.sane.wot.content.ContentManager;
 import city.sane.wot.thing.form.Form;
 import city.sane.wot.thing.form.Operation;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +19,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -124,9 +124,9 @@ public class ConsumedThingTest {
         ConsumedThing consumedThing = new ConsumedThing(servient, thing);
 
         Map<String, Object> values = consumedThing.readProperties("foo", "bar").get();
-        assertThat(values, hasEntry("foo", 1));
-        assertThat(values, hasEntry("bar", 2));
-        assertThat(values, not(hasEntry("baz", 3)));
+        MatcherAssert.assertThat(values, hasEntry("foo", 1));
+        MatcherAssert.assertThat(values, hasEntry("bar", 2));
+        MatcherAssert.assertThat(values, not(hasEntry("baz", 3)));
         verify(client).readResource(form1);
     }
 

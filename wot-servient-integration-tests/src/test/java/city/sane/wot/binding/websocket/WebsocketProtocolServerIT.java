@@ -52,7 +52,7 @@ import java.util.concurrent.TimeoutException;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebsocketProtocolServerIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();

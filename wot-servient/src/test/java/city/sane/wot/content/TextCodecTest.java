@@ -8,11 +8,11 @@ import city.sane.wot.thing.schema.StringSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TextCodecTest {
     private TextCodec codec;
@@ -55,7 +55,7 @@ public class TextCodecTest {
         byte[] bytes = "13.37".getBytes();
         Number value = codec.bytesToValue(bytes, new NumberSchema());
 
-        assertNotNull("Should be instance of Number", value);
+        assertNotNull(value, "Should be instance of Number");
 
         assertEquals(13.37, value);
     }
@@ -65,7 +65,7 @@ public class TextCodecTest {
         byte[] bytes = "1337".getBytes();
         Number value = codec.bytesToValue(bytes, new NumberSchema());
 
-        assertNotNull("Should be instance of Number", value);
+        assertNotNull(value, "Should be instance of Number");
 
         assertEquals(1337L, value);
     }
@@ -75,7 +75,7 @@ public class TextCodecTest {
         byte[] bytes = "Hallo Welt".getBytes();
         String value = codec.bytesToValue(bytes, new StringSchema());
 
-        assertNotNull("Should be instance of String", value);
+        assertNotNull(value, "Should be instance of String");
 
         assertEquals("Hallo Welt", value);
     }

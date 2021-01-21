@@ -14,6 +14,7 @@ import city.sane.wot.thing.filter.ThingFilter;
 import city.sane.wot.thing.form.Form;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +30,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -111,7 +111,7 @@ public class ServientTest {
 
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
-        assertThat(servient.expose("counter").get(), is(exposedThing));
+        MatcherAssert.assertThat(servient.expose("counter").get(), is(exposedThing));
         verify(server).expose(exposedThing);
     }
 
@@ -149,7 +149,7 @@ public class ServientTest {
 
         Servient servient = new Servient(List.of(server), Map.of(), Map.of(), Map.of("counter", exposedThing));
 
-        assertThat(servient.destroy("counter").get(), is(exposedThing));
+        MatcherAssert.assertThat(servient.destroy("counter").get(), is(exposedThing));
         verify(server).destroy(exposedThing);
     }
 
@@ -258,7 +258,7 @@ public class ServientTest {
         @NonNull List<Thing> things = servient.discover(filter).toList().blockingGet();
 
         verify(servient).getThings();
-        assertThat(things, hasItem(exposedThing));
+        MatcherAssert.assertThat(things, hasItem(exposedThing));
     }
 
     @Test
@@ -290,7 +290,7 @@ public class ServientTest {
         Servient servient = new Servient(List.of(), Map.of("test", clientFactory), Map.of(), Map.of());
         @NonNull List<Thing> things = servient.discover().toList().blockingGet();
 
-        assertThat(things, hasItem(exposedThing));
+        MatcherAssert.assertThat(things, hasItem(exposedThing));
     }
 
     @Test

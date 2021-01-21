@@ -1,14 +1,14 @@
 package city.sane.wot.content;
 
 import city.sane.wot.thing.schema.ObjectSchema;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LinkFormatCodecTest {
     private LinkFormatCodec codec;
@@ -24,8 +24,8 @@ public class LinkFormatCodecTest {
 
         Map<String, Map<String, String>> value = codec.bytesToValue(bytes, new ObjectSchema());
 
-        assertThat(value, hasKey("</reg/1/>"));
-        assertThat(value, hasKey("</reg/2/>"));
+        MatcherAssert.assertThat(value, hasKey("</reg/1/>"));
+        MatcherAssert.assertThat(value, hasKey("</reg/2/>"));
     }
 
     @Test

@@ -25,6 +25,7 @@ import city.sane.wot.thing.schema.IntegerSchema;
 import city.sane.wot.thing.schema.ObjectSchema;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,9 +40,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServientIT {
     private Servient servient;
@@ -66,9 +66,9 @@ public class ServientIT {
         thing.expose().join();
         thing.destroy().join();
 
-        assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
+        assertTrue(thing.getProperty("count").getForms().isEmpty(), "There must be no forms");
+        assertTrue(thing.getAction("increment").getForms().isEmpty(), "There must be no actions");
+        assertTrue(thing.getEvent("change").getForms().isEmpty(), "There must be no events");
     }
 
     private ExposedThing getExposedCounterThing() {
@@ -193,7 +193,7 @@ public class ServientIT {
 
             Map things = servient.fetchDirectory(url).join();
 
-            assertThat((Map<String, Thing>) things, hasKey("counter"));
+            MatcherAssert.assertThat((Map<String, Thing>) things, hasKey("counter"));
         }
         catch (ProtocolServerNotImplementedException e) {
 

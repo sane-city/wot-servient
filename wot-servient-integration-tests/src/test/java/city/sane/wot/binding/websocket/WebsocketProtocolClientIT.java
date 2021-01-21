@@ -47,7 +47,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebsocketProtocolClientIT {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
