@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class AkkaProtocolClientFactoryIT {
     private AkkaProtocolClientFactory factory = null;

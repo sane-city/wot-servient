@@ -11,7 +11,6 @@ import jadex.commons.future.IFunctionalIntermediateResultListener;
 import jadex.commons.future.IFunctionalResultListener;
 import jadex.commons.future.IFuture;
 import jadex.commons.future.ITerminableIntermediateFuture;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -70,6 +70,6 @@ public class JadexProtocolClientTest {
         client = new JadexProtocolClient(platform);
         @NonNull List<Thing> things = client.discover(filter).toList().blockingGet();
 
-        MatcherAssert.assertThat(things, hasItem(new Thing.Builder().setId("counter").setTitle("Zähler").build()));
+        assertThat(things, hasItem(new Thing.Builder().setId("counter").setTitle("Zähler").build()));
     }
 }

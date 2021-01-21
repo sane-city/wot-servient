@@ -1,7 +1,6 @@
 package city.sane.wot.cli;
 
 import city.sane.wot.Servient;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -46,7 +46,7 @@ public class CliIT {
         cli = new Cli();
         cli.run(new String[]{ "--help" });
 
-        MatcherAssert.assertThat(outContent.toString(), containsString("Usage:"));
+        assertThat(outContent.toString(), containsString("Usage:"));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class CliIT {
         cli = new Cli();
         cli.run(new String[]{ "--version" });
 
-        MatcherAssert.assertThat(outContent.toString(), containsString(Servient.getVersion()));
+        assertThat(outContent.toString(), containsString(Servient.getVersion()));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class CliIT {
                 file.getAbsolutePath()
         });
 
-        MatcherAssert.assertThat(outContent.toString(), containsString("KlimabotschafterWetterstation"));
+        assertThat(outContent.toString(), containsString("KlimabotschafterWetterstation"));
     }
 
     @Test

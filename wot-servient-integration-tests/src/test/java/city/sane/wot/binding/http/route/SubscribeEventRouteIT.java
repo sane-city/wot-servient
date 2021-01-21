@@ -13,7 +13,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,8 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class SubscribeEventRouteIT {
     private Service service;
@@ -155,7 +155,7 @@ public class SubscribeEventRouteIT {
         // future should complete within a few seconds
         result.get();
 
-        MatcherAssert.assertThat(result.get(), instanceOf(Content.class));
+        assertThat(result.get(), instanceOf(Content.class));
     }
 
     @Test

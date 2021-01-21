@@ -39,10 +39,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServientIT {
     private Servient servient;
@@ -67,9 +67,9 @@ public class ServientIT {
         thing.expose().join();
         thing.destroy().join();
 
-        assertTrue("There must be no forms", thing.getProperty("count").getForms().isEmpty());
-        assertTrue("There must be no actions", thing.getAction("increment").getForms().isEmpty());
-        assertTrue("There must be no events", thing.getEvent("change").getForms().isEmpty());
+        assertTrue(thing.getProperty("count").getForms().isEmpty(), "There must be no forms");
+        assertTrue(thing.getAction("increment").getForms().isEmpty(), "There must be no actions");
+        assertTrue(thing.getEvent("change").getForms().isEmpty(), "There must be no events");
     }
 
     private ExposedThing getExposedCounterThing() {

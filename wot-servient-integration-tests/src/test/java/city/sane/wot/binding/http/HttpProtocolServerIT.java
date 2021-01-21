@@ -8,7 +8,6 @@ import city.sane.wot.thing.property.ThingProperty;
 import city.sane.wot.thing.security.BasicSecurityScheme;
 import city.sane.wot.thing.security.SecurityScheme;
 import com.typesafe.config.ConfigFactory;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HttpProtocolServerIT {
     private HttpProtocolServer server;
@@ -39,14 +39,14 @@ public class HttpProtocolServerIT {
     public void getDirectoryUrl() {
         String url = server.getDirectoryUrl().toString();
 
-        MatcherAssert.assertThat(url, matchesPattern("http://.*:\\d+"));
+        assertThat(url, matchesPattern("http://.*:\\d+"));
     }
 
     @Test
     public void getThingUrl() {
         String url = server.getThingUrl("counter").toString();
 
-        MatcherAssert.assertThat(url, matchesPattern("http://.*:\\d+/counter"));
+        assertThat(url, matchesPattern("http://.*:\\d+/counter"));
     }
 
     @Test
