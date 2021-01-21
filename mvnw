@@ -1,19 +1,23 @@
 #!/bin/sh
-# ----------------------------------------------------------------------------
-# Maven Start Up Batch script
 #
-# Required ENV vars:
-# ------------------
-#   JAVA_HOME - location of a JDK home dir
+# Copyright (c) 2021.
 #
-# Optional ENV vars
-# -----------------
-#   M2_HOME - location of maven2's installed home dir
-#   MAVEN_OPTS - parameters passed to the Java VM when running Maven
-#     e.g. to debug Maven itself, use
-#       set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
-#   MAVEN_SKIP_RC - flag to disable loading of mavenrc files
-# ----------------------------------------------------------------------------
+# This file is part of SANE Web of Things Servient.
+#
+# SANE Web of Things Servient is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SANE Web of Things Servient is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SANE Web of Things Servient.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
 
 if [ -z "$MAVEN_SKIP_RC" ] ; then
 
