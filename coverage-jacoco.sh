@@ -7,6 +7,7 @@ for D in *; do
     if [ -d "${D}" ]; then
         jac="$D/target/site/jacoco/jacoco.csv"
         if [ -f "$jac" ]; then
+            echo $jac
             inputs="$inputs $jac"
         fi
     fi
