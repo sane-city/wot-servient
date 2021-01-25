@@ -30,7 +30,7 @@
 
     <properties>
         <rdf4j.version>3.0.0</rdf4j.version>
-        <jackson.version>2.10.5</jackson.version>
+        <jackson.version>2.12.1</jackson.version>
     </properties>
 
     <build>
