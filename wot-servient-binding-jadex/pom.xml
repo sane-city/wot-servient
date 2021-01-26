@@ -29,7 +29,7 @@
     <artifactId>wot-servient-binding-jadex</artifactId>
 
     <properties>
-        <jadex.version>4.0.215</jadex.version>
+        <jadex.version>4.0.225</jadex.version>
     </properties>
 
     <repositories>
