@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>city.sane.wot-servient</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>wot-servient-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.16-SNAPSHOT</version>
 
