@@ -18,7 +18,7 @@ jobs:
 
     services:
       mosquitto:
-        image: eclipse-mosquitto
+        image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
 
@@ -38,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B verify --file pom.xml
 
       - name: Publish to GitHub Packages Apache Maven
         run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
