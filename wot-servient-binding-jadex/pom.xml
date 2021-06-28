@@ -29,15 +29,8 @@
     <artifactId>wot-servient-binding-jadex</artifactId>
 
     <properties>
-        <jadex.version>4.0.215</jadex.version>
+        <jadex.version>4.0.244</jadex.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>jadex-nightlies</id>
-            <url>https://nexus.actoron.com/content/repositories/oss-nightlies/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>

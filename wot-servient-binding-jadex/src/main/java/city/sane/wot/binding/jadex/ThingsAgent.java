@@ -26,6 +26,7 @@ import jadex.bridge.service.ServiceScope;
 import jadex.bridge.service.types.cms.CreationInfo;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
+import jadex.commons.future.IResultListener;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentArgument;
 import jadex.micro.annotation.AgentCreated;
@@ -48,7 +49,7 @@ import java.util.Map;
 })
 public class ThingsAgent implements ThingsService {
     private static final Logger log = LoggerFactory.getLogger(ThingsAgent.class);
-    private Map<String, IExternalAccess> children;
+    private final Map<String, IExternalAccess> children;
     @Agent
     private IInternalAccess agent;
     @AgentArgument("things")
@@ -77,7 +78,17 @@ public class ThingsAgent implements ThingsService {
                 .setFilenameClass(ThingAgent.class)
                 .addArgument("thing", things.get(id));
         IFuture<IExternalAccess> component = agent.createComponent(info);
-        component.addResultListener(thingAgent -> children.put(id, thingAgent));
+        component.addResultListener(new IResultListener<>() {
+            @Override
+            public void resultAvailable(IExternalAccess thingAgent) {
+                children.put(id, thingAgent);
+            }
+
+            @Override
+            public void exceptionOccurred(Exception e) {
+                // do nothing
+            }
+        });
 
         return component;
     }
@@ -86,9 +97,19 @@ public class ThingsAgent implements ThingsService {
     public IFuture<Void> destroy(String id) {
         IExternalAccess thingAgent = children.get(id);
 
-        Future<Void> result = new Future();
-        thingAgent.killComponent().addResultListener(r -> result.setResult(null), result::setException);
+        Future<Void> future = new Future();
+        thingAgent.killComponent().addResultListener(new IResultListener<Map<String, Object>>() {
+            @Override
+            public void resultAvailable(Map<String, Object> result) {
+                future.setResult(null);
+            }
 
-        return result;
+            @Override
+            public void exceptionOccurred(Exception exception) {
+                future.setException(exception);
+            }
+        });
+
+        return future;
     }
 }

@@ -34,7 +34,9 @@ import jadex.bridge.SFuture;
 import jadex.bridge.service.ServiceScope;
 import jadex.bridge.service.search.ServiceQuery;
 import jadex.commons.TimeoutException;
+import jadex.commons.future.IResultListener;
 import jadex.commons.future.ITerminableIntermediateFuture;
+import jadex.commons.future.IntermediateDefaultResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,13 +140,35 @@ public class JadexProtocolClient implements ProtocolClient {
                 .<ThingService>create(source -> platform.scheduleStep(ia -> {
                     ServiceQuery<ThingService> query = new ServiceQuery<>(ThingService.class, ServiceScope.GLOBAL);
                     ITerminableIntermediateFuture<ThingService> search = ia.searchServices(query);
-                    search.addIntermediateResultListener(source::onNext, source::onComplete, source::onError);
+                    search.addResultListener(new IntermediateDefaultResultListener<>() {
+                        public void intermediateResultAvailable(ThingService result) {
+                            source.onNext(result);
+                        }
+
+                        @Override
+                        public void finished() {
+                            source.onComplete();
+                        }
+
+                        @Override
+                        public void exceptionOccurred(Exception exception) {
+                            source.onError(exception);
+                        }
+                    });
                     return DONE;
                 }))
-                .flatMap(thingService -> Observable.<Thing>create(source -> thingService.get().addResultListener(json -> {
-                    source.onNext(Thing.fromJson(json));
-                    source.onComplete();
-                }, source::onError)))
+                .flatMap(thingService -> Observable.<Thing>create(source -> thingService.get().addResultListener(new IResultListener<>() {
+                    @Override
+                    public void resultAvailable(String json) {
+                        source.onNext(Thing.fromJson(json));
+                        source.onComplete();
+                    }
+
+                    @Override
+                    public void exceptionOccurred(Exception exception) {
+                        source.onError(exception);
+                    }
+                })))
                 .filter(thing -> {
                     if (filter.getQuery() != null) {
                         // TODO: move filter to server-side

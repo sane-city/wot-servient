@@ -25,11 +25,10 @@ import io.reactivex.rxjava3.annotations.NonNull;
 import jadex.bridge.IComponentStep;
 import jadex.bridge.IExternalAccess;
 import jadex.bridge.IInternalAccess;
-import jadex.commons.future.IFunctionalIntermediateFinishedListener;
-import jadex.commons.future.IFunctionalIntermediateResultListener;
-import jadex.commons.future.IFunctionalResultListener;
 import jadex.commons.future.IFuture;
+import jadex.commons.future.IResultListener;
 import jadex.commons.future.ITerminableIntermediateFuture;
+import jadex.commons.future.IntermediateDefaultResultListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,18 +72,17 @@ public class JadexProtocolClientTest {
         });
         when(internalPlatform.searchServices(any())).thenReturn(searchFuture);
         doAnswer(invocationOnMock -> {
-            IFunctionalIntermediateResultListener resultListener = invocationOnMock.getArgument(0, IFunctionalIntermediateResultListener.class);
-            IFunctionalIntermediateFinishedListener finishedListener = invocationOnMock.getArgument(1, IFunctionalIntermediateFinishedListener.class);
+            IntermediateDefaultResultListener resultListener = invocationOnMock.getArgument(0, IntermediateDefaultResultListener.class);
             resultListener.intermediateResultAvailable(thingService);
-            finishedListener.finished();
+            resultListener.finished();
             return null;
-        }).when(searchFuture).addIntermediateResultListener(any(), any(), any());
+        }).when(searchFuture).addResultListener(any());
         when(thingService.get()).thenReturn(thingServiceFuture);
         doAnswer(invocationOnMock -> {
-            IFunctionalResultListener resultListener = invocationOnMock.getArgument(0, IFunctionalResultListener.class);
+            IResultListener resultListener = invocationOnMock.getArgument(0, IResultListener.class);
             resultListener.resultAvailable("{\"id\":\"counter\",\"title\":\"Zähler\"}");
             return null;
-        }).when(thingServiceFuture).addResultListener(any(), any());
+        }).when(thingServiceFuture).addResultListener(any());
 
         client = new JadexProtocolClient(platform);
         @NonNull List<Thing> things = client.discover(filter).toList().blockingGet();

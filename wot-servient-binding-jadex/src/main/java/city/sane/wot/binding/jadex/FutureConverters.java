@@ -21,6 +21,7 @@ package city.sane.wot.binding.jadex;
 
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
+import jadex.commons.future.IResultListener;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -34,7 +35,17 @@ class FutureConverters {
 
     public static <T> CompletableFuture<T> fromJadex(IFuture<T> jadexFuture) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        jadexFuture.addResultListener(future::complete, future::completeExceptionally);
+        jadexFuture.addResultListener(new IResultListener<>() {
+            @Override
+            public void resultAvailable(T t) {
+                future.complete(t);
+            }
+
+            @Override
+            public void exceptionOccurred(Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
         return future;
     }
 
