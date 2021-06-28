@@ -138,18 +138,10 @@
 
     <distributionManagement>
         <repository>
-            <id>gitlab-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/2707/packages/maven</url>
+            <id>github</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/sane-city/wot-servient</url>
         </repository>
-        <snapshotRepository>
-            <id>gitlab-maven</id>
-            <url>https://git.informatik.uni-hamburg.de/api/v4/projects/2707/packages/maven</url>
-        </snapshotRepository>
-        <!--        <snapshotRepository>-->
-        <!--            <id>vsis-snapshots</id>-->
-        <!--            <name>vsis-snapshots</name>-->
-        <!--            <url>https://nexus.cadeia.org/content/repositories/snapshots/</url>-->
-        <!--        </snapshotRepository>-->
     </distributionManagement>
 
     <scm>
